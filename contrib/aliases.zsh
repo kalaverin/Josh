@@ -6,13 +6,13 @@ if [[ "$OSTYPE" == "freebsd"* ]]; then
         echo "Try install GNU ls: pkg install gnuls"
         return
     fi
-    alias ls='gnuls -a --color'
+    alias ls='gnuls -vaAF --color'
     alias ri='/usr/local/bin/grep -rnH --color=auto'
     alias sed='/usr/local/bin/gsed'
     alias realpath='/usr/local/bin/grealpath'
 else
     alias ri='grep -ri'
-    alias ls='ls -vAF --color'
+    alias ls='ls -vaAF --color'
 fi
 
 if [ -n "$(uname -v | grep -i debian)" ]; then
