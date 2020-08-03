@@ -181,7 +181,11 @@ git_show_log() {
     # https://git-scm.com/docs/git-show
     # https://git-scm.com/docs/pretty-formats
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
-        local cmd="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -I% git show --diff-algorithm=histogram % | $DELTA --paging='always'"
+        if [ $OS_TYPE = "BSD" ]; then
+            local cmd="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -I% git show --diff-algorithm=histogram % | $DELTA --width $COLUMNS| less -R"
+        else
+            local cmd="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -I% git show --diff-algorithm=histogram % | $DELTA --paging='always'"
+        fi
         eval "git log --color=always --graph --format='%C(auto)%h%d %s %C(black)%C(bold)%ae, %cr' $@" | \
             fzf +s +m --tiebreak=length,index \
                 --info='inline' --ansi --extended --filepath-word \
