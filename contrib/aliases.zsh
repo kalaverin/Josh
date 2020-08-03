@@ -12,7 +12,7 @@ if [[ "$OSTYPE" == "freebsd"* ]]; then
     alias realpath='/usr/local/bin/grealpath'
 else
     alias ri='grep -ri'
-    alias ls='ls -a --color'
+    alias ls='ls -vAF --color'
 fi
 
 if [ -n "$(uname -v | grep -i debian)" ]; then
