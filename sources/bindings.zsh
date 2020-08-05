@@ -81,6 +81,10 @@ bindkey "\eO3B"   insert-cycledright
 bindkey "\e\e" clear-screen
 bindkey '\e ' empty_buffer
 
+bindkey '\e\' ps_widget
+bindkey '^\' term_widget
+bindkey '\e^\' kill_widget
+
 bindkey "\e0" commit_text
 bindkey "\e-" expand-cmd-path
 bindkey "\e=" sudoize
@@ -90,20 +94,12 @@ bindkey "\e]" copy-prev-shell-word
 bindkey '\eq' anyframe-widget-put-history
 # bindkey "\ee" znt-history-widget
 
-bindkey "\ea" git_restore_changed
-bindkey "\es" git_add_changed
-bindkey "\ed" show_all_files
-bindkey "^s" git_show_log
-
-bindkey '\e\' ps_widget
-bindkey '^\' term_widget
-bindkey '\e^\' kill_widget
-
 bindkey "\ez" fuzzy-search-and-edit
-bindkey '\ex' insert_path
-bindkey '^x' insert_locate
-bindkey '\ec' history-search-multi-word
-bindkey '\ev' file_manager
+bindkey '\ex' history-search-multi-word
+
+# bindkey '\ex' insert_path
+# bindkey '^x' insert_locate
+# bindkey '\ev' file_manager
 
 bindkey "\ek" kill_last
 
