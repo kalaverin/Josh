@@ -33,3 +33,12 @@ function sbrm() {
     fi
     git branch -D $1 && git push origin --delete $1
 }
+
+function stag() {
+    if [ "$1" = "" ]
+    then
+        echo " - Tag required."
+        return 1
+    fi
+    git tag -a $1 -m "$1" && git push --tags
+}
