@@ -96,7 +96,7 @@ show_all_files() {
 }
 zle -N show_all_files
 
-git_show_log() {
+git_history() {
     # https://git-scm.com/docs/git-show
     # https://git-scm.com/docs/pretty-formats
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
@@ -124,10 +124,10 @@ git_show_log() {
         return $ret
     fi
 }
-zle -N git_show_log
+zle -N git_history
 
-git_select_file_and_show_history() {
-    local diff_file="'git show --diff-algorithm=histogram --format=\"%C(black)%C(bold)info %C(auto)%h %ad %an <%ae>%n%C(black)%C(bold)text%C(reset) %s%C(black)%C(bold) %cr\" \$0 --"
+git_file_history() {
+    local diff_file="'git show --diff-algorithm=histogram --format=\"%C(yellow)%h %ad %an <%ae>%n%s%C(black)%C(bold) %cr\" \$0 --"
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         while true; do
             local file="$(git ls-files | \
@@ -145,7 +145,9 @@ git_select_file_and_show_history() {
                 | sort | sed -z 's/\n/ /g' | awk '{$1=$1};1'
             )"
             if [[ "$file" == "" ]]; then
+                zle redisplay
                 zle reset-prompt
+                typeset -f zle-line-init >/dev/null && zle zle-line-init
                 return 0
             fi
 
@@ -168,15 +170,10 @@ git_select_file_and_show_history() {
                     --preview-window="right:89:noborder" \
                     --preview=$cmd \
                     --bind="enter:execute($cmd)"
-            local ret=$?
-            zle redisplay
-            typeset -f zle-line-init >/dev/null && zle zle-line-init
-            return $ret
         done
     fi
 }
-zle -N git_select_file_and_show_history
-bindkey "\en" git_select_file_and_show_history
+zle -N git_file_history
 
 function sfet() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
@@ -221,6 +218,9 @@ alias gdd='git diff --name-only'
 alias gdr='git ls-files --modified `git rev-parse --show-toplevel`'
 
 bindkey "\ea" git_restore_changed
+
 bindkey "\es" git_add_changed
+bindkey "^s" git_history
+
 bindkey "\ed" show_all_files
-bindkey "^s" git_show_log
+bindkey "^d" git_file_history
