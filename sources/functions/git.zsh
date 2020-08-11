@@ -217,10 +217,9 @@ alias gmm='git commit -m'
 alias gdd='git diff --name-only'
 alias gdr='git ls-files --modified `git rev-parse --show-toplevel`'
 
-bindkey "\ea" git_restore_changed
+bindkey "\e^a" git_restore_changed
+bindkey "\ea" git_add_changed
 
-bindkey "\es" git_add_changed
-bindkey "^s" git_history
-
-bindkey "\ed" show_all_files
-bindkey "^d" git_file_history
+bindkey "\e^s" git_history
+bindkey "^s" show_all_files
+bindkey "\es" git_file_history
