@@ -31,6 +31,16 @@ local magenta="%{$fg_bold[magenta]%}"
 local white="%{$fg_bold[white]%}"
 local gray="%{$fg[white]%}"
 local dark="%{$fg_bold[black]%}"
+
+local bg_green="%{$bg[green]%}"
+local bg_red="%{$bg[red]%}"
+local bg_cyan="%{$bg[cyan]%}"
+local bg_yellow="%{$bg[yellow]%}"
+local bg_blue="%{$bg[blue]%}"
+local bg_magenta="%{$bg[magenta]%}"
+local bg_white="%{$bg[white]%}"
+local bg_dark="%{$bg[black]%}"
+
 local reset="%{$reset_color%}"
 
 local -a color_array
@@ -48,7 +58,7 @@ hostname_color=%(!.$hostname_root_color.$hostname_normal_color)
 local -a root_prompt
 
 local user_prompt_tail=''
-local root_prompt_tail=" $red!$reset"
+local root_prompt_tail=" $bg_red$white!!$reset"
 
 prompt_warning=%(!.$root_prompt_tail.$user_prompt_tail)
 function root_warning(){
