@@ -47,7 +47,7 @@ hostname_color=%(!.$hostname_root_color.$hostname_normal_color)
 
 local -a root_prompt
 
-local user_prompt_tail=':'
+local user_prompt_tail=''
 local root_prompt_tail=" $red!$reset"
 
 prompt_warning=%(!.$root_prompt_tail.$user_prompt_tail)

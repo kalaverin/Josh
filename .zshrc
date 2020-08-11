@@ -94,6 +94,8 @@ HIST_SAVE_NO_DUPS="true"
 # Remove superfluous blanks before recording entry.
 HIST_REDUCE_BLANKS="true"
 
+ZSH_DISABLE_COMPFIX="true"
+
 plugins=(
   # fast-syntax-highlighting # syntax hihgligher must before history
   alias-tips
@@ -172,4 +174,3 @@ compinit -u # -u insecure!
 [ -f ~/.zshrcbinds ] && source ~/.zshrcbinds
 
 export VIRTUAL_ENV_DISABLE_PROMPT=1
-
