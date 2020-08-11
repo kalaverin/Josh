@@ -91,13 +91,13 @@ bindkey "\e=" sudoize
 bindkey "\e^?" autosuggest-execute # alt+backspace
 bindkey "\e]" copy-prev-shell-word
 
-bindkey '^x' anyframe-widget-put-history
+#bindkey '\e^c' anyframe-widget-put-history
 
 # bindkey "\ee" znt-history-widget
 
 bindkey "\ez" fuzzy-search-and-edit
 
-bindkey '\e^x' history-search-multi-word
+bindkey '\ec' history-search-multi-word
 bindkey '\ex' insert_path
 
 ##bindkey '\ev' insert_locate
