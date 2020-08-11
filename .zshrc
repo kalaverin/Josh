@@ -170,3 +170,6 @@ compinit -u # -u insecure!
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 [ -f ~/.zshrclocal ] && source ~/.zshrclocal
 [ -f ~/.zshrcbinds ] && source ~/.zshrcbinds
+
+export VIRTUAL_ENV_DISABLE_PROMPT=1
+

@@ -45,6 +45,16 @@ for i in `hostname`; local hostname_normal_color=$color_array[$[((#i))%7+1]]
 local -a hostname_color
 hostname_color=%(!.$hostname_root_color.$hostname_normal_color)
 
+local -a root_prompt
+
+local user_prompt_tail=':'
+local root_prompt_tail=" $red!$reset"
+
+prompt_warning=%(!.$root_prompt_tail.$user_prompt_tail)
+function root_warning(){
+    echo "$prompt_warning"
+}
+
 local current_dir_color="$gray"
 local username_command="%n"
 local hostname_command="%m"
@@ -102,5 +112,5 @@ ZSH_THEME_GIT_PROMPT_DIVERGED_REMOTE="$white<>"
 PROMPT='$username_output$hostname_output$dark:$(pwd_abbr)%1(j. [$jobs_bg].)'
 GIT_PROMPT='$(out=$(git_prompt_info)$(git_prompt_status)$(git_remote_status);if [[ -n $out ]]; then printf %s "$dark/$yellow$out$reset";fi)'
 RIGHT_SIDE='$(_error_value)$(virtualenv_prompt_info)$(schroot_prompt_info)'
-PROMPT+="$GIT_PROMPT "
+PROMPT+="$GIT_PROMPT$(root_warning) "
 export RPROMPT="$RIGHT_SIDE"
