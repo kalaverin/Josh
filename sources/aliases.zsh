@@ -41,10 +41,10 @@ look() {
     find . -type f | xargs -n 1 grep -nHi "$*"
 }
 lg() {
-    la $2 | grep -i $1
+    la $2 | grep -i "$*"
 }
 function mkcd {
-    mkdir "$1" && cd "$1"
+    mkdir "$*" && cd "$*"
 }
 
 kimport() {

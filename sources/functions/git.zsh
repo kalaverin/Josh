@@ -21,7 +21,8 @@ git_add_changed() {
             | sort | sed -z 's/\n/ /g' | awk '{$1=$1};1'
         )"
         if [[ "$files" != "" ]]; then
-            LBUFFER="git add $files && gmm '"
+            local branch="${1:-`sh -c "$GIT_BRANCH"`}"
+            LBUFFER="git add $files && gmm '$branch "
             RBUFFER="'"
             local ret=$?
             zle redisplay
@@ -183,6 +184,17 @@ function spll() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
     git pull origin $branch
 }
+function sall() {
+    local branch="${1:-`sh -c "$GIT_BRANCH"`}"
+    if [ "$branch" = "" ]
+    then
+        echo " - Branch required."
+        return 1
+    fi
+    git fetch origin $branch
+    git fetch --tags --all
+    git reset --hard origin/$branch
+}
 function spsh() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
     git push origin $branch
@@ -195,6 +207,16 @@ function smer() {
     fi
     git merge origin $1
 }
+
+function sfm() {
+    if [ "$1" = "" ]
+    then
+        echo " - Branch name required."
+        return 1
+    fi
+    git fetch origin $1 && git merge $1
+}
+
 function sbrm() {
     if [ "$1" = "" ]
     then
