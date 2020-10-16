@@ -157,7 +157,7 @@ git_history() {
         else
             local cmd="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -I% git show --diff-algorithm=histogram % | $DELTA --paging='always'"
         fi
-        eval "git log --color=always --graph --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' $@" | awk '{print NR,$0}' | \
+        eval "git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' $@" | awk '{print NR,$0}' | \
             fzf +s +m --tiebreak=length,index \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --bind='esc:cancel' \
@@ -304,6 +304,45 @@ git_checkout_branch() {
 zle -N git_checkout_branch
 
 
+git_checkout_commit() {
+    local latest="$(echo "$GIT_BRANCH" | zsh)"
+
+    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
+        if [ $OS_TYPE = "BSD" ]; then
+            local cmd="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -I% git show --diff-algorithm=histogram % | $DELTA --width $COLUMNS| less -R"
+        else
+            local cmd="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -I% git show --diff-algorithm=histogram % | $DELTA --paging='always'"
+        fi
+
+        local commit="$(git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' --first-parent $latest | \
+            fzf +s +m --tiebreak=length,index \
+                --info='inline' --ansi --extended --filepath-word --no-mouse \
+                --bind='esc:cancel' \
+                --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
+                --bind='home:preview-up' --bind='end:preview-down' \
+                --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
+                --margin=0,0,0,0 \
+                --bind='alt-w:toggle-preview-wrap' \
+                --bind="alt-bs:toggle-preview" \
+                --preview-window="right:89:noborder" \
+                --preview=$cmd | cut -d ' ' -f 1
+        )"
+
+        if [[ "$commit" != "" ]]; then
+            LBUFFER="git checkout $commit"
+            local ret=$?
+            zle redisplay
+            typeset -f zle-line-init >/dev/null && zle zle-line-init
+            return $ret
+        else
+            zle reset-prompt
+            return 0
+        fi
+    fi
+}
+zle -N git_checkout_commit
+
+
 function sfet() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
     git fetch origin $branch
@@ -371,11 +410,10 @@ bindkey "^a" git_add_created
 bindkey "\ea" git_add_changed
 bindkey "\e^a" git_restore_changed
 
-bindkey "^q" git_checkout_tag
+bindkey "^q" git_checkout_commit
 bindkey "\eq" git_checkout_branch
+bindkey "\e^q" git_checkout_tag
 
 bindkey "^s" git_file_history
 bindkey "\es" git_history
 bindkey "\e^s" show_all_files
-
-
