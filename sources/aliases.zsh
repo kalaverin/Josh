@@ -14,7 +14,8 @@ vact() {
 }
 alias dact='deactivate'
 
-alias -g L='| grep -i'
+alias -g I='| grep -i'
+alias -g E='| grep -iv'
 alias -g LL="2>&1 | less"
 alias -g CA="2>&1 | cat -A"
 alias -g NE="2> /dev/null"

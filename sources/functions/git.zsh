@@ -12,7 +12,7 @@ local GIT_LIST_CHANGED='git ls-files --modified `git rev-parse --show-toplevel`'
 git_add_created() {
     local cmd="$LISTER_FILE --paging='always' {}"
     while true; do
-        local files="$(zsh "$GIT_LIST_NEW" | \
+        local files="$(zsh "$GIT_LIST_NEW" | sort | uniq | \
             fzf \
                 --pointer=" " --marker="*" --multi --margin=0,0,0,0 \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
@@ -47,7 +47,7 @@ git_add_changed() {
     # https://github.com/junegunn/fzf/blob/master/man/man1/fzf.1
     local differ="git diff --color=always -- {} | $DELTA"
     while true; do
-        local files="$(echo "$GIT_LIST_CHANGED" | sh | \
+        local files="$(echo "$GIT_LIST_CHANGED" | zsh | sort | uniq | \
             fzf \
                 --pointer=" " --marker="*" --multi --margin=0,0,0,0 \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
@@ -81,7 +81,7 @@ zle -N git_add_changed
 git_restore_changed() {
     local cmd="git diff --color=always -- {} | $DELTA"
     while true; do
-        local files="$(echo "$GIT_LIST_CHANGED" | sh | \
+        local files="$(echo "$GIT_LIST_CHANGED" | zsh | sort | uniq | \
             fzf \
                 --pointer=" " --marker="*" --multi --margin=0,0,0,0 \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
@@ -109,6 +109,7 @@ git_restore_changed() {
     done
 }
 zle -N git_restore_changed
+
 
 show_all_files() {
     local cmd="$LISTER_FILE --paging='always' {}"
@@ -148,7 +149,7 @@ git_history() {
         else
             local cmd="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -I% git show --diff-algorithm=histogram % | $DELTA --paging='always'"
         fi
-        eval "git log --color=always --graph --format='%C(auto)%h%d %s %C(black)%C(bold)%ae, %cr' $@" | \
+        eval "git log --color=always --graph --format='%C(auto)%h%d %s %C(black)%C(bold)%ae, %cr' $@" | awk '{print NR,$0}' | \
             fzf +s +m --tiebreak=length,index \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --bind='esc:cancel' \
