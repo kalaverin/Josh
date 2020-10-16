@@ -9,7 +9,7 @@ git_add_changed() {
         local files="$(echo "$FORGIT_CMD_DIFF" | sh | \
             fzf \
                 --pointer=" " --marker="*" --multi --margin=0,0,0,0 \
-                --info='inline' --ansi --extended --filepath-word \
+                --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --bind='esc:cancel' \
                 --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
                 --bind='home:preview-up' --bind='end:preview-down' \
@@ -42,7 +42,7 @@ git_restore_changed() {
         local files="$(echo "$FORGIT_CMD_DIFF" | sh | \
             fzf \
                 --pointer=" " --marker="*" --multi --margin=0,0,0,0 \
-                --info='inline' --ansi --extended --filepath-word \
+                --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --bind='esc:cancel' \
                 --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
                 --bind='home:preview-up' --bind='end:preview-down' \
@@ -79,7 +79,7 @@ show_all_files() {
         --glob \"*\" . " | \
     fzf \
         --pointer=" " --marker="*" --margin=0,0,0,0 \
-        --info='inline' --ansi --extended --filepath-word \
+        --info='inline' --ansi --extended --filepath-word --no-mouse \
         --bind='esc:cancel' \
         --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
         --bind='home:preview-up' --bind='end:preview-down' \
@@ -108,7 +108,7 @@ git_history() {
         fi
         eval "git log --color=always --graph --format='%C(auto)%h%d %s %C(black)%C(bold)%ae, %cr' $@" | \
             fzf +s +m --tiebreak=length,index \
-                --info='inline' --ansi --extended --filepath-word \
+                --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --bind='esc:cancel' \
                 --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
                 --bind='home:preview-up' --bind='end:preview-down' \
@@ -134,7 +134,7 @@ git_file_history() {
             local file="$(git ls-files | \
                 fzf \
                     --pointer=" " --marker="*" --margin=0,0,0,0 \
-                    --info='inline' --ansi --extended --filepath-word \
+                    --info='inline' --ansi --extended --filepath-word --no-mouse \
                     --bind='esc:cancel' \
                     --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
                     --bind='home:preview-up' --bind='end:preview-down' \
@@ -160,7 +160,7 @@ git_file_history() {
 
             eval "git log --color=always --graph --format='%C(auto)%h%d %s %C(black)%C(bold)%ae, %cr' $file $@" | \
                 fzf +s +m --tiebreak=length,index \
-                    --info='inline' --ansi --extended --filepath-word \
+                    --info='inline' --ansi --extended --filepath-word --no-mouse \
                     --bind='esc:cancel' \
                     --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
                     --bind='home:preview-up' --bind='end:preview-down' \
