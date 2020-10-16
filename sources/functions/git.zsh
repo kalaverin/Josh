@@ -285,6 +285,6 @@ bindkey "^a" git_add_created
 bindkey "\ea" git_add_changed
 bindkey "\e^a" git_restore_changed
 
-bindkey "\e^s" git_history
-bindkey "^s" show_all_files
-bindkey "\es" git_file_history
+bindkey "^s" git_file_history
+bindkey "\es" git_history
+bindkey "\e^s" show_all_files
