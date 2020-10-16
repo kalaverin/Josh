@@ -151,13 +151,16 @@ zle -N show_all_files
 git_history() {
     # https://git-scm.com/docs/git-show
     # https://git-scm.com/docs/pretty-formats
+
+    local branch="$(echo "$GIT_BRANCH" | zsh)"
+
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         if [ $OS_TYPE = "BSD" ]; then
             local cmd="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -I% git show --diff-algorithm=histogram % | $DELTA --width $COLUMNS| less -R"
         else
             local cmd="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -I% git show --diff-algorithm=histogram % | $DELTA --paging='always'"
         fi
-        eval "git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' $@" | awk '{print NR,$0}' | \
+        eval "git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' --first-parent $branch" | awk '{print NR,$0}' | \
             fzf +s +m --tiebreak=length,index \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --bind='esc:cancel' \
@@ -305,7 +308,7 @@ zle -N git_checkout_branch
 
 
 git_checkout_commit() {
-    local latest="$(echo "$GIT_BRANCH" | zsh)"
+    local branch="$(echo "$GIT_BRANCH" | zsh)"
 
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         if [ $OS_TYPE = "BSD" ]; then
@@ -314,7 +317,7 @@ git_checkout_commit() {
             local cmd="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -I% git show --diff-algorithm=histogram % | $DELTA --paging='always'"
         fi
 
-        local commit="$(git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' --first-parent $latest | \
+        local commit="$(git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' --first-parent $branch | \
             fzf +s +m --tiebreak=length,index \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --bind='esc:cancel' \
