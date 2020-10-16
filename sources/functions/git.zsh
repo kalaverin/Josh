@@ -1,12 +1,53 @@
 GIT_ROOT='git rev-parse --quiet --show-toplevel'
 GIT_BRANCH='git rev-parse --quiet --abbrev-ref HEAD'
 
+# https://git-scm.com/docs/git-status - file statuses
+# https://stackoverflow.com/questions/53298546/git-file-statuses-of-files
+
+local THIS_DIR=`dirname "$(readlink -f "$0")"`
+local GIT_LIST_NEW="$THIS_DIR/scripts/git_list_new.sh"
+local GIT_LIST_CHANGED='git ls-files --modified `git rev-parse --show-toplevel`'
+
+
+git_add_created() {
+    local cmd="$LISTER_FILE --paging='always' {}"
+    while true; do
+        local files="$(zsh "$GIT_LIST_NEW" | \
+            fzf \
+                --pointer=" " --marker="*" --multi --margin=0,0,0,0 \
+                --info='inline' --ansi --extended --filepath-word --no-mouse \
+                --bind='esc:cancel' \
+                --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
+                --bind='home:preview-up' --bind='end:preview-down' \
+                --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
+                --bind='alt-w:toggle-preview-wrap' \
+                --bind="alt-bs:toggle-preview" \
+                --preview-window="right:89:noborder" \
+                --preview="$cmd" \
+            | sort | sed -z 's/\n/ /g' | awk '{$1=$1};1'
+        )"
+        if [[ "$files" != "" ]]; then
+            local branch="${1:-`sh -c "$GIT_BRANCH"`}"
+            LBUFFER="git add $files && gmm '$branch "
+            RBUFFER="'"
+            local ret=$?
+            zle redisplay
+            typeset -f zle-line-init >/dev/null && zle zle-line-init
+            return $ret
+        else
+            zle reset-prompt
+            return 0
+        fi
+    done
+}
+zle -N git_add_created
+
 
 git_add_changed() {
     # https://github.com/junegunn/fzf/blob/master/man/man1/fzf.1
     local differ="git diff --color=always -- {} | $DELTA"
     while true; do
-        local files="$(echo "$FORGIT_CMD_DIFF" | sh | \
+        local files="$(echo "$GIT_LIST_CHANGED" | sh | \
             fzf \
                 --pointer=" " --marker="*" --multi --margin=0,0,0,0 \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
@@ -36,10 +77,11 @@ git_add_changed() {
 }
 zle -N git_add_changed
 
+
 git_restore_changed() {
     local cmd="git diff --color=always -- {} | $DELTA"
     while true; do
-        local files="$(echo "$FORGIT_CMD_DIFF" | sh | \
+        local files="$(echo "$GIT_LIST_CHANGED" | sh | \
             fzf \
                 --pointer=" " --marker="*" --multi --margin=0,0,0,0 \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
@@ -239,8 +281,9 @@ alias gmm='git commit -m'
 alias gdd='git diff --name-only'
 alias gdr='git ls-files --modified `git rev-parse --show-toplevel`'
 
-bindkey "\e^a" git_restore_changed
+bindkey "^a" git_add_created
 bindkey "\ea" git_add_changed
+bindkey "\e^a" git_restore_changed
 
 bindkey "\e^s" git_history
 bindkey "^s" show_all_files
