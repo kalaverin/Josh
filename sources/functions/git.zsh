@@ -1,5 +1,6 @@
 GIT_ROOT='git rev-parse --quiet --show-toplevel'
 GIT_BRANCH='git rev-parse --quiet --abbrev-ref HEAD'
+GIT_BRANCH2='git name-rev --name-only HEAD | cut -d "~" -f 1'
 GIT_HASH='git rev-parse --quiet --verify HEAD'
 GIT_LATEST='git log --all -n 1 --pretty="%H"'
 
@@ -44,7 +45,7 @@ git_add_created() {
 
         if [[ "$files" != "" ]]; then
             local branch="${1:-`sh -c "$GIT_BRANCH"`}"
-            LBUFFER="$prefix git add $files && gmm '$branch "
+            LBUFFER="$prefix git add $files && gmm '$branch: "
             RBUFFER="'"
             local ret=$?
             zle redisplay
@@ -86,7 +87,7 @@ git_add_changed() {
 
         if [[ "$files" != "" ]]; then
             local branch="${1:-`sh -c "$GIT_BRANCH"`}"
-            LBUFFER="$prefix git add $files && gmm '$branch "
+            LBUFFER="$prefix git add $files && gmm '$branch: "
             RBUFFER="'"
             local ret=$?
             zle redisplay
@@ -277,21 +278,21 @@ git_checkout_tag() {
                 --preview=$cmd | zsh $GIT_TAG_FROM_STR
         )"
 
-        if [[ "$BUFFER" != "" ]]; then
-            local prefix="$BUFFER && "
-        else
-            local prefix=""
-        fi
-
-        if [[ "$commit" != "" ]]; then
-            LBUFFER="$prefix git checkout \"$commit\""
-            local ret=$?
-            zle redisplay
-            typeset -f zle-line-init >/dev/null && zle zle-line-init
-            return $ret
-        else
+        if [[ "$commit" == "" ]]; then
             zle reset-prompt
             return 0
+        else
+            if [[ "$BUFFER" != "" ]]; then
+                LBUFFER="$BUFFER && git checkout $commit"
+                local ret=$?
+                zle redisplay
+                typeset -f zle-line-init >/dev/null && zle zle-line-init
+                return $ret
+            else
+                git checkout $commit 2>/dev/null 1>/dev/null
+                zle reset-prompt
+                return 0
+            fi
         fi
     fi
 }
@@ -320,21 +321,21 @@ git_checkout_branch() {
                 --preview="$cmd" | cut -c 3- | cut -d ' ' -f 1
         )"
 
-        if [[ "$BUFFER" != "" ]]; then
-            local prefix="$BUFFER && "
-        else
-            local prefix=""
-        fi
-
-        if [[ "$commit" != "" ]]; then
-            LBUFFER="$prefix git checkout \"$commit\""
-            local ret=$?
-            zle redisplay
-            typeset -f zle-line-init >/dev/null && zle zle-line-init
-            return $ret
-        else
+        if [[ "$commit" == "" ]]; then
             zle reset-prompt
             return 0
+        else
+            if [[ "$BUFFER" != "" ]]; then
+                LBUFFER="$BUFFER && git checkout $commit"
+                local ret=$?
+                zle redisplay
+                typeset -f zle-line-init >/dev/null && zle zle-line-init
+                return $ret
+            else
+                git checkout $commit 2>/dev/null 1>/dev/null
+                zle reset-prompt
+                return 0
+            fi
         fi
     fi
 }
@@ -362,31 +363,24 @@ git_checkout_commit() {
                 --bind='alt-w:toggle-preview-wrap' \
                 --bind="alt-bs:toggle-preview" \
                 --preview-window="right:89:noborder" \
-                --preview=$cmd
+                --preview=$cmd | cut -d ' ' -f 1
         )"
 
-        local tag="$(echo "$result" | zsh $GIT_TAG_FROM_STR)"
-        if [[ "$tag" != "" ]]; then
-            local result="\"$tag\""
-        else
-            local result="$(echo "$result" | cut -d ' ' -f 1)"
-        fi
-
-        if [[ "$BUFFER" != "" ]]; then
-            local prefix="$BUFFER && "
-        else
-            local prefix=""
-        fi
-
-        if [[ "$result" != "" ]]; then
-            LBUFFER="$prefix git checkout $result"
-            local ret=$?
-            zle redisplay
-            typeset -f zle-line-init >/dev/null && zle zle-line-init
-            return $ret
-        else
+        if [[ "$result" == "" ]]; then
             zle reset-prompt
             return 0
+        else
+            if [[ "$BUFFER" != "" ]]; then
+                LBUFFER="$BUFFER && git checkout $result"
+                local ret=$?
+                zle redisplay
+                typeset -f zle-line-init >/dev/null && zle zle-line-init
+                return $ret
+            else
+                git checkout $result 2>/dev/null
+                zle reset-prompt
+                return 0
+            fi
         fi
     fi
 }
