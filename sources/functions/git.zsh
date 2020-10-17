@@ -11,6 +11,7 @@ local GIT_LIST_NEW="$THIS_DIR/scripts/git_list_new.sh"
 local GIT_DIFF_FROM_TAG="$THIS_DIR/scripts/git_diff_from_tag.sh"
 local GIT_HASH_FROM_TAG="$THIS_DIR/scripts/git_hash_from_tag.sh"
 local GIT_LIST_BRANCHES="$THIS_DIR/scripts/git_list_branches.sh"
+local GIT_TAG_FROM_STR="$THIS_DIR/scripts/git_tag_from_str.sh"
 
 local GIT_LIST_TAGS="$THIS_DIR/scripts/git_list_tags.sh"
 local GIT_LIST_CHANGED='git ls-files --modified `git rev-parse --show-toplevel`'
@@ -34,9 +35,16 @@ git_add_created() {
                 --preview="$cmd" \
             | sort | sed -z 's/\n/ /g' | awk '{$1=$1};1'
         )"
+
+        if [[ "$BUFFER" != "" ]]; then
+            local prefix="$BUFFER && "
+        else
+            local prefix=""
+        fi
+
         if [[ "$files" != "" ]]; then
             local branch="${1:-`sh -c "$GIT_BRANCH"`}"
-            LBUFFER="git add $files && gmm '$branch "
+            LBUFFER="$prefix git add $files && gmm '$branch "
             RBUFFER="'"
             local ret=$?
             zle redisplay
@@ -69,9 +77,16 @@ git_add_changed() {
                 --preview="$differ" \
             | sort | sed -z 's/\n/ /g' | awk '{$1=$1};1'
         )"
+
+        if [[ "$BUFFER" != "" ]]; then
+            local prefix="$BUFFER && "
+        else
+            local prefix=""
+        fi
+
         if [[ "$files" != "" ]]; then
             local branch="${1:-`sh -c "$GIT_BRANCH"`}"
-            LBUFFER="git add $files && gmm '$branch "
+            LBUFFER="$prefix git add $files && gmm '$branch "
             RBUFFER="'"
             local ret=$?
             zle redisplay
@@ -103,9 +118,16 @@ git_restore_changed() {
                 --preview="$cmd" \
             | sort | sed -z 's/\n/ /g' | awk '{$1=$1};1'
         )"
+
+        if [[ "$BUFFER" != "" ]]; then
+            local prefix="$BUFFER && "
+        else
+            local prefix=""
+        fi
+
         if [[ "$files" != "" ]]; then
             # LBUFFER="git restore $files"
-            LBUFFER="git checkout -- $files"
+            LBUFFER="$prefix git checkout -- $files"
             local ret=$?
             zle redisplay
             typeset -f zle-line-init >/dev/null && zle zle-line-init
@@ -252,11 +274,17 @@ git_checkout_tag() {
                 --bind='alt-w:toggle-preview-wrap' \
                 --bind="alt-bs:toggle-preview" \
                 --preview-window="right:89:noborder" \
-                --preview=$cmd | zsh $GIT_HASH_FROM_TAG
+                --preview=$cmd | zsh $GIT_TAG_FROM_STR
         )"
 
+        if [[ "$BUFFER" != "" ]]; then
+            local prefix="$BUFFER && "
+        else
+            local prefix=""
+        fi
+
         if [[ "$commit" != "" ]]; then
-            LBUFFER="git checkout $commit"
+            LBUFFER="$prefix git checkout \"$commit\""
             local ret=$?
             zle redisplay
             typeset -f zle-line-init >/dev/null && zle zle-line-init
@@ -292,8 +320,14 @@ git_checkout_branch() {
                 --preview="$cmd" | cut -c 3- | cut -d ' ' -f 1
         )"
 
+        if [[ "$BUFFER" != "" ]]; then
+            local prefix="$BUFFER && "
+        else
+            local prefix=""
+        fi
+
         if [[ "$commit" != "" ]]; then
-            LBUFFER="git checkout $commit"
+            LBUFFER="$prefix git checkout \"$commit\""
             local ret=$?
             zle redisplay
             typeset -f zle-line-init >/dev/null && zle zle-line-init
@@ -317,7 +351,7 @@ git_checkout_commit() {
             local cmd="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -I% git show --diff-algorithm=histogram % | $DELTA --paging='always'"
         fi
 
-        local commit="$(git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' --first-parent $branch | \
+        local result="$(git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' --first-parent $branch | \
             fzf +s +m --tiebreak=length,index \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --bind='esc:cancel' \
@@ -328,11 +362,24 @@ git_checkout_commit() {
                 --bind='alt-w:toggle-preview-wrap' \
                 --bind="alt-bs:toggle-preview" \
                 --preview-window="right:89:noborder" \
-                --preview=$cmd | cut -d ' ' -f 1
+                --preview=$cmd
         )"
 
-        if [[ "$commit" != "" ]]; then
-            LBUFFER="git checkout $commit"
+        local tag="$(echo "$result" | zsh $GIT_TAG_FROM_STR)"
+        if [[ "$tag" != "" ]]; then
+            local result="\"$tag\""
+        else
+            local result="$(echo "$result" | cut -d ' ' -f 1)"
+        fi
+
+        if [[ "$BUFFER" != "" ]]; then
+            local prefix="$BUFFER && "
+        else
+            local prefix=""
+        fi
+
+        if [[ "$result" != "" ]]; then
+            LBUFFER="$prefix git checkout $result"
             local ret=$?
             zle redisplay
             typeset -f zle-line-init >/dev/null && zle zle-line-init
