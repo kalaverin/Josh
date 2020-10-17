@@ -171,7 +171,7 @@ show_all_files() {
 }
 zle -N show_all_files
 
-git_history() {
+git_branch_history() {
     # https://git-scm.com/docs/git-show
     # https://git-scm.com/docs/pretty-formats
 
@@ -202,7 +202,42 @@ git_history() {
         return $ret
     fi
 }
-zle -N git_history
+zle -N git_branch_history
+
+
+git_all_history() {
+    # https://git-scm.com/docs/git-show
+    # https://git-scm.com/docs/pretty-formats
+
+    local branch="$(echo "$GIT_BRANCH" | zsh)"
+
+    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
+        if [ $OS_TYPE = "BSD" ]; then
+            local cmd="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -I% git show --diff-algorithm=histogram % | $DELTA --width $COLUMNS| less -R"
+        else
+            local cmd="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -I% git show --diff-algorithm=histogram % | $DELTA --paging='always'"
+        fi
+        eval "git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' --all --graph" | grep -P '([0-9a-f]{8})' | awk '{print NR,$0}' | \
+            fzf +s +m --tiebreak=length,index \
+                --info='inline' --ansi --extended --filepath-word --no-mouse \
+                --bind='esc:cancel' \
+                --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
+                --bind='home:preview-up' --bind='end:preview-down' \
+                --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
+                --margin=0,0,0,0 \
+                --bind='alt-w:toggle-preview-wrap' \
+                --bind="alt-bs:toggle-preview" \
+                --preview-window="right:89:noborder" \
+                --preview=$cmd \
+                --bind="enter:execute($cmd)"
+        local ret=$?
+        zle redisplay
+        typeset -f zle-line-init >/dev/null && zle zle-line-init
+        return $ret
+    fi
+}
+zle -N git_all_history
+
 
 git_file_history() {
     local diff_file="'git show --diff-algorithm=histogram --format=\"%C(yellow)%h %ad %an <%ae>%n%s%C(black)%C(bold) %cr\" \$0 --"
@@ -459,5 +494,5 @@ bindkey "\eq" git_checkout_branch
 bindkey "\e^q" git_checkout_tag
 
 bindkey "^s" git_file_history
-bindkey "\es" git_history
-bindkey "\e^s" show_all_files
+bindkey "\es" git_branch_history
+bindkey "\e^s" git_all_history
