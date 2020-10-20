@@ -27,7 +27,7 @@ git_add_created() {
                 --multi \
                 --prompt="add new > " \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
-                --tiebreak=length,index --pointer=" " --marker="*" --margin=0,0,0,0 \
+                --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
                 --bind='esc:cancel' \
                 --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
                 --bind='home:preview-up' --bind='end:preview-down' \
@@ -71,7 +71,7 @@ git_add_changed() {
                 --multi \
                 --prompt="add changed > " \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
-                --tiebreak=length,index --pointer=" " --marker="*" --margin=0,0,0,0 \
+                --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
                 --bind='esc:cancel' \
                 --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
                 --bind='home:preview-up' --bind='end:preview-down' \
@@ -114,7 +114,7 @@ git_restore_changed() {
                 --multi \
                 --prompt="reset > " \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
-                --tiebreak=length,index --pointer=" " --marker="*" --margin=0,0,0,0 \
+                --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
                 --bind='esc:cancel' \
                 --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
                 --bind='home:preview-up' --bind='end:preview-down' \
@@ -160,7 +160,7 @@ show_all_files() {
     fzf \
         --prompt="preview > " \
         --info='inline' --ansi --extended --filepath-word --no-mouse \
-        --tiebreak=length,index --pointer=" " --marker="*" --margin=0,0,0,0 \
+        --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
         --bind='esc:cancel' \
         --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
         --bind='home:preview-up' --bind='end:preview-down' \
@@ -194,7 +194,7 @@ git_branch_history() {
             fzf \
                 --prompt="branch history > " \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
-                --tiebreak=length,index --pointer=" " --marker="*" --margin=0,0,0,0 \
+                --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
                 --bind='esc:cancel' \
                 --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
                 --bind='home:preview-up' --bind='end:preview-down' \
@@ -229,7 +229,7 @@ git_all_history() {
             fzf \
                 --prompt="history > " \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
-                --tiebreak=length,index --pointer=" " --marker="*" --margin=0,0,0,0 \
+                --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
                 --bind='esc:cancel' \
                 --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
                 --bind='home:preview-up' --bind='end:preview-down' \
@@ -256,7 +256,7 @@ git_file_history() {
                 fzf \
                     --prompt="file history > " \
                     --info='inline' --ansi --extended --filepath-word --no-mouse \
-                    --tiebreak=length,index --pointer=" " --marker="*" --margin=0,0,0,0 \
+                    --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
                     --bind='esc:cancel' \
                     --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
                     --bind='home:preview-up' --bind='end:preview-down' \
@@ -283,7 +283,7 @@ git_file_history() {
             eval "git log --color=always --graph --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' $file $@" | \
                 fzf \
                     --info='inline' --ansi --extended --filepath-word --no-mouse \
-                    --tiebreak=length,index --pointer=" " --marker="*" --margin=0,0,0,0 \
+                    --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
                     --bind='esc:cancel' \
                     --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
                     --bind='home:preview-up' --bind='end:preview-down' \
@@ -313,7 +313,7 @@ git_checkout_tag() {
             fzf \
                 --prompt="goto > " \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
-                --tiebreak=length,index --pointer=" " --marker="*" --margin=0,0,0,0 \
+                --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
                 --bind='esc:cancel' \
                 --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
                 --bind='home:preview-up' --bind='end:preview-down' \
@@ -358,7 +358,7 @@ git_fetch_branch() {
                 --multi \
                 --prompt="fetch > " --tac \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
-                --tiebreak=length,index --pointer=" " --marker="*" --margin=0,0,0,0 \
+                --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
                 --bind='esc:cancel' \
                 --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
                 | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g'
@@ -406,7 +406,7 @@ git_delete_branch() {
                 --multi \
                 --prompt="delete > " \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
-                --tiebreak=length,index --pointer=" " --marker="*" --margin=0,0,0,0 \
+                --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
                 --bind='esc:cancel' \
                 --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
                 | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g'
@@ -448,7 +448,7 @@ git_checkout_branch() {
                 --multi \
                 --prompt="goto > " \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
-                --tiebreak=length,index --pointer=" " --marker="*" --margin=0,0,0,0 \
+                --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
                 --bind='esc:cancel' \
                 --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
                 --bind='home:preview-up' --bind='end:preview-down' \
@@ -494,7 +494,7 @@ git_checkout_commit() {
             fzf \
                 --prompt="goto > " \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
-                --tiebreak=length,index --pointer=" " --marker="*" --margin=0,0,0,0 \
+                --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
                 --bind='esc:cancel' \
                 --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
                 --bind='home:preview-up' --bind='end:preview-down' \
