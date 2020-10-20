@@ -24,6 +24,7 @@ git_add_created() {
     while true; do
         local files="$(zsh "$GIT_LIST_NEW" | sort | uniq | \
             fzf \
+                --prompt="add new > " \
                 --pointer=" " --marker="*" --multi --margin=0,0,0,0 \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --bind='esc:cancel' \
@@ -66,6 +67,7 @@ git_add_changed() {
     while true; do
         local files="$(echo "$GIT_LIST_CHANGED" | zsh | sort | uniq | \
             fzf \
+                --prompt="add changed > " \
                 --pointer=" " --marker="*" --multi --margin=0,0,0,0 \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --bind='esc:cancel' \
@@ -107,6 +109,7 @@ git_restore_changed() {
     while true; do
         local files="$(echo "$GIT_LIST_CHANGED" | zsh | sort | uniq | \
             fzf \
+                --prompt="reset > " \
                 --pointer=" " --marker="*" --multi --margin=0,0,0,0 \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --bind='esc:cancel' \
@@ -152,6 +155,7 @@ show_all_files() {
         --exclude node_modules/ \
         --glob \"*\" . " | \
     fzf \
+        --prompt="preview > " \
         --pointer=" " --marker="*" --margin=0,0,0,0 \
         --info='inline' --ansi --extended --filepath-word --no-mouse \
         --bind='esc:cancel' \
@@ -185,6 +189,7 @@ git_branch_history() {
         fi
         eval "git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' --first-parent $branch" | awk '{print NR,$0}' | \
             fzf +s +m --tiebreak=length,index \
+                --prompt="branch history > " \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --bind='esc:cancel' \
                 --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
@@ -219,6 +224,7 @@ git_all_history() {
         fi
         eval "git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' --all --graph" | grep -P '([0-9a-f]{8})' | awk '{print NR,$0}' | \
             fzf +s +m --tiebreak=length,index \
+                --prompt="history > " \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --bind='esc:cancel' \
                 --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
@@ -245,6 +251,7 @@ git_file_history() {
         while true; do
             local file="$(git ls-files | \
                 fzf \
+                    --prompt="file history > " \
                     --pointer=" " --marker="*" --margin=0,0,0,0 \
                     --info='inline' --ansi --extended --filepath-word --no-mouse \
                     --bind='esc:cancel' \
@@ -301,6 +308,7 @@ git_checkout_tag() {
 
         local commit="$(echo "$latest" | zsh $GIT_LIST_TAGS | \
             fzf +s +m --tiebreak=length,index \
+                --prompt="goto > " \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --bind='esc:cancel' \
                 --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
@@ -344,6 +352,7 @@ git_fetch_branch() {
 
         local branches="$(git ls-remote -h origin | sed -r 's%^[a-f0-9]{40}\s+refs/heads/%%g' | sort | \
             fzf +s +m --tiebreak=length,index \
+                --prompt="fetch > " \
                 --info='inline' --ansi --extended --filepath-word --no-mouse --multi \
                 --bind='esc:cancel' \
                 --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
@@ -389,6 +398,7 @@ git_delete_branch() {
 
         local branches="$(git ls-remote -h origin | sed -r 's%^[a-f0-9]{40}\s+refs/heads/%%g' | sort | \
             fzf +s +m --tiebreak=length,index \
+                --prompt="delete > " \
                 --info='inline' --ansi --extended --filepath-word --no-mouse --multi \
                 --bind='esc:cancel' \
                 --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
@@ -428,6 +438,7 @@ git_checkout_branch() {
 
         local commit="$(zsh $GIT_LIST_BRANCHES | \
             fzf \
+                --prompt="goto > " \
                 --pointer=" " --marker="*" --margin=0,0,0,0 \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --bind='esc:cancel' \
@@ -473,6 +484,7 @@ git_checkout_commit() {
 
         local result="$(git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' --first-parent $branch | \
             fzf +s +m --tiebreak=length,index \
+                --prompt="goto > " \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --bind='esc:cancel' \
                 --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
