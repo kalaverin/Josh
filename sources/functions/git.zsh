@@ -379,6 +379,45 @@ git_fetch_branch() {
 zle -N git_fetch_branch
 
 
+git_delete_branch() {
+    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
+        if [ $OS_TYPE = "BSD" ]; then
+            local cmd="echo {} | zsh $GIT_DIFF_FROM_TAG | $DELTA --width $COLUMNS | less -R"
+        else
+            local cmd="echo {} | zsh $GIT_DIFF_FROM_TAG | $DELTA --paging='always'"
+        fi
+
+        local branches="$(git ls-remote -h origin | sed -r 's%^[a-f0-9]{40}\s+refs/heads/%%g' | sort | \
+            fzf +s +m --tiebreak=length,index \
+                --info='inline' --ansi --extended --filepath-word --no-mouse --multi \
+                --bind='esc:cancel' \
+                --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
+                --margin=0,0,0,0 | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g'
+        )"
+
+        if [[ "$branches" == "" ]]; then
+            zle reset-prompt
+            return 0
+        else
+            local cmd="git push origin --delete $branches && git branch -D $branches"
+
+            if [[ "$BUFFER" != "" ]]; then
+                LBUFFER="$BUFFER && $cmd"
+                local ret=$?
+                zle redisplay
+                typeset -f zle-line-init >/dev/null && zle zle-line-init
+                return $ret
+            else
+                LBUFFER="$cmd"
+                zle reset-prompt
+                return 0
+            fi
+        fi
+    fi
+}
+zle -N git_delete_branch
+
+
 git_checkout_branch() {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         if [ $OS_TYPE = "BSD" ]; then
@@ -554,7 +593,6 @@ function stag-() {
     git tag -d "$1" && git push --delete origin "$1"
 }
 
-
 alias gmm='git commit -m'
 alias gdd='git diff --name-only'
 alias gdr='git ls-files --modified `git rev-parse --show-toplevel`'
@@ -568,6 +606,7 @@ bindkey "\eq" git_checkout_branch
 bindkey "\e^q" git_checkout_tag
 
 bindkey "^[Q" git_fetch_branch
+bindkey "^[S" git_delete_branch
 
 bindkey "^s" git_file_history
 bindkey "\es" git_branch_history
