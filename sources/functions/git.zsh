@@ -24,9 +24,10 @@ git_add_created() {
     while true; do
         local files="$(zsh "$GIT_LIST_NEW" | sort | uniq | \
             fzf \
+                --multi \
                 --prompt="add new > " \
-                --pointer=" " --marker="*" --multi --margin=0,0,0,0 \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
+                --tiebreak=length,index --pointer=" " --marker="*" --margin=0,0,0,0 \
                 --bind='esc:cancel' \
                 --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
                 --bind='home:preview-up' --bind='end:preview-down' \
@@ -67,9 +68,10 @@ git_add_changed() {
     while true; do
         local files="$(echo "$GIT_LIST_CHANGED" | zsh | sort | uniq | \
             fzf \
+                --multi \
                 --prompt="add changed > " \
-                --pointer=" " --marker="*" --multi --margin=0,0,0,0 \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
+                --tiebreak=length,index --pointer=" " --marker="*" --margin=0,0,0,0 \
                 --bind='esc:cancel' \
                 --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
                 --bind='home:preview-up' --bind='end:preview-down' \
@@ -109,9 +111,10 @@ git_restore_changed() {
     while true; do
         local files="$(echo "$GIT_LIST_CHANGED" | zsh | sort | uniq | \
             fzf \
+                --multi \
                 --prompt="reset > " \
-                --pointer=" " --marker="*" --multi --margin=0,0,0,0 \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
+                --tiebreak=length,index --pointer=" " --marker="*" --margin=0,0,0,0 \
                 --bind='esc:cancel' \
                 --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
                 --bind='home:preview-up' --bind='end:preview-down' \
@@ -156,8 +159,8 @@ show_all_files() {
         --glob \"*\" . " | \
     fzf \
         --prompt="preview > " \
-        --pointer=" " --marker="*" --margin=0,0,0,0 \
         --info='inline' --ansi --extended --filepath-word --no-mouse \
+        --tiebreak=length,index --pointer=" " --marker="*" --margin=0,0,0,0 \
         --bind='esc:cancel' \
         --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
         --bind='home:preview-up' --bind='end:preview-down' \
@@ -188,14 +191,14 @@ git_branch_history() {
             local cmd="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -I% git show --diff-algorithm=histogram % | $DELTA --paging='always'"
         fi
         eval "git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' --first-parent $branch" | awk '{print NR,$0}' | \
-            fzf +s +m --tiebreak=length,index \
+            fzf \
                 --prompt="branch history > " \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
+                --tiebreak=length,index --pointer=" " --marker="*" --margin=0,0,0,0 \
                 --bind='esc:cancel' \
                 --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
                 --bind='home:preview-up' --bind='end:preview-down' \
                 --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
-                --margin=0,0,0,0 \
                 --bind='alt-w:toggle-preview-wrap' \
                 --bind="alt-bs:toggle-preview" \
                 --preview-window="right:89:noborder" \
@@ -222,15 +225,15 @@ git_all_history() {
         else
             local cmd="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -I% git show --diff-algorithm=histogram % | $DELTA --paging='always'"
         fi
-        eval "git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' --all --graph" | grep -P '([0-9a-f]{8})' | awk '{print NR,$0}' | \
-            fzf +s +m --tiebreak=length,index \
+        eval "git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' --all" | grep -P '([0-9a-f]{6,})' | awk '{print NR,$0}' | \
+            fzf \
                 --prompt="history > " \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
+                --tiebreak=length,index --pointer=" " --marker="*" --margin=0,0,0,0 \
                 --bind='esc:cancel' \
                 --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
                 --bind='home:preview-up' --bind='end:preview-down' \
                 --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
-                --margin=0,0,0,0 \
                 --bind='alt-w:toggle-preview-wrap' \
                 --bind="alt-bs:toggle-preview" \
                 --preview-window="right:89:noborder" \
@@ -252,8 +255,8 @@ git_file_history() {
             local file="$(git ls-files | \
                 fzf \
                     --prompt="file history > " \
-                    --pointer=" " --marker="*" --margin=0,0,0,0 \
                     --info='inline' --ansi --extended --filepath-word --no-mouse \
+                    --tiebreak=length,index --pointer=" " --marker="*" --margin=0,0,0,0 \
                     --bind='esc:cancel' \
                     --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
                     --bind='home:preview-up' --bind='end:preview-down' \
@@ -278,13 +281,13 @@ git_file_history() {
             fi
 
             eval "git log --color=always --graph --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' $file $@" | \
-                fzf +s +m --tiebreak=length,index \
+                fzf \
                     --info='inline' --ansi --extended --filepath-word --no-mouse \
+                    --tiebreak=length,index --pointer=" " --marker="*" --margin=0,0,0,0 \
                     --bind='esc:cancel' \
                     --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
                     --bind='home:preview-up' --bind='end:preview-down' \
                     --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
-                    --margin=0,0,0,0 \
                     --bind='alt-w:toggle-preview-wrap' \
                     --bind="alt-bs:toggle-preview" \
                     --preview-window="right:89:noborder" \
@@ -307,14 +310,14 @@ git_checkout_tag() {
         fi
 
         local commit="$(echo "$latest" | zsh $GIT_LIST_TAGS | \
-            fzf +s +m --tiebreak=length,index \
+            fzf \
                 --prompt="goto > " \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
+                --tiebreak=length,index --pointer=" " --marker="*" --margin=0,0,0,0 \
                 --bind='esc:cancel' \
                 --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
                 --bind='home:preview-up' --bind='end:preview-down' \
                 --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
-                --margin=0,0,0,0 \
                 --bind='alt-w:toggle-preview-wrap' \
                 --bind="alt-bs:toggle-preview" \
                 --preview-window="right:89:noborder" \
@@ -351,12 +354,14 @@ git_fetch_branch() {
         fi
 
         local branches="$(git ls-remote -h origin | sed -r 's%^[a-f0-9]{40}\s+refs/heads/%%g' | sort | \
-            fzf +s +m --tiebreak=length,index \
-                --prompt="fetch > " \
-                --info='inline' --ansi --extended --filepath-word --no-mouse --multi \
+            fzf \
+                --multi \
+                --prompt="fetch > " --tac \
+                --info='inline' --ansi --extended --filepath-word --no-mouse \
+                --tiebreak=length,index --pointer=" " --marker="*" --margin=0,0,0,0 \
                 --bind='esc:cancel' \
                 --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
-                --margin=0,0,0,0 | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g'
+                | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g'
         )"
         local track="git branch -f --track $(echo "$branches" | sed -r "s% % \&\& git branch -f --track %g")"
 
@@ -397,12 +402,14 @@ git_delete_branch() {
         fi
 
         local branches="$(git ls-remote -h origin | sed -r 's%^[a-f0-9]{40}\s+refs/heads/%%g' | sort | \
-            fzf +s +m --tiebreak=length,index \
+            fzf \
+                --multi \
                 --prompt="delete > " \
-                --info='inline' --ansi --extended --filepath-word --no-mouse --multi \
+                --info='inline' --ansi --extended --filepath-word --no-mouse \
+                --tiebreak=length,index --pointer=" " --marker="*" --margin=0,0,0,0 \
                 --bind='esc:cancel' \
                 --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
-                --margin=0,0,0,0 | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g'
+                | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g'
         )"
 
         if [[ "$branches" == "" ]]; then
@@ -438,9 +445,10 @@ git_checkout_branch() {
 
         local commit="$(zsh $GIT_LIST_BRANCHES | \
             fzf \
+                --multi \
                 --prompt="goto > " \
-                --pointer=" " --marker="*" --margin=0,0,0,0 \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
+                --tiebreak=length,index --pointer=" " --marker="*" --margin=0,0,0,0 \
                 --bind='esc:cancel' \
                 --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
                 --bind='home:preview-up' --bind='end:preview-down' \
@@ -483,9 +491,10 @@ git_checkout_commit() {
         fi
 
         local result="$(git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' --first-parent $branch | \
-            fzf +s +m --tiebreak=length,index \
+            fzf \
                 --prompt="goto > " \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
+                --tiebreak=length,index --pointer=" " --marker="*" --margin=0,0,0,0 \
                 --bind='esc:cancel' \
                 --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
                 --bind='home:preview-up' --bind='end:preview-down' \
@@ -530,7 +539,7 @@ function sfet() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
     if [ "$branch" = "" ]
     then
-        echo " - Branch required."
+        # echo " - Branch required."
         return 1
     fi
     git fetch origin $branch
