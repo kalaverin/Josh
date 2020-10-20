@@ -472,6 +472,16 @@ function sbrm() {
     git branch -D $1 && git push origin --delete $1
 }
 
+function sbmv() {
+    if [ "$1" = "" ]
+    then
+        echo " - Branch name required."
+        return 1
+    fi
+    local branch="${2:-`sh -c "$GIT_BRANCH"`}"
+    echo "git branch -m $branch $1 && git push origin :$branch $1"
+}
+
 function stag() {
     if [ "$1" = "" ]
     then
@@ -480,6 +490,16 @@ function stag() {
     fi
     git tag -a $1 -m "$1" && git push --tags
 }
+
+function stag-() {
+    if [ "$1" = "" ]
+    then
+        echo " - Tag required."
+        return 1
+    fi
+    git tag -d "$1" && git push --delete origin "$1"
+}
+
 
 alias gmm='git commit -m'
 alias gdd='git diff --name-only'
