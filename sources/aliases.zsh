@@ -72,3 +72,11 @@ alias http='http --verify no'
 function agent {
     eval `ssh-agent` && ssh-add
 }
+
+function sget {
+    wget -O- $* &> /dev/null
+}
+
+function nget {
+    wget -O/dev/null $*
+}
