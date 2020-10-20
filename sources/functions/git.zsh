@@ -334,6 +334,46 @@ git_checkout_tag() {
 zle -N git_checkout_tag
 
 
+git_fetch_branch() {
+    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
+        if [ $OS_TYPE = "BSD" ]; then
+            local cmd="echo {} | zsh $GIT_DIFF_FROM_TAG | $DELTA --width $COLUMNS | less -R"
+        else
+            local cmd="echo {} | zsh $GIT_DIFF_FROM_TAG | $DELTA --paging='always'"
+        fi
+
+        local branches="$(git ls-remote -h origin | sed -r 's%^[a-f0-9]{40}\s+refs/heads/%%g' | \
+            fzf +s +m --tiebreak=length,index \
+                --info='inline' --ansi --extended --filepath-word --no-mouse --multi \
+                --bind='esc:cancel' \
+                --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
+                --margin=0,0,0,0 | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g'
+        )"
+        local track="git branch -f --track $(echo "$branches" | sed -r "s% % \&\& git branch -f --track %g")"
+
+        if [[ "$branches" == "" ]]; then
+            zle reset-prompt
+            return 0
+        else
+            local cmd="$track && git fetch origin $branches"
+            if [[ "$BUFFER" != "" ]]; then
+                LBUFFER="$BUFFER && $cmd"
+                local ret=$?
+                zle redisplay
+                typeset -f zle-line-init >/dev/null && zle zle-line-init
+                return $ret
+            else
+                echo $cmd
+                echo $cmd | zsh
+                zle reset-prompt
+                return 0
+            fi
+        fi
+    fi
+}
+zle -N git_fetch_branch
+
+
 git_checkout_branch() {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         if [ $OS_TYPE = "BSD" ]; then
@@ -344,7 +384,7 @@ git_checkout_branch() {
 
         local commit="$(zsh $GIT_LIST_BRANCHES | \
             fzf \
-                --pointer=" " --marker="*" --multi --margin=0,0,0,0 \
+                --pointer=" " --marker="*" --margin=0,0,0,0 \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --bind='esc:cancel' \
                 --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
@@ -430,7 +470,7 @@ function spll() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
     git pull origin $branch
 }
-function sall() {
+function sfet() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
     if [ "$branch" = "" ]
     then
@@ -439,6 +479,15 @@ function sall() {
     fi
     git fetch origin $branch
     git fetch --tags --all
+}
+function sall() {
+    local branch="${1:-`sh -c "$GIT_BRANCH"`}"
+    if [ "$branch" = "" ]
+    then
+        echo " - Branch required."
+        return 1
+    fi
+    sfet $branch
     git reset --hard origin/$branch
 }
 function spsh() {
@@ -479,7 +528,7 @@ function sbmv() {
         return 1
     fi
     local branch="${2:-`sh -c "$GIT_BRANCH"`}"
-    echo "git branch -m $branch $1 && git push origin :$branch $1"
+    git branch -m $branch $1 && git push origin :$branch $1
 }
 
 function stag() {
@@ -513,6 +562,10 @@ bindkey "^q" git_checkout_commit
 bindkey "\eq" git_checkout_branch
 bindkey "\e^q" git_checkout_tag
 
+bindkey "^[Q" git_fetch_branch
+
 bindkey "^s" git_file_history
 bindkey "\es" git_branch_history
 bindkey "\e^s" git_all_history
+
+# bindkey "^[^M" accept-and-hold # Esc-Enter
