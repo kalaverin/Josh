@@ -438,9 +438,9 @@ zle -N git_delete_branch
 git_checkout_branch() {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         if [ $OS_TYPE = "BSD" ]; then
-            local cmd="echo {} | cut -c 3- | cut -d ' ' -f 1 | $DELTA --width $COLUMNS | less -R"
+            local cmd="echo {} | cut -d ' ' -f 1 | $DELTA --width $COLUMNS | less -R"
         else
-            local cmd="echo {} | cut -c 3- | cut -d ' ' -f 1 | xargs -I% git diff % | $DELTA --paging='always'"
+            local cmd="echo {} | cut -d ' ' -f 1 | xargs -I% git diff % | $DELTA --paging='always'"
         fi
 
         local commit="$(zsh $GIT_LIST_BRANCHES | \
@@ -456,7 +456,7 @@ git_checkout_branch() {
                 --bind='alt-w:toggle-preview-wrap' \
                 --bind="alt-bs:toggle-preview" \
                 --preview-window="right:89:noborder" \
-                --preview="$cmd" | cut -c 3- | cut -d ' ' -f 1
+                --preview="$cmd" | cut -d ' ' -f 1
         )"
 
         if [[ "$commit" == "" ]]; then
