@@ -342,7 +342,7 @@ git_fetch_branch() {
             local cmd="echo {} | zsh $GIT_DIFF_FROM_TAG | $DELTA --paging='always'"
         fi
 
-        local branches="$(git ls-remote -h origin | sed -r 's%^[a-f0-9]{40}\s+refs/heads/%%g' | \
+        local branches="$(git ls-remote -h origin | sed -r 's%^[a-f0-9]{40}\s+refs/heads/%%g' | sort | \
             fzf +s +m --tiebreak=length,index \
                 --info='inline' --ansi --extended --filepath-word --no-mouse --multi \
                 --bind='esc:cancel' \
@@ -356,6 +356,11 @@ git_fetch_branch() {
             return 0
         else
             local cmd="$track && git fetch origin $branches"
+
+            if [[ $branches != *" "* ]]; then
+                local cmd="$cmd && git checkout $branches"
+            fi
+
             if [[ "$BUFFER" != "" ]]; then
                 LBUFFER="$BUFFER && $cmd"
                 local ret=$?
