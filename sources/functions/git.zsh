@@ -41,14 +41,14 @@ git_add_created() {
         )"
 
         if [[ "$BUFFER" != "" ]]; then
-            local prefix="$BUFFER && "
+            local prefix="$BUFFER && git"
         else
-            local prefix=""
+            local prefix="git"
         fi
 
         if [[ "$files" != "" ]]; then
             local branch="${1:-`sh -c "$GIT_BRANCH"`}"
-            LBUFFER="$prefixgit add $files && gmm '$branch: "
+            LBUFFER="$prefix add $files && gmm '$branch: "
             RBUFFER="'"
             local ret=$?
             zle redisplay
@@ -85,14 +85,14 @@ git_add_changed() {
         )"
 
         if [[ "$BUFFER" != "" ]]; then
-            local prefix="$BUFFER && "
+            local prefix="$BUFFER && git"
         else
-            local prefix=""
+            local prefix="git"
         fi
 
         if [[ "$files" != "" ]]; then
             local branch="${1:-`sh -c "$GIT_BRANCH"`}"
-            LBUFFER="$prefixgit add $files && gmm '$branch: "
+            LBUFFER="$prefix add $files && gmm '$branch: "
             RBUFFER="'"
             local ret=$?
             zle redisplay

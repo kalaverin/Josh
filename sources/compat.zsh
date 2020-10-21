@@ -31,3 +31,4 @@ alias realpath="$JOSH_REALPATH"
 if [ -n "$(uname -v | grep -i debian)" ]; then
     alias fd='fdfind'
 fi
+
