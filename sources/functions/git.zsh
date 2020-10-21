@@ -22,6 +22,7 @@ local GIT_LIST_CHANGED='git ls-files --modified `git rev-parse --show-toplevel`'
 git_add_created() {
     local cmd="$LISTER_FILE --paging='always' {}"
     while true; do
+        # TODO: абсолютные пути в отличии от add_changed
         local files="$(zsh "$GIT_LIST_NEW" | sort | uniq | \
             fzf \
                 --multi \
@@ -47,7 +48,7 @@ git_add_created() {
 
         if [[ "$files" != "" ]]; then
             local branch="${1:-`sh -c "$GIT_BRANCH"`}"
-            LBUFFER="$prefix git add $files && gmm '$branch: "
+            LBUFFER="$prefixgit add $files && gmm '$branch: "
             RBUFFER="'"
             local ret=$?
             zle redisplay
@@ -91,7 +92,7 @@ git_add_changed() {
 
         if [[ "$files" != "" ]]; then
             local branch="${1:-`sh -c "$GIT_BRANCH"`}"
-            LBUFFER="$prefix git add $files && gmm '$branch: "
+            LBUFFER="$prefixgit add $files && gmm '$branch: "
             RBUFFER="'"
             local ret=$?
             zle redisplay
