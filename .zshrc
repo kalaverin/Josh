@@ -1,6 +1,8 @@
 export ZSH=~/.josh
 export JOSH=$ZSH/custom/plugins/josh
 
+source "$JOSH/sources/compat.zsh"
+
 HISTSIZE=100000
 SAVEHIST=100000
 
