@@ -529,12 +529,18 @@ zle -N git_checkout_commit
 
 function sfet() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
-    git fetch origin $branch
+    local cmd="git fetch origin $branch"
+    echo " -> $cmd"
+    echo "$cmd" | zsh
 }
+
 function spll() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
-    git pull origin $branch
+    local cmd="git pull origin $branch"
+    echo " -> $cmd"
+    echo "$cmd" | zsh
 }
+
 function sfet() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
     if [ "$branch" = "" ]
@@ -542,9 +548,11 @@ function sfet() {
         # echo " - Branch required."
         return 1
     fi
-    git fetch origin $branch
-    git fetch --tags --all
+    local cmd="git fetch origin $branch && git fetch --tags --all"
+    echo " -> $cmd"
+    echo "$cmd" | zsh
 }
+
 function sall() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
     if [ "$branch" = "" ]
@@ -553,28 +561,34 @@ function sall() {
         return 1
     fi
     sfet $branch
-    git reset --hard origin/$branch
+    local cmd="git reset --hard origin/$branch"
+    echo " -> $cmd"
+    echo "$cmd" | zsh
 }
+
 function spsh() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
-    git push origin $branch
+    local cmd="git push origin $branch"
+    echo " -> $cmd"
+    echo "$cmd" | zsh
 }
+
 function smer() {
     if [ "$1" = "" ]
     then
         echo " - Branch name required."
         return 1
     fi
-    git merge origin $1
+    local cmd="git merge origin $1"
+    echo " -> $cmd"
+    echo "$cmd" | zsh
 }
 
 function sfm() {
-    if [ "$1" = "" ]
-    then
-        echo " - Branch name required."
-        return 1
-    fi
-    git fetch origin $1 && git merge $1
+    local branch="${1:-`sh -c "$GIT_BRANCH"`}"
+    local cmd="git fetch origin $branch && git merge $branch"
+    echo " -> $cmd"
+    echo "$cmd" | zsh
 }
 
 function sbrm() {
@@ -583,7 +597,9 @@ function sbrm() {
         echo " - Branch name required."
         return 1
     fi
-    git branch -D $1 && git push origin --delete $1
+    local cmd="git branch -D $1 && git push origin --delete $1"
+    echo " -> $cmd"
+    echo "$cmd" | zsh
 }
 
 function sbmv() {
@@ -593,7 +609,9 @@ function sbmv() {
         return 1
     fi
     local branch="${2:-`sh -c "$GIT_BRANCH"`}"
-    git branch -m $branch $1 && git push origin :$branch $1
+    local cmd="git branch -m $branch $1 && git push origin :$branch $1"
+    echo " -> $cmd"
+    echo "$cmd" | zsh
 }
 
 function stag() {
@@ -602,7 +620,10 @@ function stag() {
         echo " - Tag required."
         return 1
     fi
-    git tag -a $1 -m "$1" && git push --tags
+    local cmd="git tag -a $1 -m \"$1\" && git push --tags"
+    echo " -> $cmd"
+    echo "$cmd" | zsh
+
 }
 
 function stag-() {
@@ -611,7 +632,9 @@ function stag-() {
         echo " - Tag required."
         return 1
     fi
-    git tag -d "$1" && git push --delete origin "$1"
+    local cmd="git tag -d \"$1\" && git push --delete origin \"$1\""
+    echo " -> $cmd"
+    echo "$cmd" | zsh
 }
 
 alias gmm='git commit -m'
