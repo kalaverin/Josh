@@ -637,6 +637,31 @@ function stag-() {
     echo "$cmd" | zsh
 }
 
+function sck() {
+    if [ "$1" = "" ]
+    then
+        echo " ! task name needed"
+        return 1
+    fi
+    git checkout -b $1 2> /dev/null || git checkout $1
+}
+
+function drop_this_branch_now() {
+    local branch="${1:-`sh -c "$GIT_BRANCH"`}"
+    if [ "$branch" = "master" ]
+    then
+        echo " ! Cannot delete MASTER branch"
+        return 1
+    fi
+        echo " ! Cannot delete DEVELOP branch"
+    if [ "$branch" = "develop" ]
+    then
+        return 1
+    fi
+    git reset --hard && (gcd 2> /dev/null || gcm) && git branch -D $branch && git push origin --delete $branch
+}
+
+
 alias gmm='git commit -m'
 alias gdd='git diff --name-only'
 alias gdr='git ls-files --modified `git rev-parse --show-toplevel`'
