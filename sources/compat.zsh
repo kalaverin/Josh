@@ -2,7 +2,9 @@ unalias _
 if [[ "$OSTYPE" == "freebsd"* ]]; then
     alias ls='/usr/local/bin/gnuls -vaAF --color'
     alias ri='/usr/local/bin/grep -rnH --color=auto'
+
     alias sed='/usr/local/bin/gsed'
+    alias grep='/usr/local/bin/grep'
     alias realpath='/usr/local/bin/grealpath'
 
     export OS_TYPE="BSD"
