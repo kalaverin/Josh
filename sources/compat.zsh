@@ -1,7 +1,6 @@
 export JOSH_DELTA=`which delta`
 
 if [[ "$OSTYPE" == "freebsd"* ]]; then
-
     export JOSH_LS='/usr/local/bin/gnuls'
     export JOSH_SED='/usr/local/bin/gsed'
     export JOSH_GREP='/usr/local/bin/grep'
@@ -31,4 +30,3 @@ alias realpath="$JOSH_REALPATH"
 if [ -n "$(uname -v | grep -i debian)" ]; then
     alias fd='fdfind'
 fi
-
