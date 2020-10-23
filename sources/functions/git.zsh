@@ -11,7 +11,9 @@ local THIS_DIR=`dirname "$(readlink -f "$0")"`
 local GIT_LIST_NEW="$THIS_DIR/scripts/git_list_new.sh"
 local GIT_DIFF_FROM_TAG="$THIS_DIR/scripts/git_diff_from_tag.sh"
 local GIT_HASH_FROM_TAG="$THIS_DIR/scripts/git_hash_from_tag.sh"
+local GIT_LIST_BRANCHES_EXCEPT_THIS="$THIS_DIR/scripts/git_list_branches_except_this.sh"
 local GIT_LIST_BRANCHES="$THIS_DIR/scripts/git_list_branches.sh"
+local GIT_LIST_BRANCH_FILES="$THIS_DIR/scripts/git_list_branch_files.sh"
 local GIT_TAG_FROM_STR="$THIS_DIR/scripts/git_tag_from_str.sh"
 
 local GIT_LIST_TAGS="$THIS_DIR/scripts/git_list_tags.sh"
@@ -193,7 +195,7 @@ git_branch_history() {
         fi
         eval "git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' --first-parent $branch" | awk '{print NR,$0}' | \
             fzf \
-                --prompt="branch history > " \
+                --prompt="branch log > " \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
                 --bind='esc:cancel' \
@@ -228,7 +230,7 @@ git_all_history() {
         fi
         eval "git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' --all" | grep -P '([0-9a-f]{6,})' | awk '{print NR,$0}' | \
             fzf \
-                --prompt="history > " \
+                --prompt="log > " \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
                 --bind='esc:cancel' \
@@ -255,7 +257,7 @@ git_file_history() {
         while true; do
             local file="$(git ls-files | \
                 fzf \
-                    --prompt="file history > " \
+                    --prompt="file log > " \
                     --info='inline' --ansi --extended --filepath-word --no-mouse \
                     --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
                     --bind='esc:cancel' \
@@ -444,7 +446,7 @@ git_checkout_branch() {
             local cmd="echo {} | cut -d ' ' -f 1 | xargs -I% git diff % | $DELTA --paging='always'"
         fi
 
-        local commit="$(zsh $GIT_LIST_BRANCHES | \
+        local branch="$(zsh $GIT_LIST_BRANCHES_EXCEPT_THIS | \
             fzf \
                 --multi \
                 --prompt="goto > " \
@@ -460,18 +462,18 @@ git_checkout_branch() {
                 --preview="$cmd" | cut -d ' ' -f 1
         )"
 
-        if [[ "$commit" == "" ]]; then
+        if [[ "$branch" == "" ]]; then
             zle reset-prompt
             return 0
         else
             if [[ "$BUFFER" != "" ]]; then
-                LBUFFER="$BUFFER && git checkout $commit"
+                LBUFFER="$BUFFER && git checkout $branch"
                 local ret=$?
                 zle redisplay
                 typeset -f zle-line-init >/dev/null && zle zle-line-init
                 return $ret
             else
-                git checkout $commit 2>/dev/null 1>/dev/null
+                git checkout $branch 2>/dev/null 1>/dev/null
                 zle reset-prompt
                 return 0
             fi
@@ -526,6 +528,89 @@ git_checkout_commit() {
     fi
 }
 zle -N git_checkout_commit
+
+git_file_in_branch_history() {
+    local diff_file="'git show --diff-algorithm=histogram --format=\"%C(yellow)%h %ad %an <%ae>%n%s%C(black)%C(bold) %cr\" \$0 --"
+    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
+        if [ $OS_TYPE = "BSD" ]; then
+            local cmd="echo {} | cut -d ' ' -f 1 | $DELTA --width $COLUMNS | less -R"
+        else
+            local cmd="echo {} | cut -d ' ' -f 1 | xargs -I% git diff % | $DELTA --paging='always'"
+        fi
+
+        local branch="$(zsh $GIT_LIST_BRANCHES | \
+            fzf \
+                --multi \
+                --prompt="branch file log > " \
+                --info='inline' --ansi --extended --filepath-word --no-mouse \
+                --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
+                --bind='esc:cancel' \
+                --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
+                --bind='home:preview-up' --bind='end:preview-down' \
+                --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
+                --bind='alt-w:toggle-preview-wrap' \
+                --bind="alt-bs:toggle-preview" \
+                --preview-window="right:89:noborder" \
+                --preview="$cmd" | cut -d ' ' -f 1
+        )"
+
+        while true; do
+            local file="$(echo "$branch" | zsh $GIT_LIST_BRANCH_FILES | \
+                fzf \
+                    --prompt="$branch file log > " \
+                    --info='inline' --ansi --extended --filepath-word --no-mouse \
+                    --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
+                    --bind='esc:cancel' \
+                    --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
+                    --bind='home:preview-up' --bind='end:preview-down' \
+                    --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
+                    --bind='alt-w:toggle-preview-wrap' \
+                    --bind="alt-bs:toggle-preview" \
+                    --preview-window="right:89:noborder" \
+                    --preview="$LISTER_FILE --terminal-width=\$FZF_PREVIEW_COLUMNS {}" \
+                | sort | sed -z 's/\n/ /g' | awk '{$1=$1};1'
+            )"
+            if [[ "$file" == "" ]]; then
+                zle redisplay
+                zle reset-prompt
+                typeset -f zle-line-init >/dev/null && zle zle-line-init
+                return 0
+            fi
+            local ext="$(echo "$file" | xargs -I% basename % | grep --color=never -Po '(?<=\.)([^\.]+)$')"
+
+            if [ $OS_TYPE = "BSD" ]; then
+                local view="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -l bash -c $diff_file $file' | $DELTA --width $COLUMNS | less -R"
+            else
+                local view="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -l bash -c $diff_file $file' | $DELTA --paging='always'"
+            fi
+
+            if [ $OS_TYPE = "BSD" ]; then
+                local local_view="echo {} | cut -d ' ' -f 1 | $DELTA --width $COLUMNS | less -R"
+            else
+                local local_view="echo {} | cut -d ' ' -f 1 | xargs -I^^ git show ^^:./$file | $LISTER_FILE --paging=always"
+                if [ $ext != "" ]; then
+                    local local_view="$local_view --language $ext"
+                fi
+            fi
+
+            eval "git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' $branch -- $file" | \
+                fzf \
+                    --prompt="$branch:$file > " \
+                    --info='inline' --ansi --extended --filepath-word --no-mouse \
+                    --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
+                    --bind='esc:cancel' \
+                    --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
+                    --bind='home:preview-up' --bind='end:preview-down' \
+                    --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
+                    --bind='alt-w:toggle-preview-wrap' \
+                    --bind="alt-bs:toggle-preview" \
+                    --preview-window="right:89:noborder" \
+                    --preview=$view \
+                    --bind="enter:execute($local_view)"
+        done
+    fi
+}
+zle -N git_file_in_branch_history
 
 
 function sfet() {
@@ -621,7 +706,7 @@ function stag() {
         echo " - Tag required."
         return 1
     fi
-    local cmd="git tag -a $1 -m \"$1\" && git push --tags"
+    local cmd="git tag -a $1 -m \"$1\" && git push --tags && git fetch --tags"
     echo " -> $cmd"
     echo "$cmd" | zsh
 
@@ -654,8 +739,8 @@ function drop_this_branch_now() {
         echo " ! Cannot delete MASTER branch"
         return 1
     fi
-        echo " ! Cannot delete DEVELOP branch"
     if [ "$branch" = "develop" ]
+        echo " ! Cannot delete DEVELOP branch"
     then
         return 1
     fi
@@ -677,6 +762,7 @@ bindkey "\e^q" git_checkout_tag
 
 bindkey "^[Q" git_fetch_branch
 bindkey "^[S" git_delete_branch
+bindkey "^[D" git_file_in_branch_history
 
 bindkey "^s" git_file_history
 bindkey "\es" git_branch_history
