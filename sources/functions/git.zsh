@@ -776,7 +776,7 @@ bindkey "\e^q" git_checkout_tag
 
 bindkey "^[Q" git_fetch_branch
 bindkey "^[S" git_delete_branch
-bindkey "^[D" git_file_in_branch_history
+bindkey "^[A" git_file_in_branch_history
 
 bindkey "^s" git_file_history
 bindkey "\es" git_branch_history
