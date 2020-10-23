@@ -270,6 +270,7 @@ git_file_history() {
                     --preview="$LISTER_FILE --terminal-width=\$FZF_PREVIEW_COLUMNS {}" \
                 | sort | sed -z 's/\n/ /g' | awk '{$1=$1};1'
             )"
+
             if [[ "$file" == "" ]]; then
                 zle redisplay
                 zle reset-prompt
@@ -277,13 +278,24 @@ git_file_history() {
                 return 0
             fi
 
+            local ext="$(echo "$file" | xargs -I% basename % | grep --color=never -Po '(?<=.\.)([^\.]+)$')"
+
             if [ $OS_TYPE = "BSD" ]; then
-                local cmd="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -l bash -c $diff_file $file' | $DELTA --width $COLUMNS | less -R"
+                local diff_view="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -l bash -c $diff_file $file' | $DELTA --width $COLUMNS | less -R"
             else
-                local cmd="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -l bash -c $diff_file $file' | $DELTA --paging='always'"
+                local diff_view="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -l bash -c $diff_file $file' | $DELTA --paging='always'"
             fi
 
-            eval "git log --color=always --graph --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' $file $@" | \
+            if [ $OS_TYPE = "BSD" ]; then
+                local file_view="echo {} | cut -d ' ' -f 1 | $DELTA --width $COLUMNS | less -R"
+            else
+                local file_view="echo {} | cut -d ' ' -f 1 | xargs -I^^ git show ^^:./$file | $LISTER_FILE --paging=always"
+                if [ $ext != "" ]; then
+                    local file_view="$file_view --language $ext"
+                fi
+            fi
+
+            eval "git log --color=always --graph --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' $file $@"  | sed -r 's%^(\*\s+)%%g' | \
                 fzf \
                     --info='inline' --ansi --extended --filepath-word --no-mouse \
                     --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
@@ -294,8 +306,8 @@ git_file_history() {
                     --bind='alt-w:toggle-preview-wrap' \
                     --bind="alt-bs:toggle-preview" \
                     --preview-window="right:89:noborder" \
-                    --preview=$cmd \
-                    --bind="enter:execute($cmd)"
+                    --preview=$diff_view \
+                    --bind="enter:execute($file_view)"
         done
     fi
 }
@@ -570,26 +582,28 @@ git_file_in_branch_history() {
                     --preview="$LISTER_FILE --terminal-width=\$FZF_PREVIEW_COLUMNS {}" \
                 | sort | sed -z 's/\n/ /g' | awk '{$1=$1};1'
             )"
+
             if [[ "$file" == "" ]]; then
                 zle redisplay
                 zle reset-prompt
                 typeset -f zle-line-init >/dev/null && zle zle-line-init
                 return 0
             fi
-            local ext="$(echo "$file" | xargs -I% basename % | grep --color=never -Po '(?<=\.)([^\.]+)$')"
+
+            local ext="$(echo "$file" | xargs -I% basename % | grep --color=never -Po '(?<=.\.)([^\.]+)$')"
 
             if [ $OS_TYPE = "BSD" ]; then
-                local view="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -l bash -c $diff_file $file' | $DELTA --width $COLUMNS | less -R"
+                local diff_view="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -l bash -c $diff_file $file' | $DELTA --width $COLUMNS | less -R"
             else
-                local view="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -l bash -c $diff_file $file' | $DELTA --paging='always'"
+                local diff_view="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -l bash -c $diff_file $file' | $DELTA --paging='always'"
             fi
 
             if [ $OS_TYPE = "BSD" ]; then
-                local local_view="echo {} | cut -d ' ' -f 1 | $DELTA --width $COLUMNS | less -R"
+                local file_view="echo {} | cut -d ' ' -f 1 | $DELTA --width $COLUMNS | less -R"
             else
-                local local_view="echo {} | cut -d ' ' -f 1 | xargs -I^^ git show ^^:./$file | $LISTER_FILE --paging=always"
+                local file_view="echo {} | cut -d ' ' -f 1 | xargs -I^^ git show ^^:./$file | $LISTER_FILE --paging=always"
                 if [ $ext != "" ]; then
-                    local local_view="$local_view --language $ext"
+                    local file_view="$file_view --language $ext"
                 fi
             fi
 
@@ -605,8 +619,8 @@ git_file_in_branch_history() {
                     --bind='alt-w:toggle-preview-wrap' \
                     --bind="alt-bs:toggle-preview" \
                     --preview-window="right:89:noborder" \
-                    --preview=$view \
-                    --bind="enter:execute($local_view)"
+                    --preview=$diff_view \
+                    --bind="enter:execute($file_view)"
         done
     fi
 }
