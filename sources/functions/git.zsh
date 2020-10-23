@@ -257,7 +257,7 @@ git_file_history() {
         while true; do
             local file="$(git ls-files | \
                 fzf \
-                    --prompt="file log > " \
+                    --prompt="file log (all) > " \
                     --info='inline' --ansi --extended --filepath-word --no-mouse \
                     --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
                     --bind='esc:cancel' \
@@ -326,7 +326,7 @@ git_checkout_tag() {
 
         local commit="$(echo "$latest" | zsh $GIT_LIST_TAGS | \
             fzf \
-                --prompt="goto > " \
+                --prompt="-> tag > " \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
                 --bind='esc:cancel' \
@@ -419,7 +419,7 @@ git_delete_branch() {
         local branches="$(git ls-remote -h origin | sed -r 's%^[a-f0-9]{40}\s+refs/heads/%%g' | sort | \
             fzf \
                 --multi \
-                --prompt="delete > " \
+                --prompt="rm > " \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
                 --bind='esc:cancel' \
@@ -461,7 +461,7 @@ git_checkout_branch() {
         local branch="$(zsh $GIT_LIST_BRANCHES_EXCEPT_THIS | \
             fzf \
                 --multi \
-                --prompt="goto > " \
+                --prompt="-> branch > " \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
                 --bind='esc:cancel' \
@@ -507,7 +507,7 @@ git_checkout_commit() {
 
         local result="$(git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' --first-parent $branch | \
             fzf \
-                --prompt="goto > " \
+                --prompt="-> hash > " \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
                 --bind='esc:cancel' \
@@ -550,7 +550,7 @@ git_file_in_branch_history() {
             local cmd="echo {} | cut -d ' ' -f 1 | xargs -I% git diff % | $DELTA --paging='always'"
         fi
 
-        local branch="$(zsh $GIT_LIST_BRANCHES | \
+        local branch="$(zsh $GIT_LIST_BRANCHES | sort | \
             fzf \
                 --multi \
                 --prompt="branch file log > " \
@@ -625,6 +625,53 @@ git_file_in_branch_history() {
     fi
 }
 zle -N git_file_in_branch_history
+
+
+git_merge_branch() {
+    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
+        if [ $OS_TYPE = "BSD" ]; then
+            local cmd="echo {} | cut -d ' ' -f 1 | $DELTA --width $COLUMNS | less -R"
+        else
+            local cmd="echo {} | cut -d ' ' -f 1 | xargs -I% git diff % | $DELTA --paging='always'"
+        fi
+
+        local branch="$(zsh $GIT_LIST_BRANCHES_EXCEPT_THIS | \
+            fzf \
+                --multi \
+                --prompt="merge > " \
+                --info='inline' --ansi --extended --filepath-word --no-mouse \
+                --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
+                --bind='esc:cancel' \
+                --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
+                --bind='home:preview-up' --bind='end:preview-down' \
+                --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
+                --bind='alt-w:toggle-preview-wrap' \
+                --bind="alt-bs:toggle-preview" \
+                --preview-window="right:89:noborder" \
+                --preview="$cmd" | cut -d ' ' -f 1
+        )"
+
+        if [[ "$branch" == "" ]]; then
+            zle reset-prompt
+            return 0
+        else
+            if [[ "$BUFFER" != "" ]]; then
+                LBUFFER="$BUFFER $branch"
+                local ret=$?
+                zle redisplay
+                typeset -f zle-line-init >/dev/null && zle zle-line-init
+                return $ret
+            else
+                local cmd="git fetch origin $branch 2>/dev/null 1>/dev/null && git merge $branch"
+                echo $cmd
+                echo $cmd | zsh
+                zle reset-prompt
+                return 0
+            fi
+        fi
+    fi
+}
+zle -N git_merge_branch
 
 
 function sfet() {
@@ -766,20 +813,22 @@ alias gmm='git commit -m'
 alias gdd='git diff --name-only'
 alias gdr='git ls-files --modified `git rev-parse --show-toplevel`'
 
-bindkey "^a" git_add_created
-bindkey "\ea" git_add_changed
-bindkey "\e^a" git_restore_changed
-
-bindkey "^q" git_checkout_commit
-bindkey "\eq" git_checkout_branch
-bindkey "\e^q" git_checkout_tag
-
-bindkey "^[Q" git_fetch_branch
-bindkey "^[S" git_delete_branch
-bindkey "^[A" git_file_in_branch_history
-
-bindkey "^s" git_file_history
-bindkey "\es" git_branch_history
-bindkey "\e^s" git_all_history
-
 # bindkey "^[^M" accept-and-hold # Esc-Enter
+
+bindkey "^a"   git_add_created
+bindkey "\ea"  git_add_changed
+bindkey "^[A"  git_restore_changed
+# bindkey "\e^a"
+
+bindkey "^s"   git_checkout_tag
+bindkey "\es"  git_checkout_branch
+bindkey "^[S"  git_merge_branch
+bindkey "\e^s" git_checkout_commit
+
+bindkey "^q"   git_file_in_branch_history
+bindkey "\eq"  git_branch_history
+bindkey "^[Q"  git_all_history
+bindkey "\e^q" git_file_history
+
+bindkey "\ef"  git_fetch_branch
+bindkey "^[F"  git_delete_branch
