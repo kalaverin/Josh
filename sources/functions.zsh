@@ -89,12 +89,13 @@ ps_widget() {
             ps -o %cpu,%mem,pid,command -A | grep -v "zsh" | awk '{$1=$1};1' | \
             awk 'NR<2{print $0;next}{print $0| "sort -rk 1,2"}' | \
             tr -s ' ' | sed 's/ /\t/g' | sed 's/\t/ /g4' | \
-            fzf +x \
-                --pointer=" " --marker="*" \
-                --info='inline' --reverse --bind 'esc:cancel' --ansi \
-                --header-lines=1 --multi --nth 4.. --height 40% \
-                --bind='ctrl-r:toggle-all' --bind='ctrl-s:toggle-sort' | \
-            cut -f 3 | sed -z 's/\n/ /g' | awk '{$1=$1};1'
+            fzf \
+                --prompt="select:" \
+                --multi --info='inline' --ansi --extended \
+                --filepath-word --no-mouse --tiebreak=length,index \
+                --pointer=">" --marker="+" --margin=0,0,0,0 \
+                --reverse --header-lines=1 --nth 4.. --height 40% \
+            | cut -f 3 | sed -z 's/\n/ /g' | awk '{$1=$1};1'
         )"
         if [[ "$pids" != "" ]]; then
             LBUFFER="${LBUFFER}$pids"
@@ -110,17 +111,19 @@ ps_widget() {
 }
 zle -N ps_widget
 
+
 term_widget() {
     local pids="$(
         ps -o %cpu,%mem,pid,command -A | grep -v "zsh" | awk '{$1=$1};1' | \
         awk 'NR<2{print $0;next}{print $0| "sort -rk 1,2"}' | \
         tr -s ' ' | sed 's/ /\t/g' | sed 's/\t/ /g4' | \
-        fzf +x \
-            --pointer=" " --marker="*" \
-            --no-info --reverse --bind 'esc:cancel' --ansi \
-            --header-lines=1 --multi --nth 4.. --height 40% \
-            --bind='ctrl-r:toggle-all' --bind='ctrl-s:toggle-sort' | \
-        cut -f 3 | sed -z 's/\n/ /g' | awk '{$1=$1};1'
+        fzf \
+            --prompt="term:" \
+            --multi --info='inline' --ansi --extended \
+            --filepath-word --no-mouse --tiebreak=length,index \
+            --pointer=">" --marker="+" --margin=0,0,0,0 \
+            --reverse --header-lines=1 --nth 4.. --height 40% \
+        | cut -f 3 | sed -z 's/\n/ /g' | awk '{$1=$1};1'
     )"
     while true; do
         if [[ "$pids" != "" ]]; then
@@ -140,11 +143,12 @@ kill_widget() {
         awk 'NR<2{print $0;next}{print $0| "sort -rk 1,2"}' | \
         tr -s ' ' | sed 's/ /\t/g' | sed 's/\t/ /g4' | \
         fzf +x \
-            --pointer=" " --marker="*" \
-            --no-info --reverse --bind 'esc:cancel' --ansi \
-            --header-lines=1 --multi --nth 4.. --height 40% \
-            --bind='ctrl-r:toggle-all' --bind='ctrl-s:toggle-sort' | \
-        cut -f 3 | sed -z 's/\n/ /g' | awk '{$1=$1};1'
+            --prompt="kill:" \
+            --multi --info='inline' --ansi --extended \
+            --filepath-word --no-mouse --tiebreak=length,index \
+            --pointer=">" --marker="+" --margin=0,0,0,0 \
+            --reverse --header-lines=1 --nth 4.. --height 40% \
+        | cut -f 3 | sed -z 's/\n/ /g' | awk '{$1=$1};1'
     )"
     while true; do
         if [[ "$pids" != "" ]]; then
