@@ -728,8 +728,7 @@ function spll() {
 
 function sfet() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
-    if [ "$branch" = "" ]
-    then
+    if [ "$branch" = "" ]; then
         # echo " - Branch required."
         return 1
     fi
@@ -740,8 +739,7 @@ function sfet() {
 
 function sall() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
-    if [ "$branch" = "" ]
-    then
+    if [ "$branch" = "" ]; then
         echo " - Branch required."
         return 1
     fi
@@ -759,8 +757,7 @@ function spsh() {
 }
 
 function smer() {
-    if [ "$1" = "" ]
-    then
+    if [ "$1" = "" ]; then
         echo " - Branch name required."
         return 1
     fi
@@ -777,8 +774,7 @@ function sfm() {
 }
 
 function sbrm() {
-    if [ "$1" = "" ]
-    then
+    if [ "$1" = "" ]; then
         echo " - Branch name required."
         return 1
     fi
@@ -788,8 +784,7 @@ function sbrm() {
 }
 
 function sbmv() {
-    if [ "$1" = "" ]
-    then
+    if [ "$1" = "" ]; then
         echo " - Branch name required."
         return 1
     fi
@@ -800,8 +795,7 @@ function sbmv() {
 }
 
 function stag() {
-    if [ "$1" = "" ]
-    then
+    if [ "$1" = "" ]; then
         echo " - Tag required."
         return 1
     fi
@@ -812,8 +806,7 @@ function stag() {
 }
 
 function stag-() {
-    if [ "$1" = "" ]
-    then
+    if [ "$1" = "" ]; then
         echo " - Tag required."
         return 1
     fi
@@ -823,24 +816,28 @@ function stag-() {
 }
 
 function sck() {
-    if [ "$1" = "" ]
-    then
+    if [ "$1" = "" ]; then
         echo " ! task name needed"
         return 1
     fi
-    git checkout -b $1 2> /dev/null || git checkout $1
+    local match=`echo "$1" | grep -Po '^([0-9])'`
+    if [ "$1" = "" ]; then
+        local branch="$1"
+    else
+        echo " - Branch cannot be starting with digit."
+        return 1
+    fi
+    git checkout -b $branch 2> /dev/null || git checkout $branch
 }
 
 function drop_this_branch_now() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
     echo ">>$branch<<"
-    if [ "$branch" = "master" ]
-    then
+    if [ "$branch" = "master" ]; then
         echo " ! Cannot delete MASTER branch"
         return 1
     fi
-    if [ "$branch" = "develop" ]
-    then
+    if [ "$branch" = "develop" ]; then
         echo " ! Cannot delete DEVELOP branch"
         return 1
     fi
