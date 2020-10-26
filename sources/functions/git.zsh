@@ -419,7 +419,7 @@ git_fetch_branch() {
             local cmd="$track && git fetch origin $branches"
 
             if [[ $branches != *" "* ]]; then
-                local cmd="$cmd && git checkout $branches"
+                local cmd="$cmd"
             fi
 
             if [[ "$BUFFER" != "" ]]; then
@@ -673,7 +673,7 @@ git_merge_branch() {
             local cmd="echo {} | cut -d ' ' -f 1 | xargs -I% git diff % | $DELTA --paging='always'"
         fi
 
-        local branch="$(zsh $GIT_LIST_BRANCHES_EXCEPT_THIS | \
+        local branch="$(zsh $GIT_LIST_BRANCHES | \
             fzf \
                 --multi \
                 --prompt="merge:" \
@@ -833,14 +833,15 @@ function sck() {
 
 function drop_this_branch_now() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
+    echo ">>$branch<<"
     if [ "$branch" = "master" ]
     then
         echo " ! Cannot delete MASTER branch"
         return 1
     fi
     if [ "$branch" = "develop" ]
-        echo " ! Cannot delete DEVELOP branch"
     then
+        echo " ! Cannot delete DEVELOP branch"
         return 1
     fi
     git reset --hard && (gcd 2> /dev/null || gcm) && git branch -D $branch && git push origin --delete $branch
