@@ -700,7 +700,7 @@ git_merge_branch() {
                 typeset -f zle-line-init >/dev/null && zle zle-line-init
                 return $ret
             else
-                local cmd="git fetch origin $branch 2>/dev/null 1>/dev/null && git merge $branch"
+                local cmd="git fetch origin $branch 2>/dev/null 1>/dev/null && git merge origin/$branch"
                 echo $cmd
                 echo $cmd | zsh
                 zle reset-prompt
