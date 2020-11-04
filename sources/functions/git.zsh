@@ -743,8 +743,7 @@ function sall() {
         echo " - Branch required."
         return 1
     fi
-    sfet $branch
-    local cmd="git reset --hard origin/$branch"
+    local cmd="git fetch origin $branch && git fetch --tags --all && git reset --hard origin/$branch && git pull origin $branch"
     echo " -> $cmd"
     echo "$cmd" | zsh
 }
@@ -827,12 +826,13 @@ function sck() {
         echo " - Branch cannot be starting with digit."
         return 1
     fi
-    git checkout -b $branch 2> /dev/null || git checkout $branch
+    local cmd="git checkout -b $branch 2> /dev/null || git checkout $branch"
+    echo " -> $cmd"
+    echo "$cmd" | zsh
 }
 
 function drop_this_branch_now() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
-    echo ">>$branch<<"
     if [ "$branch" = "master" ]; then
         echo " ! Cannot delete MASTER branch"
         return 1
@@ -841,9 +841,10 @@ function drop_this_branch_now() {
         echo " ! Cannot delete DEVELOP branch"
         return 1
     fi
-    git reset --hard && (gcd 2> /dev/null || gcm) && git branch -D $branch && git push origin --delete $branch
+    local cmd="git reset --hard && (gcd 2> /dev/null || gcm) && git branch -D $branch && git push origin --delete $branch"
+    echo " -> $cmd"
+    echo "$cmd" | zsh
 }
-
 
 alias gmm='git commit -m'
 alias gdd='git diff --name-only'
