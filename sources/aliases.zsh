@@ -74,9 +74,9 @@ function agent {
 }
 
 function sget {
-    wget -O- $* &> /dev/null
+    wget --no-check-certificate -O- $* &> /dev/null
 }
 
 function nget {
-    wget -O/dev/null $*
+    wget --no-check-certificate -O/dev/null $*
 }
