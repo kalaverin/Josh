@@ -130,14 +130,14 @@ git_restore_changed() {
         )"
 
         if [[ "$BUFFER" != "" ]]; then
-            local prefix="$BUFFER && "
+            local prefix="$BUFFER && git"
         else
-            local prefix=""
+            local prefix="git"
         fi
 
         if [[ "$files" != "" ]]; then
             # LBUFFER="git restore $files"
-            LBUFFER="$prefixgit checkout -- $files"
+            LBUFFER="$prefix checkout -- $files"
             local ret=$?
             zle redisplay
             typeset -f zle-line-init >/dev/null && zle zle-line-init
