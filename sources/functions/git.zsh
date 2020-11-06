@@ -137,7 +137,7 @@ git_restore_changed() {
 
         if [[ "$files" != "" ]]; then
             # LBUFFER="git restore $files"
-            LBUFFER="$prefix git checkout -- $files"
+            LBUFFER="$prefixgit checkout -- $files"
             local ret=$?
             zle redisplay
             typeset -f zle-line-init >/dev/null && zle zle-line-init
@@ -760,14 +760,14 @@ function smer() {
         echo " - Branch name required."
         return 1
     fi
-    local cmd="git merge origin $1"
+    local cmd="git merge origin/$1"
     echo " -> $cmd"
     echo "$cmd" | zsh
 }
 
 function sfm() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
-    local cmd="git fetch origin $branch && git merge $branch"
+    local cmd="git fetch origin $branch && git merge/$branch"
     echo " -> $cmd"
     echo "$cmd" | zsh
 }
@@ -831,7 +831,7 @@ function sck() {
     echo "$cmd" | zsh
 }
 
-function drop_this_branch_now() {
+function drop_this_branch_right_now() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
     if [ "$branch" = "master" ]; then
         echo " ! Cannot delete MASTER branch"
@@ -841,9 +841,10 @@ function drop_this_branch_now() {
         echo " ! Cannot delete DEVELOP branch"
         return 1
     fi
-    local cmd="git reset --hard && (gcd 2> /dev/null || gcm) && git branch -D $branch && git push origin --delete $branch"
+    local cmd="git reset --hard && (git checkout develop 2>/dev/null 1>/dev/null 2> /dev/null || git checkout master 2>/dev/null 1>/dev/null) && git branch -D $branch"
     echo " -> $cmd"
     echo "$cmd" | zsh
+    echo " => git push origin --delete $branch"
 }
 
 alias gmm='git commit -m'
