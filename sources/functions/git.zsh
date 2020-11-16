@@ -767,7 +767,7 @@ function smer() {
 
 function sfm() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
-    local cmd="git fetch origin $branch && git merge/$branch"
+    local cmd="git fetch origin $branch && git merge origin/$branch"
     echo " -> $cmd"
     echo "$cmd" | zsh
 }
