@@ -429,8 +429,8 @@ git_fetch_branch() {
                 typeset -f zle-line-init >/dev/null && zle zle-line-init
                 return $ret
             else
-                echo $cmd
-                echo $cmd | zsh
+                echo " -> $cmd"
+                eval ${cmd}
                 zle reset-prompt
                 return 0
             fi
@@ -701,8 +701,8 @@ git_merge_branch() {
                 return $ret
             else
                 local cmd="git fetch origin $branch 2>/dev/null 1>/dev/null && git merge origin/$branch"
-                echo $cmd
-                echo $cmd | zsh
+                echo " -> $cmd"
+                eval ${cmd}
                 zle reset-prompt
                 return 0
             fi
@@ -716,14 +716,14 @@ function sfet() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
     local cmd="git fetch origin $branch"
     echo " -> $cmd"
-    echo "$cmd" | zsh
+    eval ${cmd}
 }
 
 function spll() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
     local cmd="git pull origin $branch"
     echo " -> $cmd"
-    echo "$cmd" | zsh
+    eval ${cmd}
 }
 
 function sfet() {
@@ -734,7 +734,7 @@ function sfet() {
     fi
     local cmd="git fetch origin $branch && git fetch --tags --all"
     echo " -> $cmd"
-    echo "$cmd" | zsh
+    eval ${cmd}
 }
 
 function sall() {
@@ -745,14 +745,14 @@ function sall() {
     fi
     local cmd="git fetch origin $branch && git fetch --tags --all && git reset --hard origin/$branch && git pull origin $branch"
     echo " -> $cmd"
-    echo "$cmd" | zsh
+    eval ${cmd}
 }
 
 function spsh() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
     local cmd="git push origin $branch"
     echo " -> $cmd"
-    echo "$cmd" | zsh
+    eval ${cmd}
 }
 
 function smer() {
@@ -762,14 +762,14 @@ function smer() {
     fi
     local cmd="git merge origin/$1"
     echo " -> $cmd"
-    echo "$cmd" | zsh
+    eval ${cmd}
 }
 
 function sfm() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
     local cmd="git fetch origin $branch && git merge origin/$branch"
     echo " -> $cmd"
-    echo "$cmd" | zsh
+    eval ${cmd}
 }
 
 function sbrm() {
@@ -779,7 +779,7 @@ function sbrm() {
     fi
     local cmd="git branch -D $1 && git push origin --delete $1"
     echo " -> $cmd"
-    echo "$cmd" | zsh
+    eval ${cmd}
 }
 
 function sbmv() {
@@ -790,7 +790,7 @@ function sbmv() {
     local branch="${2:-`sh -c "$GIT_BRANCH"`}"
     local cmd="git branch -m $branch $1 && git push origin :$branch $1"
     echo " -> $cmd"
-    echo "$cmd" | zsh
+    eval ${cmd}
 }
 
 function stag() {
@@ -800,7 +800,7 @@ function stag() {
     fi
     local cmd="git tag -a $1 -m \"$1\" && git push --tags && git fetch --tags"
     echo " -> $cmd"
-    echo "$cmd" | zsh
+    eval ${cmd}
 
 }
 
@@ -811,7 +811,7 @@ function stag-() {
     fi
     local cmd="git tag -d \"$1\" && git push --delete origin \"$1\""
     echo " -> $cmd"
-    echo "$cmd" | zsh
+    eval ${cmd}
 }
 
 function sck() {
@@ -828,7 +828,7 @@ function sck() {
     fi
     local cmd="git checkout -b $branch 2> /dev/null || git checkout $branch"
     echo " -> $cmd"
-    echo "$cmd" | zsh
+    eval ${cmd}
 }
 
 function drop_this_branch_right_now() {
@@ -843,8 +843,23 @@ function drop_this_branch_right_now() {
     fi
     local cmd="git reset --hard && (git checkout develop 2>/dev/null 1>/dev/null 2> /dev/null || git checkout master 2>/dev/null 1>/dev/null) && git branch -D $branch"
     echo " -> $cmd"
-    echo "$cmd" | zsh
+    eval ${cmd}
     echo " => git push origin --delete $branch"
+}
+
+function DROP_THIS_BRANCH_RIGHT_NOW() {
+    local branch="${1:-`sh -c "$GIT_BRANCH"`}"
+    if [ "$branch" = "master" ]; then
+        echo " ! Cannot delete MASTER branch"
+        return 1
+    fi
+    if [ "$branch" = "develop" ]; then
+        echo " ! Cannot delete DEVELOP branch"
+        return 1
+    fi
+    local cmd="git reset --hard && (git checkout develop 2>/dev/null 1>/dev/null 2> /dev/null || git checkout master 2>/dev/null 1>/dev/null) && git branch -D $branch && git push origin --delete $branch"
+    echo " -> $cmd"
+    eval ${cmd}
 }
 
 alias gmm='git commit -m'
