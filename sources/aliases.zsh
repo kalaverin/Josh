@@ -12,7 +12,15 @@ alias ag='ag --noaffinity --ignore .git/ --ignore node_modules/ --ignore "lib/py
 vact() {
     source $1/bin/activate
 }
-alias dact='deactivate'
+
+function dact {
+    if [ "$VIRTUAL_ENV" != "" ]
+    then
+        local cwd=`pwd`
+        local cmd="cd $VIRTUAL_ENV/bin && source activate && deactivate && cd $cwd"
+        eval ${cmd}
+    fi
+}
 
 alias -g I='| grep -i'
 alias -g E='| grep -iv'
