@@ -2,6 +2,19 @@ pir() {
     cat $1 | xargs -n 1 pip install
 }
 
+vact() {
+    source $1/bin/activate
+}
+
+function dact {
+    if [ "$VIRTUAL_ENV" != "" ]
+    then
+        local cwd=`pwd`
+        local cmd="cd $VIRTUAL_ENV/bin && source activate && deactivate && cd $cwd"
+        eval ${cmd}
+    fi
+}
+
 function ven {
     local name="${1:-main}"
     local last_path="`pwd`"
@@ -9,6 +22,7 @@ function ven {
     vact $name
     cd $last_path
 }
+
 function tenv {
     local vers="2.7"
 

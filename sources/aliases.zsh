@@ -9,19 +9,6 @@ alias tt='tail -f -n 1000'
 
 alias ag='ag --noaffinity --ignore .git/ --ignore node_modules/ --ignore "lib/python*/site-packages/" --ignore "__snapshots__/" --ignore "*.pyc" --ignore "*.po" --ignore "*.svg" --literal --stats -W 140'
 
-vact() {
-    source $1/bin/activate
-}
-
-function dact {
-    if [ "$VIRTUAL_ENV" != "" ]
-    then
-        local cwd=`pwd`
-        local cmd="cd $VIRTUAL_ENV/bin && source activate && deactivate && cd $cwd"
-        eval ${cmd}
-    fi
-}
-
 alias -g I='| grep -i'
 alias -g E='| grep -iv'
 alias -g LL="2>&1 | less"
