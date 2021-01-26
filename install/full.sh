@@ -9,7 +9,6 @@ ZSH=`sh -c "echo $ZSH"`
 ZSH=`realpath $ZSH`
 export ZSH="$ZSH"
 
-# JOSH_USER_URI="https://goo.gl/1MBc9t"
 JOSH_USER_URI="https://raw.githubusercontent.com/YaakovTooth/Josh/master/install/part.sh?$RANDOM"
 DEB_FDF="https://github.com/sharkdp/fd/releases/download/v8.1.1/fd_8.1.1_amd64.deb"
 DEB_BAT="https://github.com/sharkdp/bat/releases/download/v0.15.4/bat_0.15.4_amd64.deb"
