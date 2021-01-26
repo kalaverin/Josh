@@ -125,8 +125,8 @@ fi
 if [ `which fzf` ]; then
     echo " * using fzf: `which fzf`"
 else
+    echo " + deploy fzf: $CUSTOM_DIR_BIN/fzf"
     if [ ! -d $CUSTOM_DIR_BIN ]; then
-        echo " + deploy fzf: $CUSTOM_DIR_BIN/fzf"
         mkdir -p $CUSTOM_DIR_BIN
     else
         if [ -f $CUSTOM_DIR_BIN/fzf ]; then
@@ -139,6 +139,11 @@ else
     $GIT_CLONE https://github.com/junegunn/fzf.git $tempdir && $tempdir/install --completion --key-bindings --update-rc --bin && cp -f $tempdir/bin/fzf $CUSTOM_DIR_BIN/fzf && rm -rf $tempdir
     if [ $? -gt 0 ]; then
         echo " + failed fzf: $CUSTOM_DIR_BIN/fzf"
+    fi
+
+    $READ_URI https://beyondgrep.com/ack-v3.4.0 > ~/$CUSTOM_DIR_BIN/ack && chmod 750 ~/$CUSTOM_DIR_BIN/*
+    if [ $? -gt 0 ]; then
+        echo " + failed ack: $CUSTOM_DIR_BIN/ack"
     fi
 fi
 
@@ -168,7 +173,6 @@ else
     git config --global core.pager "delta --commit-style='yellow ul' --commit-decoration-style='' --file-style='cyan ul' --file-decoration-style='' --hunk-style normal --zero-style='dim syntax' --24-bit-color='always' --minus-style='syntax #330000' --plus-style='syntax #002200' --file-modified-label='M' --file-removed-label='D' --file-added-label='A' --file-renamed-label='R' --line-numbers-left-format='{nm:^4}' --line-numbers-minus-style='#aa2222' --line-numbers-zero-style='#505055' --line-numbers-plus-style='#229922' --line-numbers --navigate"
 fi
 
-
 if [ $BACKUP_DIR_JOSH ]; then
     if [ -d $BACKUP_DIR_JOSH ]; then
         echo " * backup removed: $BACKUP_DIR_JOSH"
@@ -191,6 +195,22 @@ else
             echo " + nano config: $THIS/.nanorc"
         fi
     fi
+fi
+
+if [ -f "$THIS/.ripgrep" ]; then
+    echo " * nano config: $THIS/.ripgrep"
+else
+    echo '*.js' >> $THIS/.ripgrep
+    echo '*.min.css' >> $THIS/.ripgrep
+    echo '*.po' >> $THIS/.ripgrep
+    echo '*.pyc' >> $THIS/.ripgrep
+    echo '*.svg' >> $THIS/.ripgrep
+    echo '.eggs/' >> $THIS/.ripgrep
+    echo '.git/' >> $THIS/.ripgrep
+    echo '__snapshots__/' >> $THIS/.ripgrep
+    echo 'lib/python*/site-packages/' >> $THIS/.ripgrep
+    echo 'node_modules/' >> $THIS/.ripgrep
+    echo " + nano config: $THIS/.ripgrep"
 fi
 
 cd ~

@@ -57,7 +57,7 @@ fi
 if [ -n "$(uname | grep -i freebsd)" ]; then
     echo " + os: freebsd"
     su="su -m root -c"
-    depends_command="pkg install -y fzf zsh git gnugrep py37-httpie jq pv bat fd-find gsed the_silver_searcher gnuls git-delta coreutils"
+    depends_command="pkg install -y fzf zsh git gnugrep py37-httpie jq pv bat fd-find gsed the_silver_searcher gnuls git-delta coreutils cargo"
 
 elif [ -n "$(uname | grep -i darwin)" ]; then
     runner="sh -c"
@@ -83,12 +83,12 @@ elif [ -n "$(uname | grep -i linux)" ]; then
     if [ -n "$(uname -v | grep -i debian)" ]; then
         echo " + os: debian"
         su="su -l root -c"
-        depends_command="apt-get update --yes --quiet || true && apt-get install --yes --quiet --no-remove tree zsh git python3 python3-pip httpie jq pv"
+        depends_command="apt-get update --yes --quiet || true && apt-get install --yes --quiet --no-remove tree zsh git python3 python3-pip httpie jq pv cargo"
 
     elif [ -n "$(uname -v | grep -i ubuntu)" ]; then
         echo " + os: ubuntu"
         su="su -l root -c"
-        depends_command="apt-get update --yes --quiet || true && apt-get install --yes --quiet --no-remove tree zsh git python3 python3-pip httpie jq pv"
+        depends_command="apt-get update --yes --quiet || true && apt-get install --yes --quiet --no-remove tree zsh git python3 python3-pip httpie jq pv cargo"
     else
         echo " - unsupported platform: $(uname -v)"
         return 1
