@@ -870,8 +870,8 @@ alias gdr='git ls-files --modified `git rev-parse --show-toplevel`'
 
 bindkey "^a"   git_add_created
 bindkey "\ea"  git_add_changed
-bindkey "^[A"  git_restore_changed
-# bindkey "\e^a"
+# bindkey "^[A"  git_restore_changed
+bindkey "\e^a" git_restore_changed
 
 bindkey "^s"   git_checkout_tag
 bindkey "\es"  git_checkout_branch
