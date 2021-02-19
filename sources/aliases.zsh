@@ -62,6 +62,11 @@ function mkcd {
     mkdir "$*" && cd "$*"
 }
 
+function tmpdir {
+    local tempdir=`mktemp -d`
+    mkdir -p "$tempdir" && cd "$tempdir"
+}
+
 kimport() {
     gpg --recv-key $1 && gpg --export $1 | apt-key add -
 }
