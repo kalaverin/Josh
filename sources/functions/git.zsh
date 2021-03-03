@@ -929,4 +929,5 @@ bindkey "^q"   git_all_history
 bindkey "\e^q" git_file_history_full
 
 bindkey "\ef"  git_fetch_branch
-bindkey "^[F"  git_delete_branch
+# bindkey "^[F"  git_delete_branch
+bindkey "\e^f"  git_delete_branch
