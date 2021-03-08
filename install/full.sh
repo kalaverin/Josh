@@ -14,6 +14,8 @@ DEB_FDF="https://github.com/sharkdp/fd/releases/download/v8.1.1/fd_8.1.1_amd64.d
 DEB_BAT="https://github.com/sharkdp/bat/releases/download/v0.15.4/bat_0.15.4_amd64.deb"
 DEB_GDL="https://github.com/dandavison/delta/releases/download/0.3.0/git-delta_0.3.0_amd64.deb"
 
+# https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 > jq static
+
 if [ -n "$(uname -v | grep -i ubuntu)" ]; then
     alias fd='fdfind'
 elif [ -n "$(uname -v | grep -i debian)" ]; then
