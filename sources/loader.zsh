@@ -7,7 +7,6 @@ source "$ZSH/custom/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 source "$ZSH/custom/plugins/zsh-syntax-highlighting-filetypes/zsh-syntax-highlighting-filetypes.zsh"
 
 source "$JOSH/sources/aliases.zsh"
-source "$JOSH/sources/httpclient.zsh"
 source "$JOSH/sources/completion.zsh"
 source "$JOSH/sources/urlencode.zsh"
 source "$JOSH/sources/functions.zsh"

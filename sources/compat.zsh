@@ -22,3 +22,28 @@ fi
 if [ -n "$(uname -v | grep -i debian)" ]; then
     alias fd='fdfind'
 fi
+
+if [ `which -p http` ]; then
+    export READ_URI="`which -p http` -FISb"
+elif [ `which -p curl` ]; then
+    export READ_URI="`which -p curl` -fsSL"
+elif [ `which -p wget` ]; then
+    export READ_URI="`which -p wget` -qO -"
+elif [ `which -p fetch` ]; then
+    export READ_URI="`which -p fetch` -qo -"
+else
+    echo ' - Need httpie, curl, wget, fetch, anything!' 1>&2
+fi
+
+if [[ "$READ_URI" != "" ]]; then
+    uri() {
+        local cmd="$READ_URI $*"
+        eval ${cmd}
+        echo " -> $cmd" 1>&2
+    }
+    urj() {
+        local cmd="$READ_URI $* | jq ."
+        eval ${cmd}
+        echo " -> $cmd" 1>&2
+    }
+fi
