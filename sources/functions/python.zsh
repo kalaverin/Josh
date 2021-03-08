@@ -53,7 +53,7 @@ function tenv {
         local pbin="/usr/bin/python$vers"
         if [ ! -f "$pbin" ]
         then
-            echo " ! not exists: $pbin"
+            echo " - not exists: $pbin" 1>&2
             return 1
         fi
 
@@ -69,7 +69,7 @@ function tenv {
             local name="$(mktemp -d XXXX)"
         fi
 
-        # echo " Go: $vers to $name"
+        # echo " Go: $vers to $name" 1>&2
         virtualenv --python=$pbin $name
         source $name/bin/activate
         cd $lwd

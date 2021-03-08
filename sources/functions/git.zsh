@@ -431,7 +431,7 @@ git_fetch_branch() {
                 typeset -f zle-line-init >/dev/null && zle zle-line-init
                 return $ret
             else
-                echo " -> $cmd"
+                echo " -> $cmd" 1>&2
                 eval ${cmd}
                 zle reset-prompt
                 return 0
@@ -703,7 +703,7 @@ git_merge_branch() {
                 return $ret
             else
                 local cmd="git fetch origin $branch 2>/dev/null 1>/dev/null && git merge origin/$branch"
-                echo " -> $cmd"
+                echo " -> $cmd" 1>&2
                 eval ${cmd}
                 zle reset-prompt
                 return 0
@@ -720,7 +720,7 @@ function spll() {
     fi
 
     local cmd="git pull origin $branch"
-    echo " -> $cmd"
+    echo " -> $cmd" 1>&2
     eval ${cmd}
 }
 
@@ -731,20 +731,20 @@ function sfet() {
     fi
 
     local cmd="git fetch origin $branch && git fetch --tags --all"
-    echo " -> $cmd"
+    echo " -> $cmd" 1>&2
     eval ${cmd}
 }
 
 function sall() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
     if [ "$branch" = "" ]; then
-        echo " - Branch required."
+        echo " - Branch required." 1>&2
         return 1
     fi
 
     is_repository_clean
     if [ $? -gt 0 ]; then
-        echo " * changes!"
+        echo " * changes!" 1>&2
         return 1
     fi
 
@@ -754,7 +754,7 @@ function sall() {
     fi
 
     local cmd="git reset --hard origin/$branch"
-    echo " -> $cmd"
+    echo " -> $cmd" 1>&2
     eval ${cmd} 2>/dev/null
 
     if [ $? -gt 0 ]; then
@@ -766,7 +766,7 @@ function sall() {
 function spsh() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
     local cmd="git push origin $branch"
-    echo " -> $cmd"
+    echo " -> $cmd" 1>&2
     eval ${cmd}
 }
 
@@ -778,113 +778,113 @@ function sfm() {
     fi
 
     local cmd="git merge origin/$branch"
-    echo " -> $cmd"
+    echo " -> $cmd" 1>&2
     eval ${cmd}
 }
 
 function sbrm() {
     if [ "$1" = "" ]; then
-        echo " - Branch name required."
+        echo " - Branch name required." 1>&2
         return 1
     fi
     local cmd="git branch -D $1 && git push origin --delete $1"
-    echo " -> $cmd"
+    echo " -> $cmd" 1>&2
     eval ${cmd}
 }
 
 function sbmv() {
     if [ "$1" = "" ]; then
-        echo " - Branch name required."
+        echo " - Branch name required." 1>&2
         return 1
     fi
     local branch="${2:-`sh -c "$GIT_BRANCH"`}"
     local cmd="git branch -m $branch $1 && git push origin :$branch $1"
-    echo " -> $cmd"
+    echo " -> $cmd" 1>&2
     eval ${cmd}
 }
 
 function stag() {
     if [ "$1" = "" ]; then
-        echo " - Tag required."
+        echo " - Tag required." 1>&2
         return 1
     fi
     local cmd="git tag -a $1 -m \"$1\" && git push --tags && git fetch --tags"
-    echo " -> $cmd"
+    echo " -> $cmd" 1>&2
     eval ${cmd}
 
 }
 
 function stag-() {
     if [ "$1" = "" ]; then
-        echo " - Tag required."
+        echo " - Tag required." 1>&2
         return 1
     fi
     local cmd="git tag -d \"$1\" && git push --delete origin \"$1\""
-    echo " -> $cmd"
+    echo " -> $cmd" 1>&2
     eval ${cmd}
 }
 
 function sck() {
     if [ "$1" = "" ]; then
-        echo " ! task name needed"
+        echo " ! task name needed" 1>&2
         return 1
     fi
     local match=`echo "$1" | grep -Po '^([0-9])'`
     if [ "$1" = "" ]; then
         local branch="$1"
     else
-        echo " - Branch name cannot be starting with digit."
+        echo " - Branch name cannot be starting with digit." 1>&2
         return 1
     fi
     local cmd="git checkout -b $branch 2> /dev/null || git checkout $branch"
-    echo " -> $cmd"
+    echo " -> $cmd" 1>&2
     eval ${cmd}
 }
 
 function drop_this_branch_right_now() {
     is_repository_clean
     if [ $? -gt 0 ]; then
-        echo " * changes!"
+        echo " * changes!" 1>&2
         return 1
     fi
 
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
     if [ "$branch" = "master" ]; then
-        echo " ! Cannot delete MASTER branch"
+        echo " ! Cannot delete MASTER branch" 1>&2
         return 1
     fi
 
     if [ "$branch" = "develop" ]; then
-        echo " ! Cannot delete DEVELOP branch"
+        echo " ! Cannot delete DEVELOP branch" 1>&2
         return 1
     fi
 
     local cmd="git reset --hard && (git checkout develop 2>/dev/null 1>/dev/null 2> /dev/null || git checkout master 2>/dev/null 1>/dev/null) && git branch -D $branch"
-    echo " -> $cmd"
+    echo " -> $cmd" 1>&2
     eval ${cmd}
-    echo " => git push origin --delete $branch"
+    echo " => git push origin --delete $branch" 1>&2
 }
 
 function DROP_THIS_BRANCH_RIGHT_NOW() {
     is_repository_clean
     if [ $? -gt 0 ]; then
-        echo " * changes!"
+        echo " * changes!" 1>&2
         return 1
     fi
 
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
     if [ "$branch" = "master" ]; then
-        echo " ! Cannot delete MASTER branch"
+        echo " ! Cannot delete MASTER branch" 1>&2
         return 1
     fi
 
     if [ "$branch" = "develop" ]; then
-        echo " ! Cannot delete DEVELOP branch"
+        echo " ! Cannot delete DEVELOP branch" 1>&2
         return 1
     fi
 
     local cmd="git reset --hard && (git checkout develop 2>/dev/null 1>/dev/null 2> /dev/null || git checkout master 2>/dev/null 1>/dev/null) && git branch -D $branch && git push origin --delete $branch"
-    echo " -> $cmd"
+    echo " -> $cmd" 1>&2
     eval ${cmd}
 }
 
@@ -900,7 +900,7 @@ function chdir_to_setupcfg {
     if [ ! -f 'setup.cfg' ]; then
         local root=`cat "$GIT_SEARCH_SETUPCFG" | zsh`
         if [ "$root" = "" ]; then
-            echo " - setup.cfg not found in $cwd"
+            echo " - setup.cfg not found in $cwd" 1>&2
             return 1
         fi
         cd $root
