@@ -6,6 +6,7 @@ alias cp='cp -iR'
 alias rm='rm'
 alias ps='ps'
 alias tt='tail -f -n 1000'
+alias tate='truncate -s 0'
 
 alias ag='ag -C1 --noaffinity --path-to-ignore ~/.ignore --stats --smart-case --width 140'
 
