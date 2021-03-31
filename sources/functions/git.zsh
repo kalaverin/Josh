@@ -918,10 +918,10 @@ bindkey "\ea"  git_add_changed
 # bindkey "^[A"  git_restore_changed
 bindkey "\e^a" git_restore_changed
 
-bindkey "^s"   git_checkout_tag
+bindkey "^s"   git_checkout_commit
 bindkey "\es"  git_checkout_branch
 bindkey "^[S"  git_merge_branch
-bindkey "\e^s" git_checkout_commit
+bindkey "\e^s" git_checkout_tag
 
 bindkey "\eq"  git_branch_history
 bindkey "^[Q"  git_file_history
