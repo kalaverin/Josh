@@ -200,7 +200,7 @@ else
 fi
 
 if [ -f "$GREP_IGNORE_FILE" ]; then
-    echo " * nano config: $GREP_IGNORE_FILE"
+    echo " * grep config: $GREP_IGNORE_FILE"
 else
     echo '*.js' >> $GREP_IGNORE_FILE
     echo '*.min.css' >> $GREP_IGNORE_FILE
