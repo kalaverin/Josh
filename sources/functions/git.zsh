@@ -744,7 +744,6 @@ function sall() {
 
     is_repository_clean
     if [ $? -gt 0 ]; then
-        echo " * changes!" 1>&2
         return 1
     fi
 
@@ -844,7 +843,6 @@ function sck() {
 function drop_this_branch_right_now() {
     is_repository_clean
     if [ $? -gt 0 ]; then
-        echo " * changes!" 1>&2
         return 1
     fi
 
@@ -868,7 +866,6 @@ function drop_this_branch_right_now() {
 function DROP_THIS_BRANCH_RIGHT_NOW() {
     is_repository_clean
     if [ $? -gt 0 ]; then
-        echo " * changes!" 1>&2
         return 1
     fi
 
@@ -892,6 +889,8 @@ function is_repository_clean() {
     local modified='echo $(git ls-files --modified `git rev-parse --show-toplevel`)$(git ls-files --deleted --others --exclude-standard `git rev-parse --show-toplevel`)'
     if [ "`echo "$modified" | zsh`" != "" ]
     then
+        local root="$(echo "$GIT_ROOT" | zsh)"
+        echo " * isn't clean, found unstages changes: $root"
         return 1
     fi
 }
