@@ -10,8 +10,7 @@ function dact {
     if [ "$VIRTUAL_ENV" != "" ]
     then
         local cwd=`pwd`
-        local cmd="cd $VIRTUAL_ENV/bin && source activate && deactivate && cd $cwd"
-        eval ${cmd}
+        run_show "cd $VIRTUAL_ENV/bin && source activate && deactivate && cd $cwd"
     fi
 }
 

@@ -14,6 +14,7 @@ source "$JOSH/sources/bindings.zsh"
 
 source "$JOSH/sources/functions/git.zsh"
 source "$JOSH/sources/functions/python.zsh"
+source "$JOSH/sources/functions/utils.zsh"
 
 unsetopt correct_all
 unsetopt correct

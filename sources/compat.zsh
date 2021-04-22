@@ -37,13 +37,9 @@ fi
 
 if [[ "$READ_URI" != "" ]]; then
     uri() {
-        local cmd="$READ_URI $*"
-        eval ${cmd}
-        echo " -> $cmd" 1>&2
+        run_show "$READ_URI $*"
     }
     urj() {
-        local cmd="$READ_URI $* | jq ."
-        eval ${cmd}
-        echo " -> $cmd" 1>&2
+        run_show "$READ_URI $* | jq ."
     }
 fi

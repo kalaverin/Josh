@@ -420,10 +420,6 @@ git_fetch_branch() {
         else
             local cmd="$track && git fetch origin $branches"
 
-            if [[ $branches != *" "* ]]; then
-                local cmd="$cmd"
-            fi
-
             if [[ "$BUFFER" != "" ]]; then
                 LBUFFER="$BUFFER && $cmd"
                 local ret=$?
@@ -431,8 +427,7 @@ git_fetch_branch() {
                 typeset -f zle-line-init >/dev/null && zle zle-line-init
                 return $ret
             else
-                echo " -> $cmd" 1>&2
-                eval ${cmd}
+                run_show "$cmd"
                 zle reset-prompt
                 return 0
             fi
@@ -702,9 +697,7 @@ git_merge_branch() {
                 typeset -f zle-line-init >/dev/null && zle zle-line-init
                 return $ret
             else
-                local cmd="git fetch origin $branch 2>/dev/null 1>/dev/null && git merge origin/$branch"
-                echo " -> $cmd" 1>&2
-                eval ${cmd}
+                run_show "git fetch origin $branch 2>/dev/null 1>/dev/null && git merge origin/$branch"
                 zle reset-prompt
                 return 0
             fi
@@ -718,10 +711,7 @@ function spll() {
     if [ "$branch" = "" ]; then
         return 1
     fi
-
-    local cmd="git pull origin $branch"
-    echo " -> $cmd" 1>&2
-    eval ${cmd}
+    run_show "git pull origin $branch"
 }
 
 function sfet() {
@@ -729,10 +719,7 @@ function sfet() {
     if [ "$branch" = "" ]; then
         return 1
     fi
-
-    local cmd="git fetch origin $branch && git fetch --tags --all"
-    echo " -> $cmd" 1>&2
-    eval ${cmd}
+    run_show "git fetch origin $branch && git fetch --tags --all"
 }
 
 function sall() {
@@ -752,10 +739,7 @@ function sall() {
         return 1
     fi
 
-    local cmd="git reset --hard origin/$branch"
-    echo " -> $cmd" 1>&2
-    eval ${cmd} 2>/dev/null
-
+    run_show "git reset --hard origin/$branch"
     if [ $? -gt 0 ]; then
         return 1
     fi
@@ -764,9 +748,7 @@ function sall() {
 
 function spsh() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
-    local cmd="git push origin $branch"
-    echo " -> $cmd" 1>&2
-    eval ${cmd}
+    run_show "git push origin $branch"
 }
 
 function sfm() {
@@ -776,9 +758,7 @@ function sfm() {
         return 1
     fi
 
-    local cmd="git merge origin/$branch"
-    echo " -> $cmd" 1>&2
-    eval ${cmd}
+    run_show "git merge origin/$branch"
 }
 
 function sbrm() {
@@ -786,9 +766,7 @@ function sbrm() {
         echo " - Branch name required." 1>&2
         return 1
     fi
-    local cmd="git branch -D $1 && git push origin --delete $1"
-    echo " -> $cmd" 1>&2
-    eval ${cmd}
+    run_show "git branch -D $1 && git push origin --delete $1"
 }
 
 function sbmv() {
@@ -797,9 +775,7 @@ function sbmv() {
         return 1
     fi
     local branch="${2:-`sh -c "$GIT_BRANCH"`}"
-    local cmd="git branch -m $branch $1 && git push origin :$branch $1"
-    echo " -> $cmd" 1>&2
-    eval ${cmd}
+    run_show "git branch -m $branch $1 && git push origin :$branch $1"
 }
 
 function stag() {
@@ -807,10 +783,7 @@ function stag() {
         echo " - Tag required." 1>&2
         return 1
     fi
-    local cmd="git tag -a $1 -m \"$1\" && git push --tags && git fetch --tags"
-    echo " -> $cmd" 1>&2
-    eval ${cmd}
-
+    run_show "git tag -a $1 -m \"$1\" && git push --tags && git fetch --tags"
 }
 
 function stag-() {
@@ -818,9 +791,7 @@ function stag-() {
         echo " - Tag required." 1>&2
         return 1
     fi
-    local cmd="git tag -d \"$1\" && git push --delete origin \"$1\""
-    echo " -> $cmd" 1>&2
-    eval ${cmd}
+    run_show "git tag -d \"$1\" && git push --delete origin \"$1\""
 }
 
 function sck() {
@@ -835,9 +806,7 @@ function sck() {
         echo " - Branch name cannot be starting with digit." 1>&2
         return 1
     fi
-    local cmd="git checkout -b $branch 2> /dev/null || git checkout $branch"
-    echo " -> $cmd" 1>&2
-    eval ${cmd}
+    run_show "git checkout -b $branch 2> /dev/null || git checkout $branch"
 }
 
 function drop_this_branch_right_now() {
@@ -857,9 +826,7 @@ function drop_this_branch_right_now() {
         return 1
     fi
 
-    local cmd="git reset --hard && (git checkout develop 2>/dev/null 1>/dev/null 2> /dev/null || git checkout master 2>/dev/null 1>/dev/null) && git branch -D $branch"
-    echo " -> $cmd" 1>&2
-    eval ${cmd}
+    run_show "git reset --hard && (git checkout develop 2>/dev/null 1>/dev/null 2> /dev/null || git checkout master 2>/dev/null 1>/dev/null) && git branch -D $branch"
     echo " => git push origin --delete $branch" 1>&2
 }
 
@@ -904,6 +871,38 @@ function chdir_to_setupcfg {
         fi
         cd $root
     fi
+}
+
+function gub() {
+    cwd=`pwd`
+    find . -maxdepth 3 -type d -name .git | while read git_directory
+    do
+        current_path=$(dirname "$git_directory")
+        cd "${current_path}"
+        local branch="`sh -c "$GIT_BRANCH"`"
+
+        echo ""
+        echo "    `pwd` <- $branch"
+        run_hide "git fetch origin master && git fetch --tags --all"
+
+
+        is_repository_clean
+        if [ $? -gt 0 ]; then
+            if [ "$branch" != "master" ]; then
+                run_hide "git fetch origin $branch"
+                echo "  - $branch modified, just fetch remote"
+            fi
+        else
+            if [ "$branch" != "master" ]; then
+                run_hide "git fetch origin $branch && git reset --hard origin/$branch && git pull origin $branch"
+                echo "  + $branch fetch, reset and pull"
+            else
+                run_hide "git reset --hard origin/$branch && git pull origin $branch"
+                echo "  + $branch reset and pull"
+            fi
+        fi
+        cd "${cwd}"
+    done
 }
 
 alias gmm='git commit -m'
