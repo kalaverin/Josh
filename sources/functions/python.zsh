@@ -29,7 +29,7 @@ function get_venv_path {
                 local env_path="`pwd`/$1"
                 cd $cwd
             else
-                echo " * venv $1 isn't found"
+                echo " * venv >>$1<< isn't found"
                 cd $cwd
                 return 1
             fi
@@ -76,7 +76,7 @@ function ten {
         local pbin="/usr/bin/python$vers"
         if [ ! -f "$pbin" ]
         then
-            echo " - not exists: $pbin" 1>&2
+            echo " - not exists: >>$pbin<<" 1>&2
             return 1
         fi
 
@@ -91,7 +91,7 @@ function ten {
         then
             local name="$(mktemp -d XXXX)"
         fi
-        run_show "dact && virtualenv --python=$pbin $name && source $name/bin/activate && pip install -U 'pip<=21.1' && pip install pipdeptree && cd $lwd"
+        run_show "dact; virtualenv --python=$pbin $name && source $name/bin/activate && pip install -U 'pip<=21.1' && pip install pipdeptree && cd $lwd"
     fi
 }
 
@@ -130,5 +130,22 @@ function ven {
     if [ $? -gt 0 ]; then
         return 1
     fi
-    dact && source bin/activate && cd $cwd
+    dact && source bin/activate
+    cd $cwd
+}
+
+function ten- {
+    local cwd="`pwd`"
+    cdv $*
+    if [ $? -gt 0 ]; then
+        return 1
+    fi
+
+    local vwd="`pwd`"
+    if [[ ! $vwd =~ "^/tmp/env" ]]
+    then
+        echo " * can't remove >>$vwd<< because isn't temporary"
+        return 1
+    fi
+    run_show "rm -rf $vwd; cd $cwd || cd ~"
 }
