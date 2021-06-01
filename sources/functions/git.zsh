@@ -786,6 +786,29 @@ function stag() {
     run_show "git tag -a $1 -m \"$1\" && git push --tags && git fetch --tags"
 }
 
+function smtag() {
+    if [ "$1" = "" ]; then
+        echo " - Tag required." 1>&2
+        return 1
+    fi
+
+    is_repository_clean
+    if [ $? -gt 0 ]; then
+        return 1
+    fi
+
+    gcm
+    if [ $? -gt 0 ]; then
+        return 1
+    fi
+
+    spll
+    if [ $? -gt 0 ]; then
+        return 1
+    fi
+    stag $1
+}
+
 function stag-() {
     if [ "$1" = "" ]; then
         echo " - Tag required." 1>&2
@@ -883,21 +906,20 @@ function gub() {
 
         echo ""
         echo "    `pwd` <- $branch"
-        run_hide "git fetch origin master && git fetch --tags --all"
-
+        run_silent "git fetch origin master && git fetch --tags --all"
 
         is_repository_clean
         if [ $? -gt 0 ]; then
             if [ "$branch" != "master" ]; then
-                run_hide "git fetch origin $branch"
+                run_silent "git fetch origin $branch"
                 echo "  - $branch modified, just fetch remote"
             fi
         else
             if [ "$branch" != "master" ]; then
-                run_hide "git fetch origin $branch && git reset --hard origin/$branch && git pull origin $branch"
+                run_silent "git fetch origin $branch && git reset --hard origin/$branch && git pull origin $branch"
                 echo "  + $branch fetch, reset and pull"
             else
-                run_hide "git reset --hard origin/$branch && git pull origin $branch"
+                run_silent "git reset --hard origin/$branch && git pull origin $branch"
                 echo "  + $branch reset and pull"
             fi
         fi
