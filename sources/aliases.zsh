@@ -117,8 +117,13 @@ function run_show() {
     eval ${cmd} 1>&2
 }
 
-function run_hide() {
+function run_silent() {
     local cmd="$*"
     echo " -> $cmd"
+    eval ${cmd} 1>/dev/null 2>/dev/null
+}
+
+function run_hide() {
+    local cmd="$*"
     eval ${cmd} 1>/dev/null 2>/dev/null
 }
