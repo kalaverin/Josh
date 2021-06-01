@@ -51,11 +51,6 @@ function ten {
         local packages="$*"
     fi
 
-    # if [ -f "/tmp/env/$name/bin/activate" ]
-    # then
-    #     run_silent "dact && source /tmp/env/$name/bin/activate"
-    # else
-
     local pbin="/usr/bin/python$version"
     if [ ! -f "$pbin" ]; then
         echo " - not exists: >>$pbin<<" 1>&2
