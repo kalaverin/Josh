@@ -89,6 +89,9 @@ function cds {
     local env_site=`find lib/ -maxdepth 1 -type d -name 'python*'`
     if [ -d "$env_site/site-packages" ]; then
         cd "$env_site/site-packages"
+        if [ "${@:2}" != "" ]; then
+            cd "${@:2}"
+        fi
     else
         echo " * something wrong for >>$env_path<<, path: >>$env_site><"
         cd $cwd
