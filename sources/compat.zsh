@@ -35,6 +35,8 @@ else
     echo ' - Need httpie, curl, wget, fetch, anything!' 1>&2
 fi
 
+export JOSH_HTTP=`which -p http`
+
 if [[ "$READ_URI" != "" ]]; then
     uri() {
         run_show "$READ_URI $*"
