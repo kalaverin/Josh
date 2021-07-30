@@ -41,7 +41,4 @@ if [[ "$READ_URI" != "" ]]; then
     uri() {
         run_show "$READ_URI $*"
     }
-    urj() {
-        run_show "$READ_URI $* | jq ."
-    }
 fi

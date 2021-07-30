@@ -65,7 +65,7 @@ function ten {
     if [ "$name" = "" ]; then
         local name="$(mktemp -d XXXX)"
     fi
-    run_show "dact; virtualenv --python=$pbin $name && source $name/bin/activate && pip install -U 'pip<=21.1' && pip install pipdeptree $packages && cd $lwd"
+    run_show "dact; virtualenv --python=$pbin $name && source $name/bin/activate && cd $lwd && pip install -U 'pip<=21.1' && pip install pipdeptree $packages"
 }
 
 function cdv {

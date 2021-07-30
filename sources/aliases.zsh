@@ -37,7 +37,12 @@ alias -g E_WARNING="| grep -v '\[WARNING\]'"
 
 alias -g CC="| ccze"
 
-alias ls="$JOSH_LS -vaAF --color"
+alias l="exa -lFag --color=always --git-ignore --git --octal-permissions"
+alias lt="l --sort time"
+
+alias csv="csview --style Rounded"
+alias tsv="csv --tsv"
+alias ssv="csv --delimiter ';'"
 
 svc() {
     service $*
