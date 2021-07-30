@@ -106,7 +106,6 @@ echo " + third-party extensions: $CUSTOM_PLUGINS_DIR"
     $GIT_CLONE https://github.com/zsh-users/zsh-syntax-highlighting.git $CUSTOM_PLUGINS_DIR/zsh-syntax-highlighting && \
     $GIT_CLONE https://github.com/trapd00r/zsh-syntax-highlighting-filetypes.git $CUSTOM_PLUGINS_DIR/zsh-syntax-highlighting-filetypes && \
     $GIT_CLONE https://github.com/seletskiy/zsh-fuzzy-search-and-edit.git $CUSTOM_PLUGINS_DIR/zsh-fuzzy-search-and-edit && \
-    # $GIT_CLONE https://github.com/zdharma/fast-syntax-highlighting.git $CUSTOM_PLUGINS_DIR/fast-syntax-highlighting && \
     $GIT_CLONE https://github.com/zdharma/history-search-multi-word.git $CUSTOM_PLUGINS_DIR/history-search-multi-word && \
     $GIT_CLONE https://github.com/zlsun/solarized-man.git $CUSTOM_PLUGINS_DIR/solarized-man && \
     $GIT_CLONE https://github.com/zsh-users/zsh-autosuggestions $CUSTOM_PLUGINS_DIR/zsh-autosuggestions && \
@@ -124,30 +123,7 @@ if [ $? -gt 0 ]; then
     return 1
 fi
 
-if [ `which fzf` ]; then
-    echo " * using fzf: `which fzf`"
-else
-    echo " + deploy fzf: $LOCAL_BIN_DIR/fzf"
-    if [ ! -d $LOCAL_BIN_DIR ]; then
-        mkdir -p $LOCAL_BIN_DIR
-    else
-        if [ -f $LOCAL_BIN_DIR/fzf ]; then
-            rm $LOCAL_BIN_DIR/fzf
-        fi
-    fi
-
-    tempdir=`mktemp -d`
-    rm -rf $tempdir
-    $GIT_CLONE https://github.com/junegunn/fzf.git $tempdir && $tempdir/install --completion --key-bindings --update-rc --bin && cp -f $tempdir/bin/fzf $LOCAL_BIN_DIR/fzf && rm -rf $tempdir
-    if [ $? -gt 0 ]; then
-        echo " + failed fzf: $LOCAL_BIN_DIR/fzf"
-    fi
-
-    $READ_URI https://beyondgrep.com/ack-v3.4.0 > ~/$LOCAL_BIN_DIR/ack && chmod 750 ~/$LOCAL_BIN_DIR/*
-    if [ $? -gt 0 ]; then
-        echo " + failed ack: $LOCAL_BIN_DIR/ack"
-    fi
-fi
+# ———
 
 if [ -e ~/.zshrc ]; then
     echo ' + create links: ~/.zshrc, etc'
@@ -159,6 +135,32 @@ if [ $? -gt 0 ]; then
     echo ' - failed links!'
     return 1
 fi
+
+# ——— install binaries to ~/.local/bin
+
+if [ ! -d $LOCAL_BIN_DIR ]; then
+    mkdir -p $LOCAL_BIN_DIR
+fi
+
+if [ ! -f $LOCAL_BIN_DIR/fzf ]; then
+    echo " + deploy fzf: $LOCAL_BIN_DIR/fzf"
+    tempdir=`mktemp -d`
+    rm -rf $tempdir
+    $GIT_CLONE https://github.com/junegunn/fzf.git $tempdir && $tempdir/install --completion --key-bindings --update-rc --bin && cp -f $tempdir/bin/fzf $LOCAL_BIN_DIR/fzf && rm -rf $tempdir
+    if [ $? -gt 0 ]; then
+        echo " + failed fzf: $LOCAL_BIN_DIR/fzf"
+    fi
+fi
+
+if [ ! -f $LOCAL_BIN_DIR/micro ]; then
+    echo " + deploy micro: $LOCAL_BIN_DIR/micro"
+    mkdir -p ~/.local/bin && cd ~/.local/bin && $READ_URI https://getmic.ro | zsh
+    if [ $? -gt 0 ]; then
+        echo " + failed micro: $LOCAL_BIN_DIR/micro"
+    fi
+fi
+
+# ——— configure git
 
 git config --global color.ui auto
 git config --global color.branch auto
@@ -175,12 +177,16 @@ else
     git config --global core.pager "delta --commit-style='yellow ul' --commit-decoration-style='' --file-style='cyan ul' --file-decoration-style='' --hunk-style normal --zero-style='dim syntax' --24-bit-color='always' --minus-style='syntax #330000' --plus-style='syntax #002200' --file-modified-label='M' --file-removed-label='D' --file-added-label='A' --file-renamed-label='R' --line-numbers-left-format='{nm:^4}' --line-numbers-minus-style='#aa2222' --line-numbers-zero-style='#505055' --line-numbers-plus-style='#229922' --line-numbers --navigate"
 fi
 
+# ——— post-installation
+
 if [ $BACKUP_JOSH_DIR ]; then
     if [ -d $BACKUP_JOSH_DIR ]; then
         echo " * backup removed: $BACKUP_JOSH_DIR"
         rm -rf $BACKUP_JOSH_DIR
     fi
 fi
+
+# ——— generate nano syntax highlight
 
 if [ -f "$HOME_DIR/.nanorc" ]; then
     # https://github.com/scopatz/nanorc
@@ -198,6 +204,8 @@ else
         fi
     fi
 fi
+
+# ——— generate grep ignore file
 
 if [ -f "$GREP_IGNORE_FILE" ]; then
     echo " * grep config: $GREP_IGNORE_FILE"
