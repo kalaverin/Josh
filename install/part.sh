@@ -26,6 +26,7 @@ BACKUP_JOSH_DIR="$ZSH-$CURRENT_DATE"
 BACKUP_RC_FILE="$HOME_DIR/.zshrc-$CURRENT_DATE"
 GREP_IGNORE_FILE="$HOME_DIR/.ignore"
 LOCAL_BIN_DIR="$HOME_DIR/.local/bin"
+LOCAL_CFG_DIR="$HOME_DIR/.config"
 
 
 # select content fetcher
@@ -142,6 +143,22 @@ if [ ! -d $LOCAL_BIN_DIR ]; then
     mkdir -p $LOCAL_BIN_DIR
 fi
 
+if [ ! -d $LOCAL_CFG_DIR ]; then
+    mkdir -p $LOCAL_CFG_DIR
+fi
+
+if [ ! -f $LOCAL_BIN_DIR/starship ]; then
+    echo " + deploy starship: $LOCAL_BIN_DIR/starship"
+    BIN_DIR=~/.local/bin FORCE=1 sh -c "$(curl -fsSL https://starship.rs/install.sh)"
+    if [ $? -gt 0 ]; then
+        echo " + failed starship: $LOCAL_BIN_DIR/starship"
+    fi
+    if [ ! -f "$LOCAL_CFG_DIR/starship.toml" ]; then
+        cp $CUSTOM_PLUGINS_DIR/josh/configs/starship.toml $LOCAL_CFG_DIR/starship.toml
+        echo " + starship config: $LOCAL_CFG_DIR/starship.toml"
+    fi
+fi
+
 if [ ! -f $LOCAL_BIN_DIR/fzf ]; then
     echo " + deploy fzf: $LOCAL_BIN_DIR/fzf"
     tempdir=`mktemp -d`
@@ -158,7 +175,25 @@ if [ ! -f $LOCAL_BIN_DIR/micro ]; then
     if [ $? -gt 0 ]; then
         echo " + failed micro: $LOCAL_BIN_DIR/micro"
     fi
+
+    if [ ! -f "$LOCAL_CFG_DIR/micro/settings.json" ]; then
+        cp $CUSTOM_PLUGINS_DIR/josh/configs/micro.json $LOCAL_CFG_DIR/micro/settings.json
+        echo " + starship config: $LOCAL_CFG_DIR/starship.toml"
+    fi
+    $LOCAL_BIN_DIR/micro -plugin install fzf wc detectindent bounce editorconfig quickfix
 fi
+
+
+# if [ ! -d $LOCAL_CFG_DIR/syncat ]; then
+#     mkdir -d $LOCAL_CFG_DIR/syncat
+# fi
+# if [ ! -f "$LOCAL_CFG_DIR/syncat/languages.toml" ]; then
+#     $READ_URI https://raw.githubusercontent.com/foxfriends/config/syncat/languages.toml > $LOCAL_CFG_DIR/syncat/languages.toml
+#     syncat install
+#     cd ~/.config/syncat && git clone https://github.com/foxfriends/syncat-themes style
+#     syncat install
+# fi
+
 
 # ——— configure git
 
@@ -171,11 +206,7 @@ git config --global color.grep auto
 git config --global color.pager true
 git config --global color.decorate auto
 git config --global color.showbranch auto
-if [ -n "$(uname | grep -i freebsd)" ]; then
-    git config --global core.pager "delta --commit-style plain --file-style plain --hunk-style plain --highlight-removed"
-else
-    git config --global core.pager "delta --commit-style='yellow ul' --commit-decoration-style='' --file-style='cyan ul' --file-decoration-style='' --hunk-style normal --zero-style='dim syntax' --24-bit-color='always' --minus-style='syntax #330000' --plus-style='syntax #002200' --file-modified-label='M' --file-removed-label='D' --file-added-label='A' --file-renamed-label='R' --line-numbers-left-format='{nm:^4}' --line-numbers-minus-style='#aa2222' --line-numbers-zero-style='#505055' --line-numbers-plus-style='#229922' --line-numbers --navigate"
-fi
+git config --global core.pager "delta --commit-style='yellow ul' --commit-decoration-style='' --file-style='cyan ul' --file-decoration-style='' --hunk-style normal --zero-style='dim syntax' --24-bit-color='always' --minus-style='syntax #330000' --plus-style='syntax #002200' --file-modified-label='M' --file-removed-label='D' --file-added-label='A' --file-renamed-label='R' --line-numbers-left-format='{nm:^4}' --line-numbers-minus-style='#aa2222' --line-numbers-zero-style='#505055' --line-numbers-plus-style='#229922' --line-numbers --navigate"
 
 # ——— post-installation
 
@@ -207,20 +238,9 @@ fi
 
 # ——— generate grep ignore file
 
-if [ -f "$GREP_IGNORE_FILE" ]; then
-    echo " * grep config: $GREP_IGNORE_FILE"
-else
-    echo '*.js' >> $GREP_IGNORE_FILE
-    echo '*.min.css' >> $GREP_IGNORE_FILE
-    echo '*.po' >> $GREP_IGNORE_FILE
-    echo '*.pyc' >> $GREP_IGNORE_FILE
-    echo '*.svg' >> $GREP_IGNORE_FILE
-    echo '.eggs/' >> $GREP_IGNORE_FILE
-    echo '.git/' >> $GREP_IGNORE_FILE
-    echo '__snapshots__/' >> $GREP_IGNORE_FILE
-    echo 'lib/python*/site-packages/' >> $GREP_IGNORE_FILE
-    echo 'node_modules/' >> $GREP_IGNORE_FILE
-    echo " + nano config: $GREP_IGNORE_FILE"
+if [ ! -f "$GREP_IGNORE_FILE" ]; then
+    cp $CUSTOM_PLUGINS_DIR/josh/configs/.ignore ~/
+    echo " + grep config: $GREP_IGNORE_FILE"
 fi
 
 cd ~
