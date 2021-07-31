@@ -10,7 +10,7 @@ EXEC_DIR="$TEMP_DIR/custom/bin"
 
 if [ ! -f $EXEC_DIR/starship ]; then
     # static binary from official installer not found, ok
-    if [ `which starship` ]; then
+    if [ -f "`which starship`" ]; then
         echo " + use installed starship from `which starship`"
     else
         # and binary not found in system -> download
@@ -19,6 +19,7 @@ if [ ! -f $EXEC_DIR/starship ]; then
         [ $? -gt 0 ] && echo " - failed starship"
     fi
 fi
+
 
 # ——— fzf search
 
