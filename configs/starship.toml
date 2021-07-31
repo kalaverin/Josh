@@ -1,0 +1,254 @@
+add_newline = false
+
+[cmake]
+format = '[$symbol($version )]($style)'
+
+[cmd_duration]
+min_time = 5000
+format = '[$duration]($style) '
+style = 'yellow dimmed'
+show_milliseconds = false
+disabled = false
+show_notifications = false
+min_time_to_notify = 45000
+
+[conda]
+
+format = '[$symbol$environment]($style) '
+
+[crystal]
+format = '[$symbol($version )]($style)'
+
+[dart]
+format = '[$symbol($version )]($style)'
+
+[deno]
+format = '[$symbol($version )]($style)'
+
+[directory]
+truncation_length = 3
+truncate_to_repo = true
+fish_style_pwd_dir_length = 2
+use_logical_path = true
+format = '[$path]($style)[$read_only]($read_only_style)[/](black bold)'
+style = 'white bold'
+disabled = false
+read_only = '🔒'
+read_only_style = 'red'
+truncation_symbol = ''
+home_symbol = '~'
+
+[directory.substitutions]
+
+[docker_context]
+
+format = '[$symbol$context]($style) '
+
+[dotnet]
+format = '[$symbol($version )(🎯 $tfm )]($style)'
+
+[elixir]
+format = '[$symbol($version \(OTP $otp_version\) )]($style)'
+
+[elm]
+format = '[$symbol($version )]($style)'
+
+[erlang]
+format = '[$symbol($version )]($style)'
+
+[git_branch]
+format = '[$symbol$branch]($style)(:[$remote]($style))[/](black bold)'
+symbol = ''
+style = 'bold cyan'
+truncation_length = 9223372036854775807
+truncation_symbol = '…'
+only_attached = false
+always_show_remote = false
+disabled = false
+
+[git_commit]
+commit_hash_length = 7
+format = '[$hash/$tag]($style)[/](black bold)'
+style = 'green bold'
+only_detached = true
+disabled = false
+tag_symbol = '+'
+tag_disabled = false
+
+[git_metrics]
+added_style = 'bold green'
+deleted_style = 'bold red'
+format = '[+$added]($added_style)[-$deleted]($deleted_style)'
+# format = '[+$added]($added_style)[-$deleted]($deleted_style)'
+disabled = false
+
+[git_state]
+rebase = 'REBASING'
+merge = 'MERGING'
+revert = 'REVERTING'
+cherry_pick = 'CHERRY-PICKING'
+bisect = 'BISECTING'
+am = 'AM'
+am_or_rebase = 'AM/REBASE'
+style = 'bold yellow'
+format = '\([$state( $progress_current/$progress_total)]($style)\)'
+disabled = false
+
+[git_status]
+format = '( [$all_status$ahead_behind]($style))'
+style = 'fg:white bold'
+stashed = ''
+ahead = '⇡'
+behind = '⇣'
+diverged = '⇕'
+conflicted = '='
+deleted = '✘'
+renamed = '»'
+modified = '!'
+staged = '+'
+untracked = '?'
+disabled = false
+
+[golang]
+format = '[$symbol($version )]($style)'
+
+[helm]
+format = '[$symbol($version )]($style)'
+
+[hostname]
+ssh_only = true
+trim_at = '.'
+format = '[$hostname]($style)[:](black bold)'
+style = 'green bold'
+disabled = false
+
+[java]
+
+format = '[$symbol($version )]($style)'
+
+[jobs]
+threshold = 1
+format = '[$symbol$number]($style) '
+symbol = '✦'
+style = 'bold blue'
+disabled = false
+
+[julia]
+format = '[$symbol($version )]($style)'
+
+[kotlin]
+format = '[$symbol($version )]($style)'
+
+[lua]
+format = '[$symbol($version )]($style)'
+
+[nim]
+format = '[$symbol($version )]($style)'
+
+[nix_shell]
+format = '[$symbol$state( \($name\))]($style) '
+symbol = '❄️  '
+style = 'bold blue'
+impure_msg = 'impure'
+pure_msg = 'pure'
+disabled = false
+
+[nodejs]
+format = '[$symbol($version )]($style)'
+
+[ocaml]
+format = '[$symbol($version )(\($switch_indicator$switch_name\) )]($style)'
+
+[perl]
+format = '[$symbol($version )]($style)'
+
+[php]
+format = '[$symbol($version )]($style)'
+
+[purescript]
+format = '[$symbol($version )]($style)'
+
+[python]
+pyenv_version_name = false
+pyenv_prefix = 'pyenv '
+python_binary = [
+    'python',
+    'python3',
+    'python2',
+]
+format = ' [${pyenv_prefix}$virtualenv](cyan)[:](black)[${version}]($style)'
+version_format = '${raw}'
+style = 'purple'
+symbol = '🐍 '
+disabled = false
+detect_extensions = ['py']
+detect_files = [
+    'requirements.txt',
+    '.python-version',
+    'pyproject.toml',
+    'Pipfile',
+    'tox.ini',
+    'setup.py',
+    '__init__.py',
+]
+detect_folders = []
+
+[rlang]
+format = '[$symbol($version )]($style)'
+
+[red]
+format = '[$symbol($version )]($style)'
+
+[ruby]
+format = '[$symbol($version )]($style)'
+
+[rust]
+format = '[$symbol($version )]($style)'
+
+[scala]
+format = '[$symbol($version )]($style)'
+
+[status]
+format = '[$status]($style) '
+symbol = '✖'
+not_executable_symbol = '🚫'
+not_found_symbol = '🔍'
+sigint_symbol = '🧱'
+signal_symbol = '⚡'
+style = 'bold red'
+map_symbol = false
+recognize_signal_code = true
+disabled = false
+
+[swift]
+format = '[$symbol($version )]($style)'
+
+[terraform]
+format = '[$symbol$workspace]($style) '
+
+[time]
+format = '[$time]($style) '
+style = 'bold yellow'
+use_12hr = false
+disabled = true
+utc_time_offset = 'local'
+time_range = '-'
+
+[username]
+format = '[$user]($style)[@](black bold)'
+style_root = 'bg:red fg:white bold'
+style_user = 'yellow bold'
+show_always = false
+disabled = false
+
+[vlang]
+format = '[$symbol($version )]($style)'
+
+[vagrant]
+format = '[$symbol($version )]($style)'
+
+[zig]
+format = '[$symbol($version )]($style)'
+
+[custom]
+
