@@ -76,10 +76,10 @@ local current_dir_output="$current_dir_color$current_dir$reset"
 local jobs_bg="${yellow}%j$reset"
 local last_command_output="%(?.%(!.$red.$green).$yellow)"
 
-function _error_value() {
+function error_value() {
     local rvalue=$?
     if [[ $rvalue -ne 0 ]]; then
-      echo "$dark$rvalue$reset "
+      echo "$bg_red$white$rvalue$reset"
     fi
 }
 
@@ -121,6 +121,6 @@ ZSH_THEME_GIT_PROMPT_DIVERGED_REMOTE="$white<>"
 
 PROMPT='$username_output$hostname_output$dark:$(pwd_abbr)%1(j. [$jobs_bg].)'
 GIT_PROMPT='$(out=$(git_prompt_info)$(git_prompt_status)$(git_remote_status);if [[ -n $out ]]; then printf %s "$dark/$yellow$out$reset";fi)'
-RIGHT_SIDE='$(_error_value)$(virtualenv_prompt_info)$(schroot_prompt_info)'
+RIGHT_SIDE='$(error_value)$(virtualenv_prompt_info)$(schroot_prompt_info)'
 PROMPT+="$GIT_PROMPT$(root_warning) "
 export RPROMPT="$RIGHT_SIDE"
