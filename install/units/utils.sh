@@ -10,18 +10,15 @@ EXEC_DIR="$TEMP_DIR/custom/bin"
 
 if [ ! -f $EXEC_DIR/starship ]; then
     # static binary from official installer not found, ok
-    if [ ! `which starship` ]; then
+    if [ `which starship` ]; then
+        echo " + use installed starship from `which starship`"
+    else
         # and binary not found in system -> download
         echo " + deploy starship to $EXEC_DIR/starship"
         BIN_DIR=$EXEC_DIR FORCE=1 $SHELL -c "$(curl -fsSL $URL_STARSHIP)"
         [ $? -gt 0 ] && echo " - failed starship"
     fi
 fi
-if [ ! -f "$CONF_DIR/starship.toml" ]; then
-    cp $JOSH_ROOT/configs/starship.toml $CONF_DIR/starship.toml
-    echo " + starship config: $CONF_DIR/starship.toml"
-fi
-
 
 # ——— fzf search
 
@@ -44,10 +41,4 @@ if [ ! -f $EXEC_DIR/micro ]; then
     cd $EXEC_DIR && $SHELL -c "$HTTP_GET $URL_MICRO | $SHELL"
     [ $? -gt 0 ] && echo " + failed micro: $EXEC_DIR/micro"
     $SHELL -c "$EXEC_DIR/micro -plugin install fzf wc detectindent bounce editorconfig quickfix"
-fi
-
-if [ ! -f "$CONF_DIR/micro/settings.json" ]; then
-    [ ! -d $CONF_DIR/micro/ ] && mkdir -p $CONF_DIR/micro
-    cp $JOSH_ROOT/configs/micro.json $CONF_DIR/micro/settings.json
-    echo " + starship config: $CONF_DIR/micro/settings.json"
 fi
