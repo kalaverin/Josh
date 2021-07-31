@@ -1,4 +1,6 @@
-export EDITOR="nano"
+export PAGER="bat"
+export EDITOR="micro"
+
 export BAT_STYLE="full"
 export BAT_THEME="DarkNeon" # select: bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/any/file"
 
@@ -15,13 +17,13 @@ export BUILDKIT_INLINE_CACHE=1
 export COMPOSE_DOCKER_CLI_BUILD=1
 
 EMOJI_CLI_KEYBIND="\eo"
+
 ZSH_HIGHLIGHT_HIGHLIGHTERS+=brackets
 
 HTTPIE_THEMES='abap arduino default fruity monokai native perldoc rrt solarized tango trac'
 
 ZSH_AUTOSUGGEST_ACCEPT_WIDGETS=(
     end-of-line
-    vi-forward-char
     vi-end-of-line
     vi-add-eol
 )
@@ -29,13 +31,15 @@ ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS=(
     forward-char
     forward-word
     emacs-forward-word
-    vi-forward-word
-    vi-forward-word-end
+    vi-forward-char
     vi-forward-blank-word
     vi-forward-blank-word-end
+    vi-forward-word
+    vi-forward-word-end
     vi-find-next-char
     vi-find-next-char-skip
 )
+
 ZSH_AUTOSUGGEST_USE_ASYNC=1
 ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 
@@ -47,10 +51,10 @@ FORGIT_FZF_DEFAULT_OPTS="
     --height '80%'
 "
 
-BAT_BIN=`which bat`
+PAGER_BIN=`which $PAGER`
 LISTER_LESS="`which less` -M"
-if [ ! -f $BAT_BIN ]; then
+if [ ! -f $PAGER_BIN ]; then
     LISTER_FILE="$LISTER_LESS -Nu"
 else
-    LISTER_FILE="$BAT_BIN --color always --tabs 4 --paging never"
+    LISTER_FILE="$PAGER_BIN --color always --tabs 4 --paging never" # for bat
 fi

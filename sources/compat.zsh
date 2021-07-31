@@ -1,4 +1,4 @@
-export JOSH_DELTA=`which delta`
+export JOSH_DELTA=`which -p delta`
 
 if [[ "$OSTYPE" == "freebsd"* ]]; then
     export JOSH_LS='/usr/local/bin/gnuls'
@@ -21,18 +21,6 @@ fi
 
 if [ -n "$(uname -v | grep -i debian)" ]; then
     alias fd='fdfind'
-fi
-
-if [ `which -p http` ]; then
-    export READ_URI="`which -p http` -FISb"
-elif [ `which -p curl` ]; then
-    export READ_URI="`which -p curl` -fsSL"
-elif [ `which -p wget` ]; then
-    export READ_URI="`which -p wget` -qO -"
-elif [ `which -p fetch` ]; then
-    export READ_URI="`which -p fetch` -qo -"
-else
-    echo ' - Need httpie, curl, wget, fetch, anything!' 1>&2
 fi
 
 export JOSH_HTTP=`which -p http`

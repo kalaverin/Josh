@@ -1,30 +1,30 @@
-export ZSH=~/.josh
-export JOSH=$ZSH/custom/plugins/josh
+if [ ! "$ZSH" ]; then
+    local JOSH=$(sh -c "dirname `realpath ~/.zshrc`")
+    source "$JOSH/install/init.sh"
+fi
 
+path=(
+    $ZSH/custom/bin
+    ~/.cargo/bin
+    ~/.local/bin
+    /bin
+    /sbin
+    /usr/bin
+    /usr/sbin
+    /usr/local/bin
+    /usr/local/sbin
+    /usr/local/etc/rc.d
+    /etc/rc.d
+    ~/bin
+    $path
+)
 source "$JOSH/sources/compat.zsh"
 
 HISTSIZE=100000
 SAVEHIST=100000
 
-path=(
-  ~/.cargo/bin
-  ~/.local/bin
-  /bin
-  /sbin
-  /usr/bin
-  /usr/sbin
-  /usr/local/bin
-  /usr/local/sbin
-  /usr/local/etc/rc.d
-  /etc/rc.d
-  ~/bin
-  $ZSH/custom/bin
-  $ZSH/custom/plugins/diff-so-fancy
-  $path
-)
-
 # af-magic blinks dpoggi fishy jreese michelebologna
-ZSH_THEME="josh"
+# ZSH_THEME="josh"
 
 # Uncomment the following line to use case-sensitive completion.
 # CASE_SENSITIVE="true"
@@ -99,32 +99,26 @@ HIST_REDUCE_BLANKS="true"
 ZSH_DISABLE_COMPFIX="true"
 
 plugins=(
-  # fast-syntax-highlighting # syntax hihgligher must before history
-  alias-tips
-  autoupdate
-  colored-man-pages
-  dircycle # for fast move thru directories with alt-up/down
-  docker
-  fancy-ctrl-z
-  forgit
-  git
-  gitfast
-  history
-  history-search-multi-word
-  history-substring-search
-  httpie
-  k
-  mysql-colorize
-  redis-cli
-  safe-paste
-  supervisor
-  wd
-  zsh-256color
-  zsh-autopair # for autopair brackets, quoters, etc
-  zsh-autosuggestions  # need fix right arrow autoaccept
-  zsh-dircolors-solarized
-  # zsh-navigation-tools # history-search-multi-word and history-substring-search
-  zsh-syntax-highlighting
+    autoupdate # autoupdate Josh
+    colored-man-pages
+    dircycle # for fast move thru directories with alt-up/down
+    docker # suggestions
+    fancy-ctrl-z # ctrl-z to switch active process to background and vice-versa
+    forgit
+    git
+    gitfast
+    history
+    history-search-multi-word
+    history-substring-search
+    httpie # httpie python client
+    redis-cli # suggestions
+    supervisor # suggestions
+    wd # fast bookmarked directory switcher
+    zsh-256color
+    zsh-autopair # for autopair brackets, quoters, etc
+    zsh-autosuggestions
+    zsh-dircolors-solarized
+    zsh-syntax-highlighting
 )
 
 fpath=($ZSH/custom/plugins/anyframe $fpath)
@@ -160,10 +154,6 @@ zstyle ':completion:*' use-compctl false
 zstyle :compinstall filename '~/.zshrc'
 zstyle ':completion:*' menu select
 
-# 0 -- vanilla completion (abc => abc)
-# 1 -- smart case completion (abc => Abc)
-# 2 -- word flex completion (abc => A-big-Car)
-# 3 -- full flex completion (abc => ABraCadabra)
 zstyle ':completion:*' matcher-list '' 'm:{a-z\-}={A-Z\_}' 'r:[^[:alpha:]]||[[:alpha:]]=** r:|=* m:{a-z\-}={A-Z\_}' 'r:|?=** m:{a-z\-}={A-Z\_}'
 
 _comp_options+=(globdots)

@@ -1,3 +1,4 @@
+source "$ZSH/custom/plugins/forgit/forgit.plugin.zsh"
 source "$ZSH/custom/plugins/zsh-async/async.zsh"
 source "$ZSH/custom/plugins/zsh-abbr-path/.abbr_pwd"
 source "$ZSH/custom/plugins/zsh-fuzzy-search-and-edit/plugin.zsh"
