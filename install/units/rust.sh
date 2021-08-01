@@ -65,10 +65,17 @@ if [ ! "$HTTP_GET" ]; then
     exit 255
 fi
 
-CARGO_DIR="`realpath $REAL/.cargo/bin`"
-CARGO_EXE="`realpath $CARGO_DIR/cargo`"
-
 function prepare_cargo() {
+    local CARGO_DIR="`realpath $REAL/.cargo/bin`"
+    local CARGO_EXE="`realpath $CARGO_DIR/cargo`"
+    if [ ! "$CARGO_EXE" ]; then
+        echo " - fatal: init failed, CARGO_EXE empty"
+        exit 255
+    fi
+
+    CARGO_DIR="`realpath $REAL/.cargo/bin`"
+    CARGO_EXE="`realpath $CARGO_DIR/cargo`"
+
     url='https://sh.rustup.rs'
     if [ ! -f "$CARGO_EXE" ]; then
         $SHELL -c "$HTTP_GET $url" | RUSTUP_HOME=~/.rustup CARGO_HOME=~/.cargo RUSTUP_INIT_SKIP_PATH_CHECK=yes bash -s - --profile minimal --no-modify-path --quiet -y
@@ -91,6 +98,13 @@ function prepare_cargo() {
 }
 
 function deploy_packages() {
+    local CARGO_DIR="`realpath $REAL/.cargo/bin`"
+    local CARGO_EXE="`realpath $CARGO_DIR/cargo`"
+    if [ ! "$CARGO_EXE" ]; then
+        echo " - fatal: init failed, CARGO_EXE empty"
+        exit 255
+    fi
+
     for pkg in $@; do
         $CARGO_EXE install $pkg
     done
