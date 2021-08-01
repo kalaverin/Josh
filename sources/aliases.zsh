@@ -17,12 +17,12 @@ alias realpath="$JOSH_REALPATH"
 alias http='http --verify no'
 
 alias ag='ag -C1 --noaffinity --path-to-ignore ~/.ignore --stats --smart-case --width 140'
+
 local RIPGREP_OPTS='--context 1 --context-separator "" --require-git --stats --text --ignore-file ~/.ignore --max-columns 140 --max-columns-preview --max-filesize 1M --color always --colors "match:fg:yellow" --colors "path:fg:red"'
 alias rf="rg --smart-case $RIPGREP_OPTS"
 alias rg="rg --case-sensitive --fixed-strings --word-regexp $RIPGREP_OPTS"
 alias rfs="rf --sort path"
 alias ri="$JOSH_GREP -rnH --exclude '*.js' --exclude '*.min.css' --exclude '.git/' --exclude 'node_modules/' --exclude 'lib/python*/site-packages/' --exclude '__snapshots__/' --exclude '.eggs/' --exclude '*.pyc' --exclude '*.po' --exclude '*.svg' --color=auto"
-
 
 alias -g I='| grep -i'
 alias -g E='| grep -iv'
@@ -37,9 +37,7 @@ alias -g E_DEBUG="| grep -v '\[DEBUG\]'"
 alias -g E_WARNING="| grep -v '\[WARNING\]'"
 alias -g uri="$HTTP_GET"
 
-
-# TODO: --git-ignore 
-alias l="exa -lFag --color=always --git --octal-permissions --group-directories-first"
+alias l="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first"
 alias lt="l --sort time"
 
 alias csv="csview --style Rounded"
