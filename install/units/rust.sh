@@ -50,31 +50,28 @@ OPTIONAL_PACKAGES=(
     ytop             # simple htop
 )
 
-if [ ! "$REAL" ]; then
-    export SOURCE_ROOT=$(sh -c "realpath `dirname $0`/../")
-    echo " + init from $SOURCE_ROOT"
-    . $SOURCE_ROOT/install/init.sh
-
+function set_defaults() {
     if [ ! "$REAL" ]; then
-        echo " - fatal: init failed"
+        export SOURCE_ROOT=$(sh -c "realpath `dirname $0`/../")
+        echo " + init from $SOURCE_ROOT"
+        . $SOURCE_ROOT/install/init.sh
+
+        if [ ! "$REAL" ]; then
+            echo " - fatal: init failed"
+            exit 255
+        fi
+    fi
+    if [ ! "$HTTP_GET" ]; then
+        echo " - fatal: init failed, HTTP_GET empty"
         exit 255
     fi
-fi
-if [ ! "$HTTP_GET" ]; then
-    echo " - fatal: init failed, HTTP_GET empty"
-    exit 255
-fi
+}
 
 function prepare_cargo() {
-    local CARGO_DIR="`realpath $REAL/.cargo/bin`"
-    local CARGO_EXE="`realpath $CARGO_DIR/cargo`"
-    if [ ! "$CARGO_EXE" ]; then
-        echo " - fatal: init failed, CARGO_EXE empty"
-        exit 255
-    fi
-
-    CARGO_DIR="`realpath $REAL/.cargo/bin`"
-    CARGO_EXE="`realpath $CARGO_DIR/cargo`"
+    set_defaults
+    local CARGO_DIR="$REAL/.cargo/bin"
+    local CARGO_EXE="$CARGO_DIR/cargo"
+    if [ ! -d "$CARGO_DIR" ] && mkdir -p "$CARGO_DIR"
 
     url='https://sh.rustup.rs'
     if [ ! -f "$CARGO_EXE" ]; then
@@ -98,12 +95,10 @@ function prepare_cargo() {
 }
 
 function deploy_packages() {
-    local CARGO_DIR="`realpath $REAL/.cargo/bin`"
-    local CARGO_EXE="`realpath $CARGO_DIR/cargo`"
-    if [ ! "$CARGO_EXE" ]; then
-        echo " - fatal: init failed, CARGO_EXE empty"
-        exit 255
-    fi
+    set_defaults
+    local CARGO_DIR="$REAL/.cargo/bin"
+    local CARGO_EXE="$CARGO_DIR/cargo"
+    if [ ! -d "$CARGO_DIR" ] && mkdir -p "$CARGO_DIR"
 
     for pkg in $@; do
         $CARGO_EXE install $pkg
