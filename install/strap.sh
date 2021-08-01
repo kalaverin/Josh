@@ -3,7 +3,9 @@
 export SOURCE_ROOT=$(sh -c "realpath `dirname $0`/../")
 
 if [ ! "$REAL" ]; then
+    echo " + init from $SOURCE_ROOT"
     . $SOURCE_ROOT/install/init.sh
+
     if [ ! "$REAL" ]; then
         echo " - fatal: init failed"
         exit 255

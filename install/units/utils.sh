@@ -28,6 +28,7 @@ function deploy_starship() {
             [ $? -gt 0 ] && echo " - failed starship"
         fi
     fi
+    return 0
 }
 
 # ——— fzf search
@@ -61,4 +62,5 @@ function deploy_micro() {
         [ $? -gt 0 ] && echo " + failed micro: $CUSTOM_BIN_DIR/micro"
         $SHELL -c "$CUSTOM_BIN_DIR/micro -plugin install fzf wc detectindent bounce editorconfig quickfix"
     fi
+    return 0
 }

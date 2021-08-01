@@ -51,8 +51,10 @@ OPTIONAL_PACKAGES=(
 )
 
 if [ ! "$REAL" ]; then
-    local JOSH=$(sh -c "dirname `realpath ~/.zshrc`")
-    source "$JOSH/install/init.sh"
+    local SOURCE_ROOT="$(sh -c "dirname `realpath ~/.zshrc`")"
+    echo " + init from $SOURCE_ROOT"
+    . $SOURCE_ROOT/install/init.sh
+
     if [ ! "$REAL" ]; then
         echo " - fatal: init failed"
         exit 255

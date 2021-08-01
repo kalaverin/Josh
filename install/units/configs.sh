@@ -9,9 +9,9 @@ if [ ! "$SOURCE_ROOT" ]; then
     exit 255
 fi
 
-[ ! -d "$CONFIG_DIR" ] && mkdir -p $CONFIG_DIR
 
 function config_starship() {
+    [ ! -d "$CONFIG_DIR" ] && mkdir -p $CONFIG_DIR
     if [ ! -f "$CONFIG_DIR/starship.toml" ]; then
         cp $SOURCE_ROOT/configs/starship.toml $CONFIG_DIR/starship.toml
         echo " + copy starship example config: $CONFIG_DIR/starship.toml"
@@ -19,6 +19,7 @@ function config_starship() {
 }
 
 function config_micro() {
+    [ ! -d "$CONFIG_DIR" ] && mkdir -p $CONFIG_DIR
     if [ ! -f "$CONFIG_DIR/micro/settings.json" ]; then
         [ ! -d "$CONFIG_DIR/micro/" ] && mkdir -p "$CONFIG_DIR/micro"
         cp "$SOURCE_ROOT/configs/micro.json" "$CONFIG_DIR/micro/settings.json"
