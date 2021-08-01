@@ -6,10 +6,8 @@ if [ ! "$SOURCE_ROOT" ]; then
     . $SOURCE_ROOT/install/init.sh
 fi
 if [ ! "$REAL" ]; then
-    if [ ! "$REAL" ]; then
-        echo " - fatal: init failed"
-        return 255
-    fi
+    echo " - fatal: init failed, REAL empty"
+    return 255
 fi
 if [ ! "$CONFIG_DIR" ]; then
     export CONFIG_DIR="$REAL/.config"
@@ -18,11 +16,6 @@ if [ ! "$CONFIG_DIR" ]; then
         return 255
     fi
 fi
-if [ ! "$SOURCE_ROOT" ]; then
-    echo " - fatal: init failed, SOURCE_ROOT empty"
-    return 255
-fi
-
 
 function config_starship() {
     [ ! -d "$CONFIG_DIR" ] && mkdir -p $CONFIG_DIR

@@ -1,30 +1,43 @@
 #!/bin/sh
 
+if [ ! "$SOURCE_ROOT" ]; then
+    export SOURCE_ROOT=$(sh -c "realpath `dirname $0`/../../")
+    echo " + init from $SOURCE_ROOT"
+    . $SOURCE_ROOT/install/init.sh
+fi
+if [ ! "$REAL" ]; then
+    echo " - fatal: init failed, REAL empty"
+    return 255
+fi
 if [ ! "$HTTP_GET" ]; then
     echo " - fatal: init failed, HTTP_GET empty"
-    exit 255
+    return 255
 fi
-if [ ! "$MERGE_DIR" ]; then
-    echo " - fatal: init failed, MERGE_DIR empty"
-    exit 255
+if [ "$MERGE_DIR" ]; then
+    BINARY_DEST="$MERGE_DIR/custom/bin"
+else
+    BINARY_DEST="$ZSH/custom/bin"
+    if [ ! -d "$BINARY_DEST" ]; then
+        echo " - fatal: init failed, BINARY_DEST must me created when call not in deploy context"
+        return 255
+    fi
 fi
 
-CUSTOM_BIN_DIR="$MERGE_DIR/custom/bin"
 
 # ——— starship prompt
 
 function deploy_starship() {
     url='https://starship.rs/install.sh'
-    [ ! -d "$CUSTOM_BIN_DIR" ] && mkdir -p "$CUSTOM_BIN_DIR"
+    [ ! -d "$BINARY_DEST" ] && mkdir -p "$BINARY_DEST"
 
-    if [ ! -f "$CUSTOM_BIN_DIR/starship" ]; then
+    if [ ! -f "$BINARY_DEST/starship" ]; then
         # static binary from official installer not found, ok
         if [ -f "`which starship`" ]; then
             echo " + use installed starship from `which starship`"
         else
             # and binary not found in system -> download
-            echo " + deploy starship to $CUSTOM_BIN_DIR/starship"
-            $SHELL -c "$HTTP_GET $url" | BIN_DIR=$CUSTOM_BIN_DIR FORCE=1 $SHELL
+            echo " + deploy starship to $BINARY_DEST/starship"
+            $SHELL -c "$HTTP_GET $url" | BIN_DIR=$BINARY_DEST FORCE=1 $SHELL
             [ $? -gt 0 ] && echo " - failed starship"
         fi
     fi
@@ -36,14 +49,14 @@ function deploy_starship() {
 function deploy_fzf() {
     url='https://github.com/junegunn/fzf.git'
     clone="`which git` clone --depth 1"
-    [ ! -d "$CUSTOM_BIN_DIR" ] && mkdir -p "$CUSTOM_BIN_DIR"
+    [ ! -d "$BINARY_DEST" ] && mkdir -p "$BINARY_DEST"
 
-    if [ ! -f "$CUSTOM_BIN_DIR/fzf" ]; then
-        # $CUSTOM_BIN_DIR/fzf --version | head -n 1 | awk '{print $1}'
-        echo " + deploy fzf to $CUSTOM_BIN_DIR/fzf"
+    if [ ! -f "$BINARY_DEST/fzf" ]; then
+        # $BINARY_DEST/fzf --version | head -n 1 | awk '{print $1}'
+        echo " + deploy fzf to $BINARY_DEST/fzf"
         tempdir="`mktemp -d`"
         rm -rf "$tempdir"
-        $SHELL -c "$clone $url $tempdir && $tempdir/install --completion --key-bindings --update-rc --bin && cp -f $tempdir/bin/fzf $CUSTOM_BIN_DIR/fzf && rm -rf $tempdir"
+        $SHELL -c "$clone $url $tempdir && $tempdir/install --completion --key-bindings --update-rc --bin && cp -f $tempdir/bin/fzf $BINARY_DEST/fzf && rm -rf $tempdir"
         [ $? -gt 0 ] && echo " - failed fzf"
     fi
     return 0
@@ -53,14 +66,14 @@ function deploy_fzf() {
 
 function deploy_micro() {
     url='https://getmic.ro'
-    [ ! -d "$CUSTOM_BIN_DIR" ] && mkdir -p "$CUSTOM_BIN_DIR"
+    [ ! -d "$BINARY_DEST" ] && mkdir -p "$BINARY_DEST"
 
-    if [ ! -f "$CUSTOM_BIN_DIR/micro" ]; then
-        # $CUSTOM_BIN_DIR/micro --version | head -n 1 | awk '{print $2}'
-        echo " + deploy micro: $CUSTOM_BIN_DIR/micro"
-        cd "$CUSTOM_BIN_DIR" && $SHELL -c "$HTTP_GET $url | $SHELL"
-        [ $? -gt 0 ] && echo " + failed micro: $CUSTOM_BIN_DIR/micro"
-        $SHELL -c "$CUSTOM_BIN_DIR/micro -plugin install fzf wc detectindent bounce editorconfig quickfix"
+    if [ ! -f "$BINARY_DEST/micro" ]; then
+        # $BINARY_DEST/micro --version | head -n 1 | awk '{print $2}'
+        echo " + deploy micro: $BINARY_DEST/micro"
+        cd "$BINARY_DEST" && $SHELL -c "$HTTP_GET $url | $SHELL"
+        [ $? -gt 0 ] && echo " + failed micro: $BINARY_DEST/micro"
+        $SHELL -c "$BINARY_DEST/micro -plugin install fzf wc detectindent bounce editorconfig quickfix"
     fi
     return 0
 }
