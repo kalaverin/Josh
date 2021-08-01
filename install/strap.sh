@@ -63,7 +63,7 @@ if [ "$ZSH" != "$SOURCE_ROOT" ]; then
 
     # ——— backup previous installation and configs
 
-    if [ -d $ZSH ]; then
+    if [ -d "$ZSH" ]; then
         # another josh installation found, move backup
 
         dst="$ZSH-(`date "+%Y.%m%d.%H%M"`)-backup"
@@ -75,30 +75,30 @@ if [ "$ZSH" != "$SOURCE_ROOT" ]; then
             exit 4
         fi
 
-        if [ -e "~/.zshrc" ]; then
+        if [ -e "$REAL/.zshrc" ]; then
             if [ ! -d $dst ]; then
                 mkdir -p $dst
             fi
-            cp -L "~/.zshrc" "$dst/.zshrc"
+            cp -L "$REAL/.zshrc" "$dst/.zshrc"
             if [ $? -gt 0 ]; then
-                echo " - backup ~/.zshrc failed"
+                echo " - backup $REAL/.zshrc failed"
                 exit 4
             fi
-            rm "~/.zshrc"
+            rm "$REAL/.zshrc"
         fi
 
-    elif [ -e "~/.zshrc" ]; then
+    elif [ -e "$REAL/.zshrc" ]; then
         # .zshrc exists from non-josh installation
 
-        dst="~/.zshrc-(`date "+%Y.%m%d.%H%M"`)-backup"
+        dst="$REAL/.zshrc-(`date "+%Y.%m%d.%H%M"`)-backup"
         echo " + backup old .zshrc to"
 
-        cp -L "~/.zshrc" "$dst"
+        cp -L "$REAL/.zshrc" "$dst"
         if [ $? -gt 0 ]; then
-            echo " - backup ~/.zshrc failed"
+            echo " - backup $REAL/.zshrc failed"
             exit 4
         fi
-        rm "~/.zshrc"
+        rm "$REAL/.zshrc"
     fi
 
 
