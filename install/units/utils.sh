@@ -4,12 +4,12 @@ if [ ! "$HTTP_GET" ]; then
     echo " - fatal: init failed, HTTP_GET empty"
     exit 255
 fi
-if [ ! "$JOSH_MERGE_DIR" ]; then
-    echo " - fatal: init failed, JOSH_MERGE_DIR empty"
+if [ ! "$MERGE_DIR" ]; then
+    echo " - fatal: init failed, MERGE_DIR empty"
     exit 255
 fi
 
-CUSTOM_BIN_DIR="$JOSH_MERGE_DIR/custom/bin"
+CUSTOM_BIN_DIR="$MERGE_DIR/custom/bin"
 
 # ——— starship prompt
 

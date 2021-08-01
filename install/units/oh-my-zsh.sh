@@ -4,12 +4,12 @@ if [ ! "$HTTP_GET" ]; then
     echo " - fatal: init failed, HTTP_GET empty"
     exit 255
 fi
-if [ ! "$JOSH_MERGE_DIR" ]; then
-    echo " - fatal: init failed, JOSH_MERGE_DIR empty"
+if [ ! "$MERGE_DIR" ]; then
+    echo " - fatal: init failed, MERGE_DIR empty"
     exit 255
 fi
 
-PLUGIN_DIR="$JOSH_MERGE_DIR/custom/plugins"
+PLUGIN_DIR="$MERGE_DIR/custom/plugins"
 PACKAGES=(
     "https://github.com/b4b4r07/emoji-cli $PLUGIN_DIR/emoji-cli"
     "https://github.com/chrissicool/zsh-256color $PLUGIN_DIR/zsh-256color"
@@ -33,12 +33,12 @@ PACKAGES=(
 
 function deploy_ohmyzsh() {
     url='https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh'
-    if [ -d "$JOSH_MERGE_DIR" ]; then
-        echo " * oh-my-zsh already in $JOSH_MERGE_DIR"
-        cd $JOSH_MERGE_DIR && git reset --hard && git pull origin master
+    if [ -d "$MERGE_DIR" ]; then
+        echo " * oh-my-zsh already in $MERGE_DIR"
+        cd $MERGE_DIR && git reset --hard && git pull origin master
     else
-        echo " + deploy oh-my-zsh to $JOSH_MERGE_DIR"
-        $SHELL -c "$HTTP_GET $url | CHSH=no RUNZSH=no KEEP_ZSHRC=yes ZSH=$JOSH_MERGE_DIR bash -s - --unattended --keep-zshrc"
+        echo " + deploy oh-my-zsh to $MERGE_DIR"
+        $SHELL -c "$HTTP_GET $url | CHSH=no RUNZSH=no KEEP_ZSHRC=yes ZSH=$MERGE_DIR bash -s - --unattended --keep-zshrc"
         [ $? -gt 0 ] && return 1
     fi
     return 0

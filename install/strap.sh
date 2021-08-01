@@ -20,12 +20,14 @@ else
 fi
 
 export CONFIG_DIR="$REAL/.config"
-export JOSH_MERGE_DIR="$REAL/josh.base"
+export MERGE_DIR="$REAL/josh.base"
 
-. $SOURCE_ROOT/install/units/oh-my-zsh.sh && \
-. $SOURCE_ROOT/install/units/utils.sh && \
-. $SOURCE_ROOT/install/units/configs.sh && \
-. $SOURCE_ROOT/install/units/rust.sh
+cd "$SOURCE_ROOT" &&
+git pull origin master && \
+. install/units/oh-my-zsh.sh && \
+. install/units/utils.sh && \
+. install/units/configs.sh && \
+. install/units/rust.sh
 
 [ $? -gt 0 ] && return 1
 
@@ -42,40 +44,56 @@ deploy_packages $REQUIRED_PACKAGES
 [ $? -gt 0 ] && return 2
 
 
-# ——— after install all required dependencies — finalize installation
+if [ "$ZSH" != "$SOURCE_ROOT" ]; then
 
-if [ -d "~/josh.future" ]; then
-    echo " + ~/josh.future merging into ~/josh.base/custom/plugins/"
-    mv ~/josh.future ~/josh.base/custom/plugins/josh
+    # ——— after install all required dependencies — finalize installation
 
-elif [ -d "~/josh.base/custom/plugins/josh" ]; then
-    echo " + ~/josh.future already merged ~/josh.base/custom/plugins/"
+    if [ -d "$SOURCE_ROOT" ]; then
+        echo " + $SOURCE_ROOT merging into $MERGE_DIR/custom/plugins/"
+        mv $SOURCE_ROOT $MERGE_DIR/custom/plugins/josh
 
-else
-    echo " - fatal: something wrong"
-    exit 3
-fi
+    elif [ -d "$MERGE_DIR/custom/plugins/josh" ]; then
+        echo " + $SOURCE_ROOT already merged $MERGE_DIR/custom/plugins/"
 
-
-# ——— backup previous installation and configs
-
-if [ -d $ZSH ]; then
-    # another josh installation found, move backup
-
-    dst="$ZSH-(`date "+%Y.%m%d.%H%M"`)-backup"
-    echo " + another Josh found, backup to $dst"
-
-    mv "$ZSH" "$dst"
-    if [ $? -gt 0 ]; then
-        echo " - backup $ZSH failed"
-        exit 4
+    else
+        echo " - fatal: something wrong"
+        exit 3
     fi
 
-    if [ -e "~/.zshrc" ]; then
-        if [ ! -d $dst ]; then
-            mkdir -p $dst
+
+    # ——— backup previous installation and configs
+
+    if [ -d $ZSH ]; then
+        # another josh installation found, move backup
+
+        dst="$ZSH-(`date "+%Y.%m%d.%H%M"`)-backup"
+        echo " + another Josh found, backup to $dst"
+
+        mv "$ZSH" "$dst"
+        if [ $? -gt 0 ]; then
+            echo " - backup $ZSH failed"
+            exit 4
         fi
-        cp -L "~/.zshrc" "$dst/.zshrc"
+
+        if [ -e "~/.zshrc" ]; then
+            if [ ! -d $dst ]; then
+                mkdir -p $dst
+            fi
+            cp -L "~/.zshrc" "$dst/.zshrc"
+            if [ $? -gt 0 ]; then
+                echo " - backup ~/.zshrc failed"
+                exit 4
+            fi
+            rm "~/.zshrc"
+        fi
+
+    elif [ -e "~/.zshrc" ]; then
+        # .zshrc exists from non-josh installation
+
+        dst="~/.zshrc-(`date "+%Y.%m%d.%H%M"`)-backup"
+        echo " + backup old .zshrc to"
+
+        cp -L "~/.zshrc" "$dst"
         if [ $? -gt 0 ]; then
             echo " - backup ~/.zshrc failed"
             exit 4
@@ -83,25 +101,12 @@ if [ -d $ZSH ]; then
         rm "~/.zshrc"
     fi
 
-elif [ -e "~/.zshrc" ]; then
-    # .zshrc exists from non-josh installation
 
-    dst="~/.zshrc-(`date "+%Y.%m%d.%H%M"`)-backup"
-    echo " + backup old .zshrc to"
+    # ——— set current installation as main and link config
 
-    cp -L "~/.zshrc" "$dst"
+    mv "$MERGE_DIR" "$ZSH" && ln -s $JOSH/.zshrc ~/.zshrc && ln -s ../plugins/josh/themes/josh.zsh-theme $ZSH/custom/themes/josh.zsh-theme
     if [ $? -gt 0 ]; then
-        echo " - backup ~/.zshrc failed"
-        exit 4
+        echo ' - fatal: linkage failed'
+        exit 5
     fi
-    rm "~/.zshrc"
-fi
-
-
-# ——— set current installation as main and link config
-
-mv "~/josh.base" "$ZSH" && ln -s $JOSH/.zshrc ~/.zshrc && ln -s ../plugins/josh/themes/josh.zsh-theme $ZSH/custom/themes/josh.zsh-theme
-if [ $? -gt 0 ]; then
-    echo ' - fatal: linkage failed'
-    exit 5
 fi
