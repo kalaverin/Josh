@@ -6,6 +6,7 @@ REQUIRED_PACKAGES=(
     exa       # fast replace for ls
     fd-find   # fd, fast replace for find for humans
     git-delta # fast replace for git delta with steroids
+    mdcat     # Markdown files rendered viewer
     ripgrep   # rg, fast replace for grep -ri for humans
     starship  # shell prompt
 )
@@ -30,7 +31,6 @@ OPTIONAL_PACKAGES=(
     jql              # select values by path from JSON input for humans
     logtail          # graphical tail logs in termial
     lsd              # another ls replacement tool
-    mdcat            # Markdown files rendered viewer
     mrh              # recursively search git reps and return status (detached, tagged, etc)
     onefetch         # graphical statistics for git repository
     procs            # ps aux replacement for humans
