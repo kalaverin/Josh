@@ -161,8 +161,8 @@ _comp_options+=(globdots)
 autoload -Uz compinit
 compinit -u # -u insecure!
 
-export GRAVEYARD='~/.trash'
 export VIRTUAL_ENV_DISABLE_PROMPT=1
+export GRAVEYARD="$REAL/.trash"
 
 [ -f "`which sccache`" ] && export RUSTC_WRAPPER=`which sccache`
 
