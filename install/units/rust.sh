@@ -51,7 +51,7 @@ OPTIONAL_PACKAGES=(
 )
 
 if [ ! "$REAL" ]; then
-    local SOURCE_ROOT="$(sh -c "dirname `realpath ~/.zshrc`")"
+    export SOURCE_ROOT=$(sh -c "realpath `dirname $0`/../")
     echo " + init from $SOURCE_ROOT"
     . $SOURCE_ROOT/install/init.sh
 

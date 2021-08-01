@@ -43,60 +43,12 @@ deploy_packages $REQUIRED_PACKAGES
 
 [ $? -gt 0 ] && return 2
 
-
 if [ "$ZSH" != "$SOURCE_ROOT" ]; then
+    merge_josh_ohmyzsh && \
+    save_previous_installation && \
+    rename_and_link
 
-    # ——— after install all required dependencies — finalize installation
+    [ $? -gt 0 ] && return 3
 
-    if [ -d "$SOURCE_ROOT" ]; then
-        echo " + $SOURCE_ROOT merging into $MERGE_DIR/custom/plugins/"
-        mv $SOURCE_ROOT $MERGE_DIR/custom/plugins/josh
-
-    elif [ -d "$MERGE_DIR/custom/plugins/josh" ]; then
-        echo " + $SOURCE_ROOT already merged $MERGE_DIR/custom/plugins/"
-
-    else
-        echo " - fatal: something wrong"
-        exit 3
-    fi
-
-
-    # ——— backup previous installation and configs
-
-    if [ -d "$ZSH" ]; then
-        # another josh installation found, move backup
-
-        dst="$ZSH-(`date "+%Y.%m%d.%H%M"`)-backup"
-        echo " + another Josh found, backup to $dst"
-
-        mv "$ZSH" "$dst"
-        if [ $? -gt 0 ]; then
-            echo " - backup $ZSH failed"
-            exit 4
-        fi
-
-    elif [ -e "$REAL/.zshrc" ]; then
-        # .zshrc exists from non-josh installation
-
-        dst="$REAL/.zshrc-(`date "+%Y.%m%d.%H%M"`)-backup"
-        echo " + backup old .zshrc to $dst"
-
-        cp -L "$REAL/.zshrc" "$dst"
-        if [ $? -gt 0 ]; then
-            echo " - backup $REAL/.zshrc failed"
-            exit 4
-        fi
-        rm "$REAL/.zshrc"
-    fi
-
-
-    # ——— set current installation as main and link config
-
-    mv "$MERGE_DIR" "$ZSH" && ln -s $JOSH/.zshrc ~/.zshrc && ln -s ../plugins/josh/themes/josh.zsh-theme $ZSH/custom/themes/josh.zsh-theme
-    if [ $? -gt 0 ]; then
-        echo ' - fatal: linkage failed'
-        exit 5
-    fi
-    echo " + Josh deploy success, enjoy!"
-    exec zsh
+    cd $REAL && echo ' + oh my josh!'
 fi

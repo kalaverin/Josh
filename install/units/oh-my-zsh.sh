@@ -1,5 +1,15 @@
 #!/bin/sh
 
+if [ ! "$REAL" ]; then
+    export SOURCE_ROOT=$(sh -c "realpath `dirname $0`/../")
+    echo " + init from $SOURCE_ROOT"
+    . $SOURCE_ROOT/install/init.sh
+
+    if [ ! "$REAL" ]; then
+        echo " - fatal: init failed"
+        exit 255
+    fi
+fi
 if [ ! "$HTTP_GET" ]; then
     echo " - fatal: init failed, HTTP_GET empty"
     exit 255
@@ -64,6 +74,73 @@ function deploy_extensions() {
                 echo " - clone plugin ok: $clone $pkg"
             fi
         done
+    fi
+    return 0
+}
+
+
+# ——— after install all required dependencies — finalize installation
+
+function merge_josh_ohmyzsh() {
+    if [ -d "$SOURCE_ROOT" ]; then
+        echo " + $SOURCE_ROOT merging into $MERGE_DIR/custom/plugins/"
+        mv $SOURCE_ROOT $MERGE_DIR/custom/plugins/josh
+
+    elif [ -d "$MERGE_DIR/custom/plugins/josh" ]; then
+        echo " + $SOURCE_ROOT already merged $MERGE_DIR/custom/plugins/"
+
+    else
+        echo " - fatal: something wrong"
+        return 3
+    fi
+    return 0
+}
+
+
+# ——— backup previous installation and configs
+
+function save_previous_installation() {
+    if [ -d "$ZSH" ]; then
+        # another josh installation found, move backup
+
+        dst="$ZSH-(`date "+%Y.%m%d.%H%M"`)-backup"
+        echo " + another Josh found, backup to $dst"
+
+        mv "$ZSH" "$dst"
+        if [ $? -gt 0 ]; then
+            echo " - backup $ZSH failed"
+            return 4
+        fi
+
+    elif [ -e "$REAL/.zshrc" ]; then
+        # .zshrc exists from non-josh installation
+
+        dst="$REAL/.zshrc-(`date "+%Y.%m%d.%H%M"`)-backup"
+        echo " + backup old .zshrc to $dst"
+
+        cp -L "$REAL/.zshrc" "$dst"
+        if [ $? -gt 0 ]; then
+            echo " - backup $REAL/.zshrc failed"
+            return 4
+        fi
+        rm "$REAL/.zshrc"
+    fi
+    return 0
+}
+
+
+    # ——— set current installation as main and link config
+
+function rename_and_link() {
+    mv "$MERGE_DIR" "$ZSH"
+    ln -s ../plugins/josh/themes/josh.zsh-theme $ZSH/custom/themes/josh.zsh-theme
+
+    if [ ! -e "$REAL/.zshrc" ]; then
+        ln -s $JOSH/.zshrc ~/.zshrc
+        if [ $? -gt 0 ]; then
+            echo ' - fatal: linkage failed'
+            return 5
+        fi
     fi
     return 0
 }
