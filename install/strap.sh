@@ -1,20 +1,40 @@
 #!/bin/sh
 
-export INSTALL_ROOT=`git rev-parse --quiet --show-toplevel`
+export SOURCE_ROOT=$(sh -c "realpath `dirname $0`/../")
 
-. $INSTALL_ROOT/install/init.sh
-[ $? -gt 0 ] && echo " - initialization failure"
+if [ ! "$REAL" ]; then
+    . $SOURCE_ROOT/install/init.sh
+    if [ ! "$REAL" ]; then
+        echo " - fatal: init failed"
+        exit 255
+    fi
+fi
+
 if [ ! "$HTTP_GET" ]; then
     echo " - fatal: curl, wget, fetch or httpie doesn't exists" 1>&2
-    exit 1
+    exit 255
 else
     echo " * http backend: $HTTP_GET" 1>&2
 fi
 
-export CONF_DIR="$REAL/.config"
-export TEMP_DIR="$REAL/josh.base"
+export CONFIG_DIR="$REAL/.config"
+export JOSH_MERGE_DIR="$REAL/josh.base"
 
-$SHELL $INSTALL_ROOT/install/units/oh-my-zsh.sh
-$SHELL $INSTALL_ROOT/install/units/utils.sh
-$SHELL $INSTALL_ROOT/install/units/configs.sh
-$SHELL $INSTALL_ROOT/install/units/rust.sh
+. $SOURCE_ROOT/install/units/oh-my-zsh.sh && \
+. $SOURCE_ROOT/install/units/utils.sh && \
+. $SOURCE_ROOT/install/units/configs.sh && \
+. $SOURCE_ROOT/install/units/rust.sh
+
+[ $? -gt 0 ] && return 1
+
+deploy_ohmyzsh && \
+deploy_extensions && \
+deploy_fzf && \
+deploy_starship && \
+config_starship && \
+deploy_micro && \
+config_micro && \
+prepare_cargo && \
+deploy_packages $REQUIRED_PACKAGES
+
+[ $? -gt 0 ] && return 2

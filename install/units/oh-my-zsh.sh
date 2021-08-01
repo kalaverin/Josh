@@ -1,5 +1,15 @@
 #!/bin/sh
-PLUGIN_DIR="$TEMP_DIR/custom/plugins"
+
+if [ ! "$HTTP_GET" ]; then
+    echo " - fatal: init failed, HTTP_GET empty"
+    exit 255
+fi
+if [ ! "$JOSH_MERGE_DIR" ]; then
+    echo " - fatal: init failed, JOSH_MERGE_DIR empty"
+    exit 255
+fi
+
+PLUGIN_DIR="$JOSH_MERGE_DIR/custom/plugins"
 PACKAGES=(
     "https://github.com/b4b4r07/emoji-cli $PLUGIN_DIR/emoji-cli"
     "https://github.com/chrissicool/zsh-256color $PLUGIN_DIR/zsh-256color"
@@ -18,35 +28,38 @@ PACKAGES=(
     "https://github.com/zsh-users/zsh-syntax-highlighting.git $PLUGIN_DIR/zsh-syntax-highlighting"
     "--recursive https://github.com/joel-porquet/zsh-dircolors-solarized.git $PLUGIN_DIR/zsh-dircolors-solarized"
 )
-URL_OHMYZOSH='https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh'
-
 
 # ——- first, clone oh-my-zsh as core
 
-if [ -d $TEMP_DIR ]; then
-    # cd $TEMP_DIR && git reset --hard && git pull origin master
-    echo " * oh-my-zsh already in $TEMP_DIR"
-else
-    echo " + deploy oh-my-zsh to $TEMP_DIR"
-    $SHELL -c "$HTTP_GET $URL_OHMYZOSH | CHSH=no RUNZSH=no KEEP_ZSHRC=yes ZSH=$TEMP_DIR bash -s - --unattended --keep-zshrc"
-    [ $? -gt 0 ] && return 1
-fi
+function deploy_ohmyzsh() {
+    url='https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh'
+    if [ -d "$JOSH_MERGE_DIR" ]; then
+        # cd $JOSH_MERGE_DIR && git reset --hard && git pull origin master
+        echo " * oh-my-zsh already in $JOSH_MERGE_DIR"
+    else
+        echo " + deploy oh-my-zsh to $JOSH_MERGE_DIR"
+        $SHELL -c "$HTTP_GET $url | CHSH=no RUNZSH=no KEEP_ZSHRC=yes ZSH=$JOSH_MERGE_DIR bash -s - --unattended --keep-zshrc"
+        [ $? -gt 0 ] && return 1
+    fi
+}
 
 
 # ——- then clone git-based extensions
 
-clone="`which git` clone --depth 1"
-if [ ! -d $PLUGIN_DIR ]; then
-    mkdir -p $PLUGIN_DIR
-    echo " + clone extensions to $PLUGIN_DIR"
-    for pkg in "${PACKAGES[@]}"; do
-        $SHELL -c "$clone $pkg"
-        if [ $? -gt 0 ]; then
-            echo " - clone plugin failed: $clone $pkg"
-        else
-            echo " - clone plugin ok: $clone $pkg"
-        fi
-    done
-else
-    echo " * extensions already in $PLUGIN_DIR"
-fi
+function deploy_extensions() {
+    clone="`which git` clone --depth 1"
+    if [ ! -d "$PLUGIN_DIR" ]; then
+        mkdir -p "$PLUGIN_DIR"
+        echo " + clone extensions to $PLUGIN_DIR"
+        for pkg in "${PACKAGES[@]}"; do
+            $SHELL -c "$clone $pkg"
+            if [ $? -gt 0 ]; then
+                echo " - clone plugin failed: $clone $pkg"
+            else
+                echo " - clone plugin ok: $clone $pkg"
+            fi
+        done
+    else
+        echo " * extensions already in $PLUGIN_DIR"
+    fi
+}

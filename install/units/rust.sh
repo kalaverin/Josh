@@ -1,79 +1,99 @@
-RUST_URL='https://sh.rustup.rs'
+#!/bin/sh
 
-RUST_PACKAGES=(
-    bandwhich
-    bat
-    bingrep
-    colorizer
-    csview
-    dirstat-rs
-    du-dust
-    dull
-    dupe-krill
-    durt
-    exa
-    fd-find
-    fselect
-    gfold
-    git-delta
-    git-hist
-    git-local-ignore
-    gitui
-    hors
-    huniq
-    hyperfine
-    jql
-    logtail
-    lsd
-    mdcat
-    mrh
-    onefetch
-    procs
-    rcrawl
-    rhit
-    ripgrep
-    rm-improved
-    rmesg
-    scotty
-    scriptisto
-    sd
-    so
-    starship
-    syncat
-    tabulate
-    tokei
-    viu
-    x8
-    ytop
+REQUIRED_PACKAGES=(
+    bat       # modern replace for cat with syntax highlight
+    csview    # for commas, tabs, etc
+    exa       # fast replace for ls
+    fd-find   # fd, fast replace for find for humans
+    git-delta # fast replace for git delta with steroids
+    ripgrep   # rg, fast replace for grep -ri for humans
+    starship  # shell prompt
 )
 
+OPTIONAL_PACKAGES=(
+    bandwhich        # network bandwhich meter
+    bingrep          # extract and grep strings from binaries
+    colorizer        # logs colorizer
+    dirstat-rs       # ds, du replace, summary tree
+    du-dust          # dust, du replace, verbose tree
+    dull             # strip any ANSI (color) sequences from pipe
+    dupe-krill       # replace similar (by hash) files with hardlinks
+    durt             # du replace, just sum
+    fselect          # SQL-like wrapper around find
+    gfold            # git reps in directory branches status
+    git-hist         # git history for selected file
+    git-local-ignore # local (without .gitignore) git ignore wrapper
+    gitui            # terminal UI for git
+    hors             # stack overflow answers in terminal
+    huniq            # very fast sort | uniq replacement
+    hyperfine        # full featured time replacement and benchmark tool
+    jql              # select values by path from JSON input for humans
+    logtail          # graphical tail logs in termial
+    lsd              # another ls replacement tool
+    mdcat            # Markdown files rendered viewer
+    mrh              # recursively search git reps and return status (detached, tagged, etc)
+    onefetch         # graphical statistics for git repository
+    procs            # ps aux replacement for humans
+    rcrawl           # very fast file by pattern in directory
+    rhit             # very fast nginx log analyzer with graphical stats
+    rm-improved      # rip, powerful rm replacement with trashcan
+    rmesg            # modern dmesg replacement
+    scotty           # directory crawling statistics with search
+    scriptisto       # powerful tool, convert every source to executable with build instructions in same file
+    sd               # fast sed replacement for humans
+    so               # stack overflow answers in terminal
+    syncat           # cat with syntax
+    tabulate         # autodetect columns in stdin and tabulate
+    tokei            # sources stats
+    viu              # print images into terminal
+    x8               # websites scan tool
+    ytop             # simple htop
+)
 
-# if [ ! $REAL ]; then
-#     local JOSH=$(sh -c "dirname `realpath ~/.zshrc`")
-#     source "$JOSH/install/init.sh"
-# fi
-
-export CARGO_BIN=`realpath $REAL/.cargo/bin`
-cargo="`realpath $CARGO_BIN/cargo`"
-if [ ! -f "$cargo" ]; then
-    $SHELL -c "$HTTP_GET $RUST_URL" | RUSTUP_HOME=~/.rustup CARGO_HOME=~/.cargo RUSTUP_INIT_SKIP_PATH_CHECK=yes bash -s - --profile minimal --no-modify-path --quiet -y
-
-    if [ $? -gt 0 ] && $SHELL -c "$HTTP_GET $RUST_URL" | RUSTUP_HOME=~/.rustup CARGO_HOME=~/.cargo RUSTUP_INIT_SKIP_PATH_CHECK=yes bash -s - --profile minimal --no-modify-path --verbose -y
-
-    if [ $? -gt 0 ]; then
-        echo " - fatal: cargo deploy failed"
-        return 1
+if [ ! "$REAL" ]; then
+    local JOSH=$(sh -c "dirname `realpath ~/.zshrc`")
+    source "$JOSH/install/init.sh"
+    if [ ! "$REAL" ]; then
+        echo " - fatal: init failed"
+        exit 255
     fi
 fi
-
-if [ ! -f "`realpath $CARGO_BIN/sccache`" ]; then
-    $cargo install sccache
+if [ ! "$HTTP_GET" ]; then
+    echo " - fatal: init failed, HTTP_GET empty"
+    exit 255
 fi
 
-if [ -f "`which sccache`" ]; then
-    export RUSTC_WRAPPER=`which sccache`
-fi
+CARGO_DIR="`realpath $REAL/.cargo/bin`"
+CARGO_EXE="`realpath $CARGO_DIR/cargo`"
 
-for pkg in $RUST_PACKAGES; do
-    $cargo install $pkg
-done
+function prepare_cargo() {
+    url='https://sh.rustup.rs'
+    if [ ! -f "$CARGO_EXE" ]; then
+        $SHELL -c "$HTTP_GET $url" | RUSTUP_HOME=~/.rustup CARGO_HOME=~/.cargo RUSTUP_INIT_SKIP_PATH_CHECK=yes bash -s - --profile minimal --no-modify-path --quiet -y
+        if [ $? -gt 0 ]; then
+            $SHELL -c "$HTTP_GET $url" | RUSTUP_HOME=~/.rustup CARGO_HOME=~/.cargo RUSTUP_INIT_SKIP_PATH_CHECK=yes bash -s - --profile minimal --no-modify-path --verbose -y
+            echo " - fatal: cargo deploy failed"
+            exit 1
+        fi
+    else
+        $SHELL -c "`realpath $CARGO_DIR/rustup` update"
+    fi
+
+    if [ ! -f "`realpath $CARGO_DIR/sccache`" ]; then
+        $CARGO_EXE install sccache
+    fi
+
+    if [ -f "`which sccache`" ]; then
+        export RUSTC_WRAPPER=`which sccache`
+    fi
+}
+
+function deploy_packages() {
+    for pkg in $@; do
+        $CARGO_EXE install $pkg
+    done
+}
+
+function deploy_extras() {
+    deploy_packages $REQUIRED_PACKAGES
+}
