@@ -51,6 +51,10 @@ function deploy_extensions() {
     clone="`which git` clone --depth 1"
     if [ ! -d "$PLUGIN_DIR" ]; then
         mkdir -p "$PLUGIN_DIR"
+    fi
+    if [ "`find $PLUGIN_DIR -type d -maxdepth 1 | wc -l`" -gt "${#PACKAGES[@]}" ]; then
+        echo " * extensions already deployed to $PLUGIN_DIR"
+    else
         echo " + clone extensions to $PLUGIN_DIR"
         for pkg in "${PACKAGES[@]}"; do
             $SHELL -c "$clone $pkg"
@@ -60,8 +64,6 @@ function deploy_extensions() {
                 echo " - clone plugin ok: $clone $pkg"
             fi
         done
-    else
-        echo " * extensions already in $PLUGIN_DIR"
     fi
     return 0
 }
