@@ -13,12 +13,6 @@ JOSH_USER_URI="https://raw.githubusercontent.com/YaakovTooth/Josh/master/install
 
 # https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 > jq static
 
-if [ -n "$(uname -v | grep -i ubuntu)" ]; then
-    alias fd='fdfind'
-elif [ -n "$(uname -v | grep -i debian)" ]; then
-    alias fd='fdfind'
-fi
-
 # select content fetcher
 if [ -n "$READ_URI" ]; then
     echo " * using: $READ_URI"
@@ -49,19 +43,17 @@ else
     echo " - sudo not found, use su"
 fi
 
-# #@todo https://github.com/sharkdp/fd и сделать нормальные пути во фре
-
 # os dependent
 if [ -n "$(uname | grep -i freebsd)" ]; then
     echo " + os: freebsd"
     su="su -m root -c"
-    depends_command="pkg install -y fzf zsh git gnugrep py37-httpie jq pv gsed the_silver_searcher gnuls coreutils cargo"
+    depends_command="pkg install -y fzf zsh git gnugrep py37-httpie jq pv gsed the_silver_searcher gnuls coreutils"
 
 elif [ -n "$(uname | grep -i darwin)" ]; then
     runner="sh -c"
     echo " + os: macosx"
-    depends_command="brew update && brew install grep fzf zsh git httpie jq pv bat python python@2 cargo"
-    # fd-find gsed gnu-grep
+    depends_command="brew update && brew install grep fzf zsh git httpie jq pv python python@2"
+    # gsed gnu-grep
     if [ ! -d '/usr/local/Homebrew' ]; then
         echo " - homebrew not found"
         BIN_RUBY="`which ruby`"
@@ -81,19 +73,17 @@ elif [ -n "$(uname | grep -i linux)" ]; then
     if [ -n "$(uname -v | grep -i debian)" ]; then
         echo " + os: debian"
         su="su -l root -c"
-        depends_command="apt-get update --yes --quiet || true && apt-get install --yes --quiet --no-remove tree zsh git python3 python3-pip httpie jq pv cargo"
+        depends_command="apt-get update --yes --quiet || true && apt-get install --yes --quiet --no-remove tree zsh git python3 python3-pip httpie jq pv"
 
     elif [ -n "$(uname -v | grep -i ubuntu)" ]; then
         echo " + os: ubuntu"
         su="su -l root -c"
-        depends_command="apt-get update --yes --quiet || true && apt-get install --yes --quiet --no-remove tree zsh git python3 python3-pip httpie jq pv cargo"
+        depends_command="apt-get update --yes --quiet || true && apt-get install --yes --quiet --no-remove tree zsh git python3 python3-pip httpie jq pv"
     else
         echo " - unsupported platform: $(uname -v)"
         return 1
     fi
 fi
-
-cargo install --locked bandwhich bat bingrep colorizer csview dirstat-rs doh-client du-dust dull dupe-krill durt exa fd-find gfold git-delta git-hist git-local-ignore huniq jql logtail lsd mdcat mrh procs rcrawl rhit ripgrep rmesg scotty so ssup syncat tabulate tealdeer tokei viu x8 ytop
 
 echo " + system: $runner $depends_command"
 $runner "$depends_command"
