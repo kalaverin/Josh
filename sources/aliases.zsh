@@ -37,7 +37,8 @@ alias -g E_DEBUG="| grep -v '\[DEBUG\]'"
 alias -g E_WARNING="| grep -v '\[WARNING\]'"
 alias -g uri="$HTTP_GET"
 
-alias l="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first"
+# --git-ignore is bugged
+alias l="exa -lFag --color=always --git --octal-permissions --group-directories-first"
 alias lt="l --sort time"
 
 alias csv="csview --style Rounded"
