@@ -54,8 +54,8 @@ RUST_PACKAGES=(
 # fi
 
 export CARGO_BIN=`realpath $REAL/.cargo/bin`
-cargo=`realpath $CARGO_BIN/cargo`
-if [ ! -f $cargo ]; then
+cargo="`realpath $CARGO_BIN/cargo`"
+if [ ! -f "$cargo" ]; then
     $SHELL -c "$HTTP_GET $RUST_URL" | RUSTUP_HOME=~/.rustup CARGO_HOME=~/.cargo RUSTUP_INIT_SKIP_PATH_CHECK=yes bash -s - --profile minimal --no-modify-path --quiet -y
 
     if [ $? -gt 0 ] && $SHELL -c "$HTTP_GET $RUST_URL" | RUSTUP_HOME=~/.rustup CARGO_HOME=~/.cargo RUSTUP_INIT_SKIP_PATH_CHECK=yes bash -s - --profile minimal --no-modify-path --verbose -y
@@ -66,9 +66,9 @@ if [ ! -f $cargo ]; then
     fi
 fi
 
-if [ ! -f `realpath $CARGO_BIN/sccache` ]; then
+if [ ! -f "`realpath $CARGO_BIN/sccache`" ]; then
     $cargo install sccache
-    if [ `which sccache` ]; then
+    if [ "`which sccache`" ]; then
         export RUSTC_WRAPPER=`which sccache`
     fi
 fi
