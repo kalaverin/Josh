@@ -68,9 +68,10 @@ fi
 
 if [ ! -f "`realpath $CARGO_BIN/sccache`" ]; then
     $cargo install sccache
-    if [ "`which sccache`" ]; then
-        export RUSTC_WRAPPER=`which sccache`
-    fi
+fi
+
+if [ -f "`which sccache`" ]; then
+    export RUSTC_WRAPPER=`which sccache`
 fi
 
 for pkg in $RUST_PACKAGES; do
