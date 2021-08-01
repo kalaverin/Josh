@@ -14,6 +14,7 @@ REQUIRED_PACKAGES=(
 OPTIONAL_PACKAGES=(
     bandwhich        # network bandwhich meter
     bingrep          # extract and grep strings from binaries
+    broot            # lightweight embeddable file manager
     colorizer        # logs colorizer
     dirstat-rs       # ds, du replace, summary tree
     du-dust          # dust, du replace, verbose tree
@@ -28,17 +29,21 @@ OPTIONAL_PACKAGES=(
     hors             # stack overflow answers in terminal
     huniq            # very fast sort | uniq replacement
     hyperfine        # full featured time replacement and benchmark tool
+    jira-terminal    # Jira client, really
     jql              # select values by path from JSON input for humans
+    just             # comfortable system for per project frequently used commands like make test, etc
     logtail          # graphical tail logs in termial
     lsd              # another ls replacement tool
     mrh              # recursively search git reps and return status (detached, tagged, etc)
     onefetch         # graphical statistics for git repository
+    paper-terminal   # another yet Markdown printer, naturally like newpaper
     procs            # ps aux replacement for humans
     rcrawl           # very fast file by pattern in directory
     rhit             # very fast nginx log analyzer with graphical stats
     rm-improved      # rip, powerful rm replacement with trashcan
     rmesg            # modern dmesg replacement
     scotty           # directory crawling statistics with search
+    scout            # another one fuzzy search pipeliner
     scriptisto       # powerful tool, convert every source to executable with build instructions in same file
     sd               # fast sed replacement for humans
     so               # stack overflow answers in terminal
