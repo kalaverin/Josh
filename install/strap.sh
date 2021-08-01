@@ -75,18 +75,6 @@ if [ "$ZSH" != "$SOURCE_ROOT" ]; then
             exit 4
         fi
 
-        if [ -e "$REAL/.zshrc" ]; then
-            if [ ! -d $dst ]; then
-                mkdir -p $dst
-            fi
-            cp -L "$REAL/.zshrc" "$dst/.zshrc"
-            if [ $? -gt 0 ]; then
-                echo " - backup $REAL/.zshrc failed"
-                exit 4
-            fi
-            rm "$REAL/.zshrc"
-        fi
-
     elif [ -e "$REAL/.zshrc" ]; then
         # .zshrc exists from non-josh installation
 
