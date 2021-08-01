@@ -243,7 +243,7 @@ josh_urls() {
     echo ' (fetch -qo - kalaverin.ru/shell | zsh) && zsh'
 }
 
-josh_deploy_extras() {
+josh_extras() {
     . "$JOSH/install/units/rust.sh"
     deploy_extras
 }

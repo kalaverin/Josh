@@ -64,3 +64,8 @@ function deploy_micro() {
     fi
     return 0
 }
+
+function deploy_httpie() {}
+    PIP_REQUIRE_VIRTUALENV=false pip install --user --upgrade httpie
+    return 0
+}
