@@ -10,12 +10,13 @@ if [ ! "$JOSH_MERGE_DIR" ]; then
 fi
 
 CUSTOM_BIN_DIR="$JOSH_MERGE_DIR/custom/bin"
-[ ! -d "$CUSTOM_BIN_DIR" ] && mkdir -p "$CUSTOM_BIN_DIR"
 
 # ——— starship prompt
 
 function deploy_starship() {
     url='https://starship.rs/install.sh'
+    [ ! -d "$CUSTOM_BIN_DIR" ] && mkdir -p "$CUSTOM_BIN_DIR"
+
     if [ ! -f "$CUSTOM_BIN_DIR/starship" ]; then
         # static binary from official installer not found, ok
         if [ -f "`which starship`" ]; then
@@ -34,6 +35,8 @@ function deploy_starship() {
 function deploy_fzf() {
     url='https://github.com/junegunn/fzf.git'
     clone="`which git` clone --depth 1"
+    [ ! -d "$CUSTOM_BIN_DIR" ] && mkdir -p "$CUSTOM_BIN_DIR"
+
     if [ ! -f "$CUSTOM_BIN_DIR/fzf" ]; then
         # $CUSTOM_BIN_DIR/fzf --version | head -n 1 | awk '{print $1}'
         echo " + deploy fzf to $CUSTOM_BIN_DIR/fzf"
@@ -49,6 +52,8 @@ function deploy_fzf() {
 
 function deploy_micro() {
     url='https://getmic.ro'
+    [ ! -d "$CUSTOM_BIN_DIR" ] && mkdir -p "$CUSTOM_BIN_DIR"
+
     if [ ! -f "$CUSTOM_BIN_DIR/micro" ]; then
         # $CUSTOM_BIN_DIR/micro --version | head -n 1 | awk '{print $2}'
         echo " + deploy micro: $CUSTOM_BIN_DIR/micro"
