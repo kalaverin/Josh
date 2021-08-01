@@ -39,10 +39,9 @@ function deploy_ohmyzsh() {
     else
         echo " + deploy oh-my-zsh to $JOSH_MERGE_DIR"
         $SHELL -c "$HTTP_GET $url | CHSH=no RUNZSH=no KEEP_ZSHRC=yes ZSH=$JOSH_MERGE_DIR bash -s - --unattended --keep-zshrc"
-        ret="$?"
-        echo ">$ret<"
-        [ $ret -gt 0 ] && return 1
+        [ $? -gt 0 ] && return 1
     fi
+    return 0
 }
 
 
@@ -64,4 +63,5 @@ function deploy_extensions() {
     else
         echo " * extensions already in $PLUGIN_DIR"
     fi
+    return 0
 }
