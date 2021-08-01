@@ -224,6 +224,7 @@ josh_pull() {
         echo ' - update failed :-\'
         return 1
     fi
+    exec zsh
     return 0
 }
 
