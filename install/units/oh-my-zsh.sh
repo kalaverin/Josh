@@ -39,6 +39,7 @@ PACKAGES=(
     "--recursive https://github.com/joel-porquet/zsh-dircolors-solarized.git $PLUGIN_DIR/zsh-dircolors-solarized"
 )
 
+
 # ——- first, clone oh-my-zsh as core
 
 function deploy_ohmyzsh() {
@@ -129,7 +130,7 @@ function save_previous_installation() {
 }
 
 
-    # ——— set current installation as main and link config
+# ——— set current installation as main and link config
 
 function rename_and_link() {
     mv "$MERGE_DIR" "$ZSH"

@@ -38,6 +38,9 @@ deploy_starship && \
 config_starship && \
 deploy_micro && \
 config_micro && \
+config_git && \
+nano_syntax && \
+grep_ignore && \
 prepare_cargo && \
 deploy_packages $REQUIRED_PACKAGES
 
