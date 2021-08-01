@@ -34,8 +34,8 @@ PACKAGES=(
 function deploy_ohmyzsh() {
     url='https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh'
     if [ -d "$JOSH_MERGE_DIR" ]; then
-        # cd $JOSH_MERGE_DIR && git reset --hard && git pull origin master
         echo " * oh-my-zsh already in $JOSH_MERGE_DIR"
+        cd $JOSH_MERGE_DIR && git reset --hard && git pull origin master
     else
         echo " + deploy oh-my-zsh to $JOSH_MERGE_DIR"
         $SHELL -c "$HTTP_GET $url | CHSH=no RUNZSH=no KEEP_ZSHRC=yes ZSH=$JOSH_MERGE_DIR bash -s - --unattended --keep-zshrc"

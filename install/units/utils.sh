@@ -42,6 +42,7 @@ function deploy_fzf() {
         $SHELL -c "$clone $url $tempdir && $tempdir/install --completion --key-bindings --update-rc --bin && cp -f $tempdir/bin/fzf $CUSTOM_BIN_DIR/fzf && rm -rf $tempdir"
         [ $? -gt 0 ] && echo " - failed fzf"
     fi
+    return 0
 }
 
 # ——— micro editor

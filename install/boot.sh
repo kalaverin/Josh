@@ -3,7 +3,7 @@ if [ ! "`which git`" ]; then
     return 1
 fi
 
-DEST="`realpath ~/.josh.future`"
+DEST="`realpath ~/josh.future`"
 [ -d $DEST ] && rm -rf "$DEST"
 echo " + deploy Josh to $DEST"
 

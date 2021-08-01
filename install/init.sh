@@ -1,9 +1,9 @@
 REAL="~"
 REAL=$(sh -c "echo $REAL")
+export REAL="$(realpath $REAL)"
 
 export ZSH="$REAL/.josh"
 export JOSH="$ZSH/custom/plugins/josh"
-export REAL="$(realpath $REAL)"
 
 if [ "$HTTP_GET" ]; then
     echo
