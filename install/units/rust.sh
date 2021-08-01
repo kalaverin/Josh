@@ -58,13 +58,14 @@ function set_defaults() {
 
         if [ ! "$REAL" ]; then
             echo " - fatal: init failed"
-            exit 255
+            return 255
         fi
     fi
     if [ ! "$HTTP_GET" ]; then
         echo " - fatal: init failed, HTTP_GET empty"
-        exit 255
+        return 255
     fi
+    return 0
 }
 
 function prepare_cargo() {
@@ -79,7 +80,7 @@ function prepare_cargo() {
         if [ $? -gt 0 ]; then
             $SHELL -c "$HTTP_GET $url" | RUSTUP_HOME=~/.rustup CARGO_HOME=~/.cargo RUSTUP_INIT_SKIP_PATH_CHECK=yes bash -s - --profile minimal --no-modify-path --verbose -y
             echo " - fatal: cargo deploy failed"
-            exit 1
+            return 1
         fi
     else
         $SHELL -c "`realpath $CARGO_DIR/rustup` update"
@@ -92,6 +93,7 @@ function prepare_cargo() {
     if [ -f "`which sccache`" ]; then
         export RUSTC_WRAPPER=`which sccache`
     fi
+    return 0
 }
 
 function deploy_packages() {
@@ -103,8 +105,10 @@ function deploy_packages() {
     for pkg in $@; do
         $CARGO_EXE install $pkg
     done
+    return 0
 }
 
 function deploy_extras() {
     deploy_packages $OPTIONAL_PACKAGES
+    return 0
 }

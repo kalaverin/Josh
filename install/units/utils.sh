@@ -24,7 +24,7 @@ function deploy_starship() {
         else
             # and binary not found in system -> download
             echo " + deploy starship to $CUSTOM_BIN_DIR/starship"
-            BIN_DIR=$CUSTOM_BIN_DIR FORCE=1 $SHELL -c "$($HTTP_GET $url)"
+            $SHELL -c "$HTTP_GET $url" | BIN_DIR=$CUSTOM_BIN_DIR FORCE=1 $SHELL
             [ $? -gt 0 ] && echo " - failed starship"
         fi
     fi
