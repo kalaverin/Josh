@@ -91,7 +91,7 @@ if [ "$ZSH" != "$SOURCE_ROOT" ]; then
         # .zshrc exists from non-josh installation
 
         dst="$REAL/.zshrc-(`date "+%Y.%m%d.%H%M"`)-backup"
-        echo " + backup old .zshrc to"
+        echo " + backup old .zshrc to $dst"
 
         cp -L "$REAL/.zshrc" "$dst"
         if [ $? -gt 0 ]; then
@@ -109,4 +109,6 @@ if [ "$ZSH" != "$SOURCE_ROOT" ]; then
         echo ' - fatal: linkage failed'
         exit 5
     fi
+    echo " + Josh deploy success, enjoy!"
+    exec zsh
 fi
