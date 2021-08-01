@@ -33,7 +33,7 @@ use_logical_path = true
 format = '[$path]($style)[$read_only]($read_only_style)[/](black bold)'
 style = 'white bold'
 disabled = false
-read_only = '🔒'
+read_only = ''
 read_only_style = 'red'
 truncation_symbol = ''
 home_symbol = '~'
@@ -116,7 +116,7 @@ format = '[$symbol($version )]($style)'
 format = '[$symbol($version )]($style)'
 
 [hostname]
-ssh_only = true
+ssh_only = false
 trim_at = '.'
 format = '[$hostname]($style)[:](black bold)'
 style = 'green bold'
@@ -238,7 +238,7 @@ time_range = '-'
 format = '[$user]($style)[@](black bold)'
 style_root = 'bg:red fg:white bold'
 style_user = 'yellow bold'
-show_always = false
+show_always = true
 disabled = false
 
 [vlang]
