@@ -1,0 +1,11 @@
+*.min.js
+*.min.css
+*.po
+*.pyc
+*.svg
+
+.eggs/
+.git/
+__snapshots__/
+lib/python*/site-packages/
+node_modules/

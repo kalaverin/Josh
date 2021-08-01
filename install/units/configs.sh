@@ -72,7 +72,7 @@ function nano_syntax() {
 
 function grep_ignore() {
     if [ ! -f "$REAL/.ignore" ]; then
-        cp $SOURCE_ROOT/configs/.ignore "$REAL/"
+        cp $SOURCE_ROOT/configs/grep.ignore "$REAL/.ignore"
         echo " + copy grep ignore $REAL/.ignore template"
     fi
     return 0
