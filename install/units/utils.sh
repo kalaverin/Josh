@@ -44,6 +44,7 @@ function deploy_starship() {
     return 0
 }
 
+
 # ——— fzf search
 
 function deploy_fzf() {
@@ -62,6 +63,7 @@ function deploy_fzf() {
     return 0
 }
 
+
 # ——— micro editor
 
 function deploy_micro() {
@@ -78,7 +80,34 @@ function deploy_micro() {
     return 0
 }
 
-function deploy_httpie() {}
-    PIP_REQUIRE_VIRTUALENV=false pip install --user --upgrade httpie
+
+# ——— fresh pip for python 3
+
+function deploy_pip() {
+    local py="`which python3`"
+    if [ -f "$py" ]; then
+        local pip="/tmp/get-pip.py"
+        $SHELL -c "$HTTP_GET https://bootstrap.pypa.io/get-pip.py > $pip" && \
+        PIP_REQUIRE_VIRTUALENV=false python3 $pip "pip<=20.3.4" "setuptools" "wheel"
+        [ -f "$pip" ] && unlink "$pip"
+    else
+        echo " - require python3!"
+    fi
+    return 0
+}
+
+
+# ——— httpie client
+
+function deploy_httpie() {
+    local pip="$REAL/.local/bin/pip"
+    if [ ! -f "$pip" ]; then
+        deploy_pip
+    fi
+    if [ ! -f "$pip" ]; then
+        echo " - pip required python3!"
+    else
+        PIP_REQUIRE_VIRTUALENV=false pip install --user --upgrade httpie
+    fi
     return 0
 }

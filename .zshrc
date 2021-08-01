@@ -5,8 +5,8 @@ fi
 
 path=(
     ~/.cargo/bin
-    ~/.local/bin
     $ZSH/custom/bin
+    ~/.local/bin
     /bin
     /sbin
     /usr/bin

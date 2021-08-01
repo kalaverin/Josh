@@ -34,6 +34,7 @@ git pull origin master && \
 deploy_ohmyzsh && \
 deploy_extensions && \
 deploy_fzf && \
+deploy_httpie && \
 deploy_starship && \
 config_starship && \
 deploy_micro && \
