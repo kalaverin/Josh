@@ -217,9 +217,9 @@ sudoize() {
 }
 zle -N sudoize
 
-josh_update() {
-    GIT_CMD="git --work-tree=$JOSH --git-dir=$JOSH/.git"
-    sh -c "$GIT_CMD checkout master && $GIT_CMD pull"
+josh_pull() {
+    cmd="git --work-tree=$JOSH --git-dir=$JOSH/.git"
+    $SHELL -c "$cmd checkout master && $cmd pull"
     if [ $? -gt 0 ]; then
         echo ' - update failed :-\'
         return 1
@@ -227,14 +227,9 @@ josh_update() {
     return 0
 }
 
-josh_install() {
-    josh_update
-    if [ $? -gt 0 ]; then
-        return 1
-    fi
-
-    JOSH_FULL_URI="https://raw.githubusercontent.com/YaakovTooth/Josh/master/install/full.sh?$RANDOM"
-    sh -c "$READ_URI $JOSH_FULL_URI | sh"
+josh_deploy() {
+    url="https://raw.githubusercontent.com/YaakovTooth/Josh/master/install/boot.sh?$RANDOM"
+    $SHELL -c "$READ_URI $url | $SHELL"
     if [ $? -gt 0 ]; then
         echo ' - install failed :-\'
         return 1
@@ -253,21 +248,26 @@ josh_urls() {
     echo ' (fetch -qo - https://goo.gl/1MBc9t | sh) && exec zsh'
 }
 
+josh_deploy_extras() {
+    . "$JOSH/install/units/rust.sh"
+    deploy_extras
+}
+
 # autosuggestions and safe-paste patch
-function _start_paste() {
-    _zsh_autosuggest_widget_clear
-    bindkey -A paste main
-}
-function _end_paste() {
-    _zsh_autosuggest_widget_disable
-    bindkey -e
-    LBUFFER+=$_paste_content
-    unset _paste_content
-    _zsh_autosuggest_widget_enable
-}
+# function _start_paste() {
+#     _zsh_autosuggest_widget_clear
+#     bindkey -A paste main
+# }
+# function _end_paste() {
+#     _zsh_autosuggest_widget_disable
+#     bindkey -e
+#     LBUFFER+=$_paste_content
+#     unset _paste_content
+#     _zsh_autosuggest_widget_enable
+# }
+# 
+# function upgrade_custom() {
+#     (_upgrade_custom)
+# }
 
-function upgrade_custom() {
-    (_upgrade_custom)
-}
-
-find /tmp -maxdepth 1 -name "fuzzy-search-and-edit.*" -user $USER -type d -mmin +30 -exec rm -rf {} \;
+# find /tmp -maxdepth 1 -name "fuzzy-search-and-edit.*" -user $USER -type d -mmin +30 -exec rm -rf {} \;

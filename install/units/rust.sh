@@ -97,5 +97,5 @@ function deploy_packages() {
 }
 
 function deploy_extras() {
-    deploy_packages $REQUIRED_PACKAGES
+    deploy_packages $OPTIONAL_PACKAGES
 }

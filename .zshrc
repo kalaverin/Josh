@@ -99,10 +99,10 @@ HIST_REDUCE_BLANKS="true"
 ZSH_DISABLE_COMPFIX="true"
 
 plugins=(
-    autoupdate # autoupdate Josh
+    autoupdate   # autoupdate Josh
     colored-man-pages
-    dircycle # for fast move thru directories with alt-up/down
-    docker # suggestions
+    dircycle     # for fast move thru directories with alt-up/down
+    docker       # suggestions
     fancy-ctrl-z # ctrl-z to switch active process to background and vice-versa
     forgit
     git
@@ -110,13 +110,13 @@ plugins=(
     history
     history-search-multi-word
     history-substring-search
-    httpie # httpie python client
-    redis-cli # suggestions
-    supervisor # suggestions
-    wd # fast bookmarked directory switcher
-    zsh-256color
-    zsh-autopair # for autopair brackets, quoters, etc
-    zsh-autosuggestions
+    httpie              # suggestions
+    redis-cli           # suggestions
+    supervisor          # suggestions
+    wd                  # fast bookmarked directory switcher
+    zsh-256color        # force 8-bit colors
+    zsh-autopair        # for autopair brackets, quoters, etc
+    zsh-autosuggestions # live suggestions
     zsh-dircolors-solarized
     zsh-syntax-highlighting
 )
@@ -124,9 +124,9 @@ plugins=(
 fpath=($ZSH/custom/plugins/anyframe $fpath)
 autoload -Uz anyframe-init
 anyframe-init
+
 autoload -Uz chpwd_recent_dirs cdr add-zsh-hook
 add-zsh-hook chpwd chpwd_recent_dirs
-
 zstyle ":anyframe:selector:" use fzf
 
 source "$JOSH/sources/config.zsh"
