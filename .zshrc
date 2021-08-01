@@ -1,12 +1,12 @@
-if [ ! "$ZSH" ]; then
+if [ ! "$JOSH" ]; then
     local JOSH=$(sh -c "dirname `realpath ~/.zshrc`")
-    source "$JOSH/install/init.sh"
+    . "$JOSH/install/init.sh"
 fi
 
 path=(
-    $ZSH/custom/bin
     ~/.cargo/bin
     ~/.local/bin
+    $ZSH/custom/bin
     /bin
     /sbin
     /usr/bin
@@ -15,7 +15,7 @@ path=(
     /usr/local/sbin
     /usr/local/etc/rc.d
     /etc/rc.d
-    ~/bin
+    $REAL/bin
     $path
 )
 source "$JOSH/sources/compat.zsh"
@@ -161,8 +161,13 @@ _comp_options+=(globdots)
 autoload -Uz compinit
 compinit -u # -u insecure!
 
+export GRAVEYARD='~/.trash'
+export VIRTUAL_ENV_DISABLE_PROMPT=1
+
+[ -f "`which sccache`" ] && export RUSTC_WRAPPER=`which sccache`
+
+eval "$(starship init zsh)"
+
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 [ -f ~/.zshrclocal ] && source ~/.zshrclocal
 [ -f ~/.zshrcbinds ] && source ~/.zshrcbinds
-
-export VIRTUAL_ENV_DISABLE_PROMPT=1
