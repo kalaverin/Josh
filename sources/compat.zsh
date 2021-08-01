@@ -24,9 +24,3 @@ if [ -n "$(uname -v | grep -i debian)" ]; then
 fi
 
 export JOSH_HTTP=`which -p http`
-
-if [[ "$READ_URI" != "" ]]; then
-    uri() {
-        run_show "$READ_URI $*"
-    }
-fi

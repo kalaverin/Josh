@@ -35,6 +35,7 @@ alias -g GL="awk '{\$1=\$1};1' | sed -z 's/\n/ /g' | awk '{\$1=\$1};1'"
 alias -g E_INFO="| grep -v '\[INFO\]'"
 alias -g E_DEBUG="| grep -v '\[DEBUG\]'"
 alias -g E_WARNING="| grep -v '\[WARNING\]'"
+alias -g uri="$HTTP_GET"
 
 
 # TODO: --git-ignore 
