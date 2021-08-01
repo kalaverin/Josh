@@ -9,6 +9,7 @@ REQUIRED_PACKAGES=(
     mdcat     # Markdown files rendered viewer
     ripgrep   # rg, fast replace for grep -ri for humans
     starship  # shell prompt
+    syncat    # cat with syntax
 )
 
 OPTIONAL_PACKAGES=(
@@ -47,7 +48,6 @@ OPTIONAL_PACKAGES=(
     scriptisto       # powerful tool, convert every source to executable with build instructions in same file
     sd               # fast sed replacement for humans
     so               # stack overflow answers in terminal
-    syncat           # cat with syntax
     tabulate         # autodetect columns in stdin and tabulate
     tokei            # sources stats
     viu              # print images into terminal

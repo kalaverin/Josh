@@ -42,7 +42,8 @@ config_git && \
 nano_syntax && \
 grep_ignore && \
 prepare_cargo && \
-deploy_packages $REQUIRED_PACKAGES
+deploy_packages $REQUIRED_PACKAGES && \
+config_syncat
 
 [ $? -gt 0 ] && return 2
 

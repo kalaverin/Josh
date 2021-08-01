@@ -1,22 +1,26 @@
 #!/bin/sh
 
-if [ ! "$REAL" ]; then
-    export SOURCE_ROOT=$(sh -c "realpath `dirname $0`/../")
+if [ ! "$SOURCE_ROOT" ]; then
+    export SOURCE_ROOT=$(sh -c "realpath `dirname $0`/../../")
     echo " + init from $SOURCE_ROOT"
     . $SOURCE_ROOT/install/init.sh
-
+fi
+if [ ! "$REAL" ]; then
     if [ ! "$REAL" ]; then
         echo " - fatal: init failed"
-        exit 255
+        return 255
     fi
 fi
 if [ ! "$CONFIG_DIR" ]; then
-    echo " - fatal: init failed, CONFIG_DIR empty"
-    exit 255
+    export CONFIG_DIR="$REAL/.config"
+    if [ ! -d "$CONFIG_DIR" ]; then
+        echo " - fatal: init failed, CONFIG_DIR must me created when call not in deploy context"
+        return 255
+    fi
 fi
 if [ ! "$SOURCE_ROOT" ]; then
     echo " - fatal: init failed, SOURCE_ROOT empty"
-    exit 255
+    return 255
 fi
 
 
@@ -26,6 +30,7 @@ function config_starship() {
         cp $SOURCE_ROOT/configs/starship.toml $CONFIG_DIR/starship.toml
         echo " + copy starship example config: $CONFIG_DIR/starship.toml"
     fi
+    return 0
 }
 
 function config_micro() {
@@ -35,8 +40,21 @@ function config_micro() {
         cp "$SOURCE_ROOT/configs/micro.json" "$CONFIG_DIR/micro/settings.json"
         echo " + copy micro editor example config: $CONFIG_DIR/micro/settings.json"
     fi
+    return 0
 }
 
+function config_syncat() {
+    [ ! -d "$CONFIG_DIR" ] && mkdir -p $CONFIG_DIR
+    if [ ! -f "$CONFIG_DIR/syncat/languages.toml" ]; then
+        [ ! -d "$CONFIG_DIR/syncat/" ] && mkdir -p "$CONFIG_DIR/syncat"
+        cp "$SOURCE_ROOT/configs/syncat.toml" "$CONFIG_DIR/syncat/languages.toml"
+        echo " + copy syncat viewer example config: $CONFIG_DIR/syncat/languages.toml"
+    fi
+    if [ ! -d "$CONFIG_DIR/syncat/languages" ]; then
+        syncat install
+    fi
+    return 0
+}
 
 function config_git() {
     git config --global color.ui auto
