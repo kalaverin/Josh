@@ -91,7 +91,7 @@ function deploy_pip() {
         PIP_REQUIRE_VIRTUALENV=false python3 $pip "pip<=20.3.4" "setuptools" "wheel"
         [ -f "$pip" ] && unlink "$pip"
     else
-        echo " - require python3!"
+        echo " - require python >=3.6!"
     fi
     return 0
 }
@@ -105,7 +105,7 @@ function deploy_httpie() {
         deploy_pip
     fi
     if [ ! -f "$pip" ]; then
-        echo " - pip required python3!"
+        echo " - pip required python >=3.6!"
     else
         PIP_REQUIRE_VIRTUALENV=false pip install --user --upgrade httpie
     fi
