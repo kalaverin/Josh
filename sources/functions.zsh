@@ -237,15 +237,9 @@ josh_deploy() {
 }
 
 josh_urls() {
-    echo ' For install with sudo rights just run:'
-    echo '  (curl -fsSL https://goo.gl/NCF9so | sh) && exec zsh'
-    echo '  (wget -qO - https://goo.gl/NCF9so | sh) && exec zsh'
-    echo ' (fetch -qo - https://goo.gl/NCF9so | sh) && exec zsh'
-    echo ''
-    echo ' For install under user run:'
-    echo '  (curl -fsSL https://goo.gl/1MBc9t | sh) && exec zsh'
-    echo '  (wget -qO - https://goo.gl/1MBc9t | sh) && exec zsh'
-    echo ' (fetch -qo - https://goo.gl/1MBc9t | sh) && exec zsh'
+    echo '  (curl -fsSL kalaverin.ru/shell | zsh) && zsh'
+    echo '  (wget -qO - kalaverin.ru/shell | zsh) && zsh'
+    echo ' (fetch -qo - kalaverin.ru/shell | zsh) && zsh'
 }
 
 josh_deploy_extras() {
@@ -253,21 +247,4 @@ josh_deploy_extras() {
     deploy_extras
 }
 
-# autosuggestions and safe-paste patch
-# function _start_paste() {
-#     _zsh_autosuggest_widget_clear
-#     bindkey -A paste main
-# }
-# function _end_paste() {
-#     _zsh_autosuggest_widget_disable
-#     bindkey -e
-#     LBUFFER+=$_paste_content
-#     unset _paste_content
-#     _zsh_autosuggest_widget_enable
-# }
-# 
-# function upgrade_custom() {
-#     (_upgrade_custom)
-# }
-
-# find /tmp -maxdepth 1 -name "fuzzy-search-and-edit.*" -user $USER -type d -mmin +30 -exec rm -rf {} \;
+find /tmp -maxdepth 1 -name "fuzzy-search-and-edit.*" -user $USER -type d -mmin +30 -exec rm -rf {} \;
