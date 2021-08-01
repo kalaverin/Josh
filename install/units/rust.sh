@@ -85,7 +85,7 @@ function prepare_cargo() {
         $SHELL -c "`realpath $CARGO_DIR/rustup` update"
     fi
 
-    if [ ! -f "`realpath $CARGO_DIR/sccache`" ]; then
+    if [ ! -f "$CARGO_DIR/sccache" ]; then
         $CARGO_EXE install sccache
     fi
 
