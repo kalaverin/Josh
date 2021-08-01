@@ -5,7 +5,7 @@ format = '[$symbol($version )]($style)'
 
 [cmd_duration]
 min_time = 5000
-format = '[$duration]($style) '
+format = ' [$duration]($style)'
 style = 'yellow dimmed'
 show_milliseconds = false
 disabled = false
