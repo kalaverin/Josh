@@ -1,16 +1,17 @@
 #!/bin/sh
 
 REQUIRED_PACKAGES=(
-    bat       # modern replace for cat with syntax highlight
-    csview    # for commas, tabs, etc
-    exa       # fast replace for ls
-    fd-find   # fd, fast replace for find for humans
-    git-delta # fast replace for git delta with steroids
-    mdcat     # Markdown files rendered viewer
-    ripgrep   # rg, fast replace for grep -ri for humans
-    runiq     # fast uniq replacement
-    starship  # shell prompt
-    vivid     # ls colors themes selections system
+    bat            # modern replace for cat with syntax highlight
+    csview         # for commas, tabs, etc
+    exa            # fast replace for ls
+    fd-find        # fd, fast replace for find for humans
+    git-delta      # fast replace for git delta with steroids
+    mdcat          # Markdown files rendered viewer
+    proximity-sort # path sorter
+    ripgrep        # rg, fast replace for grep -ri for humans
+    runiq          # fast uniq replacement
+    starship       # shell prompt
+    vivid          # ls colors themes selections system
 )
 
 OPTIONAL_PACKAGES=(
