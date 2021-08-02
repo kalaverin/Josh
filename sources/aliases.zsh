@@ -117,11 +117,6 @@ function run_hide() {
     eval ${cmd} 1>/dev/null 2>/dev/null
 }
 
-commit () {
-    RBUFFER=`sh -c "$HTTP_GET http://whatthecommit.com/index.txt"`${RBUFFER}
-    zle end-of-line
-}
-
 last-modified() {
     local args="$*"
     if [ ! "$args" ]; then

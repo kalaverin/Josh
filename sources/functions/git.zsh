@@ -52,8 +52,10 @@ git_add_created() {
 
         if [[ "$files" != "" ]]; then
             local branch="${1:-`sh -c "$GIT_BRANCH"`}"
-            LBUFFER="$prefix add $files && gmm '$branch: "
-            RBUFFER="'"
+            LBUFFER="$prefix add $files && gmm "
+            LBUFFER+='"'
+            LBUFFER+="$branch: "
+            RBUFFER='"'
             local ret=$?
             zle redisplay
             typeset -f zle-line-init >/dev/null && zle zle-line-init
@@ -96,8 +98,10 @@ git_add_changed() {
 
         if [[ "$files" != "" ]]; then
             local branch="${1:-`sh -c "$GIT_BRANCH"`}"
-            LBUFFER="$prefix add $files && gmm '$branch: "
-            RBUFFER="'"
+            LBUFFER="$prefix add $files && gmm "
+            LBUFFER+='"'
+            LBUFFER+="$branch: "
+            RBUFFER='"'
             local ret=$?
             zle redisplay
             typeset -f zle-line-init >/dev/null && zle zle-line-init
