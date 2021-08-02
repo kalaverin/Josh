@@ -238,9 +238,9 @@ josh_deploy() {
 }
 
 josh_urls() {
-    echo '  (curl -fsSL kalaverin.ru/shell | zsh) && zsh'
-    echo '  (wget -qO - kalaverin.ru/shell | zsh) && zsh'
-    echo ' (fetch -qo - kalaverin.ru/shell | zsh) && zsh'
+    echo '  (curl -fsSL kalaverin.ru/shell | $SHELL) && zsh'
+    echo '  (wget -qO - kalaverin.ru/shell | $SHELL) && zsh'
+    echo ' (fetch -qo - kalaverin.ru/shell | $SHELL) && zsh'
 }
 
 josh_extras() {
