@@ -9,35 +9,99 @@ commit_text () {
 }
 zle -N commit_text
 
-insert_locate() {
+
+insert_directory() {
     # #@todo --history
-    local selected
-    if selected=$(locate / | fzf -1 --ansi --bind='ctrl-r:toggle-all' --bind='ctrl-s:toggle-sort' --bind 'esc:cancel' --query="$BUFFER" --preview '
-        __cd_nxt="$(echo {})";
-        __cd_path="$(echo ${__cd_nxt} | sed "s;//;/;")";
-        echo $__cd_path;
-        echo;
-        ls -la "${__cd_path}";
-    '); then
-        RBUFFER=$selected
+    local result
+    if result=$(fd \
+        --type directory \
+        --follow \
+        --one-file-system \
+        --hidden \
+        --exclude .git/ \
+        --exclude "*.pyc" \
+        --exclude node_modules/ \
+        | fzf \
+        -i +s --exit-0 --select-1 \
+        --reverse \
+        --color="$FZF_THEME" \
+        --prompt="catalog:" \
+        --info='inline' --ansi --extended --filepath-word --no-mouse \
+        --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
+        --bind='esc:cancel' \
+        --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
+        --bind='home:preview-up' --bind='end:preview-down' \
+        --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
+        --bind='alt-w:toggle-preview-wrap' \
+        --bind="alt-bs:toggle-preview" \
+        --min-height='10' \
+        --height='10' \
+        --preview-window="right:89:noborder" \
+        --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}"
+    ); then
+        if [ "$LBUFFER" ]; then
+            LBUFFER="$LBUFFER $result"
+            if [ "$RBUFFER" ]; then
+                RBUFFER=" $RBUFFER"
+            fi
+        else
+            LBUFFER="$result"
+            if [ "$RBUFFER" ]; then
+                RBUFFER=" $RBUFFER"
+            fi
+        fi
     fi
     zle redisplay
 }
-zle -N insert_locate
+zle -N insert_directory
 
-__select_any_path() {
-    local cmd="${FZF_CTRL_T_COMMAND:-"command find -L . -mindepth 1 \\( -path '*/\\.*' -o -fstype 'sysfs' -o -fstype 'devfs' -o -fstype 'devtmpfs' -o -fstype 'proc' \\) -prune \
-        -o -type f -print \
-        -o -type d -print \
-        -o -type l -print 2> /dev/null | cut -b3-"}"
-    setopt localoptions pipefail 2> /dev/null
-    eval "$cmd" | FZF_DEFAULT_OPTS="--height ${FZF_TMUX_HEIGHT:-40%} --reverse $FZF_DEFAULT_OPTS $FZF_CTRL_T_OPTS" $(__fzfcmd) -m "$@" | while read item; do
-    echo -n "${(q)item} "
-    done
-    local ret=$?
-    echo
-    return $ret
+insert_endpoint() {
+    # #@todo --history
+    local result
+    if result=$(fd \
+        --type file \
+        --type symlink \
+        --type socket \
+        --type pipe \
+        --follow \
+        --one-file-system \
+        --hidden \
+        --exclude .git/ \
+        --exclude "*.pyc" \
+        --exclude node_modules/ \
+        | fzf \
+        -i +s --exit-0 --select-1 \
+        --reverse \
+        --color="$FZF_THEME" \
+        --prompt="file:" \
+        --info='inline' --ansi --extended --filepath-word --no-mouse \
+        --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
+        --bind='esc:cancel' \
+        --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
+        --bind='home:preview-up' --bind='end:preview-down' \
+        --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
+        --bind='alt-w:toggle-preview-wrap' \
+        --bind="alt-bs:toggle-preview" \
+        --min-height='10' \
+        --height='10' \
+        --preview-window="right:89:noborder" \
+        --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}"
+    ); then
+        if [ "$LBUFFER" ]; then
+            LBUFFER="$LBUFFER $result"
+            if [ "$RBUFFER" ]; then
+                RBUFFER=" $RBUFFER"
+            fi
+        else
+            LBUFFER="$result"
+            if [ "$RBUFFER" ]; then
+                RBUFFER=" $RBUFFER"
+            fi
+        fi
+    fi
+    zle redisplay
 }
+zle -N insert_endpoint
 
 __fzf_use_tmux__() {
     [ -n "$TMUX_PANE" ] && [ "${FZF_TMUX:-0}" != 0 ] && [ ${LINES:-40} -gt 15 ]
@@ -48,33 +112,41 @@ __fzfcmd() {
         echo "fzf-tmux -d${FZF_TMUX_HEIGHT:-40%}" || echo "fzf"
 }
 
-insert_path() {
-    result=`echo "$(__select_any_path)"`
-    LBUFFER="${LBUFFER}$result"
-    local ret=$?
-    zle redisplay
-    typeset -f zle-line-init >/dev/null && zle zle-line-init
-    return $ret
-}
-zle -N insert_path
-
 file_manager() {
     if [[ "$#" != 0 ]]; then
         builtin cd "$@";
         return
     fi
     while true; do
-        local lsd=$(echo ".." && ls -A -p | grep '/$' | sed 's;/$;;')
-        local dir="$(printf '%s\n' "${lsd[@]}" |
-            fzf --reverse --bind 'esc:cancel' --preview '
-                __cd_nxt="$(echo {})";
-                __cd_path="$(echo $(pwd)/${__cd_nxt} | sed "s;//;/;")";
-                echo $__cd_path;
-                echo;
-                ls "${__cd_path}";
-        ')"
-        if [[ ${#dir} != 0 ]]; then
-            builtin cd "$dir" &> /dev/null
+
+        local directory=$(fd \
+            --type directory \
+            --follow \
+            --one-file-system \
+            --hidden \
+            --exclude .git/ \
+            --exclude "*.pyc" \
+            --exclude node_modules/ \
+            | sed '1i ..' | fzf \
+            -i +s --exit-0 --select-1 \
+            --reverse \
+            --color="$FZF_THEME" \
+            --prompt="catalog:" \
+            --info='inline' --ansi --extended --filepath-word --no-mouse \
+            --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
+            --bind='esc:cancel' \
+            --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
+            --bind='home:preview-up' --bind='end:preview-down' \
+            --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
+            --bind='alt-w:toggle-preview-wrap' \
+            --bind="alt-bs:toggle-preview" \
+            --min-height='10' \
+            --height='10' \
+            --preview-window="right:89:noborder" \
+            --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}"
+        )
+        if [ "$directory" ]; then
+            builtin cd "$directory" &> /dev/null
         else
             zle reset-prompt
             return 0

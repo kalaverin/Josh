@@ -32,7 +32,7 @@ if [[ "${terminfo[kcbt]}" != "" ]]; then
   bindkey "${terminfo[kcbt]}" reverse-menu-complete
 fi
 
-bindkey "^?"        backward-delete-char
+bindkey "^?"       backward-delete-char
 if [[ "${terminfo[kdch1]}" != "" ]]; then
   bindkey "${terminfo[kdch1]}" delete-char
 else
@@ -85,25 +85,18 @@ bindkey '\e\' ps_widget
 bindkey '^\' term_widget
 bindkey '\e^\' kill_widget
 
-bindkey "\e0" commit_text
-bindkey "\e-" expand-cmd-path
-bindkey "\e=" sudoize
+bindkey "\e0"  commit_text
+bindkey "\e-"  expand-cmd-path
+bindkey "\e="  sudoize
 bindkey "\e^?" autosuggest-execute # alt+backspace
-bindkey "\e]" copy-prev-shell-word
+bindkey "\e]"  copy-prev-shell-word
 
-#bindkey '\e^c' anyframe-widget-put-history
+# bindkey "\ez" fuzzy-search-and-edit  # temporary disabled
 
-# bindkey "\ee" znt-history-widget
-
-bindkey "\ez" fuzzy-search-and-edit
-
-bindkey '\ec' history-search-multi-word
-bindkey '\ex' insert_path
-
-##bindkey '\ev' insert_locate
-
-#bindkey '\e^v' file_manager
+bindkey '\ec'  history-search-multi-word
+bindkey '\ex'  insert_endpoint
+bindkey '\eX'  insert_directory
+bindkey '\e^x' file_manager
 
 bindkey "\ek" kill_last
-
 fi
