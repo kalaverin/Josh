@@ -1,6 +1,5 @@
 if [ ! "$JOSH" ]; then
-    local JOSH=$(sh -c "dirname `realpath ~/.zshrc`")
-    . "$JOSH/install/init.sh"
+    . "$(sh -c "dirname `realpath ~/.zshrc`")/install/init.sh"
 fi
 
 path=(
