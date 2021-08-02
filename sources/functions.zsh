@@ -22,7 +22,7 @@ insert_directory() {
         --exclude "*.pyc" \
         --exclude node_modules/ \
         | fzf \
-        -i +s --exit-0 --select-1 \
+        -i -s --exit-0 --select-1 \
         --reverse \
         --color="$FZF_THEME" \
         --prompt="catalog:" \
@@ -70,7 +70,7 @@ insert_endpoint() {
         --exclude "*.pyc" \
         --exclude node_modules/ \
         | fzf \
-        -i +s --exit-0 --select-1 \
+        -i -s --exit-0 --select-1 \
         --reverse \
         --color="$FZF_THEME" \
         --prompt="file:" \
@@ -128,7 +128,7 @@ file_manager() {
             --exclude "*.pyc" \
             --exclude node_modules/ \
             | sed '1i ..' | fzf \
-            -i +s --exit-0 --select-1 \
+            -i -s --exit-0 --select-1 \
             --reverse \
             --color="$FZF_THEME" \
             --prompt="chdir to:" \
