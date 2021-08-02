@@ -29,7 +29,7 @@ git_add_created() {
         # TODO: абсолютные пути в отличии от add_changed
         local files="$(zsh "$GIT_LIST_NEW" | sort | uniq | \
             fzf \
-                --multi \
+                --multi --color="$FZF_THEME" \
                 --prompt="add new:" \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
@@ -75,7 +75,7 @@ git_add_changed() {
     while true; do
         local files="$(echo "$GIT_LIST_CHANGED" | zsh | sort | uniq | \
             fzf \
-                --multi \
+                --multi --color="$FZF_THEME" \
                 --prompt="add changed:" \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
@@ -120,7 +120,7 @@ git_restore_changed() {
     while true; do
         local files="$(echo "$GIT_LIST_CHANGED" | zsh | sort | uniq | \
             fzf \
-                --multi \
+                --multi --color="$FZF_THEME" \
                 --prompt="reset:" \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
@@ -167,6 +167,7 @@ show_all_files() {
         --exclude node_modules/ \
         --glob \"*\" . " | \
     fzf \
+        --color="$FZF_THEME" \
         --prompt="preview:" \
         --info='inline' --ansi --extended --filepath-word --no-mouse \
         --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
@@ -201,6 +202,7 @@ git_branch_history() {
         fi
         eval "git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' --first-parent $branch" | awk '{print NR,$0}' | \
             fzf \
+                --color="$FZF_THEME" \
                 --prompt="$branch:" \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
@@ -236,7 +238,7 @@ git_all_history() {
         while true; do
             local branch="$(zsh $GIT_LIST_BRANCHES | sort | \
                 fzf \
-                    --multi \
+                    --multi --color="$FZF_THEME" \
                     --prompt="log:" \
                     --info='inline' --ansi --extended --filepath-word --no-mouse \
                     --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
@@ -263,6 +265,7 @@ git_all_history() {
             fi
             eval "git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' $branch" | grep -P '([0-9a-f]{6,})' | awk '{print NR,$0}' | \
                 fzf \
+                    --color="$FZF_THEME" \
                     --prompt="$branch:" \
                     --info='inline' --ansi --extended --filepath-word --no-mouse \
                     --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
@@ -294,6 +297,7 @@ git_file_history() {
         while true; do
             local file="$(git ls-files | \
                 fzf \
+                    --color="$FZF_THEME" \
                     --prompt="$branch:file:" \
                     --info='inline' --ansi --extended --filepath-word --no-mouse \
                     --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
@@ -334,6 +338,7 @@ git_file_history() {
 
             eval "git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' $branch -- $file"  | sed -r 's%^(\*\s+)%%g' | \
                 fzf \
+                    --color="$FZF_THEME" \
                     --prompt="$branch:$file:" \
                     --info='inline' --ansi --extended --filepath-word --no-mouse \
                     --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
@@ -364,6 +369,7 @@ git_checkout_tag() {
 
         local commit="$(echo "$latest" | zsh $GIT_LIST_TAGS | \
             fzf \
+                --color="$FZF_THEME" \
                 --prompt="-> tag:" \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
@@ -408,7 +414,7 @@ git_fetch_branch() {
 
         local branches="$(git ls-remote -h origin | sed -r 's%^[a-f0-9]{40}\s+refs/heads/%%g' | sort | \
             fzf \
-                --multi \
+                --multi --color="$FZF_THEME" \
                 --prompt="fetch:" --tac \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
@@ -451,7 +457,7 @@ git_delete_branch() {
 
         local branches="$(git ls-remote -h origin | sed -r 's%^[a-f0-9]{40}\s+refs/heads/%%g' | sort | \
             fzf \
-                --multi \
+                --multi --color="$FZF_THEME" \
                 --prompt="rm:" \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
@@ -493,7 +499,7 @@ git_checkout_branch() {
 
         local branch="$(zsh $GIT_LIST_BRANCHES_EXCEPT_THIS | \
             fzf \
-                --multi \
+                --multi --color="$FZF_THEME" \
                 --prompt="-> branch:" \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
@@ -540,6 +546,7 @@ git_checkout_commit() {
 
         local result="$(git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' --first-parent $branch | \
             fzf \
+                --color="$FZF_THEME" \
                 --prompt="-> hash:" \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
@@ -585,7 +592,7 @@ git_file_history_full() {
 
         local branch="$(zsh $GIT_LIST_BRANCHES | sort | \
             fzf \
-                --multi \
+                --multi --color="$FZF_THEME" \
                 --prompt="branch:file:" \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
@@ -608,6 +615,7 @@ git_file_history_full() {
         while true; do
             local file="$(echo "$branch" | zsh $GIT_LIST_BRANCH_FILES | \
                 fzf \
+                    --color="$FZF_THEME" \
                     --prompt="$branch:file:" \
                     --info='inline' --ansi --extended --filepath-word --no-mouse \
                     --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
@@ -648,6 +656,7 @@ git_file_history_full() {
 
             eval "git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' $branch -- $file" | \
                 fzf \
+                    --color="$FZF_THEME" \
                     --prompt="$branch:$file:" \
                     --info='inline' --ansi --extended --filepath-word --no-mouse \
                     --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
@@ -676,7 +685,7 @@ git_merge_branch() {
 
         local branch="$(zsh $GIT_LIST_BRANCHES | \
             fzf \
-                --multi \
+                --multi --color="$FZF_THEME" \
                 --prompt="merge:" \
                 --info='inline' --ansi --extended --filepath-word --no-mouse \
                 --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \

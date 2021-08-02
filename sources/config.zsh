@@ -19,6 +19,7 @@ fi
 if [ -f "`which -p fzf`" ]; then
     export FZF_DEFAULT_OPTS="--ansi --extended"
     export FZF_DEFAULT_COMMAND='fd --type file --follow --hidden --color=always --exclude .git/ --exclude "*.pyc" --exclude node_modules/'
+    export FZF_THEME="fg:#ebdbb2,hl:#fabd2f,fg+:#ebdbb2,bg+:#3c3836,hl+:#fabd2f,info:#83a598,prompt:#bdae93,spinner:#fabd2f,pointer:#83a598,marker:#fe8019,header:#665c54"
 fi
 
 [ -f "`which -p micro`" ] && export EDITOR="micro"
