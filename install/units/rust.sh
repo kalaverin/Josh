@@ -13,12 +13,12 @@ REQUIRED_PACKAGES=(
 )
 
 OPTIONAL_PACKAGES=(
-    atuin
+    atuin            # another yet history manager
     bandwhich        # network bandwhich meter
     bingrep          # extract and grep strings from binaries
     broot            # lightweight embeddable file manager
     cargo-trim
-    choose
+    choose           # awk for humans
     colorizer        # logs colorizer
     conventional_commits_next_version
     dirstat-rs       # ds, du replace, summary tree
@@ -26,10 +26,10 @@ OPTIONAL_PACKAGES=(
     dull             # strip any ANSI (color) sequences from pipe
     dupe-krill       # replace similar (by hash) files with hardlinks
     durt             # du replace, just sum
-    feroxbuster
-    ffsend
+    feroxbuster      # agressively website dumper
+    ffsend           # sharing files tool
     fselect          # SQL-like wrapper around find
-    fw
+    fw               # workspaces manager
     gfold            # git reps in directory branches status
     git-hist         # git history for selected file
     git-local-ignore # local (without .gitignore) git ignore wrapper
@@ -48,7 +48,7 @@ OPTIONAL_PACKAGES=(
     paper-terminal   # another yet Markdown printer, naturally like newpaper
     petname          # generate human readable strings
     procs            # ps aux replacement for humans
-    pueue
+    pueue            # powerful tool to running and management background tasks
     rcrawl           # very fast file by pattern in directory
     rhit             # very fast nginx log analyzer with graphical stats
     rm-improved      # rip, powerful rm replacement with trashcan
