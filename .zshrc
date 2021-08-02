@@ -26,6 +26,7 @@ SAVEHIST=100000
 # color theme for ls, just run: vivid themes
 # ayu jellybeans molokai one-dark one-light snazzy solarized-dark solarized-light
 export JOSH_LS_THEME="solarized-dark"
+export HTTPIE_THEME="gruvbox-dark"
 
 # af-magic blinks dpoggi fishy jreese michelebologna
 # ZSH_THEME="josh"

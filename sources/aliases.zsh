@@ -23,7 +23,7 @@ alias -g uri="$HTTP_GET"
 
 [ -f "`which -p $JOSH_DELTA`" ] && alias delta="$JOSH_DELTA"
 [ -f "`which -p $JOSH_GREP`" ] && alias grep="$JOSH_GREP --line-buffered"
-[ -f "`which -p $JOSH_HTTP`" ] && alias http="$JOSH_HTTP --verify no"
+[ -f "`which -p $JOSH_HTTP`" ] && alias http="$JOSH_HTTP --verify no --default-scheme http --follow --all --format-options json.indent:2 --style $HTTPIE_THEME"
 [ -f "`which -p $JOSH_REALPATH`" ] && alias realpath="$JOSH_REALPATH"
 [ -f "`which -p $JOSH_SED`" ] && alias sed="$JOSH_SED"
 

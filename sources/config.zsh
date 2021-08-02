@@ -2,7 +2,7 @@ export PAGER="bat"
 export EDITOR="micro"
 
 export BAT_STYLE="full"
-export BAT_THEME="DarkNeon" # select: bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/any/file"
+export BAT_THEME="gruvbox-dark" # select: bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/any/file"
 
 export FZF_DEFAULT_OPTS="--ansi --extended"
 export FZF_DEFAULT_COMMAND='fd --type file --follow --hidden --color=always --exclude .git/ --exclude "*.pyc" --exclude node_modules/'
