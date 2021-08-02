@@ -145,7 +145,7 @@ visual_chdir() {
             --jump-labels='01234567890' \
             --min-height='11' --height='11' \
             --preview-window="right:89:noborder" \
-            --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}"
+            --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}"  # TODO: if file preview content
         )
 
         if [ -f "/tmp/.lastdir.tmp" ]; then
