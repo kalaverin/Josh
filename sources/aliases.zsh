@@ -1,28 +1,25 @@
 alias cpdir='rsync --archive --links --times'
 
-alias mv='mv'
-alias ln='ln'
+alias aa='bat'
 alias cp='cp -iR'
-alias rm='rm'
-alias ps='ps'
-alias tt='tail -f -n 100'
+alias lc='lolcate'
+alias ln='ln'
 alias mi="micro"
-alias ca='bat'
+alias mv='mv'
+alias ps='ps'
+alias rm='rm'
+alias tt='tail -f -n 100'
 alias trunc='truncate -s 0'
 
-alias sed="$JOSH_SED"
-alias grep="$JOSH_GREP --line-buffered"
 alias delta="$JOSH_DELTA"
+alias grep="$JOSH_GREP --line-buffered"
+alias http="$JOSH_HTTP --verify no"
 alias realpath="$JOSH_REALPATH"
-alias http='http --verify no'
-
-alias aa='bat'
-alias ag='ag -C1 --noaffinity --path-to-ignore ~/.ignore --stats --smart-case --width 140'
+alias sed="$JOSH_SED"
 
 local RIPGREP_OPTS='--context 1 --context-separator "" --require-git --stats --text --ignore-file ~/.ignore --max-columns 140 --max-columns-preview --max-filesize 1M --color always --colors "match:fg:yellow" --colors "path:fg:red"'
 alias rf="rg --smart-case $RIPGREP_OPTS"
 alias rg="rg --case-sensitive --fixed-strings --word-regexp $RIPGREP_OPTS"
-alias rfs="rf --sort path"
 alias ri="$JOSH_GREP -rnH --exclude '*.js' --exclude '*.min.css' --exclude '.git/' --exclude 'node_modules/' --exclude 'lib/python*/site-packages/' --exclude '__snapshots__/' --exclude '.eggs/' --exclude '*.pyc' --exclude '*.po' --exclude '*.svg' --color=auto"
 
 alias -g I='| grep -i'
@@ -42,7 +39,11 @@ alias -g uri="$HTTP_GET"
 alias l="exa -lFag --color=always --git --octal-permissions --group-directories-first"
 alias lt="l --sort time"
 
-if [ -f "`which lsd`" ]; then
+if [ -f "`which -p lsd`" ]; then
+    alias ag='ag -C1 --noaffinity --path-to-ignore ~/.ignore --stats --smart-case --width 140'
+fi
+
+if [ -f "`which -p lsd`" ]; then
     alias ll="lsd -laAF --icon-theme unicode"
 fi
 
