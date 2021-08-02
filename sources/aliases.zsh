@@ -16,6 +16,7 @@ alias delta="$JOSH_DELTA"
 alias realpath="$JOSH_REALPATH"
 alias http='http --verify no'
 
+alias aa='bat'
 alias ag='ag -C1 --noaffinity --path-to-ignore ~/.ignore --stats --smart-case --width 140'
 
 local RIPGREP_OPTS='--context 1 --context-separator "" --require-git --stats --text --ignore-file ~/.ignore --max-columns 140 --max-columns-preview --max-filesize 1M --color always --colors "match:fg:yellow" --colors "path:fg:red"'
