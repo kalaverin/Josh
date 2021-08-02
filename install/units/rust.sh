@@ -9,19 +9,27 @@ REQUIRED_PACKAGES=(
     mdcat     # Markdown files rendered viewer
     ripgrep   # rg, fast replace for grep -ri for humans
     starship  # shell prompt
+    vivid     # ls colors themes selections system
 )
 
 OPTIONAL_PACKAGES=(
+    atuin
     bandwhich        # network bandwhich meter
     bingrep          # extract and grep strings from binaries
     broot            # lightweight embeddable file manager
+    cargo-trim
+    choose
     colorizer        # logs colorizer
+    conventional_commits_next_version
     dirstat-rs       # ds, du replace, summary tree
     du-dust          # dust, du replace, verbose tree
     dull             # strip any ANSI (color) sequences from pipe
     dupe-krill       # replace similar (by hash) files with hardlinks
     durt             # du replace, just sum
+    feroxbuster
+    ffsend
     fselect          # SQL-like wrapper around find
+    fw
     gfold            # git reps in directory branches status
     git-hist         # git history for selected file
     git-local-ignore # local (without .gitignore) git ignore wrapper
@@ -33,11 +41,14 @@ OPTIONAL_PACKAGES=(
     jql              # select values by path from JSON input for humans
     just             # comfortable system for per project frequently used commands like make test, etc
     logtail          # graphical tail logs in termial
+    lolcate-rs
     lsd              # another ls replacement tool
     mrh              # recursively search git reps and return status (detached, tagged, etc)
     onefetch         # graphical statistics for git repository
     paper-terminal   # another yet Markdown printer, naturally like newpaper
+    petname          # generate human readable strings
     procs            # ps aux replacement for humans
+    pueue
     rcrawl           # very fast file by pattern in directory
     rhit             # very fast nginx log analyzer with graphical stats
     rm-improved      # rip, powerful rm replacement with trashcan
@@ -47,6 +58,7 @@ OPTIONAL_PACKAGES=(
     scriptisto       # powerful tool, convert every source to executable with build instructions in same file
     sd               # fast sed replacement for humans
     so               # stack overflow answers in terminal
+    streampager
     syncat           # cat with syntax
     tabulate         # autodetect columns in stdin and tabulate
     tokei            # sources stats

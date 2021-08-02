@@ -18,4 +18,3 @@ source "$JOSH/sources/functions/utils.zsh"
 
 unsetopt correct_all
 unsetopt correct
-setupsolarized dircolors.256dark

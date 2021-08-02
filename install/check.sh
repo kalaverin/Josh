@@ -3,6 +3,7 @@
 REQUIRED_BINARIES=(
     git
     jq
+    pkg-config
     pv
     python3
     tree

@@ -36,7 +36,6 @@ PACKAGES=(
     "https://github.com/zsh-users/zsh-autosuggestions $PLUGIN_DIR/zsh-autosuggestions"
     "https://github.com/zsh-users/zsh-completions $PLUGIN_DIR/zsh-completions"
     "https://github.com/zsh-users/zsh-syntax-highlighting.git $PLUGIN_DIR/zsh-syntax-highlighting"
-    "--recursive https://github.com/joel-porquet/zsh-dircolors-solarized.git $PLUGIN_DIR/zsh-dircolors-solarized"
 )
 
 

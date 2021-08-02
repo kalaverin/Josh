@@ -23,6 +23,10 @@ source "$JOSH/sources/compat.zsh"
 HISTSIZE=100000
 SAVEHIST=100000
 
+# color theme for ls, just run: vivid themes
+# ayu jellybeans molokai one-dark one-light snazzy solarized-dark solarized-light
+export JOSH_LS_THEME="solarized-dark"
+
 # af-magic blinks dpoggi fishy jreese michelebologna
 # ZSH_THEME="josh"
 
@@ -117,7 +121,6 @@ plugins=(
     zsh-256color        # force 8-bit colors
     zsh-autopair        # for autopair brackets, quoters, etc
     zsh-autosuggestions # live suggestions
-    zsh-dircolors-solarized
     zsh-syntax-highlighting
 )
 
@@ -133,6 +136,7 @@ source "$JOSH/sources/config.zsh"
 source "$ZSH/oh-my-zsh.sh"
 source "$JOSH/sources/loader.zsh"
 
+export LS_COLORS="`vivid generate $JOSH_LS_THEME`"
 zmodload zsh/terminfo
 setopt append_history
 setopt extended_history
