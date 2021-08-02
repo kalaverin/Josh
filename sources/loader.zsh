@@ -18,3 +18,5 @@ source "$JOSH/sources/functions/utils.zsh"
 
 unsetopt correct_all
 unsetopt correct
+
+eval "$(starship init zsh)"

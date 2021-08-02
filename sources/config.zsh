@@ -1,26 +1,34 @@
-export PAGER="bat"
-export EDITOR="micro"
-
-export BAT_STYLE="full"
-export BAT_THEME="gruvbox-dark" # select: bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/any/file"
-
-export FZF_DEFAULT_OPTS="--ansi --extended"
-export FZF_DEFAULT_COMMAND='fd --type file --follow --hidden --color=always --exclude .git/ --exclude "*.pyc" --exclude node_modules/'
-
 export LANG='en_US.UTF-8'
 export LANGUAGE='en_US.UTF-8'
 export LC_ALL='en_US.UTF-8'
 export MM_CHARSET='en_US.UTF-8'
 
-export DOCKER_BUILDKIT=1
-export BUILDKIT_INLINE_CACHE=1
-export COMPOSE_DOCKER_CLI_BUILD=1
+if [ -f "`which -p bat`" ]; then
+    export PAGER="bat"
+    export BAT_STYLE="full"
+    export BAT_THEME="${THEME_BAT:-gruvbox-dark}" # select: bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/any/file"
+    unset THEME_BAT
+fi
+
+if [ -f "`which -p docker`" ]; then
+    export DOCKER_BUILDKIT=1
+    export BUILDKIT_INLINE_CACHE=1
+    export COMPOSE_DOCKER_CLI_BUILD=1
+fi
+
+if [ -f "`which -p fzf`" ]; then
+    export FZF_DEFAULT_OPTS="--ansi --extended"
+    export FZF_DEFAULT_COMMAND='fd --type file --follow --hidden --color=always --exclude .git/ --exclude "*.pyc" --exclude node_modules/'
+fi
+
+[ -f "`which -p micro`" ] && export EDITOR="micro"
+[ -f "`which -p rip`" ] && export GRAVEYARD="$REAL/.trash"
+[ -f "`which -p sccache`" ] && export RUSTC_WRAPPER=`which sccache`
+[ -f "`which -p vivid`" ] && export LS_COLORS="`vivid generate ${THEME_LS:-solarized-dark}`"
 
 EMOJI_CLI_KEYBIND="\eo"
 
 ZSH_HIGHLIGHT_HIGHLIGHTERS+=brackets
-
-HTTPIE_THEMES='abap arduino default fruity monokai native perldoc rrt solarized tango trac'
 
 ZSH_AUTOSUGGEST_ACCEPT_WIDGETS=(
     end-of-line
@@ -51,8 +59,8 @@ FORGIT_FZF_DEFAULT_OPTS="
     --height '80%'
 "
 
-PAGER_BIN=`which $PAGER`
-LISTER_LESS="`which less` -M"
+PAGER_BIN=`which -p $PAGER`
+LISTER_LESS="`which -p less` -M"
 if [ ! -f $PAGER_BIN ]; then
     LISTER_FILE="$LISTER_LESS -Nu"
 else

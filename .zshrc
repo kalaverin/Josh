@@ -22,10 +22,16 @@ source "$JOSH/sources/compat.zsh"
 HISTSIZE=100000
 SAVEHIST=100000
 
+# select: bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/any/file"
+# THEME_BAT="gruvbox-dark"
+
 # color theme for ls, just run: vivid themes
 # ayu jellybeans molokai one-dark one-light snazzy solarized-dark solarized-light
-export JOSH_LS_THEME="solarized-dark"
-export HTTPIE_THEME="gruvbox-dark"
+# THEME_LS="solarized-dark"
+
+# http --help to select another ont
+# THEME_HTTPIE="paraiso-dark"
+
 
 # af-magic blinks dpoggi fishy jreese michelebologna
 # ZSH_THEME="josh"
@@ -69,34 +75,41 @@ HIST_STAMPS="yyyy-mm-dd"
 # Would you like to use another custom folder than $ZSH/custom?
 # ZSH_CUSTOM=/path/to/new-custom-folder
 
-export ZSH_AUTOSUGGEST_USE_ASYNC=1
-# export ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
-
-
-# # Treat the '!' character specially during expansion.
+# Treat the '!' character specially during expansion.
 # BANG_HIST="false"
-# # Write the history file in the ":start:elapsed;command" format.
+
+# Write the history file in the ":start:elapsed;command" format.
 # EXTENDED_HISTORY="false"
-# # Write to the history file immediately, not when the shell exits.
+
+# Write to the history file immediately, not when the shell exits.
 INC_APPEND_HISTORY="true"
-# # Share history between all sessions.
+
+# Share history between all sessions.
 SHARE_HISTORY="true"
-# # Don't record an entry that was just recorded again.
+# Don't record an entry that was just recorded again.
 # HIST_IGNORE_DUPS="false"
-# # Do not display a line previously found.
+
+# Do not display a line previously found.
 # HIST_FIND_NO_DUPS="false"
-# # Don't execute immediately upon history expansion.
+
+# Don't execute immediately upon history expansion.
 # HIST_VERIFY="false"
-# # Beep when accessing nonexistent history.
+
+# Beep when accessing nonexistent history.
 # HIST_BEEP="false"
+
 # Expire duplicate entries first when trimming history.
 HIST_EXPIRE_DUPS_FIRST="true"
+
 # Delete old recorded entry if new entry is a duplicate.
 HIST_IGNORE_ALL_DUPS="true"
+
 # Don't record an entry starting with a space.
 HIST_IGNORE_SPACE="true"
+
 # Don't write duplicate entries in the history file.
 HIST_SAVE_NO_DUPS="true"
+
 # Remove superfluous blanks before recording entry.
 HIST_REDUCE_BLANKS="true"
 
@@ -132,11 +145,12 @@ autoload -Uz chpwd_recent_dirs cdr add-zsh-hook
 add-zsh-hook chpwd chpwd_recent_dirs
 zstyle ":anyframe:selector:" use fzf
 
+[ -f ~/.zshrclocal ] && source ~/.zshrclocal
+
 source "$JOSH/sources/config.zsh"
 source "$ZSH/oh-my-zsh.sh"
 source "$JOSH/sources/loader.zsh"
 
-export LS_COLORS="`vivid generate $JOSH_LS_THEME`"
 zmodload zsh/terminfo
 setopt append_history
 setopt extended_history
@@ -157,7 +171,6 @@ zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 zstyle ':completion:*' use-compctl false
 zstyle :compinstall filename '~/.zshrc'
 zstyle ':completion:*' menu select
-
 zstyle ':completion:*' matcher-list '' 'm:{a-z\-}={A-Z\_}' 'r:[^[:alpha:]]||[[:alpha:]]=** r:|=* m:{a-z\-}={A-Z\_}' 'r:|?=** m:{a-z\-}={A-Z\_}'
 
 _comp_options+=(globdots)
@@ -165,13 +178,5 @@ _comp_options+=(globdots)
 autoload -Uz compinit
 compinit -u # -u insecure!
 
-export VIRTUAL_ENV_DISABLE_PROMPT=1
-export GRAVEYARD="$REAL/.trash"
-
-[ -f "`which sccache`" ] && export RUSTC_WRAPPER=`which sccache`
-
-eval "$(starship init zsh)"
-
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-[ -f ~/.zshrclocal ] && source ~/.zshrclocal
 [ -f ~/.zshrcbinds ] && source ~/.zshrcbinds
