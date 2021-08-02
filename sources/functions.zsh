@@ -131,7 +131,7 @@ file_manager() {
             -i +s --exit-0 --select-1 \
             --reverse \
             --color="$FZF_THEME" \
-            --prompt="catalog:" \
+            --prompt="chdir to:" \
             --info='inline' --ansi --extended --filepath-word --no-mouse \
             --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
             --bind='esc:cancel' \
