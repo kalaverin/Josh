@@ -49,6 +49,7 @@ fi
 alias csv="csview --style Rounded"
 alias tsv="csv --tsv"
 alias ssv="csv --delimiter ';'"
+alias ghist="git-hist --beyond-last-line --emphasize-diff --full-hash"
 
 svc() {
     service $*
