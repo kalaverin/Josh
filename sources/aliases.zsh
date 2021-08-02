@@ -42,6 +42,10 @@ alias -g uri="$HTTP_GET"
 alias l="exa -lFag --color=always --git --octal-permissions --group-directories-first"
 alias lt="l --sort time"
 
+if [ -f "`which lsd`" ]; then
+    alias ll="lsd -laAF --icon-theme unicode"
+fi
+
 alias csv="csview --style Rounded"
 alias tsv="csv --tsv"
 alias ssv="csv --delimiter ';'"
