@@ -224,6 +224,9 @@ josh_pull() {
         echo ' - update failed :-\'
         return 1
     fi
+
+    . "$JOSH/install/units/rust.sh"
+    deploy_packages $REQUIRED_PACKAGES
     exec zsh
     return 0
 }
