@@ -161,8 +161,8 @@ ps_widget() {
             ps -o %cpu,%mem,pid,command -A | grep -v "zsh" | awk '{$1=$1};1' | \
             awk 'NR<2{print $0;next}{print $0| "sort -rk 1,2"}' | \
             tr -s ' ' | sed 's/ /\t/g' | sed 's/\t/ /g4' | \
-            fzf \
-                --prompt="select:" \
+            fzf --color="$FZF_THEME" \
+                --prompt="just paste:" \
                 --multi --info='inline' --ansi --extended \
                 --filepath-word --no-mouse --tiebreak=length,index \
                 --pointer=">" --marker="+" --margin=0,0,0,0 \
@@ -170,7 +170,17 @@ ps_widget() {
             | cut -f 3 | sed -z 's/\n/ /g' | awk '{$1=$1};1'
         )"
         if [[ "$pids" != "" ]]; then
-            LBUFFER="${LBUFFER}$pids"
+            if [ "$LBUFFER" ]; then
+                LBUFFER="$LBUFFER $pids"
+                if [ "$RBUFFER" ]; then
+                    RBUFFER=" $RBUFFER"
+                fi
+            else
+                LBUFFER="$pids"
+                if [ "$RBUFFER" ]; then
+                    RBUFFER=" $RBUFFER"
+                fi
+            fi
             local ret=$?
             zle redisplay
             typeset -f zle-line-init >/dev/null && zle zle-line-init
@@ -190,7 +200,7 @@ term_widget() {
         awk 'NR<2{print $0;next}{print $0| "sort -rk 1,2"}' | \
         tr -s ' ' | sed 's/ /\t/g' | sed 's/\t/ /g4' | \
         fzf \
-            --prompt="term:" \
+            --prompt="terminate:" --color="$FZF_THEME" \
             --multi --info='inline' --ansi --extended \
             --filepath-word --no-mouse --tiebreak=length,index \
             --pointer=">" --marker="+" --margin=0,0,0,0 \
@@ -215,7 +225,7 @@ kill_widget() {
         awk 'NR<2{print $0;next}{print $0| "sort -rk 1,2"}' | \
         tr -s ' ' | sed 's/ /\t/g' | sed 's/\t/ /g4' | \
         fzf +x \
-            --prompt="kill:" \
+            --prompt="kill!" --color="$FZF_THEME" \
             --multi --info='inline' --ansi --extended \
             --filepath-word --no-mouse --tiebreak=length,index \
             --pointer=">" --marker="+" --margin=0,0,0,0 \
@@ -259,10 +269,10 @@ share_file() {
     rm -f $tmpfile
 }
 
-kill_last() {
+term_last() {
     kill %1
 }
-zle -N kill_last
+zle -N term_last
 
 empty_buffer() {
     if [[ ! -z $BUFFER ]]; then

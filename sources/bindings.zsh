@@ -72,31 +72,34 @@ bindkey "\e[3A"   insert-cycledleft
 bindkey "\e[1;3A" insert-cycledleft
 bindkey "\e\e[A"  insert-cycledleft
 bindkey "\eO3A"   insert-cycledleft
-
 bindkey "\e[3B"   insert-cycledright
 bindkey "\e[1;3B" insert-cycledright
 bindkey "\e\e[B"  insert-cycledright
 bindkey "\eO3B"   insert-cycledright
 
-bindkey "\e\e" clear-screen
-bindkey '\e ' empty_buffer
 
-bindkey '\e\' ps_widget
-bindkey '^\' term_widget
-bindkey '\e^\' kill_widget
+# ——— user binds
 
-bindkey "\e0"  commit_text
-bindkey "\e-"  expand-cmd-path
-bindkey "\e="  sudoize
-bindkey "\e^?" autosuggest-execute # alt+backspace
-bindkey "\e]"  copy-prev-shell-word
+bindkey "\e\e" clear-screen  # esc-esc clears the screen
+bindkey '\e '  empty_buffer  # alt-space clears the input
+
+# process management
+bindkey '\e\'  ps_widget    # just select multuple pids and append to command line
+bindkey '^\'   term_widget  # terminate pids
+bindkey '\e^\' kill_widget  # kill pids
+bindkey "\ek"  term_last    # send SIGTERM to last pid
+
+# misc
+bindkey "\e0"  commit_text          # generate and paste dumb commit message
+bindkey "\e="  sudoize              # prepend command with sudo
+bindkey "\e^?" autosuggest-execute  # alt+backspace, accept suggestion and enter
+bindkey "\e]"  copy-prev-shell-word # just copy and paste last word
 
 # bindkey "\ez" fuzzy-search-and-edit  # temporary disabled
 
 bindkey '\ec'  history-search-multi-word
-bindkey '\ex'  insert_endpoint
-bindkey '\eX'  insert_directory
-bindkey '\e^x' file_manager
+bindkey '\ex'  insert_endpoint   # search and paste to command line filename
+bindkey '\eX'  insert_directory  # and catalog name
+bindkey '\e^x' file_manager      # fast dive into directory
 
-bindkey "\ek" kill_last
 fi
