@@ -8,6 +8,7 @@ REQUIRED_PACKAGES=(
     git-delta # fast replace for git delta with steroids
     mdcat     # Markdown files rendered viewer
     ripgrep   # rg, fast replace for grep -ri for humans
+    runiq     # fast uniq replacement
     starship  # shell prompt
     vivid     # ls colors themes selections system
 )
@@ -35,7 +36,6 @@ OPTIONAL_PACKAGES=(
     git-local-ignore # local (without .gitignore) git ignore wrapper
     gitui            # terminal UI for git
     hors             # stack overflow answers in terminal
-    huniq            # very fast sort | uniq replacement
     hyperfine        # full featured time replacement and benchmark tool
     jira-terminal    # Jira client, really
     jql              # select values by path from JSON input for humans

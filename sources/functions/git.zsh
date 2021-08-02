@@ -27,7 +27,7 @@ git_add_created() {
     local cmd="$LISTER_FILE --paging='always' {}"
     while true; do
         # TODO: абсолютные пути в отличии от add_changed
-        local files="$(zsh "$GIT_LIST_NEW" | sort | uniq | \
+        local files="$(zsh "$GIT_LIST_NEW" | runiq - | sort | \
             fzf \
                 --multi --color="$FZF_THEME" \
                 --prompt="add new:" \
@@ -73,7 +73,7 @@ git_add_changed() {
     # https://github.com/junegunn/fzf/blob/master/man/man1/fzf.1
     local differ="git diff --color=always -- {} | $DELTA"
     while true; do
-        local files="$(echo "$GIT_LIST_CHANGED" | zsh | sort | uniq | \
+        local files="$(echo "$GIT_LIST_CHANGED" | zsh | runiq - | sort | \
             fzf \
                 --multi --color="$FZF_THEME" \
                 --prompt="add changed:" \
@@ -118,7 +118,7 @@ zle -N git_add_changed
 git_restore_changed() {
     local cmd="git diff --color=always -- {} | $DELTA"
     while true; do
-        local files="$(echo "$GIT_LIST_CHANGED" | zsh | sort | uniq | \
+        local files="$(echo "$GIT_LIST_CHANGED" | zsh | runiq - | sort | \
             fzf \
                 --multi --color="$FZF_THEME" \
                 --prompt="reset:" \

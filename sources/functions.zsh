@@ -177,6 +177,36 @@ visual_chdir() {
 }
 zle -N visual_chdir
 
+visual_grep() {
+    local cmd="echo {q}:{} | tabulate -d ':' -i 1,2 | xargs -I% echo 'grep -ni %' | less | $SHELL | cut -f1 -d: | sed 's/^/-H/' | tr '\n' ' ' | xargs -I% echo % {} | tabulate -d ':' -i 1 | xargs -I% sh -c 'bat --color=always --terminal-width $COLUMNS %'"
+
+    local script="$JOSH/sources/functions/scripts/rg_query_name_to_micro.sh"
+    local file=$(
+        fzf --bind "change:reload:(rg --no-heading --count-matches --with-filename --color=always --smart-case {q} | proximity-sort . ) || true" \
+        --query='' \
+        --tiebreak=index \
+        --color="$FZF_THEME" \
+        --prompt="grep: " \
+        --info='inline' --ansi --extended --filepath-word --no-mouse \
+        --pointer=">" --marker="+" --margin=0,0,0,0 \
+        --jump-labels='0123456789abcdefghijklmnopqrstuvwxyz' \
+        --preview-window="right:89:noborder" \
+        --preview="$cmd" \
+        --bind='alt-space:jump-accept' \
+        --bind='esc:cancel' \
+        --bind='ctrl-c:abort' \
+        --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
+        --bind='home:preview-up' --bind='end:preview-down' \
+        --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
+        --bind='alt-w:toggle-preview-wrap' \
+        --bind="enter:execute(echo {q}:{} | zsh $script | zsh)" \
+        --reverse --disabled
+    )
+    zle reset-prompt
+    return 0
+}
+zle -N visual_grep
+
 ps_widget() {
     while true; do
         local pids="$(

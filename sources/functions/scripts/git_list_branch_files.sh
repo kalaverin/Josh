@@ -1,1 +1,1 @@
-xargs -I^^ git ls-tree -r --name-only ^^ | uniq | sort
+xargs -I^^ git ls-tree -r --name-only ^^ | runiq - | sort

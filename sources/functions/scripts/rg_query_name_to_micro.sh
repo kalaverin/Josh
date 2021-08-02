@@ -1,0 +1,1 @@
+tabulate -d ':' -i 1,2 | xargs -I% echo rg --smart-case --no-heading --column --with-filename --max-count=1 --color=never % | $SHELL | tabulate -d ':' -i 1,2,3 | sd '(.+?)\s+(\d+)\s+(\d+)' 'micro -readonly=true $1 +$2:$3'

@@ -95,7 +95,8 @@ bindkey "\e="  sudoize              # prepend command with sudo
 bindkey "\e^?" autosuggest-execute  # alt+backspace, accept suggestion and enter
 bindkey "\e]"  copy-prev-shell-word # just copy and paste last word
 
-# bindkey "\ez" fuzzy-search-and-edit  # temporary disabled
+bindkey '\ez'  visual_grep       # grep and view
+# bindkey "\eZ" fuzzy-search-and-edit  # temporary disabled
 
 bindkey '\ec'  history-search-multi-word
 bindkey '\ex'  insert_endpoint   # search and paste to command line filename
