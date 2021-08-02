@@ -112,13 +112,13 @@ __fzfcmd() {
         echo "fzf-tmux -d${FZF_TMUX_HEIGHT:-40%}" || echo "fzf"
 }
 
-file_manager() {
+visual_chdir() {
     if [[ "$#" != 0 ]]; then
         builtin cd "$@";
         return
     fi
     while true; do
-
+        [ -f "/tmp/.lastdir.tmp" ] && unlink /tmp/.lastdir.tmp
         local directory=$(fd \
             --type directory \
             --follow \
@@ -127,33 +127,55 @@ file_manager() {
             --exclude .git/ \
             --exclude "*.pyc" \
             --exclude node_modules/ \
+            --max-depth 3 \
             | sed '1i ..' | fzf \
             -i -s --exit-0 --select-1 \
             --reverse \
             --color="$FZF_THEME" \
-            --prompt="chdir to:" \
+            --prompt="chdir to: `pwd`/" \
             --info='inline' --ansi --extended --filepath-word --no-mouse \
             --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
-            --bind='esc:cancel' \
+            --bind='enter:accept' --bind='esc:cancel' \
+            --bind='alt-bs:execute(echo `realpath {}` > /tmp/.lastdir.tmp)+abort' \
+            --bind='alt-space:jump-accept' \
             --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
             --bind='home:preview-up' --bind='end:preview-down' \
             --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
             --bind='alt-w:toggle-preview-wrap' \
-            --bind="alt-bs:toggle-preview" \
-            --min-height='10' \
-            --height='10' \
+            --jump-labels='01234567890' \
+            --min-height='11' --height='11' \
             --preview-window="right:89:noborder" \
             --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}"
         )
-        if [ "$directory" ]; then
+
+        if [ -f "/tmp/.lastdir.tmp" ]; then
+            builtin cd `cat /tmp/.lastdir.tmp` &> /dev/null
+            unlink /tmp/.lastdir.tmp
+            l --git-ignore
+            zle reset-prompt
+            return 0
+        fi
+
+        if [ "$directory" = ".." ]; then
+            builtin cd .. &> /dev/null
+
+        elif [ "$directory" ]; then
             builtin cd "$directory" &> /dev/null
+            if [ "`fd --type directory | wc -l`" -gt 0 ]; then
+            else
+                l --git-ignore
+                zle reset-prompt
+                return 0
+            fi
+
         else
+            l --git-ignore
             zle reset-prompt
             return 0
         fi
     done
 }
-zle -N file_manager
+zle -N visual_chdir
 
 ps_widget() {
     while true; do
