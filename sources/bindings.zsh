@@ -100,6 +100,6 @@ bindkey "\e]"  copy-prev-shell-word # just copy and paste last word
 bindkey '\ec'  history-search-multi-word
 bindkey '\ex'  insert_endpoint   # search and paste to command line filename
 bindkey '\eX'  insert_directory  # and catalog name
-bindkey '\e^x' file_manager      # fast dive into directory
+bindkey '\e^x' visual_chdir      # fast dive into directory
 
 fi
