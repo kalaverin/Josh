@@ -948,7 +948,6 @@ alias gdr='git ls-files --modified `git rev-parse --show-toplevel`'
 
 bindkey "^a"   git_add_created
 bindkey "\ea"  git_add_changed
-# bindkey "^[A"  git_restore_changed
 bindkey "\e^a" git_restore_changed
 
 bindkey "^s"   git_checkout_commit
@@ -961,6 +960,5 @@ bindkey "^[Q"  git_file_history
 bindkey "^q"   git_all_history
 bindkey "\e^q" git_file_history_full
 
-bindkey "\ef"  git_fetch_branch
-# bindkey "^[F"  git_delete_branch
-bindkey "\e^f"  git_delete_branch
+bindkey "\ef"   git_fetch_branch
+bindkey "\e^f"  git_delete_branch  # in origin, caution!
