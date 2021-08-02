@@ -126,10 +126,10 @@ last-modified() {
 }
 
 # ——— helpers + hors and so
-w() {
-    sh -c "$HTTP_GET \"http://cheat.sh/`urlencode $@`\""
-}
+# w() {
+#     sh -c "$HTTP_GET \"http://cheat.sh/`urlencode $@`\""
+# }
 
-q() {
-    sh -c "$HTTP_GET \"http://cheat.sh/~`urlencode $@`\""
-}
+# q() {
+#     sh -c "$HTTP_GET \"http://cheat.sh/~`urlencode $@`\""
+# }
