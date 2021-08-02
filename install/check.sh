@@ -66,3 +66,7 @@ function check_compliance() {
     echo " + all requirements exists: $REQUIRED_BINARIES $REQURED_SYSTEM_BINARIES"
     return 1
 }
+
+# TODO:
+# need check: pkg-config --libs --cflags openssl
+# to install: libssl-dev
