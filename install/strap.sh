@@ -2,13 +2,16 @@
 
 export SOURCE_ROOT=$(sh -c "realpath `dirname $0`/../")
 
+. $SOURCE_ROOT/install/check.sh
+check_compliance && return 255
+
 if [ ! "$REAL" ]; then
     echo " + init from $SOURCE_ROOT"
     . $SOURCE_ROOT/install/init.sh
 
     if [ ! "$REAL" ]; then
         echo " - fatal: init failed"
-        exit 255
+        return 255
     fi
 fi
 
