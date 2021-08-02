@@ -721,41 +721,23 @@ zle -N git_merge_branch
 
 function spll() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
-    if [ "$branch" = "" ]; then
-        return 1
-    fi
+    [ "$branch" = "" ] && return 1
     run_show "git pull origin $branch"
 }
 
 function sfet() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
-    if [ "$branch" = "" ]; then
-        return 1
-    fi
+    [ "$branch" = "" ] && return 1
     run_show "git fetch origin $branch && git fetch --tags --all"
 }
 
 function sall() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
-    if [ "$branch" = "" ]; then
-        echo " - Branch required." 1>&2
-        return 1
-    fi
+    [ "$branch" = "" ] && return 1
 
-    is_repository_clean
-    if [ $? -gt 0 ]; then
-        return 1
-    fi
-
-    sfet $branch 2>/dev/null
-    if [ $? -gt 0 ]; then
-        return 1
-    fi
-
-    run_show "git reset --hard origin/$branch"
-    if [ $? -gt 0 ]; then
-        return 1
-    fi
+    is_repository_clean;                        [ $? -gt 0 ] && return 1
+    sfet $branch 2>/dev/null;                   [ $? -gt 0 ] && return 1
+    run_show "git reset --hard origin/$branch"; [ $? -gt 0 ] && return 1
     spll $branch
 }
 
@@ -766,11 +748,7 @@ function spsh() {
 
 function sfm() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
-    sfet $branch 2>/dev/null
-    if [ $? -gt 0 ]; then
-        return 1
-    fi
-
+    sfet $branch 2>/dev/null; [ $? -gt 0 ] && return 1
     run_show "git merge origin/$branch"
 }
 
@@ -804,21 +782,9 @@ function smtag() {
         echo " - Tag required." 1>&2
         return 1
     fi
-
-    is_repository_clean
-    if [ $? -gt 0 ]; then
-        return 1
-    fi
-
-    gcm
-    if [ $? -gt 0 ]; then
-        return 1
-    fi
-
-    spll
-    if [ $? -gt 0 ]; then
-        return 1
-    fi
+    is_repository_clean; [ $? -gt 0 ] && return 1
+    gcm;                 [ $? -gt 0 ] && return 1
+    spll;                [ $? -gt 0 ] && return 1
     stag $1
 }
 
@@ -846,10 +812,7 @@ function sck() {
 }
 
 function drop_this_branch_right_now() {
-    is_repository_clean
-    if [ $? -gt 0 ]; then
-        return 1
-    fi
+    is_repository_clean; [ $? -gt 0 ] && return 1
 
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
     if [ "$branch" = "master" ]; then
@@ -867,10 +830,7 @@ function drop_this_branch_right_now() {
 }
 
 function DROP_THIS_BRANCH_RIGHT_NOW() {
-    is_repository_clean
-    if [ $? -gt 0 ]; then
-        return 1
-    fi
+    is_repository_clean; [ $? -gt 0 ] && return 1
 
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
     if [ "$branch" = "master" ]; then
