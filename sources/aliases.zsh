@@ -118,7 +118,7 @@ function run_hide() {
 }
 
 commit () {
-    RBUFFER=`sh -c "$READ_URI http://whatthecommit.com/index.txt"`${RBUFFER}
+    RBUFFER=`sh -c "$HTTP_GET http://whatthecommit.com/index.txt"`${RBUFFER}
     zle end-of-line
 }
 
@@ -132,9 +132,9 @@ last-modified() {
 
 # ——— helpers + hors and so
 w() {
-    sh -c "$READ_URI \"http://cheat.sh/`urlencode $@`\""
+    sh -c "$HTTP_GET \"http://cheat.sh/`urlencode $@`\""
 }
 
 q() {
-    sh -c "$READ_URI \"http://cheat.sh/~`urlencode $@`\""
+    sh -c "$HTTP_GET \"http://cheat.sh/~`urlencode $@`\""
 }

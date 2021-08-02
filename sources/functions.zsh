@@ -3,7 +3,7 @@ FORGIT_CMD_DIFF='git ls-files --modified `git rev-parse --show-toplevel`'
 
 
 commit_text () {
-    local text=`sh -c "$READ_URI http://whatthecommit.com/index.txt"`
+    local text=`sh -c "$HTTP_GET http://whatthecommit.com/index.txt"`
     echo "$text" | anyframe-action-insert
     zle end-of-line
 }
@@ -233,7 +233,7 @@ josh_pull() {
 
 josh_deploy() {
     url="https://raw.githubusercontent.com/YaakovTooth/Josh/master/install/boot.sh?$RANDOM"
-    $SHELL -c "$READ_URI $url | $SHELL"
+    $SHELL -c "$HTTP_GET $url | $SHELL"
     if [ $? -gt 0 ]; then
         echo ' - install failed :-\'
         return 1
