@@ -41,7 +41,7 @@ OPTIONAL_PACKAGES=(
     jql              # select values by path from JSON input for humans
     just             # comfortable system for per project frequently used commands like make test, etc
     logtail          # graphical tail logs in termial
-    lolcate-rs
+    lolcate-rs       # blazing fast filesystem database
     lsd              # another ls replacement tool
     mrh              # recursively search git reps and return status (detached, tagged, etc)
     onefetch         # graphical statistics for git repository
