@@ -45,7 +45,7 @@ git_add() {
                 --bind='shift-down:half-page-down' \
                 --bind='shift-up:half-page-up' \
                 --color="$FZF_THEME" \
-                --prompt="add changed:" \
+                --prompt="git add:" \
                 --multi --filepath-word --preview="$differ" \
                 --preview-window="left:119:noborder" \
             | proximity-sort . | sed -z 's/\n/ /g' | awk '{$1=$1};1'

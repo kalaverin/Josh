@@ -25,10 +25,18 @@ insert_directory() {
     fi
 
     if [ "$pre" ]; then
-        LBUFFER="$(echo ${LBUFFER% *} | sd '(\s+)$' '')"
+        if [ "$pre" = "$LBUFFER" ]; then
+            LBUFFER=""
+        else
+            LBUFFER="$(echo ${LBUFFER% *} | sd '(\s+)$' '')"
+        fi
     fi
     if [ "$post" ]; then
-        RBUFFER="$(echo $RBUFFER | cut -d' ' -f2- | sd '^(\s+)' '')"
+        if [ "$post" = "$RBUFFER" ]; then
+            RBUFFER=""
+        else
+            RBUFFER="$(echo $RBUFFER | cut -d' ' -f2- | sd '^(\s+)' '')"
+        fi
     fi
 
     if result=$(fd \
@@ -89,10 +97,18 @@ insert_endpoint() {
     fi
 
     if [ "$pre" ]; then
-        LBUFFER="$(echo ${LBUFFER% *} | sd '(\s+)$' '')"
+        if [ "$pre" = "$LBUFFER" ]; then
+            LBUFFER=""
+        else
+            LBUFFER="$(echo ${LBUFFER% *} | sd '(\s+)$' '')"
+        fi
     fi
     if [ "$post" ]; then
-        RBUFFER="$(echo $RBUFFER | cut -d' ' -f2- | sd '^(\s+)' '')"
+        if [ "$post" = "$RBUFFER" ]; then
+            RBUFFER=""
+        else
+            RBUFFER="$(echo $RBUFFER | cut -d' ' -f2- | sd '^(\s+)' '')"
+        fi
     fi
 
     if result=$(fd \
