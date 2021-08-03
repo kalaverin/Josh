@@ -1,7 +1,7 @@
 add_newline = false
 
 [cmake]
-format = '[$symbol($version )]($style)'
+format = '[$symbol($version)]($style)'
 
 [cmd_duration]
 min_time = 5000
@@ -17,13 +17,13 @@ min_time_to_notify = 45000
 format = '[$symbol$environment]($style) '
 
 [crystal]
-format = '[$symbol($version )]($style)'
+format = '[$symbol($version)]($style)'
 
 [dart]
-format = '[$symbol($version )]($style)'
+format = '[$symbol($version)]($style)'
 
 [deno]
-format = '[$symbol($version )]($style)'
+format = '[$symbol($version)]($style)'
 
 [directory]
 truncation_length = 3
@@ -45,16 +45,16 @@ home_symbol = '~'
 format = '[$symbol$context]($style) '
 
 [dotnet]
-format = '[$symbol($version )(🎯 $tfm )]($style)'
+format = '[$symbol($version)(🎯 $tfm )]($style)'
 
 [elixir]
-format = '[$symbol($version \(OTP $otp_version\) )]($style)'
+format = '[$symbol($version\(OTP $otp_version\) )]($style)'
 
 [elm]
-format = '[$symbol($version )]($style)'
+format = '[$symbol($version)]($style)'
 
 [erlang]
-format = '[$symbol($version )]($style)'
+format = '[$symbol($version)]($style)'
 
 [git_branch]
 format = '[$symbol$branch]($style)(:[$remote]($style))[/](black bold)'
@@ -110,10 +110,10 @@ untracked = '?'
 disabled = false
 
 [golang]
-format = '[$symbol($version )]($style)'
+format = '[$symbol($version)]($style)'
 
 [helm]
-format = '[$symbol($version )]($style)'
+format = '[$symbol($version)]($style)'
 
 [hostname]
 ssh_only = false
@@ -124,26 +124,26 @@ disabled = false
 
 [java]
 
-format = '[$symbol($version )]($style)'
+format = ' [$symbol($version)]($style)'
 
 [jobs]
 threshold = 1
-format = '[$symbol$number]($style) '
+format = ' [$symbol$number]($style)'
 symbol = '✦'
 style = 'bold blue'
 disabled = false
 
 [julia]
-format = '[$symbol($version )]($style)'
+format = ' [$symbol($version)]($style)'
 
 [kotlin]
-format = '[$symbol($version )]($style)'
+format = ' [$symbol($version)]($style)'
 
 [lua]
-format = '[$symbol($version )]($style)'
+format = ' [$symbol($version)]($style)'
 
 [nim]
-format = '[$symbol($version )]($style)'
+format = ' [$symbol($version)]($style)'
 
 [nix_shell]
 format = '[$symbol$state( \($name\))]($style) '
@@ -154,19 +154,19 @@ pure_msg = 'pure'
 disabled = false
 
 [nodejs]
-format = '[$symbol($version )]($style)'
+format = ' [$symbol($version)]($style)'
 
 [ocaml]
-format = '[$symbol($version )(\($switch_indicator$switch_name\) )]($style)'
+format = ' [$symbol($version)(\($switch_indicator$switch_name\) )]($style)'
 
 [perl]
-format = '[$symbol($version )]($style)'
+format = ' [$symbol($version)]($style)'
 
 [php]
-format = '[$symbol($version )]($style)'
+format = ' [$symbol($version)]($style)'
 
 [purescript]
-format = '[$symbol($version )]($style)'
+format = ' [$symbol($version)]($style)'
 
 [python]
 pyenv_version_name = false
@@ -176,7 +176,7 @@ python_binary = [
     'python3',
     'python2',
 ]
-format = ' [${pyenv_prefix}$virtualenv](cyan)[:](black)[${version}]($style)'
+format = ' [${pyenv_prefix}$virtualenv](bright-yellow)[:](black)[${version}]($style)'
 version_format = '${raw}'
 style = 'purple'
 symbol = '🐍 '
@@ -194,19 +194,19 @@ detect_files = [
 detect_folders = []
 
 [rlang]
-format = '[$symbol($version )]($style)'
+format = ' [$symbol($version)]($style)'
 
 [red]
-format = '[$symbol($version )]($style)'
+format = ' [$symbol($version)]($style)'
 
 [ruby]
-format = '[$symbol($version )]($style)'
+format = ' [$symbol($version)]($style)'
 
 [rust]
-format = '[$symbol($version )]($style)'
+format = ' [$symbol($version)]($style)'
 
 [scala]
-format = '[$symbol($version )]($style)'
+format = ' [$symbol($version)]($style)'
 
 [status]
 format = '[$status]($style) '
@@ -221,10 +221,10 @@ recognize_signal_code = true
 disabled = false
 
 [swift]
-format = '[$symbol($version )]($style)'
+format = ' [$symbol($version)]($style)'
 
 [terraform]
-format = '[$symbol$workspace]($style) '
+format = ' [$symbol$workspace ]($style)'
 
 [time]
 format = '[$time]($style) '
@@ -242,13 +242,13 @@ show_always = true
 disabled = false
 
 [vlang]
-format = '[$symbol($version )]($style)'
+format = ' [$symbol($version)]($style)'
 
 [vagrant]
-format = '[$symbol($version )]($style)'
+format = ' [$symbol($version)]($style)'
 
 [zig]
-format = '[$symbol($version )]($style)'
+format = ' [$symbol($version)]($style)'
 
 [custom]
 
