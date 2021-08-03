@@ -9,6 +9,9 @@ REQUIRED_BINARIES=(
     tree
     zsh
 )
+REQUIRED_LIBRARIES=(
+    openssl
+)
 
 function check_executables() {
     local missing=""
@@ -23,6 +26,23 @@ function check_executables() {
     fi
     return 0
 }
+
+
+function check_libraries() {
+    local missing=""
+    for lib in $@; do
+        $SHELL -c "pkg-config --libs --cflags $lib" 1&>/dev/null 2&>/dev/null
+        if [ "$?" -gt 0 ]; then
+            local missing="$missing $lib"
+        fi
+    done
+    if [ "$missing" ]; then
+        echo " + missing requirements:$missing"
+        return 1
+    fi
+    return 0
+}
+
 
 function check_compliance() {
     if [ -n "$(uname | grep -i freebsd)" ]; then
@@ -51,7 +71,7 @@ function check_compliance() {
         if [ -n "$(uname -v | grep -Pi '(debian|ubuntu)')" ]; then
             echo " + os: debian-based `uname -srv`"
             local cmd="sudo apt-get update --yes --quiet || true && apt-get install --yes --quiet --no-remove"
-            local pkg="zsh git jq pv python3 tree"
+            local pkg="zsh git jq pv python3 tree libssl-dev"
         fi
 
     else
@@ -59,6 +79,7 @@ function check_compliance() {
     fi
 
     check_executables $REQUIRED_BINARIES $REQURED_SYSTEM_BINARIES
+    check_libraries $REQUIRED_LIBRARIES
     if [ $? -gt 0 ]; then
         echo " - please, install all packages and try again, may be just run: $cmd $pkg"
         return 0
@@ -66,7 +87,3 @@ function check_compliance() {
     echo " + all requirements exists: $REQUIRED_BINARIES $REQURED_SYSTEM_BINARIES"
     return 1
 }
-
-# TODO:
-# need check: pkg-config --libs --cflags openssl
-# to install: libssl-dev
