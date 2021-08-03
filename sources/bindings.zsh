@@ -7,10 +7,10 @@ if [[ $- == *i* ]]; then
 bindkey "${terminfo[kich1]}" overwrite-mode
 
 # left and right
-bindkey "^[OC"             forward-char
-bindkey "$terminfo[kcuf1]" forward-char
-bindkey "^[OD"             backward-char
-bindkey "$terminfo[kcub1]" backward-char
+bindkey "^[OC"               forward-char
+bindkey "${terminfo[kcuf1]}" forward-char
+bindkey "^[OD"               backward-char
+bindkey "${terminfo[kcub1]}" backward-char
 
 # ctrl + left and right, jump over words
 bindkey "^[[5C"            forward-word
@@ -80,8 +80,8 @@ bindkey "\eO3B"   insert-cycledright
 
 # ——— user binds
 
-bindkey "\e\e" clear-screen  # esc-esc clears the screen
-bindkey '\e '  empty_buffer  # alt-space clears the input
+# bindkey "\e\e" clear-screen  # esc-esc clears the screen
+# bindkey '\e '
 
 # process management
 bindkey '\e\'  ps_widget    # just select multuple pids and append to command line
@@ -92,6 +92,7 @@ bindkey "\ek"  term_last    # send SIGTERM to last pid
 # misc
 bindkey "\e0"  commit_text          # generate and paste dumb commit message
 bindkey "\e="  sudoize              # prepend command with sudo
+bindkey '^H'   empty_buffer         # ctrl+backspace, clears the input
 bindkey "\e^?" autosuggest-execute  # alt+backspace, accept suggestion and enter
 bindkey "\e]"  copy-prev-shell-word # just copy and paste last word
 
@@ -102,5 +103,4 @@ bindkey '\ec'  history-search-multi-word
 bindkey '\ex'  insert_endpoint   # search and paste to command line filename
 bindkey '\eX'  insert_directory  # and catalog name
 bindkey '\e^x' visual_chdir      # fast dive into directory
-
 fi

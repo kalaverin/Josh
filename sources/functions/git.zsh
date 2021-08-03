@@ -26,7 +26,7 @@ local GIT_LIST_CHANGED='git ls-files --modified --deleted --others --exclude-sta
 
 
 git_add() {
-    local differ="git diff --color=always -- {} | $DELTA"
+    local differ="git diff --color=always --shortstat --patch --diff-algorithm=histogram -- {} | $DELTA"
     while true; do
         local files="$(echo "$GIT_LIST_CHANGED" | $SHELL | runiq - | proximity-sort . | \
             fzf \
@@ -38,20 +38,19 @@ git_add() {
                 --bind='ctrl-c:abort' \
                 --bind='ctrl-q:abort' \
                 --bind='end:preview-down' \
-                --bind='esc:abort' \
+                --bind='esc:cancel' \
                 --bind='home:preview-up' \
                 --bind='pgdn:preview-page-down' \
                 --bind='pgup:preview-page-up' \
                 --bind='shift-down:half-page-down' \
                 --bind='shift-up:half-page-up' \
                 --color="$FZF_THEME" \
-                --prompt="git add:" \
+                --prompt="git add >  " \
                 --multi --filepath-word --preview="$differ" \
                 --preview-window="left:119:noborder" \
             | proximity-sort . | sed -z 's/\n/ /g' | awk '{$1=$1};1'
         )"
 
-                # --bind="ctrl-e:execute(git diff {} | delta | less)" \
         if [[ "$BUFFER" != "" ]]; then
             local prefix="$BUFFER && git"
         else
@@ -77,10 +76,13 @@ git_add() {
 zle -N git_add
 
 
-git_reset() {
-    local differ="git diff --color=always -- {} | $DELTA"
+git_checkout_modified() {
+    local root=$(realpath `sh -c "$GIT_ROOT"`)
+    local branch=${1:-$(echo "$GIT_BRANCH" | $SHELL)}
+    local differ="echo {} | xargs -I% git diff --color=always --shortstat --patch --diff-algorithm=histogram $branch -- $root/% | $DELTA"
+
     while true; do
-        local files="$(echo "$GIT_LIST_CHANGED" | $SHELL | runiq - | proximity-sort . | \
+        local files="$(git diff --name-only $branch | runiq - | proximity-sort . | \
             fzf \
                 --ansi --extended --info='inline' \
                 --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
@@ -90,43 +92,125 @@ git_reset() {
                 --bind='ctrl-c:abort' \
                 --bind='ctrl-q:abort' \
                 --bind='end:preview-down' \
-                --bind='esc:abort' \
+                --bind='esc:cancel' \
                 --bind='home:preview-up' \
                 --bind='pgdn:preview-page-down' \
                 --bind='pgup:preview-page-up' \
                 --bind='shift-down:half-page-down' \
                 --bind='shift-up:half-page-up' \
                 --color="$FZF_THEME" \
-                --prompt="reset:" \
+                --prompt="checkout to $branch >  " \
                 --multi --filepath-word --preview="$differ" \
                 --preview-window="left:119:noborder" \
-            | proximity-sort . | sed -z 's/\n/ /g' | awk '{$1=$1};1'
+            | proximity-sort . | sed -z 's:\n: :g' | awk '{$1=$1};1' \
+            | sed -r "s:\s\b: $root/:g" | xargs -I% echo "$root/%"
         )"
 
         if [[ "$BUFFER" != "" ]]; then
             local prefix="$BUFFER && git"
         else
-            local prefix="git"
+            local prefix=" git"
         fi
 
         if [[ "$files" != "" ]]; then
-            # LBUFFER="git restore $files"
-            LBUFFER="$prefix checkout -- $files"
-            local ret=$?
+            LBUFFER="$prefix checkout $branch -- $files"
             zle redisplay
             typeset -f zle-line-init >/dev/null && zle zle-line-init
-            return $ret
+            return 130
         else
             zle reset-prompt
             return 0
         fi
     done
 }
-zle -N git_reset
+zle -N git_checkout_modified
+
+
+git_select_commit_then_files_checkout() {
+    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
+        local branch=${1:-$(echo "$GIT_BRANCH" | $SHELL)}
+        local commit="$(git_list_commits "$branch" | pipe_remove_dots_and_spaces | pipe_numerate | \
+            fzf \
+                --ansi --extended --info='inline' \
+                --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
+                --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
+                --bind='alt-w:toggle-preview-wrap' \
+                --bind='ctrl-c:abort' \
+                --bind='ctrl-q:abort' \
+                --bind='end:preview-down' \
+                --bind='esc:cancel' \
+                --bind='home:preview-up' \
+                --bind='pgdn:preview-page-down' \
+                --bind='pgup:preview-page-up' \
+                --bind='shift-down:half-page-down' \
+                --bind='shift-up:half-page-up' \
+                --bind='alt-space:jump' \
+                --color="$FZF_THEME" \
+                --preview-window="left:84:noborder" \
+                --prompt="$branch: select commit >  " \
+                --preview="echo {} | head -1 | grep -o '[a-f0-9]\{7,\}$' | xargs -I% git diff --color=always --shortstat --patch --diff-algorithm=histogram % $branch | $DELTA --paging='always' | less" | head -1 | grep -o '[a-f0-9]\{7,\}$'
+        )"
+        if [[ "$commit" == "" ]]; then
+            zle redisplay
+            typeset -f zle-line-init >/dev/null && zle zle-line-init
+            return 0
+        fi
+
+        local root=$(realpath `sh -c "$GIT_ROOT"`)
+        local differ="echo {} | xargs -I% git diff --color=always --shortstat --patch --diff-algorithm=histogram $branch $commit -- $root/% | $DELTA"
+        while true; do
+            local files="$(git diff --name-only $branch $commit | proximity-sort . | \
+                fzf \
+                    --ansi --extended --info='inline' \
+                    --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
+                    --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
+                    --bind='alt-w:toggle-preview-wrap' \
+                    --bind='ctrl-c:abort' \
+                    --bind='ctrl-q:abort' \
+                    --bind='end:preview-down' \
+                    --bind='esc:cancel' \
+                    --bind='home:preview-up' \
+                    --bind='pgdn:preview-page-down' \
+                    --bind='pgup:preview-page-up' \
+                    --bind='shift-down:half-page-down' \
+                    --bind='shift-up:half-page-up' \
+                    --bind='alt-space:jump' \
+                    --color="$FZF_THEME" \
+                    --preview-window="left:84:noborder" \
+                    --multi \
+                    --prompt="$branch: select file >  " \
+                    --filepath-word --preview="$differ" \
+                | proximity-sort . | sed -z 's:\n: :g' | awk '{$1=$1};1' \
+                | sed -r "s:\s\b: $root/:g" | xargs -I% echo "$root/%"
+            )"
+
+            if [[ "$BUFFER" != "" ]]; then
+                local prefix="$BUFFER && git"
+            else
+                local prefix=" git"
+            fi
+
+            if [[ "$files" != "" ]]; then
+                LBUFFER="$prefix checkout $commit -- $files"
+                return 130
+            else
+                zle reset-prompt
+                return 0
+            fi
+        done
+    fi
+}
+zle -N git_select_commit_then_files_checkout
+
+
+git_select_branch_then_commit_then_file_checkout() {
+    git_select_branch_with_callback git_select_commit_then_files_checkout
+}
+zle -N git_select_branch_then_commit_then_file_checkout
 
 
 alias git_list_commits="git log --color=always --format='%C(auto)%D %C(reset)%s%C(black)%C(bold)%ae %cr %<(12,trunc)%H' --first-parent"
-alias -g pipe_remove_dots_and_spaces="sed -re 's/(\.{2,})+$//g' | sed -re 's/(  )+/ /g' | sd '^\s+' ''"
+alias -g pipe_remove_dots_and_spaces="sed -re 's/(\.{2,})+$//g' | sed -re 's/(\\s+)/ /g' | sd '^\s+' ''"
 alias -g pipe_numerate="awk '{print NR,\$0}'"
 
 DELTA_FOR_COMMITS_LIST_OUT="xargs -I$ git show --find-renames --find-copies --function-context --format='format:%H %ad%n%an <%ae>%n%s' --diff-algorithm=histogram $ | $DELTA --paging='always' | less"
@@ -143,7 +227,7 @@ git_show_commits() {
                 --bind='ctrl-c:abort' \
                 --bind='ctrl-q:abort' \
                 --bind='end:preview-down' \
-                --bind='esc:abort' \
+                --bind='esc:cancel' \
                 --bind='home:preview-up' \
                 --bind='pgdn:preview-page-down' \
                 --bind='pgup:preview-page-up' \
@@ -181,7 +265,7 @@ git_select_branch_with_callback() {
                     --bind='ctrl-c:abort' \
                     --bind='ctrl-q:abort' \
                     --bind='end:preview-down' \
-                    --bind='esc:abort' \
+                    --bind='esc:cancel' \
                     --bind='home:preview-up' \
                     --bind='pgdn:preview-page-down' \
                     --bind='pgup:preview-page-up' \
@@ -236,7 +320,7 @@ git_show_branch_file_commits() {
             --bind='ctrl-c:abort' \
             --bind='ctrl-q:abort' \
             --bind='end:preview-down' \
-            --bind='esc:abort' \
+            --bind='esc:cancel' \
             --bind='home:preview-up' \
             --bind='pgdn:preview-page-down' \
             --bind='pgup:preview-page-up' \
@@ -270,7 +354,7 @@ git_select_file_show_commits() {
                     --bind='ctrl-c:abort' \
                     --bind='ctrl-q:abort' \
                     --bind='end:preview-down' \
-                    --bind='esc:abort' \
+                    --bind='esc:cancel' \
                     --bind='home:preview-up' \
                     --bind='pgdn:preview-page-down' \
                     --bind='pgup:preview-page-up' \
@@ -765,7 +849,7 @@ alias gdr='git ls-files --modified `git rev-parse --show-toplevel`'
 
 # bindkey "^[^M" accept-and-hold # Esc-Enter
 
-# alt-q, history
+# alt-q, commits history
 bindkey "\eq"  git_show_commits
 # shift-alt-q, branch -> history
 bindkey "^[Q"  git_select_branch_with_callback
@@ -774,8 +858,14 @@ bindkey "^q"   git_select_file_show_commits
 # ctrl-alt-q, branch -> file -> history
 bindkey "\e^q" git_select_branch_then_file_show_commits
 
+# alt-a, git add
 bindkey "\ea"  git_add
-bindkey "\e^a" git_reset
+# shift-alt-a, checkout to active branch last commit
+bindkey "^[A"  git_checkout_modified
+# ctrl-a, on active branch, select commit, checkout files
+bindkey "^a"   git_select_commit_then_files_checkout
+# ctrl-alt-a, select branch, select commit, checkout files
+bindkey "\e^a" git_select_branch_then_commit_then_file_checkout
 
 bindkey "^s"   git_checkout_commit
 bindkey "\es"  git_checkout_branch
