@@ -154,7 +154,7 @@ git_select_commit_then_files_checkout() {
                 --color="$FZF_THEME" \
                 --preview-window="left:84:noborder" \
                 --prompt="$branch: select commit >  " \
-                --preview="echo {} | head -1 | grep -o '[a-f0-9]\{7,\}$' | xargs -I% git diff --color=always --shortstat --patch --diff-algorithm=histogram % $branch | $DELTA --paging='always' | less" | head -1 | grep -o '[a-f0-9]\{7,\}$'
+                --preview="echo {} | head -1 | grep -o '[a-f0-9]\{7,\}$' | xargs -I% git diff --color=always --shortstat --patch --diff-algorithm=histogram % $branch | $DELTA --paging='always'" | head -1 | grep -o '[a-f0-9]\{7,\}$'
         )"
         if [[ "$commit" == "" ]]; then
             zle redisplay
@@ -219,7 +219,7 @@ alias git_list_commits="git log --color=always --format='%C(auto)%D %C(reset)%s 
 alias -g pipe_remove_dots_and_spaces="sed -re 's/(\.{2,})+$//g' | sed -re 's/(\\s+)/ /g' | sd '^\s+' ''"
 alias -g pipe_numerate="awk '{print NR,\$0}'"
 
-DELTA_FOR_COMMITS_LIST_OUT="xargs -I$ git show --find-renames --find-copies --function-context --format='format:%H %ad%n%an <%ae>%n%s' --diff-algorithm=histogram $ | $DELTA --paging='always' | less"
+DELTA_FOR_COMMITS_LIST_OUT="xargs -I$ git show --find-renames --find-copies --function-context --format='format:%H %ad%n%an <%ae>%n%s' --diff-algorithm=histogram $ | $DELTA --paging='always'"
 
 git_show_commits() {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
@@ -310,7 +310,7 @@ git_show_branch_file_commits() {
 
         local ext="$(echo "$file" | xargs -I% basename % | grep --color=never -Po '(?<=.\.)([^\.]+)$')"
 
-        local diff_view="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -l $SHELL -c $diff_file $file' | $DELTA --width $COLUMNS | less -R"
+        local diff_view="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -l $SHELL -c $diff_file $file' | $DELTA --width $COLUMNS"
 
         local file_view="echo {} | cut -d ' ' -f 1 | xargs -I^^ git show ^^:./$file | $LISTER_FILE --paging=always"
         if [ $ext != "" ]; then
@@ -598,12 +598,7 @@ zle -N git_merge_branch
 
 git_fetch_branch() {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
-        if [ $OS_TYPE = "BSD" ]; then
-            local cmd="echo {} | $SHELL $GIT_DIFF_FROM_TAG | $DELTA --width $COLUMNS | less -R"
-        else
-            local cmd="echo {} | $SHELL $GIT_DIFF_FROM_TAG | $DELTA --paging='always'"
-        fi
-
+        local cmd="echo {} | $SHELL $GIT_DIFF_FROM_TAG | $DELTA --paging='always'"
         local branches="$(git ls-remote -h origin | sed -r 's%^[a-f0-9]{40}\s+refs/heads/%%g' | sort | \
             fzf \
                 --multi --color="$FZF_THEME" \
@@ -641,12 +636,7 @@ zle -N git_fetch_branch
 
 git_delete_branch() {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
-        if [ $OS_TYPE = "BSD" ]; then
-            local cmd="echo {} | $SHELL $GIT_DIFF_FROM_TAG | $DELTA --width $COLUMNS | less -R"
-        else
-            local cmd="echo {} | $SHELL $GIT_DIFF_FROM_TAG | $DELTA --paging='always'"
-        fi
-
+        local cmd="echo {} | $SHELL $GIT_DIFF_FROM_TAG | $DELTA --paging='always'"
         local branches="$(git ls-remote -h origin | sed -r 's%^[a-f0-9]{40}\s+refs/heads/%%g' | sort | \
             fzf \
                 --multi --color="$FZF_THEME" \
