@@ -27,7 +27,9 @@ local GIT_LIST_CHANGED='git ls-files --modified --deleted --others --exclude-sta
 
 git_add() {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
-        local differ="git diff --color=always --shortstat --patch --diff-algorithm=histogram -- {} | $DELTA"
+        local branch="${1:-`sh -c "$GIT_BRANCH"`}"
+        local differ="echo {} | xargs -I% git diff --color=always --shortstat --patch --diff-algorithm=histogram $branch -- % | $DELTA"
+
         while true; do
             local files="$(echo "$GIT_LIST_CHANGED" | $SHELL | runiq - | proximity-sort . | \
                 fzf \
@@ -59,7 +61,6 @@ git_add() {
             fi
 
             if [[ "$files" != "" ]]; then
-                local branch="${1:-`sh -c "$GIT_BRANCH"`}"
                 LBUFFER="$prefix add $files && gmm "
                 LBUFFER+='"'
                 LBUFFER+="$branch: "
@@ -257,8 +258,7 @@ zle -N git_show_commits
 
 git_select_branch_with_callback() {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
-        local differ="echo {} | head -n 1 | tabulate -i 1 | xargs -I% git diff $branch % | $DELTA --paging='always'"
-
+        local differ="echo {} | xargs -I% git diff --color=always --shortstat --patch --diff-algorithm=histogram $branch -- % | $DELTA"
         while true; do
             local branch="$($SHELL $GIT_LIST_BRANCHES | \
                 fzf \
