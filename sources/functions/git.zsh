@@ -214,7 +214,7 @@ git_select_branch_then_commit_then_file_checkout() {
 zle -N git_select_branch_then_commit_then_file_checkout
 
 
-alias git_list_commits="git log --color=always --format='%C(auto)%D %C(reset)%s%C(black)%C(bold)%ae %cr %<(12,trunc)%H' --first-parent"
+alias git_list_commits="git log --color=always --format='%C(auto)%D %C(reset)%s %C(black)%C(bold)%ae %cr %<(12,trunc)%H' --first-parent"
 alias -g pipe_remove_dots_and_spaces="sed -re 's/(\.{2,})+$//g' | sed -re 's/(\\s+)/ /g' | sd '^\s+' ''"
 alias -g pipe_numerate="awk '{print NR,\$0}'"
 
