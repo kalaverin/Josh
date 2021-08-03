@@ -24,7 +24,6 @@ local GIT_LIST_TAGS="$THIS_DIR/scripts/git_list_tags.sh"
 local GIT_LIST_CHANGED='git ls-files --modified --deleted --others --exclude-standard `git rev-parse --show-toplevel`'
 
 
-
 git_add() {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local branch="${1:-`sh -c "$GIT_BRANCH"`}"
@@ -57,7 +56,7 @@ git_add() {
             if [[ "$BUFFER" != "" ]]; then
                 local prefix="$BUFFER && git"
             else
-                local prefix="git"
+                local prefix=" git"
             fi
 
             if [[ "$files" != "" ]]; then
@@ -67,9 +66,11 @@ git_add() {
                 RBUFFER='"'
                 local ret=$?
                 zle redisplay
+                zle reset-prompt
                 typeset -f zle-line-init >/dev/null && zle zle-line-init
                 return $ret
             else
+                zle redisplay
                 zle reset-prompt
                 return 0
             fi
@@ -403,26 +404,32 @@ zle -N git_select_branch_then_file_show_commits
 git_checkout_tag() {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local latest="$(echo "$GIT_LATEST" | $SHELL)"
-        if [ $OS_TYPE = "BSD" ]; then
-            local cmd="echo {} | $SHELL $GIT_DIFF_FROM_TAG | $DELTA --width $COLUMNS | less -R"
-        else
-            local cmd="echo {} | $SHELL $GIT_DIFF_FROM_TAG | $DELTA --paging='always'"
-        fi
+        local cmd="echo {} | $SHELL $GIT_DIFF_FROM_TAG | $DELTA --paging='always'"
 
-        local commit="$(echo "$latest" | $SHELL $GIT_LIST_TAGS | \
+        local differ="echo {} | cut -d ' ' -f 1 | xargs -I% git diff --color=always --stat=\$FZF_PREVIEW_COLUMNS --patch --diff-algorithm=histogram % | $DELTA"
+        # local commit="$(git show-ref --tags -d | grep '\^{}$' | sd '\^\{\}$' '' | sd '^([0-9a-f]+)\srefs/tags/(.+)' '$2 $1' | \
+
+        local commit="$(git log --color=always --oneline --decorate --tags --no-walk | \
             fzf \
-                --color="$FZF_THEME" \
-                --prompt="-> tag:" \
-                --info='inline' --ansi --extended --filepath-word --no-mouse \
-                --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
-                --bind='esc:cancel' \
-                --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
-                --bind='home:preview-up' --bind='end:preview-down' \
-                --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
+                --ansi --extended --info='inline' \
+                --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
+                --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
                 --bind='alt-w:toggle-preview-wrap' \
-                --bind="alt-bs:toggle-preview" \
-                --preview-window="right:89:noborder" \
-                --preview=$cmd | $SHELL $GIT_TAG_FROM_STR
+                --bind='ctrl-c:abort' \
+                --bind='ctrl-q:abort' \
+                --bind='end:preview-down' \
+                --bind='esc:cancel' \
+                --bind='home:preview-up' \
+                --bind='pgdn:preview-page-down' \
+                --bind='pgup:preview-page-up' \
+                --bind='shift-down:half-page-down' \
+                --bind='shift-up:half-page-up' \
+                --bind='alt-space:jump' \
+                --preview-window="left:84:noborder" \
+                --color="$FZF_THEME" \
+                --prompt="tag >  " \
+                --preview=$cmd | $SHELL $GIT_TAG_FROM_STR \
+                --preview="$differ" \
         )"
 
         if [[ "$commit" == "" ]]; then
@@ -444,6 +451,149 @@ git_checkout_tag() {
     fi
 }
 zle -N git_checkout_tag
+
+
+git_checkout_branch() {
+    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
+        local differ="echo {} | cut -d ' ' -f 1 | xargs -I% git diff --color=always --stat=\$FZF_PREVIEW_COLUMNS --patch --diff-algorithm=histogram % | $DELTA"
+        # local commit="$(git show-ref --tags -d | grep '\^{}$' | sd '\^\{\}$' '' | sd '^([0-9a-f]+)\srefs/tags/(.+)' '$2 $1' | \
+        local branch="$($SHELL $GIT_LIST_BRANCHES_EXCEPT_THIS | \
+            fzf \
+                --ansi --extended --info='inline' \
+                --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
+                --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
+                --bind='alt-w:toggle-preview-wrap' \
+                --bind='ctrl-c:abort' \
+                --bind='ctrl-q:abort' \
+                --bind='end:preview-down' \
+                --bind='esc:cancel' \
+                --bind='home:preview-up' \
+                --bind='pgdn:preview-page-down' \
+                --bind='pgup:preview-page-up' \
+                --bind='shift-down:half-page-down' \
+                --bind='shift-up:half-page-up' \
+                --bind='alt-space:jump' \
+                --preview-window="left:84:noborder" \
+                --color="$FZF_THEME" \
+                --prompt="branch >  " \
+                --preview="$differ" | cut -d ' ' -f 1
+        )"
+
+        if [[ "$branch" == "" ]]; then
+            zle reset-prompt
+            return 0
+        else
+            if [[ "$BUFFER" != "" ]]; then
+                LBUFFER="$BUFFER && git checkout $branch"
+                local ret=$?
+                zle redisplay
+                typeset -f zle-line-init >/dev/null && zle zle-line-init
+                return $ret
+            else
+                git checkout $branch 2>/dev/null 1>/dev/null
+                zle reset-prompt
+                return 0
+            fi
+        fi
+    fi
+}
+zle -N git_checkout_branch
+
+
+git_checkout_commit() {
+    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
+        local branch="$(echo "$GIT_BRANCH" | $SHELL)"
+
+        local differ="echo {} | head -1 | grep -o '[a-f0-9]\{7\}' | cut -d ' ' -f 1 | xargs -I% git diff --color=always --stat=\$FZF_PREVIEW_COLUMNS --patch --diff-algorithm=histogram % | $DELTA"
+        # local commit="$(git show-ref --tags -d | grep '\^{}$' | sd '\^\{\}$' '' | sd '^([0-9a-f]+)\srefs/tags/(.+)' '$2 $1' | \
+
+        local result="$(git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' --first-parent $branch | \
+            fzf \
+                --ansi --extended --info='inline' \
+                --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
+                --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
+                --bind='alt-w:toggle-preview-wrap' \
+                --bind='ctrl-c:abort' \
+                --bind='ctrl-q:abort' \
+                --bind='end:preview-down' \
+                --bind='esc:cancel' \
+                --bind='home:preview-up' \
+                --bind='pgdn:preview-page-down' \
+                --bind='pgup:preview-page-up' \
+                --bind='shift-down:half-page-down' \
+                --bind='shift-up:half-page-up' \
+                --bind='alt-space:jump' \
+                --preview-window="left:84:noborder" \
+                --color="$FZF_THEME" \
+                --prompt="commit >  " \
+                --preview=$differ | cut -d ' ' -f 1
+        )"
+
+        if [[ "$result" == "" ]]; then
+            zle reset-prompt
+            return 0
+        else
+            if [[ "$BUFFER" != "" ]]; then
+                LBUFFER="$BUFFER && git checkout $result"
+                local ret=$?
+                zle redisplay
+                typeset -f zle-line-init >/dev/null && zle zle-line-init
+                return $ret
+            else
+                git checkout $result 2>/dev/null
+                zle reset-prompt
+                return 0
+            fi
+        fi
+    fi
+}
+zle -N git_checkout_commit
+
+
+git_merge_branch() {
+    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
+        local differ="echo {} | cut -d ' ' -f 1 | xargs -I% git diff --color=always --stat=\$FZF_PREVIEW_COLUMNS --patch --diff-algorithm=histogram % | $DELTA"
+        local branch="$($SHELL $GIT_LIST_BRANCHES | \
+            fzf \
+                --ansi --extended --info='inline' \
+                --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
+                --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
+                --bind='alt-w:toggle-preview-wrap' \
+                --bind='ctrl-c:abort' \
+                --bind='ctrl-q:abort' \
+                --bind='end:preview-down' \
+                --bind='esc:cancel' \
+                --bind='home:preview-up' \
+                --bind='pgdn:preview-page-down' \
+                --bind='pgup:preview-page-up' \
+                --bind='shift-down:half-page-down' \
+                --bind='shift-up:half-page-up' \
+                --bind='alt-space:jump' \
+                --preview-window="left:84:noborder" \
+                --color="$FZF_THEME" \
+                --prompt="$(echo "$GIT_BRANCH" | $SHELL) merge >  " \
+                --preview="$differ" | cut -d ' ' -f 1
+        )"
+
+        if [[ "$branch" == "" ]]; then
+            zle reset-prompt
+            return 0
+        else
+            if [[ "$BUFFER" != "" ]]; then
+                LBUFFER="$BUFFER $branch"
+                local ret=$?
+                zle redisplay
+                typeset -f zle-line-init >/dev/null && zle zle-line-init
+                return $ret
+            else
+                run_show "git fetch origin $branch 2>/dev/null 1>/dev/null && git merge origin/$branch"
+                zle reset-prompt
+                return 0
+            fi
+        fi
+    fi
+}
+zle -N git_merge_branch
 
 
 git_fetch_branch() {
@@ -530,141 +680,6 @@ git_delete_branch() {
 }
 zle -N git_delete_branch
 
-
-git_checkout_branch() {
-    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
-        if [ $OS_TYPE = "BSD" ]; then
-            local cmd="echo {} | cut -d ' ' -f 1 | $DELTA --width $COLUMNS | less -R"
-        else
-            local cmd="echo {} | cut -d ' ' -f 1 | xargs -I% git diff % | $DELTA --paging='always'"
-        fi
-
-        local branch="$($SHELL $GIT_LIST_BRANCHES_EXCEPT_THIS | \
-            fzf \
-                --multi --color="$FZF_THEME" \
-                --prompt="-> branch:" \
-                --info='inline' --ansi --extended --filepath-word --no-mouse \
-                --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
-                --bind='esc:cancel' \
-                --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
-                --bind='home:preview-up' --bind='end:preview-down' \
-                --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
-                --bind='alt-w:toggle-preview-wrap' \
-                --bind="alt-bs:toggle-preview" \
-                --preview-window="right:89:noborder" \
-                --preview="$cmd" | cut -d ' ' -f 1
-        )"
-
-        if [[ "$branch" == "" ]]; then
-            zle reset-prompt
-            return 0
-        else
-            if [[ "$BUFFER" != "" ]]; then
-                LBUFFER="$BUFFER && git checkout $branch"
-                local ret=$?
-                zle redisplay
-                typeset -f zle-line-init >/dev/null && zle zle-line-init
-                return $ret
-            else
-                git checkout $branch 2>/dev/null 1>/dev/null
-                zle reset-prompt
-                return 0
-            fi
-        fi
-    fi
-}
-zle -N git_checkout_branch
-
-
-git_checkout_commit() {
-    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
-        local branch="$(echo "$GIT_BRANCH" | $SHELL)"
-        if [ $OS_TYPE = "BSD" ]; then
-            local cmd="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -I% git show --diff-algorithm=histogram % | $DELTA --width $COLUMNS| less -R"
-        else
-            local cmd="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -I% git show --diff-algorithm=histogram % | $DELTA --paging='always'"
-        fi
-
-        local result="$(git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' --first-parent $branch | \
-            fzf \
-                --color="$FZF_THEME" \
-                --prompt="-> hash:" \
-                --info='inline' --ansi --extended --filepath-word --no-mouse \
-                --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
-                --bind='esc:cancel' \
-                --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
-                --bind='home:preview-up' --bind='end:preview-down' \
-                --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
-                --margin=0,0,0,0 \
-                --bind='alt-w:toggle-preview-wrap' \
-                --bind="alt-bs:toggle-preview" \
-                --preview-window="right:89:noborder" \
-                --preview=$cmd | cut -d ' ' -f 1
-        )"
-
-        if [[ "$result" == "" ]]; then
-            zle reset-prompt
-            return 0
-        else
-            if [[ "$BUFFER" != "" ]]; then
-                LBUFFER="$BUFFER && git checkout $result"
-                local ret=$?
-                zle redisplay
-                typeset -f zle-line-init >/dev/null && zle zle-line-init
-                return $ret
-            else
-                git checkout $result 2>/dev/null
-                zle reset-prompt
-                return 0
-            fi
-        fi
-    fi
-}
-zle -N git_checkout_commit
-
-git_merge_branch() {
-    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
-        if [ $OS_TYPE = "BSD" ]; then
-            local cmd="echo {} | cut -d ' ' -f 1 | $DELTA --width $COLUMNS | less -R"
-        else
-            local cmd="echo {} | cut -d ' ' -f 1 | xargs -I% git diff % | $DELTA --paging='always'"
-        fi
-
-        local branch="$($SHELL $GIT_LIST_BRANCHES | \
-            fzf \
-                --multi --color="$FZF_THEME" \
-                --prompt="merge:" \
-                --info='inline' --ansi --extended --filepath-word --no-mouse \
-                --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
-                --bind='esc:cancel' \
-                --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
-                --bind='home:preview-up' --bind='end:preview-down' \
-                --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
-                --bind='alt-w:toggle-preview-wrap' \
-                --bind="alt-bs:toggle-preview" \
-                --preview-window="right:89:noborder" \
-                --preview="$cmd" | cut -d ' ' -f 1
-        )"
-
-        if [[ "$branch" == "" ]]; then
-            zle reset-prompt
-            return 0
-        else
-            if [[ "$BUFFER" != "" ]]; then
-                LBUFFER="$BUFFER $branch"
-                local ret=$?
-                zle redisplay
-                typeset -f zle-line-init >/dev/null && zle zle-line-init
-                return $ret
-            else
-                run_show "git fetch origin $branch 2>/dev/null 1>/dev/null && git merge origin/$branch"
-                zle reset-prompt
-                return 0
-            fi
-        fi
-    fi
-}
-zle -N git_merge_branch
 
 function spll() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
