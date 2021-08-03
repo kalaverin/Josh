@@ -26,102 +26,106 @@ local GIT_LIST_CHANGED='git ls-files --modified --deleted --others --exclude-sta
 
 
 git_add() {
-    local differ="git diff --color=always --shortstat --patch --diff-algorithm=histogram -- {} | $DELTA"
-    while true; do
-        local files="$(echo "$GIT_LIST_CHANGED" | $SHELL | runiq - | proximity-sort . | \
-            fzf \
-                --ansi --extended --info='inline' \
-                --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
-                --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
-                --bind='alt-space:jump-accept' \
-                --bind='alt-w:toggle-preview-wrap' \
-                --bind='ctrl-c:abort' \
-                --bind='ctrl-q:abort' \
-                --bind='end:preview-down' \
-                --bind='esc:cancel' \
-                --bind='home:preview-up' \
-                --bind='pgdn:preview-page-down' \
-                --bind='pgup:preview-page-up' \
-                --bind='shift-down:half-page-down' \
-                --bind='shift-up:half-page-up' \
-                --color="$FZF_THEME" \
-                --prompt="git add >  " \
-                --multi --filepath-word --preview="$differ" \
-                --preview-window="left:119:noborder" \
-            | proximity-sort . | sed -z 's/\n/ /g' | awk '{$1=$1};1'
-        )"
+    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
+        local differ="git diff --color=always --shortstat --patch --diff-algorithm=histogram -- {} | $DELTA"
+        while true; do
+            local files="$(echo "$GIT_LIST_CHANGED" | $SHELL | runiq - | proximity-sort . | \
+                fzf \
+                    --ansi --extended --info='inline' \
+                    --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
+                    --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
+                    --bind='alt-space:jump-accept' \
+                    --bind='alt-w:toggle-preview-wrap' \
+                    --bind='ctrl-c:abort' \
+                    --bind='ctrl-q:abort' \
+                    --bind='end:preview-down' \
+                    --bind='esc:cancel' \
+                    --bind='home:preview-up' \
+                    --bind='pgdn:preview-page-down' \
+                    --bind='pgup:preview-page-up' \
+                    --bind='shift-down:half-page-down' \
+                    --bind='shift-up:half-page-up' \
+                    --color="$FZF_THEME" \
+                    --prompt="git add >  " \
+                    --multi --filepath-word --preview="$differ" \
+                    --preview-window="left:119:noborder" \
+                | proximity-sort . | sed -z 's/\n/ /g' | awk '{$1=$1};1'
+            )"
 
-        if [[ "$BUFFER" != "" ]]; then
-            local prefix="$BUFFER && git"
-        else
-            local prefix="git"
-        fi
+            if [[ "$BUFFER" != "" ]]; then
+                local prefix="$BUFFER && git"
+            else
+                local prefix="git"
+            fi
 
-        if [[ "$files" != "" ]]; then
-            local branch="${1:-`sh -c "$GIT_BRANCH"`}"
-            LBUFFER="$prefix add $files && gmm "
-            LBUFFER+='"'
-            LBUFFER+="$branch: "
-            RBUFFER='"'
-            local ret=$?
-            zle redisplay
-            typeset -f zle-line-init >/dev/null && zle zle-line-init
-            return $ret
-        else
-            zle reset-prompt
-            return 0
-        fi
-    done
+            if [[ "$files" != "" ]]; then
+                local branch="${1:-`sh -c "$GIT_BRANCH"`}"
+                LBUFFER="$prefix add $files && gmm "
+                LBUFFER+='"'
+                LBUFFER+="$branch: "
+                RBUFFER='"'
+                local ret=$?
+                zle redisplay
+                typeset -f zle-line-init >/dev/null && zle zle-line-init
+                return $ret
+            else
+                zle reset-prompt
+                return 0
+            fi
+        done
+    fi
 }
 zle -N git_add
 
 
 git_checkout_modified() {
-    local root=$(realpath `sh -c "$GIT_ROOT"`)
-    local branch=${1:-$(echo "$GIT_BRANCH" | $SHELL)}
-    local differ="echo {} | xargs -I% git diff --color=always --shortstat --patch --diff-algorithm=histogram $branch -- $root/% | $DELTA"
+    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
+        local root=$(realpath `sh -c "$GIT_ROOT"`)
+        local branch=${1:-$(echo "$GIT_BRANCH" | $SHELL)}
+        local differ="echo {} | xargs -I% git diff --color=always --shortstat --patch --diff-algorithm=histogram $branch -- $root/% | $DELTA"
 
-    while true; do
-        local files="$(git diff --name-only $branch | runiq - | proximity-sort . | \
-            fzf \
-                --ansi --extended --info='inline' \
-                --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
-                --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
-                --bind='alt-space:jump-accept' \
-                --bind='alt-w:toggle-preview-wrap' \
-                --bind='ctrl-c:abort' \
-                --bind='ctrl-q:abort' \
-                --bind='end:preview-down' \
-                --bind='esc:cancel' \
-                --bind='home:preview-up' \
-                --bind='pgdn:preview-page-down' \
-                --bind='pgup:preview-page-up' \
-                --bind='shift-down:half-page-down' \
-                --bind='shift-up:half-page-up' \
-                --color="$FZF_THEME" \
-                --prompt="checkout to $branch >  " \
-                --multi --filepath-word --preview="$differ" \
-                --preview-window="left:119:noborder" \
-            | proximity-sort . | sed -z 's:\n: :g' | awk '{$1=$1};1' \
-            | sed -r "s:\s\b: $root/:g" | xargs -I% echo "$root/%"
-        )"
+        while true; do
+            local files="$(git diff --name-only $branch | runiq - | proximity-sort . | \
+                fzf \
+                    --ansi --extended --info='inline' \
+                    --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
+                    --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
+                    --bind='alt-space:jump-accept' \
+                    --bind='alt-w:toggle-preview-wrap' \
+                    --bind='ctrl-c:abort' \
+                    --bind='ctrl-q:abort' \
+                    --bind='end:preview-down' \
+                    --bind='esc:cancel' \
+                    --bind='home:preview-up' \
+                    --bind='pgdn:preview-page-down' \
+                    --bind='pgup:preview-page-up' \
+                    --bind='shift-down:half-page-down' \
+                    --bind='shift-up:half-page-up' \
+                    --color="$FZF_THEME" \
+                    --prompt="checkout to $branch >  " \
+                    --multi --filepath-word --preview="$differ" \
+                    --preview-window="left:119:noborder" \
+                | proximity-sort . | sed -z 's:\n: :g' | awk '{$1=$1};1' \
+                | sed -r "s:\s\b: $root/:g" | xargs -I% echo "$root/%"
+            )"
 
-        if [[ "$BUFFER" != "" ]]; then
-            local prefix="$BUFFER && git"
-        else
-            local prefix=" git"
-        fi
+            if [[ "$BUFFER" != "" ]]; then
+                local prefix="$BUFFER && git"
+            else
+                local prefix=" git"
+            fi
 
-        if [[ "$files" != "" ]]; then
-            LBUFFER="$prefix checkout $branch -- $files"
-            zle redisplay
-            typeset -f zle-line-init >/dev/null && zle zle-line-init
-            return 130
-        else
-            zle reset-prompt
-            return 0
-        fi
-    done
+            if [[ "$files" != "" ]]; then
+                LBUFFER="$prefix checkout $branch -- $files"
+                zle redisplay
+                typeset -f zle-line-init >/dev/null && zle zle-line-init
+                return 130
+            else
+                zle reset-prompt
+                return 0
+            fi
+        done
+    fi
 }
 zle -N git_checkout_modified
 
@@ -299,39 +303,41 @@ zle -N git_select_branch_with_callback
 
 
 git_show_branch_file_commits() {
-    local file="$2"
-    local branch="$1"
+    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
+        local file="$2"
+        local branch="$1"
 
-    local ext="$(echo "$file" | xargs -I% basename % | grep --color=never -Po '(?<=.\.)([^\.]+)$')"
+        local ext="$(echo "$file" | xargs -I% basename % | grep --color=never -Po '(?<=.\.)([^\.]+)$')"
 
-    local diff_view="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -l $SHELL -c $diff_file $file' | $DELTA --width $COLUMNS | less -R"
+        local diff_view="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -l $SHELL -c $diff_file $file' | $DELTA --width $COLUMNS | less -R"
 
-    local file_view="echo {} | cut -d ' ' -f 1 | xargs -I^^ git show ^^:./$file | $LISTER_FILE --paging=always"
-    if [ $ext != "" ]; then
-        local file_view="$file_view --language $ext"
+        local file_view="echo {} | cut -d ' ' -f 1 | xargs -I^^ git show ^^:./$file | $LISTER_FILE --paging=always"
+        if [ $ext != "" ]; then
+            local file_view="$file_view --language $ext"
+        fi
+
+        eval "git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' $branch -- $file"  | sed -r 's%^(\*\s+)%%g' | \
+            fzf \
+                --ansi --extended --info='inline' \
+                --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
+                --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
+                --bind='alt-w:toggle-preview-wrap' \
+                --bind='ctrl-c:abort' \
+                --bind='ctrl-q:abort' \
+                --bind='end:preview-down' \
+                --bind='esc:cancel' \
+                --bind='home:preview-up' \
+                --bind='pgdn:preview-page-down' \
+                --bind='pgup:preview-page-up' \
+                --bind='shift-down:half-page-down' \
+                --bind='shift-up:half-page-up' \
+                --bind='alt-space:jump' \
+                --color="$FZF_THEME" \
+                --preview-window="left:84:noborder" \
+                --prompt="$branch:$file >  " \
+                --preview="$diff_view" \
+                --bind="enter:execute($file_view)"
     fi
-
-    eval "git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' $branch -- $file"  | sed -r 's%^(\*\s+)%%g' | \
-        fzf \
-            --ansi --extended --info='inline' \
-            --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
-            --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
-            --bind='alt-w:toggle-preview-wrap' \
-            --bind='ctrl-c:abort' \
-            --bind='ctrl-q:abort' \
-            --bind='end:preview-down' \
-            --bind='esc:cancel' \
-            --bind='home:preview-up' \
-            --bind='pgdn:preview-page-down' \
-            --bind='pgup:preview-page-up' \
-            --bind='shift-down:half-page-down' \
-            --bind='shift-up:half-page-up' \
-            --bind='alt-space:jump' \
-            --color="$FZF_THEME" \
-            --preview-window="left:84:noborder" \
-            --prompt="$branch:$file >  " \
-            --preview="$diff_view" \
-            --bind="enter:execute($file_view)"
 }
 zle -N git_show_branch_file_commits
 
@@ -395,9 +401,8 @@ zle -N git_select_branch_then_file_show_commits
 
 
 git_checkout_tag() {
-    local latest="$(echo "$GIT_LATEST" | $SHELL)"
-
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
+        local latest="$(echo "$GIT_LATEST" | $SHELL)"
         if [ $OS_TYPE = "BSD" ]; then
             local cmd="echo {} | $SHELL $GIT_DIFF_FROM_TAG | $DELTA --width $COLUMNS | less -R"
         else
@@ -572,9 +577,8 @@ zle -N git_checkout_branch
 
 
 git_checkout_commit() {
-    local branch="$(echo "$GIT_BRANCH" | $SHELL)"
-
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
+        local branch="$(echo "$GIT_BRANCH" | $SHELL)"
         if [ $OS_TYPE = "BSD" ]; then
             local cmd="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -I% git show --diff-algorithm=histogram % | $DELTA --width $COLUMNS| less -R"
         else
