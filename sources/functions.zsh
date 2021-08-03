@@ -187,12 +187,11 @@ visual_chdir() {
                 -i -s --exit-0 --select-1 \
                 --prompt="chdir to: `pwd`/" \
                 --reverse --min-height='11' --height='11' \
-                --preview-window="right:89:noborder" \
+                --bind='enter:accept' \
+                --preview-window="right:119:noborder" \
                 --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}" \
                 --filepath-word --tiebreak=length,index \
                 --bind='alt-bs:execute(echo `realpath {}` > /tmp/.lastdir.tmp)+abort' \
-                --preview-window='right:89:noborder' \
-                --preview="$cmd" --bind="enter:execute(echo {q}:{} | zsh $script | zsh)" \
                 --ansi --extended --info='inline' \
                 --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
                 --jump-labels="$FZF_JUMPS" \
