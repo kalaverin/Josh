@@ -42,6 +42,12 @@ else
 fi
 # bindkey "${terminfo[kbs]}"   delete-char
 
+# home / end: begin and end string
+bindkey "\e^[OF"  chdir_home  # alt-end, goto home
+bindkey "\e^[[4~" chdir_home  #
+bindkey "\e^[OH"  chdir_up    # alt-home, chdir ..
+bindkey "\e^[[1~" chdir_up    #
+
 # pgup and pgdown: search history with same head
 if [[ "${terminfo[kpp]}" != "" ]]; then
     bindkey "${terminfo[kpp]}" history-beginning-search-backward
@@ -103,4 +109,5 @@ bindkey '\ec'  history-search-multi-word
 bindkey '\ex'  insert_endpoint   # search and paste to command line filename
 bindkey '\eX'  insert_directory  # and catalog name
 bindkey '\e^x' visual_chdir      # fast dive into directory
+
 fi

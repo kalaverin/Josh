@@ -238,6 +238,22 @@ visual_chdir() {
 }
 zle -N visual_chdir
 
+
+chdir_up() {
+    builtin cd "`realpath ..`"
+    zle reset-prompt
+    return 0
+}
+zle -N chdir_up
+
+chdir_home() {
+    builtin cd "`realpath ~`"
+    zle reset-prompt
+    return 0
+}
+zle -N chdir_home
+
+
 visual_grep() {
     local cmd="echo {q}:{} | tabulate -d ':' -i 1,2 | xargs -I% echo 'grep -ni %' | less | $SHELL | cut -f1 -d: | sed 's/^/-H/' | tr '\n' ' ' | xargs -I% echo % {} | tabulate -d ':' -i 1 | xargs -I% sh -c 'bat --color=always --terminal-width $COLUMNS %'"
 
