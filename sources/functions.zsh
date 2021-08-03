@@ -1,6 +1,6 @@
 LISTER_POST="${LISTER_FILE:-less} {} | ${LISTER_LESS} -R"
 FORGIT_CMD_DIFF='git ls-files --modified `git rev-parse --show-toplevel`'
-
+FZF_JUMPS='0123456789abcdefghijklmnopqrstuvwxyz'
 
 commit_text () {
     local text=`sh -c "$HTTP_GET http://whatthecommit.com/index.txt"`
@@ -11,8 +11,26 @@ zle -N commit_text
 
 
 insert_directory() {
-    # #@todo --history
     local result
+
+    if [ "$LBUFFER" ]; then
+        local pre=`echo "$LBUFFER" | grep -Po '([^\s]+)$'`
+    else
+        local pre=""
+    fi
+    if [ "$RBUFFER" ]; then
+        local post=`echo "$RBUFFER" | grep -Po '^([^\s]+)'`
+    else
+        local post=""
+    fi
+
+    if [ "$pre" ]; then
+        LBUFFER="$(echo ${LBUFFER% *} | sd '(\s+)$' '')"
+    fi
+    if [ "$post" ]; then
+        RBUFFER="$(echo $RBUFFER | cut -d' ' -f2- | sd '^(\s+)' '')"
+    fi
+
     if result=$(fd \
         --type directory \
         --follow \
@@ -22,33 +40,34 @@ insert_directory() {
         --exclude "*.pyc" \
         --exclude node_modules/ \
         | fzf \
-        -i -s --exit-0 --select-1 \
-        --reverse \
-        --color="$FZF_THEME" \
-        --prompt="catalog:" \
-        --info='inline' --ansi --extended --filepath-word --no-mouse \
-        --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
-        --bind='esc:cancel' \
-        --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
-        --bind='home:preview-up' --bind='end:preview-down' \
-        --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
+        --ansi --extended --info='inline' \
+        --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
+        --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
         --bind='alt-w:toggle-preview-wrap' \
-        --bind="alt-bs:toggle-preview" \
-        --min-height='10' \
-        --height='10' \
-        --preview-window="right:89:noborder" \
-        --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}"
+        --bind='ctrl-c:abort' \
+        --bind='ctrl-q:abort' \
+        --bind='end:preview-down' \
+        --bind='esc:abort' \
+        --bind='home:preview-up' \
+        --bind='pgdn:preview-page-down' \
+        --bind='pgup:preview-page-up' \
+        --bind='shift-down:half-page-down' \
+        --bind='shift-up:half-page-up' \
+        --bind='alt-space:jump' \
+        --query="$pre$post" \
+        --color="$FZF_THEME" \
+        --preview-window="right:84:noborder" \
+        --prompt="catalog:" \
+        --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}" \
+        -i -s --exit-0 --select-1 --filepath-word \
     ); then
         if [ "$LBUFFER" ]; then
-            LBUFFER="$LBUFFER $result"
-            if [ "$RBUFFER" ]; then
-                RBUFFER=" $RBUFFER"
-            fi
+            LBUFFER="$(echo $LBUFFER | sd '(\s+)$' '') $result"
         else
             LBUFFER="$result"
-            if [ "$RBUFFER" ]; then
-                RBUFFER=" $RBUFFER"
-            fi
+        fi
+        if [ "$RBUFFER" ]; then
+            RBUFFER=" $(echo $RBUFFER | sd '^(\s+)' '')"
         fi
     fi
     zle redisplay
@@ -56,8 +75,26 @@ insert_directory() {
 zle -N insert_directory
 
 insert_endpoint() {
-    # #@todo --history
     local result
+
+    if [ "$LBUFFER" ]; then
+        local pre=`echo "$LBUFFER" | grep -Po '([^\s]+)$'`
+    else
+        local pre=""
+    fi
+    if [ "$RBUFFER" ]; then
+        local post=`echo "$RBUFFER" | grep -Po '^([^\s]+)'`
+    else
+        local post=""
+    fi
+
+    if [ "$pre" ]; then
+        LBUFFER="$(echo ${LBUFFER% *} | sd '(\s+)$' '')"
+    fi
+    if [ "$post" ]; then
+        RBUFFER="$(echo $RBUFFER | cut -d' ' -f2- | sd '^(\s+)' '')"
+    fi
+
     if result=$(fd \
         --type file \
         --type symlink \
@@ -70,33 +107,34 @@ insert_endpoint() {
         --exclude "*.pyc" \
         --exclude node_modules/ \
         | fzf \
-        -i -s --exit-0 --select-1 \
-        --reverse \
-        --color="$FZF_THEME" \
-        --prompt="file:" \
-        --info='inline' --ansi --extended --filepath-word --no-mouse \
-        --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
-        --bind='esc:cancel' \
-        --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
-        --bind='home:preview-up' --bind='end:preview-down' \
-        --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
+        --ansi --extended --info='inline' \
+        --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
+        --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
         --bind='alt-w:toggle-preview-wrap' \
-        --bind="alt-bs:toggle-preview" \
-        --min-height='10' \
-        --height='10' \
-        --preview-window="right:89:noborder" \
-        --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}"
+        --bind='ctrl-c:abort' \
+        --bind='ctrl-q:abort' \
+        --bind='end:preview-down' \
+        --bind='esc:abort' \
+        --bind='home:preview-up' \
+        --bind='pgdn:preview-page-down' \
+        --bind='pgup:preview-page-up' \
+        --bind='shift-down:half-page-down' \
+        --bind='shift-up:half-page-up' \
+        --bind='alt-space:jump' \
+        --query="$pre$post" \
+        --color="$FZF_THEME" \
+        --preview-window="right:84:noborder" \
+        --prompt="file:" \
+        --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}" \
+        -i -s --exit-0 --select-1 --filepath-word \
     ); then
         if [ "$LBUFFER" ]; then
-            LBUFFER="$LBUFFER $result"
-            if [ "$RBUFFER" ]; then
-                RBUFFER=" $RBUFFER"
-            fi
+            LBUFFER="$(echo $LBUFFER | sd '(\s+)$' '') $result"
         else
             LBUFFER="$result"
-            if [ "$RBUFFER" ]; then
-                RBUFFER=" $RBUFFER"
-            fi
+        fi
+        if [ "$RBUFFER" ]; then
+            RBUFFER=" $(echo $RBUFFER | sd '^(\s+)' '')"
         fi
     fi
     zle redisplay
@@ -119,6 +157,7 @@ visual_chdir() {
     fi
     while true; do
         [ -f "/tmp/.lastdir.tmp" ] && unlink /tmp/.lastdir.tmp
+          # TODO: if file preview content
         local directory=$(fd \
             --type directory \
             --follow \
@@ -129,23 +168,30 @@ visual_chdir() {
             --exclude node_modules/ \
             --max-depth 3 \
             | sed '1i ..' | fzf \
-            -i -s --exit-0 --select-1 \
-            --reverse \
-            --color="$FZF_THEME" \
-            --prompt="chdir to: `pwd`/" \
-            --info='inline' --ansi --extended --filepath-word --no-mouse \
-            --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
-            --bind='enter:accept' --bind='esc:cancel' \
-            --bind='alt-bs:execute(echo `realpath {}` > /tmp/.lastdir.tmp)+abort' \
-            --bind='alt-space:jump-accept' \
-            --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
-            --bind='home:preview-up' --bind='end:preview-down' \
-            --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
-            --bind='alt-w:toggle-preview-wrap' \
-            --jump-labels='01234567890' \
-            --min-height='11' --height='11' \
-            --preview-window="right:89:noborder" \
-            --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}"  # TODO: if file preview content
+                -i -s --exit-0 --select-1 \
+                --prompt="chdir to: `pwd`/" \
+                --reverse --min-height='11' --height='11' \
+                --preview-window="right:89:noborder" \
+                --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}" \
+                --filepath-word --tiebreak=length,index \
+                --bind='alt-bs:execute(echo `realpath {}` > /tmp/.lastdir.tmp)+abort' \
+                --preview-window='right:89:noborder' \
+                --preview="$cmd" --bind="enter:execute(echo {q}:{} | zsh $script | zsh)" \
+                --ansi --extended --info='inline' \
+                --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
+                --jump-labels="$FZF_JUMPS" \
+                --bind='alt-space:jump-accept' \
+                --bind='alt-w:toggle-preview-wrap' \
+                --bind='ctrl-c:abort' \
+                --bind='ctrl-q:abort' \
+                --bind='end:preview-down' \
+                --bind='esc:cancel' \
+                --bind='home:preview-up' \
+                --bind='pgdn:preview-page-down' \
+                --bind='pgup:preview-page-up' \
+                --bind='shift-down:half-page-down' \
+                --bind='shift-up:half-page-up' \
+                --color="$FZF_THEME" \
         )
 
         if [ -f "/tmp/.lastdir.tmp" ]; then
@@ -182,25 +228,26 @@ visual_grep() {
 
     local script="$JOSH/sources/functions/scripts/rg_query_name_to_micro.sh"
     local file=$(
-        fzf --bind "change:reload:(rg --no-heading --count-matches --with-filename --color=always --smart-case {q} | proximity-sort . ) || true" \
-        --query='' \
-        --tiebreak=index \
-        --color="$FZF_THEME" \
-        --prompt="grep: " \
-        --info='inline' --ansi --extended --filepath-word --no-mouse \
-        --pointer=">" --marker="+" --margin=0,0,0,0 \
-        --jump-labels='0123456789abcdefghijklmnopqrstuvwxyz' \
-        --preview-window="right:89:noborder" \
-        --preview="$cmd" \
+        fzf \
+        --bind 'change:reload:(rg --no-heading --count-matches --with-filename --color=always --smart-case {q} | proximity-sort . ) || true' \
+        --prompt='grep: ' --query='' --tiebreak='index' \
+        --disabled --preview-window='right:89:noborder' \
+        --preview="$cmd" --bind="enter:execute(echo {q}:{} | zsh $script | zsh)" \
+        --ansi --extended --info='inline' \
+        --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
+        --jump-labels="$FZF_JUMPS" \
         --bind='alt-space:jump-accept' \
-        --bind='esc:cancel' \
-        --bind='ctrl-c:abort' \
-        --bind='pgup:preview-page-up' --bind='pgdn:preview-page-down'\
-        --bind='home:preview-up' --bind='end:preview-down' \
-        --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
         --bind='alt-w:toggle-preview-wrap' \
-        --bind="enter:execute(echo {q}:{} | zsh $script | zsh)" \
-        --reverse --disabled
+        --bind='ctrl-c:abort' \
+        --bind='ctrl-q:abort' \
+        --bind='end:preview-down' \
+        --bind='esc:cancel' \
+        --bind='home:preview-up' \
+        --bind='pgdn:preview-page-down' \
+        --bind='pgup:preview-page-up' \
+        --bind='shift-down:half-page-down' \
+        --bind='shift-up:half-page-up' \
+        --color="$FZF_THEME" \
     )
     zle reset-prompt
     return 0
