@@ -395,7 +395,7 @@ share_file() {
     else
         curl --progress-bar --upload-file "-" "https://transfer.sh/$1" >> $tmpfile
     fi
-    cat $tmpfile
+    bat $tmpfile
     rm -f $tmpfile
 }
 
