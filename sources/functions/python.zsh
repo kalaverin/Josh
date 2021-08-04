@@ -51,7 +51,7 @@ function ten {
         local packages="$*"
     fi
 
-    local pbin="`python$version`"
+    local pbin="`which -p python$version`"
     if [ ! -f "$pbin" ]; then
         echo " - not exists: >>$pbin<<" 1>&2
         return 1
