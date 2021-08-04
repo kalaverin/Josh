@@ -107,7 +107,7 @@ bindkey '\ez'  visual_grep       # grep and view
 
 bindkey '\ec'  history-search-multi-word
 bindkey '\ex'  insert_endpoint   # search and paste to command line filename
-bindkey '\eX'  insert_directory  # and catalog name
-bindkey '\e^x' visual_chdir      # fast dive into directory
+bindkey '\e^x' insert_directory  # and catalog name
+bindkey '\eX'  visual_chdir      # fast dive into directory
 
 fi

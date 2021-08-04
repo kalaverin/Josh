@@ -39,7 +39,7 @@ insert_directory() {
         fi
     fi
 
-    if result=$(fd \
+    local result=$(fd \
         --type directory \
         --follow \
         --one-file-system \
@@ -50,7 +50,7 @@ insert_directory() {
         | fzf \
         --ansi --extended --info='inline' \
         --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
-        --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
+        --tiebreak=begin,length,end,index --jump-labels="$FZF_JUMPS" \
         --bind='alt-w:toggle-preview-wrap' \
         --bind='ctrl-c:abort' \
         --bind='ctrl-q:abort' \
@@ -68,15 +68,17 @@ insert_directory() {
         --prompt="catalog:" \
         --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}" \
         -i -s --exit-0 --select-1 --filepath-word \
-    ); then
-        if [ "$LBUFFER" ]; then
-            LBUFFER="$(echo $LBUFFER | sd '(\s+)$' '') $result"
-        else
-            LBUFFER="$result"
-        fi
-        if [ "$RBUFFER" ]; then
-            RBUFFER=" $(echo $RBUFFER | sd '^(\s+)' '')"
-        fi
+    )
+
+    [ ! "$result" ] && local result="$pre$post"
+
+    if [ "$LBUFFER" ]; then
+        LBUFFER="$(echo $LBUFFER | sd '(\s+)$' '') $result"
+    else
+        LBUFFER="$result"
+    fi
+    if [ "$RBUFFER" ]; then
+        RBUFFER=" $(echo $RBUFFER | sd '^(\s+)' '')"
     fi
     zle redisplay
 }
@@ -111,7 +113,7 @@ insert_endpoint() {
         fi
     fi
 
-    if result=$(fd \
+    local result=$(fd \
         --type file \
         --type symlink \
         --type socket \
@@ -125,7 +127,7 @@ insert_endpoint() {
         | fzf \
         --ansi --extended --info='inline' \
         --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
-        --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
+        --tiebreak=begin,length,end,index --jump-labels="$FZF_JUMPS" \
         --bind='alt-w:toggle-preview-wrap' \
         --bind='ctrl-c:abort' \
         --bind='ctrl-q:abort' \
@@ -142,16 +144,18 @@ insert_endpoint() {
         --preview-window="right:84:noborder" \
         --prompt="file:" \
         --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}" \
-        -i -s --exit-0 --select-1 --filepath-word \
-    ); then
-        if [ "$LBUFFER" ]; then
-            LBUFFER="$(echo $LBUFFER | sd '(\s+)$' '') $result"
-        else
-            LBUFFER="$result"
-        fi
-        if [ "$RBUFFER" ]; then
-            RBUFFER=" $(echo $RBUFFER | sd '^(\s+)' '')"
-        fi
+        -i --exit-0 --select-1 --filepath-word \
+    )
+
+    [ ! "$result" ] && local result="$pre$post"
+
+    if [ "$LBUFFER" ]; then
+        LBUFFER="$(echo $LBUFFER | sd '(\s+)$' '') $result"
+    else
+        LBUFFER="$result"
+    fi
+    if [ "$RBUFFER" ]; then
+        RBUFFER=" $(echo $RBUFFER | sd '^(\s+)' '')"
     fi
     zle redisplay
 }
@@ -190,7 +194,7 @@ visual_chdir() {
                 --bind='enter:accept' \
                 --preview-window="right:119:noborder" \
                 --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}" \
-                --filepath-word --tiebreak=length,index \
+                --filepath-word --tiebreak=begin,length,end,index \
                 --bind='alt-bs:execute(echo `realpath {}` > /tmp/.lastdir.tmp)+abort' \
                 --ansi --extended --info='inline' \
                 --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
