@@ -19,4 +19,10 @@ source "$JOSH/sources/functions/utils.zsh"
 unsetopt correct_all
 unsetopt correct
 
-eval "$(starship init zsh)"
+if [ -f "`which -p scotty`" ]; then
+    eval "$(scotty init zsh)"
+fi
+
+if [ -f "`which -p starship`" ]; then
+    eval "$(starship init zsh)"
+fi

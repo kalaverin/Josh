@@ -10,8 +10,12 @@ REQUIRED_PACKAGES=(
     petname        # generate human readable strings
     proximity-sort # path sorter
     ripgrep        # rg, fast replace for grep -ri for humans
+    rm-improved    # rip, powerful rm replacement with trashcan
     runiq          # fast uniq replacement
+    scotty         # directory crawling statistics with search
+    sd             # fast sed replacement for humans
     starship       # shell prompt
+    tabulate       # autodetect columns in stdin and tabulate
     vivid          # ls colors themes selections system
 )
 
@@ -52,16 +56,12 @@ OPTIONAL_PACKAGES=(
     pueue            # powerful tool to running and management background tasks
     rcrawl           # very fast file by pattern in directory
     rhit             # very fast nginx log analyzer with graphical stats
-    rm-improved      # rip, powerful rm replacement with trashcan
     rmesg            # modern dmesg replacement
-    scotty           # directory crawling statistics with search
     scout            # another one fuzzy search pipeliner
     scriptisto       # powerful tool, convert every source to executable with build instructions in same file
-    sd               # fast sed replacement for humans
     so               # stack overflow answers in terminal
     streampager
     syncat           # cat with syntax
-    tabulate         # autodetect columns in stdin and tabulate
     tokei            # sources stats
     viu              # print images into terminal
     x8               # websites scan tool
