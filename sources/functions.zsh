@@ -68,7 +68,7 @@ insert_directory() {
         --preview-window="right:119:noborder" \
         --prompt="catalog:" \
         --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}" \
-        -i -s --exit-0 --select-1 --filepath-word \
+        -i -s --select-1 --filepath-word \
     )
 
     [ ! "$result" ] && local result="$pre$post"
@@ -146,7 +146,7 @@ insert_endpoint() {
         --preview-window="right:119:noborder" \
         --prompt="file:" \
         --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}" \
-        -i --exit-0 --select-1 --filepath-word \
+        -i --select-1 --filepath-word \
     )
 
     [ ! "$result" ] && local result="$pre$post"
