@@ -261,15 +261,17 @@ zle -N chdir_home
 
 
 visual_grep() {
-    local cmd="echo {q}:{} | tabulate -d ':' -i 1,2 | xargs -I% echo 'grep -ni %' | less | $SHELL | cut -f1 -d: | sed 's/^/-H/' | tr '\n' ' ' | xargs -I% echo % {} | tabulate -d ':' -i 1 | xargs -I% sh -c 'bat --color=always --terminal-width $COLUMNS %'"
+    local ripgrep="`which -p rg` --max-filesize=50K --hidden --fixed-strings --ignore-file=`realpath ~/.ignore` --ignore-file=`realpath $JOSH/configs/grep.ignore` --smart-case"
+    local execute="$JOSH/sources/functions/scripts/rg_query_name_to_micro.sh"
+    local preview="echo {}:{q} | grep -Pv '^:' | sed -r 's#(.+?):[0-9]+:(.+?)#>>\2<<//\1#g' | sd '>>(\s*)(.*?)(\s*)<<//(.+)' '$ripgrep  --vimgrep --context 0 \"\$2\" \$4' | $SHELL | tabulate -d ':' -i 2 | huniq | sort -V | sed 's/^/-H/' | tr '\n' ' ' | xargs -I% echo % {} | tabulate -d ':' -i 1 | xargs -I% sh -c 'bat --color=always --terminal-width $COLUMNS %'"
 
-    local script="$JOSH/sources/functions/scripts/rg_query_name_to_micro.sh"
     local file=$(
         fzf \
-        --bind 'change:reload:(rg --no-heading --count-matches --with-filename --color=always --smart-case {q} | proximity-sort . ) || true' \
+        --bind "change:reload:($ripgrep --count --color=always -- {q} | proximity-sort . || true)" \
+        --bind="enter:execute(echo "{q}:{}" | $SHELL $execute | xargs -I$ sh -c '$')" \
         --prompt='grep: ' --query='' --tiebreak='index' \
-        --disabled --preview-window='right:89:noborder' \
-        --preview="$cmd" --bind="enter:execute(echo {q}:{} | zsh $script | zsh)" \
+        --disabled --preview-window='left:104:noborder' \
+        --preview="$preview" \
         --ansi --extended --info='inline' \
         --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
         --jump-labels="$FZF_JUMPS" \
