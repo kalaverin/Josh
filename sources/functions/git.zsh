@@ -599,36 +599,59 @@ zle -N git_merge_branch
 
 git_fetch_branch() {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
-        local cmd="echo {} | $SHELL $GIT_DIFF_FROM_TAG | $DELTA --paging='always'"
-        local branches="$(git ls-remote -h origin | sed -r 's%^[a-f0-9]{40}\s+refs/heads/%%g' | sort | \
+        local found="$(git show-ref --heads | sd '^([0-9a-f]+)\srefs/heads/(.+)' '^$1 $2$' | sed -z 's:\n: :g' | awk '{$1=$1};1' | sed 's: :|:g')"
+        local differ="echo {} | tabulate -i 1 | xargs -i$ echo 'git diff $ 1&>/dev/null 2&>/dev/null || git fetch origin --depth=1 $ && git diff --color=always --shortstat --patch --diff-algorithm=histogram $' | $SHELL | $DELTA"
+        local branch="$(git ls-remote --heads --quiet origin | sd '^([0-9a-f]+)\srefs/heads/(.+)' '$1 $2' | grep -Pv "($found)" | sort -Vk 2 | awk '{a[i++]=$0} END {for (j=i-1; j>=0;) print a[j--] }' | \
             fzf \
-                --multi --color="$FZF_THEME" \
-                --prompt="fetch:" --tac \
-                --info='inline' --ansi --extended --filepath-word --no-mouse \
-                --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
+                --ansi --extended --info='inline' \
+                --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
+                --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
+                --bind='alt-w:toggle-preview-wrap' \
+                --bind='ctrl-c:abort' \
+                --bind='ctrl-q:abort' \
+                --bind='end:preview-down' \
                 --bind='esc:cancel' \
-                --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
-                | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g'
+                --bind='home:preview-up' \
+                --bind='pgdn:preview-page-down' \
+                --bind='pgup:preview-page-up' \
+                --bind='shift-down:half-page-down' \
+                --bind='shift-up:half-page-up' \
+                --bind='alt-space:jump' \
+                --preview-window="left:84:noborder" \
+                --color="$FZF_THEME" \
+                --multi --prompt="fetch >  " \
+                --preview="$differ" | cut -d ' ' -f 2 \
         )"
-        local track="git branch -f --track $(echo "$branches" | sed -r "s% % \&\& git branch -f --track %g")"
 
-        if [[ "$branches" == "" ]]; then
+        if [[ "$branch" == "" ]]; then
             zle reset-prompt
             return 0
-        else
-            local cmd="$track && git fetch origin $branches"
+        fi
 
-            if [[ "$BUFFER" != "" ]]; then
-                LBUFFER="$BUFFER && $cmd"
-                local ret=$?
-                zle redisplay
-                typeset -f zle-line-init >/dev/null && zle zle-line-init
-                return $ret
-            else
-                run_show "$cmd"
-                zle reset-prompt
-                return 0
+        local count=$(echo "$branch" | wc -l)
+        local track=$(echo "$branch" | sd '(.+)' 'git branch --force --quiet --track $1' | sed -e ':a' -e 'N' -e '$!ba' -e 's:\n: \&\& :g' | awk '{$1=$1};1')
+        local branch=$(echo "$branch" | sed -e ':a' -e 'N' -e '$!ba' -e 's:\n: :g')
+        local fetch="git fetch origin $branch"
+
+        if [ "$count" -gt 1 ]; then
+            local cmd="$track && $fetch && git fetch --tags -all"
+        else
+            local cmd="$track && $fetch && is_repository_clean && git checkout --force --quiet $branch && git reset --hard origin/$branch && git pull origin $branch"
+        fi
+
+        if [[ "$BUFFER" != "" ]]; then
+            LBUFFER="$BUFFER && $cmd"
+            if [[ "$RUFFER" != "" ]]; then
+                LBUFFER=" $RBUFFER"
             fi
+            local ret=$?
+            zle redisplay
+            typeset -f zle-line-init >/dev/null && zle zle-line-init
+            return $ret
+        else
+            run_show "$cmd"
+            zle reset-prompt
+            return 0
         fi
     fi
 }
