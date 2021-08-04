@@ -101,7 +101,6 @@ if [ -f "`which -p petname`" ]; then
         mkdir -p "$tempdir" && cd "$tempdir"
     }
 fi
-tempfile --name test
 
 function run_show() {
     local cmd="$*"
