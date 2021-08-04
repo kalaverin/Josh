@@ -56,6 +56,7 @@ function ten {
         echo " - not exists: >>$pbin<<" 1>&2
         return 1
     fi
+    [ ! -f "`which -p virtualenv`" ] && run_show "pip install virtualenv"
 
     local name="$(dirname `mktemp -duq`)/env/`petname -s . -w 3 -a`"
     mkdir -p "$name" && cd "`realpath $name/../`" && rm -rf "$name"
