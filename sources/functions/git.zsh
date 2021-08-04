@@ -313,7 +313,8 @@ git_show_branch_file_commits() {
         local diff_view="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -l $SHELL -c $diff_file $file' | $DELTA --width $COLUMNS"
 
         local file_view="echo {} | cut -d ' ' -f 1 | xargs -I^^ git show ^^:./$file | $LISTER_FILE --paging=always"
-        if [ $ext != "" ]; then
+        if [ "$ext" = "" ]; then
+        else
             local file_view="$file_view --language $ext"
         fi
 
