@@ -64,7 +64,8 @@ insert_directory() {
         --bind='alt-space:jump' \
         --query="$pre$post" \
         --color="$FZF_THEME" \
-        --preview-window="right:84:noborder" \
+        --reverse --min-height='11' --height='11' \
+        --preview-window="right:119:noborder" \
         --prompt="catalog:" \
         --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}" \
         -i -s --exit-0 --select-1 --filepath-word \
@@ -141,7 +142,8 @@ insert_endpoint() {
         --bind='alt-space:jump' \
         --query="$pre$post" \
         --color="$FZF_THEME" \
-        --preview-window="right:84:noborder" \
+        --reverse --min-height='11' --height='11' \
+        --preview-window="right:119:noborder" \
         --prompt="file:" \
         --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}" \
         -i --exit-0 --select-1 --filepath-word \
@@ -190,8 +192,8 @@ visual_chdir() {
             | sed '1i ..' | fzf \
                 -i -s --exit-0 --select-1 \
                 --prompt="chdir to: `pwd`/" \
-                --reverse --min-height='11' --height='11' \
                 --bind='enter:accept' \
+                --reverse --min-height='11' --height='11' \
                 --preview-window="right:119:noborder" \
                 --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}" \
                 --filepath-word --tiebreak=begin,length,end,index \
