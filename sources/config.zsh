@@ -29,7 +29,7 @@ fi
 [ -f "`which -p sccache`" ] && export RUSTC_WRAPPER=`which sccache`
 [ -f "`which -p vivid`" ] && export LS_COLORS="`vivid generate ${THEME_LS:-solarized-dark}`"
 
-ENABLE_CORRECTION=true
+ENABLE_CORRECTION=false
 if [[ "$ENABLE_CORRECTION" == "true" ]]; then
     alias which='nocorrect which'
 fi
