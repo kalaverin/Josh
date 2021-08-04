@@ -2,6 +2,7 @@
 # https://git-scm.com/docs/pretty-formats
 # https://git-scm.com/docs/git-status - file statuses
 # https://stackoverflow.com/questions/53298546/git-file-statuses-of-files
+# https://github.com/romkatv/gitstatus
 
 GIT_ROOT='git rev-parse --quiet --show-toplevel'
 GIT_BRANCH='git rev-parse --quiet --abbrev-ref HEAD 2>/dev/null'
@@ -22,7 +23,6 @@ local GIT_SEARCH_SETUPCFG="$THIS_DIR/scripts/git_search_setupcfg.sh"
 
 local GIT_LIST_TAGS="$THIS_DIR/scripts/git_list_tags.sh"
 local GIT_LIST_CHANGED='git ls-files --modified --deleted --others --exclude-standard `git rev-parse --show-toplevel`'
-
 
 git_add() {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
@@ -53,17 +53,24 @@ git_add() {
                 | proximity-sort . | sed -z 's/\n/ /g' | awk '{$1=$1};1'
             )"
 
-            if [[ "$BUFFER" != "" ]]; then
-                local prefix="$BUFFER && git"
-            else
-                local prefix=" git"
-            fi
-
             if [[ "$files" != "" ]]; then
-                LBUFFER="$prefix add $files && gmm "
-                LBUFFER+='"'
-                LBUFFER+="$branch: "
-                RBUFFER='"'
+
+                if [[ "$BUFFER" != "" ]]; then
+                    local prefix="$BUFFER && git"
+                else
+                    local prefix=" git"
+                fi
+
+                local conflicts=$(git status --porcelain --branch | grep -P '^(UU)' | tabulate -i 2)
+                if [[ "$conflicts" = "" ]]; then
+                    LBUFFER="$prefix add $files && gmm "
+                    LBUFFER+='"'
+                    LBUFFER+="$branch: "
+                    RBUFFER='"'
+                else
+                    LBUFFER="$prefix add $files "
+                    RBUFFER=''
+                fi
                 local ret=$?
                 zle redisplay
                 zle reset-prompt

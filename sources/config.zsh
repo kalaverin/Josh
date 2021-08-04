@@ -32,6 +32,9 @@ fi
 ENABLE_CORRECTION=false
 if [[ "$ENABLE_CORRECTION" == "true" ]]; then
     alias which='nocorrect which'
+else
+    unsetopt correct_all
+    unsetopt correct
 fi
 
 EMOJI_CLI_KEYBIND="\eo"
