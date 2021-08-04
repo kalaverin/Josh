@@ -95,10 +95,13 @@ function mkcd {
     mkdir "$*" && cd "$*"
 }
 
-function mktp {
-    local tempdir=`mktemp -d`
-    mkdir -p "$tempdir" && cd "$tempdir"
-}
+if [ -f "`which -p petname`" ]; then
+    function mktp {
+        local tempdir="$(dirname `mktemp -duq`)/pet/`petname -s . -w 3 -a`"
+        mkdir -p "$tempdir" && cd "$tempdir"
+    }
+fi
+tempfile --name test
 
 function run_show() {
     local cmd="$*"

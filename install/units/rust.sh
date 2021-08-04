@@ -7,6 +7,7 @@ REQUIRED_PACKAGES=(
     fd-find        # fd, fast replace for find for humans
     git-delta      # fast replace for git delta with steroids
     mdcat          # Markdown files rendered viewer
+    petname        # generate human readable strings
     proximity-sort # path sorter
     ripgrep        # rg, fast replace for grep -ri for humans
     runiq          # fast uniq replacement
@@ -47,7 +48,6 @@ OPTIONAL_PACKAGES=(
     mrh              # recursively search git reps and return status (detached, tagged, etc)
     onefetch         # graphical statistics for git repository
     paper-terminal   # another yet Markdown printer, naturally like newpaper
-    petname          # generate human readable strings
     procs            # ps aux replacement for humans
     pueue            # powerful tool to running and management background tasks
     rcrawl           # very fast file by pattern in directory
