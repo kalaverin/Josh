@@ -109,7 +109,7 @@ bindkey '\ec'  insert_command      # search from recent history
 bindkey '\eC'  visual_recent_chdir # too
 
 bindkey '\ex'  insert_endpoint   # search and paste to command line filename
-bindkey '\e^x' insert_directory  # and catalog name
-bindkey '\eX'  visual_chdir      # fast dive into directory
+bindkey '\eX'  insert_directory  # and catalog name
+bindkey '\e^x' visual_chdir      # fast dive into directory
 
 fi
