@@ -283,31 +283,9 @@ zle -N visual_recent_chdir
 
 
 insert_command() {
-    if [ "$LBUFFER" ]; then
-        local pre=`echo "$LBUFFER" | grep -Po '([^\s]+)$'`
-    else
-        local pre=""
-    fi
-    if [ "$RBUFFER" ]; then
-        local post=`echo "$RBUFFER" | grep -Po '^([^\s]+)'`
-    else
-        local post=""
-    fi
-
-    if [ "$pre" ]; then
-        if [ "$pre" = "$LBUFFER" ]; then
-            LBUFFER=""
-        else
-            LBUFFER="$(echo ${LBUFFER% *} | sd '(\s+)$' '')"
-        fi
-    fi
-    if [ "$post" ]; then
-        if [ "$post" = "$RBUFFER" ]; then
-            RBUFFER=""
-        else
-            RBUFFER="$(echo $RBUFFER | cut -d' ' -f2- | sd '^(\s+)' '')"
-        fi
-    fi
+    local query="`echo "$BUFFER" | grep -Po '([^\s]+)$'`"
+    local query="`echo "$BUFFER" | grep -Po '^([^\s]+)'`"
+    local query="`echo "$BUFFER" | sd '(\s+)' ' '`"
 
     local result=$(cat $HISTFILE | grep -PIs '^(: \d+:\d+;)' | sd ': \d+:\d+;' '' | grep -Pv '^\s+' | runiq - | awk '{arr[i++]=$0} END {while (i>0) print arr[--i] }' | sed 1d | fzf \
         --ansi --extended --info='inline' \
@@ -324,33 +302,15 @@ insert_command() {
         --bind='shift-down:half-page-down' \
         --bind='shift-up:half-page-up' \
         --bind='alt-space:jump' \
-        --query="$pre$post" \
+        --query="$query" \
         --color="$FZF_THEME" \
         --reverse --min-height='11' --height='11' \
         --prompt="command >  " \
         -i --select-1 --filepath-word \
     )
 
-    if [ ! "$result" ]; then
-        local result="$pre$post"
-
-        if [ "$LBUFFER" ]; then
-            LBUFFER="$(echo $LBUFFER | sd '(\s+)$' '') $result"
-        else
-            LBUFFER="$result"
-        fi
-        if [ "$RBUFFER" ]; then
-            RBUFFER=" $(echo $RBUFFER | sd '^(\s+)' '')"
-        fi
-    else
-        if [ "$LBUFFER" ]; then
-            LBUFFER="$(echo $LBUFFER | sd '(\s+)$' '') && $result"
-        else
-            LBUFFER="$result"
-        fi
-        if [ "$RBUFFER" ]; then
-            RBUFFER=" && $(echo $RBUFFER | sd '^(\s+)' '')"
-        fi
+    if [ "$result" ]; then
+        BUFFER="$result"
     fi
     zle redisplay
     return 0
