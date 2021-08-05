@@ -30,7 +30,7 @@ git_add() {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local branch="${1:-`sh -c "$GIT_BRANCH"`}"
         local differ="echo {} | xargs -I% git diff --color=always --shortstat --patch --diff-algorithm=histogram $branch -- % | $DELTA"
-
+        # TODO: status
         while true; do
             local files="$(echo "$GIT_LIST_CHANGED" | $SHELL | runiq - | proximity-sort . | \
                 fzf \
