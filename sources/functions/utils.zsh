@@ -1,3 +1,9 @@
+function cpu_count() {
+    local cores=$(cat /proc/cpuinfo | grep -Po 'processor\s+:\s*\d+\s*$' | wc -l)
+    [ ! "$cores" ] && local cores=0
+    return "$cores"
+}
+
 function bak {
     if [ "$BAK_RESTORE" != "" ]; then
         echo " * backup already found: $BAK_RESTORE"
@@ -12,7 +18,8 @@ function bak {
     local dir_name=`basename "$last_path"`
     local backup="$temp_path/$dir_name.tar.xz"
 
-    run_show "tar -cO --exclude-vcs . | xz -1 -T3 > $backup"
+    cpu_count
+    run_show "tar -cO --exclude-vcs . | xz -1 -T$? > $backup"
     echo " => xzcat $backup | tar -x"
     export BAK_RESTORE="$backup"
 }
@@ -55,6 +62,13 @@ function bakrm {
         return 1
     fi
 
-    run_show "rm $backup && rm -r `dirname $backup`"
+    if [ -f "`which -p rip`" ]; then
+        local exe="`which -p rip`"
+        local cmd="$exe $backup && $exe `dirname $backup`"
+    else
+        local cmd="rm $backup && rm -r `dirname $backup`"
+    fi
+
+    run_show "$cmd"
     export BAK_RESTORE=""
 }
