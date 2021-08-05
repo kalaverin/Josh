@@ -283,10 +283,7 @@ zle -N visual_recent_chdir
 
 
 insert_command() {
-    local query="`echo "$BUFFER" | grep -Po '([^\s]+)$'`"
-    local query="`echo "$BUFFER" | grep -Po '^([^\s]+)'`"
-    local query="`echo "$BUFFER" | sd '(\s+)' ' '`"
-
+    local query="`echo "$BUFFER" | sd '(\s+)' ' ' | sd '(^\s+|\s+$)' ''`"
     local result=$(cat $HISTFILE | grep -PIs '^(: \d+:\d+;)' | sd ': \d+:\d+;' '' | grep -Pv '^\s+' | runiq - | awk '{arr[i++]=$0} END {while (i>0) print arr[--i] }' | sed 1d | fzf \
         --ansi --extended --info='inline' \
         --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
