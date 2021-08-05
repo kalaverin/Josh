@@ -105,11 +105,11 @@ bindkey "\e]"  copy-prev-shell-word # just copy and paste last word
 bindkey '\ez'  visual_grep       # grep and view
 # bindkey "\eZ" fuzzy-search-and-edit  # temporary disabled
 
-bindkey '\ec'  history-search-multi-word
+bindkey '\ec'  insert_command      # search from recent history
+bindkey '\eC'  visual_recent_chdir # too
+
 bindkey '\ex'  insert_endpoint   # search and paste to command line filename
 bindkey '\e^x' insert_directory  # and catalog name
 bindkey '\eX'  visual_chdir      # fast dive into directory
-bindkey '\eo'  visual_recent_chdir
-bindkey '\ei'  insert_command
 
 fi
