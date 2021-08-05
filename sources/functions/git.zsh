@@ -153,7 +153,7 @@ git_conflict_solver() {
         # echo ">$zzz<"
 
         while true; do
-            local file="$(git status --porcelain --branch | grep -P '^(UU)' | tabulate -i 2 | sed -r "s:\s\b: $root/:g" | xargs -I% echo "$root%" | sed -z 's:\n: :g' | awk '{$1=$1};1' | xargs -I$ echo "rg --fixed-strings --files-with-matches '<<<<<<<' $ | $CUT" | $SHELL | runiq - | proximity-sort . | \
+            local file="$(git status --porcelain --branch | grep -P '^(AA|UU)' | tabulate -i 2 | sed -r "s:\s\b: $root/:g" | xargs -I% echo "$root%" | sed -z 's:\n: :g' | awk '{$1=$1};1' | xargs -I$ echo "rg --fixed-strings --files-with-matches '<<<<<<<' $ | $CUT" | $SHELL | runiq - | proximity-sort . | \
                 fzf \
                     --ansi --extended --info='inline' \
                     --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
