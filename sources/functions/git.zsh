@@ -4,6 +4,8 @@
 # https://stackoverflow.com/questions/53298546/git-file-statuses-of-files
 # https://github.com/romkatv/gitstatus
 
+# for ripgrep: --no-messages --no-filename --max-count
+
 GIT_ROOT='git rev-parse --quiet --show-toplevel'
 GIT_BRANCH='git rev-parse --quiet --abbrev-ref HEAD 2>/dev/null'
 GIT_BRANCH2='git name-rev --name-only HEAD | cut -d "~" -f 1'
@@ -137,6 +139,60 @@ git_checkout_modified() {
     fi
 }
 zle -N git_checkout_modified
+
+
+
+git_conflict_solver() {
+    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
+        local root="$(realpath `sh -c "$GIT_ROOT"`)/"
+        local CUT="cut -c $((${#root} + 1))-"
+        local branch=${1:-$(echo "$GIT_BRANCH" | $SHELL)}
+        local differ="echo {} | xargs -I% git diff --color=always --shortstat --patch --diff-algorithm=histogram $branch -- $root/% | $DELTA"
+
+        # local zzz=`git status --porcelain --branch | grep -P '^(UU)' | tabulate -i 2 | sed -r "s:\s\b: $root/:g" | xargs -I% echo "$root%" | sed -z 's:\n: :g' | awk '{$1=$1};1' | xargs -I$ echo "rg --fixed-strings --files-with-matches '<<<<<<<' $" | $SHELL`
+        # echo ">$zzz<"
+
+        while true; do
+            local file="$(git status --porcelain --branch | grep -P '^(UU)' | tabulate -i 2 | sed -r "s:\s\b: $root/:g" | xargs -I% echo "$root%" | sed -z 's:\n: :g' | awk '{$1=$1};1' | xargs -I$ echo "rg --fixed-strings --files-with-matches '<<<<<<<' $ | $CUT" | $SHELL | runiq - | proximity-sort . | \
+                fzf \
+                    --ansi --extended --info='inline' \
+                    --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
+                    --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
+                    --bind='alt-space:jump-accept' \
+                    --bind='alt-w:toggle-preview-wrap' \
+                    --bind='ctrl-c:abort' \
+                    --bind='ctrl-q:abort' \
+                    --bind='end:preview-down' \
+                    --bind='esc:cancel' \
+                    --bind='home:preview-up' \
+                    --bind='pgdn:preview-page-down' \
+                    --bind='pgup:preview-page-up' \
+                    --bind='shift-down:half-page-down' \
+                    --bind='shift-up:half-page-up' \
+                    --color="$FZF_THEME" \
+                    --prompt="solving in $branch >  " \
+                    --filepath-word --preview="$differ" \
+                    --preview-window="left:119:noborder" \
+                | proximity-sort . | sed -z 's:\n: :g' | awk '{$1=$1};1' \
+                | sed -r "s:\s\b: $root/:g" | xargs -I% echo "$root/%"
+            )"
+
+            if [[ "$file" != "" ]]; then
+                local row=$(grep --line-number --max-count=1 '<<<<<<< HEAD' $file | tabulate -d ':' -i 1)
+                micro $file +$row
+                continue
+
+                zle redisplay
+                typeset -f zle-line-init >/dev/null && zle zle-line-init
+                return 130
+            else
+                zle reset-prompt
+                return 0
+            fi
+        done
+    fi
+}
+zle -N git_conflict_solver
 
 
 git_select_commit_then_files_checkout() {
@@ -911,6 +967,7 @@ bindkey "^s"   git_checkout_commit
 bindkey "\es"  git_checkout_branch
 bindkey "^[S"  git_merge_branch
 bindkey "\e^s" git_checkout_tag
+bindkey "\ep"  git_conflict_solver
 
 bindkey "\ef"   git_fetch_branch
 bindkey "\e^f"  git_delete_branch  # PUSH TO origin, caution!
