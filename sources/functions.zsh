@@ -11,8 +11,6 @@ zle -N commit_text
 
 
 insert_directory() {
-    local result
-
     if [ "$LBUFFER" ]; then
         local pre=`echo "$LBUFFER" | grep -Po '([^\s]+)$'`
     else
@@ -66,7 +64,7 @@ insert_directory() {
         --color="$FZF_THEME" \
         --reverse --min-height='11' --height='11' \
         --preview-window="right:119:noborder" \
-        --prompt="catalog:" \
+        --prompt="catalog >  " \
         --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}" \
         -i -s --select-1 --filepath-word \
     )
@@ -86,8 +84,6 @@ insert_directory() {
 zle -N insert_directory
 
 insert_endpoint() {
-    local result
-
     if [ "$LBUFFER" ]; then
         local pre=`echo "$LBUFFER" | grep -Po '([^\s]+)$'`
     else
@@ -144,7 +140,7 @@ insert_endpoint() {
         --color="$FZF_THEME" \
         --reverse --min-height='11' --height='11' \
         --preview-window="right:119:noborder" \
-        --prompt="file:" \
+        --prompt="file >  " \
         --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}" \
         -i --select-1 --filepath-word \
     )
@@ -253,7 +249,7 @@ visual_recent_chdir() {
     local directory=$(scotty list | sort -rk 2,3 | sed '1d' | tabulate -i 1 | runiq - | \
         fzf \
             -i -s --exit-0 --select-1 \
-            --prompt="c2hdir to: `pwd`/" \
+            --prompt="chdir >  " \
             --bind='enter:accept' \
             --reverse --min-height='11' --height='11' \
             --preview-window="right:119:noborder" \
@@ -284,6 +280,82 @@ visual_recent_chdir() {
 
 }
 zle -N visual_recent_chdir
+
+
+insert_command() {
+    if [ "$LBUFFER" ]; then
+        local pre=`echo "$LBUFFER" | grep -Po '([^\s]+)$'`
+    else
+        local pre=""
+    fi
+    if [ "$RBUFFER" ]; then
+        local post=`echo "$RBUFFER" | grep -Po '^([^\s]+)'`
+    else
+        local post=""
+    fi
+
+    if [ "$pre" ]; then
+        if [ "$pre" = "$LBUFFER" ]; then
+            LBUFFER=""
+        else
+            LBUFFER="$(echo ${LBUFFER% *} | sd '(\s+)$' '')"
+        fi
+    fi
+    if [ "$post" ]; then
+        if [ "$post" = "$RBUFFER" ]; then
+            RBUFFER=""
+        else
+            RBUFFER="$(echo $RBUFFER | cut -d' ' -f2- | sd '^(\s+)' '')"
+        fi
+    fi
+
+    local result=$(cat $HISTFILE | sd ': \d+:\d+;' '' | runiq - | awk '{arr[i++]=$0} END {while (i>0) print arr[--i] }' | fzf \
+        --ansi --extended --info='inline' \
+        --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
+        --tiebreak=index --jump-labels="$FZF_JUMPS" \
+        --bind='alt-w:toggle-preview-wrap' \
+        --bind='ctrl-c:abort' \
+        --bind='ctrl-q:abort' \
+        --bind='end:preview-down' \
+        --bind='esc:abort' \
+        --bind='home:preview-up' \
+        --bind='pgdn:preview-page-down' \
+        --bind='pgup:preview-page-up' \
+        --bind='shift-down:half-page-down' \
+        --bind='shift-up:half-page-up' \
+        --bind='alt-space:jump' \
+        --query="$pre$post" \
+        --color="$FZF_THEME" \
+        --reverse --min-height='11' --height='11' \
+        --prompt="command >  " \
+        -i --select-1 --filepath-word \
+    )
+
+    if [ ! "$result" ]; then
+        local result="$pre$post"
+
+        if [ "$LBUFFER" ]; then
+            LBUFFER="$(echo $LBUFFER | sd '(\s+)$' '') $result"
+        else
+            LBUFFER="$result"
+        fi
+        if [ "$RBUFFER" ]; then
+            RBUFFER=" $(echo $RBUFFER | sd '^(\s+)' '')"
+        fi
+    else
+        if [ "$LBUFFER" ]; then
+            LBUFFER="$(echo $LBUFFER | sd '(\s+)$' '') && $result"
+        else
+            LBUFFER="$result"
+        fi
+        if [ "$RBUFFER" ]; then
+            RBUFFER=" && $(echo $RBUFFER | sd '^(\s+)' '')"
+        fi
+    fi
+    zle redisplay
+    return 0
+}
+zle -N insert_command
 
 
 chdir_up() {
