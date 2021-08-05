@@ -240,19 +240,18 @@ visual_chdir() {
 }
 zle -N visual_chdir
 
-
 visual_recent_chdir() {
     if [[ "$#" != 0 ]]; then
         builtin cd "$@";
         return
     fi
-    local directory=$(scotty list | sort -rk 2,3 | sed '1d' | tabulate -i 1 | runiq - | \
+    local directory=$(scotty list | sort -rk 2,3 | sed '1d' | tabulate -i 1 | runiq - | xargs -I$ echo "[ -d $ ] && echo $" | $SHELL | grep -Pv 'env/.+/bin' | \
         fzf \
             -i -s --exit-0 --select-1 \
             --prompt="chdir >  " \
             --bind='enter:accept' \
             --reverse --min-height='11' --height='11' \
-            --preview-window="right:119:noborder" \
+            --preview-window="right:79:noborder" \
             --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}" \
             --filepath-word --tiebreak=index \
             --ansi --extended --info='inline' \
@@ -277,10 +276,8 @@ visual_recent_chdir() {
     fi
     zle reset-prompt
     return 0
-
 }
 zle -N visual_recent_chdir
-
 
 insert_command() {
     local query="`echo "$BUFFER" | sd '(\s+)' ' ' | sd '(^\s+|\s+$)' ''`"
@@ -314,7 +311,6 @@ insert_command() {
 }
 zle -N insert_command
 
-
 chdir_up() {
     builtin cd "`realpath ..`"
     zle reset-prompt
@@ -328,7 +324,6 @@ chdir_home() {
     return 0
 }
 zle -N chdir_home
-
 
 visual_grep() {
     local ripgrep="`which -p rg` --max-filesize=50K --hidden --fixed-strings --ignore-file=`realpath ~/.ignore` --ignore-file=`realpath $JOSH/configs/grep.ignore` --smart-case"
@@ -400,7 +395,6 @@ ps_widget() {
     done
 }
 zle -N ps_widget
-
 
 term_widget() {
     local pids="$(
