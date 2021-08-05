@@ -109,5 +109,6 @@ bindkey '\ec'  history-search-multi-word
 bindkey '\ex'  insert_endpoint   # search and paste to command line filename
 bindkey '\e^x' insert_directory  # and catalog name
 bindkey '\eX'  visual_chdir      # fast dive into directory
+bindkey '\eo'  visual_recent_chdir
 
 fi

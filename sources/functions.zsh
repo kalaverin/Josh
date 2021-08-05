@@ -245,6 +245,47 @@ visual_chdir() {
 zle -N visual_chdir
 
 
+visual_recent_chdir() {
+    if [[ "$#" != 0 ]]; then
+        builtin cd "$@";
+        return
+    fi
+    local directory=$(scotty list | sort -rk 2,3 | sed '1d' | tabulate -i 1 | runiq - | \
+        fzf \
+            -i -s --exit-0 --select-1 \
+            --prompt="c2hdir to: `pwd`/" \
+            --bind='enter:accept' \
+            --reverse --min-height='11' --height='11' \
+            --preview-window="right:119:noborder" \
+            --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}" \
+            --filepath-word --tiebreak=index \
+            --ansi --extended --info='inline' \
+            --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
+            --jump-labels="$FZF_JUMPS" \
+            --bind='alt-space:jump-accept' \
+            --bind='alt-w:toggle-preview-wrap' \
+            --bind='ctrl-c:abort' \
+            --bind='ctrl-q:abort' \
+            --bind='end:preview-down' \
+            --bind='esc:cancel' \
+            --bind='home:preview-up' \
+            --bind='pgdn:preview-page-down' \
+            --bind='pgup:preview-page-up' \
+            --bind='shift-down:half-page-down' \
+            --bind='shift-up:half-page-up' \
+            --color="$FZF_THEME" \
+    )
+
+    if [ "$directory" ]; then
+        builtin cd "$directory" &> /dev/null
+    fi
+    zle reset-prompt
+    return 0
+
+}
+zle -N visual_recent_chdir
+
+
 chdir_up() {
     builtin cd "`realpath ..`"
     zle reset-prompt
