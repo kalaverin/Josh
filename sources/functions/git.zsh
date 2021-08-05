@@ -253,17 +253,11 @@ git_select_commit_then_files_checkout() {
                 | sed -r "s:\s\b: $root/:g" | xargs -I% echo "$root/%"
             )"
 
-            if [[ "$BUFFER" != "" ]]; then
-                local prefix="$BUFFER && git"
-            else
-                local prefix=" git"
-            fi
-
             if [[ "$files" != "" ]]; then
-                LBUFFER="$prefix checkout $commit -- $files"
+                run_show "git checkout $commit -- $files && git reset $files > /dev/null && git diff HEAD --stat --diff-algorithm=histogram --color=always | xargs -I$ echo $"
+                zle reset-prompt
                 return 130
             else
-                zle reset-prompt
                 return 0
             fi
         done
