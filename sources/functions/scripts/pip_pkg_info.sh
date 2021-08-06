@@ -1,4 +1,4 @@
-PIPDEP_DEFAULT_OPTS="-e pipdeptree,setuptools,pkg_resources,wheel -w silence"
+PIPDEP_DEFAULT_OPTS="-e pipdeptree,setuptools,pkg_resources,wheel,pip-chill -w silence"
 
 function pip_show() {
     local pip="`which -p pip`"

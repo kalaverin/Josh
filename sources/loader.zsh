@@ -30,3 +30,7 @@ fi
 if [ -f "`which -p pip`" ]; then
     eval "$(pip completion --zsh)"
 fi
+
+if [ -d "$VIRTUAL_ENV" ]; then
+    vact $VIRTUAL_ENV
+fi

@@ -3,13 +3,17 @@ pir() {
 }
 
 vact() {
-    source $1/bin/activate
+    local cwd="`pwd`"
+    local venv="`realpath ${VIRTUAL_ENV:-$1}`"
+    [ ! -d "$venv" ] && return 1
+    cd "$venv" && source bin/activate; cd $cwd
 }
 
 function dact {
     if [ "$VIRTUAL_ENV" != "" ]; then
-        local cwd=`pwd`
-        cd $VIRTUAL_ENV/bin && source activate && deactivate && cd $cwd
+        local cwd="`pwd`"
+        cd $VIRTUAL_ENV/bin && source activate && deactivate
+        cd $cwd
     fi
 }
 

@@ -24,173 +24,154 @@ local GIT_TAG_FROM_STR="$THIS_DIR/scripts/git_tag_from_str.sh"
 local GIT_SEARCH_SETUPCFG="$THIS_DIR/scripts/git_search_setupcfg.sh"
 
 local GIT_LIST_TAGS="$THIS_DIR/scripts/git_list_tags.sh"
-local GIT_LIST_CHANGED='git ls-files --modified --deleted --others --exclude-standard `git rev-parse --show-toplevel`'
+
+local ARGS_DIFF="--color=always --shortstat --patch --diff-algorithm=histogram"
+
+local DIFF="git diff $ARGS_DIFF $branch --"
+local UNIQUE_SORT="runiq - | proximity-sort ."
+local LINES_TO_LINE="sed -z 's:\n: :g' | awk '{\$1=\$1};1'"
+
+local FZF="fzf --ansi --extended --info='inline' --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' --tiebreak=length,index --jump-labels=\"$FZF_JUMPS\" --bind='alt-space:jump-accept' --bind='alt-w:toggle-preview-wrap' --bind='ctrl-c:abort' --bind='ctrl-q:abort' --bind='end:preview-down' --bind='esc:cancel' --bind='home:preview-up' --bind='pgdn:preview-page-down' --bind='pgup:preview-page-up' --bind='shift-down:half-page-down' --bind='shift-up:half-page-up' --color=\"$FZF_THEME\""
+
+
+git_root() {
+    local result=$(realpath `sh -c "$GIT_ROOT"`)
+    [ "$result" ] && echo "$result"
+}
+
+git_current_hash() {
+    local result="`git rev-parse --quiet --verify HEAD 2>/dev/null`"
+    [ "$result" ] && echo "$result"
+}
+
+git_current_branch() {
+    local result="`git rev-parse --quiet --abbrev-ref HEAD 2>/dev/null`"
+    [ "$result" ] && echo "$result"
+}
 
 git_add() {
-    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
-        local branch="${1:-`sh -c "$GIT_BRANCH"`}"
-        local differ="echo {} | xargs -I% git diff --color=always --shortstat --patch --diff-algorithm=histogram $branch -- % | $DELTA"
-        # TODO: status
-        while true; do
-            local files="$(echo "$GIT_LIST_CHANGED" | $SHELL | runiq - | proximity-sort . | \
-                fzf \
-                    --ansi --extended --info='inline' \
-                    --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
-                    --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
-                    --bind='alt-space:jump-accept' \
-                    --bind='alt-w:toggle-preview-wrap' \
-                    --bind='ctrl-c:abort' \
-                    --bind='ctrl-q:abort' \
-                    --bind='end:preview-down' \
-                    --bind='esc:cancel' \
-                    --bind='home:preview-up' \
-                    --bind='pgdn:preview-page-down' \
-                    --bind='pgup:preview-page-up' \
-                    --bind='shift-down:half-page-down' \
-                    --bind='shift-up:half-page-up' \
-                    --color="$FZF_THEME" \
-                    --prompt="git add >  " \
-                    --multi --filepath-word --preview="$differ" \
-                    --preview-window="left:119:noborder" \
-                | proximity-sort . | sed -z 's/\n/ /g' | awk '{$1=$1};1'
-            )"
+    local branch="`git_current_branch`"
+    [ ! "$branch" ] && return 1
 
-            if [[ "$files" != "" ]]; then
+    local select='git ls-files \
+                    --modified \
+                    --deleted \
+                    --others \
+                    --exclude-standard \
+                        `git rev-parse --show-toplevel`'
+    while true; do
+        local value="$(
+            sh -c "$select | $UNIQUE_SORT \
+            | $FZF \
+            --multi \
+            --filepath-word \
+            --preview=\"$DIFF {} | $DELTA\" \
+            --preview-window='left:119:noborder' \
+            --prompt='git add >  ' \
+            | $UNIQUE_SORT | $LINES_TO_LINE")"
 
-                if [[ "$BUFFER" != "" ]]; then
-                    local prefix="$BUFFER && git"
-                else
-                    local prefix=" git"
-                fi
+        if [ "$value" = "" ]; then
+            zle reset-prompt
+            local retval="0"
+            break
+        fi
 
-                local conflicts=$(git status --porcelain --branch | grep -P '^(UU)' | tabulate -i 2)
-                if [[ "$conflicts" = "" ]]; then
-                    LBUFFER="$prefix add $files && gmm "
-                    LBUFFER+='"'
-                    LBUFFER+="$branch: "
-                    RBUFFER='"'
-                else
-                    LBUFFER="$prefix add $files "
-                    RBUFFER=''
-                fi
-                local ret=$?
-                zle redisplay
-                zle reset-prompt
-                typeset -f zle-line-init >/dev/null && zle zle-line-init
-                return $ret
-            else
-                zle redisplay
-                zle reset-prompt
-                return 0
-            fi
-        done
-    fi
+        if [ "$BUFFER" != "" ]; then
+            local command="$BUFFER && git add"
+        else
+            local command=" git add"
+        fi
+
+        local conflicts=$(git status --porcelain --branch | grep -P '^(AA|UU)' | tabulate -i 2)
+        if [ "$conflicts" = "" ]; then
+            LBUFFER="$command $value && git commit -m \"$branch: "
+            RBUFFER='"'
+        else
+            LBUFFER="$command $value "
+            RBUFFER=''
+        fi
+        zle redisplay
+        local retval="$?"
+        break
+    done
+    return "$retval"
 }
 zle -N git_add
 
 
 git_checkout_modified() {
-    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
-        local root=$(realpath `sh -c "$GIT_ROOT"`)
-        local branch=${1:-$(echo "$GIT_BRANCH" | $SHELL)}
-        local differ="echo {} | xargs -I% git diff --color=always --shortstat --patch --diff-algorithm=histogram $branch -- $root/% | $DELTA"
+    local root="`git_root`"
+    [ ! "$root" ] && return 1
+    local branch="`git_current_branch`"
 
-        while true; do
-            local files="$(git diff --name-only $branch | runiq - | proximity-sort . | \
-                fzf \
-                    --ansi --extended --info='inline' \
-                    --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
-                    --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
-                    --bind='alt-space:jump-accept' \
-                    --bind='alt-w:toggle-preview-wrap' \
-                    --bind='ctrl-c:abort' \
-                    --bind='ctrl-q:abort' \
-                    --bind='end:preview-down' \
-                    --bind='esc:cancel' \
-                    --bind='home:preview-up' \
-                    --bind='pgdn:preview-page-down' \
-                    --bind='pgup:preview-page-up' \
-                    --bind='shift-down:half-page-down' \
-                    --bind='shift-up:half-page-up' \
-                    --color="$FZF_THEME" \
-                    --prompt="checkout to $branch >  " \
-                    --multi --filepath-word --preview="$differ" \
-                    --preview-window="left:119:noborder" \
-                | proximity-sort . | sed -z 's:\n: :g' | awk '{$1=$1};1' \
-                | sed -r "s:\s\b: $root/:g" | xargs -I% echo "$root/%"
-            )"
+    local select='git diff --name-only $branch'
+    local rootate="sed -r 's:\s\b: $root/:g' | xargs -I@ echo $root/@"
 
-            if [[ "$BUFFER" != "" ]]; then
-                local prefix="$BUFFER && git"
-            else
-                local prefix=" git"
-            fi
+    while true; do
+        local value="$(
+            sh -c "$select | $UNIQUE_SORT \
+            | $FZF \
+            --multi \
+            --filepath-word \
+            --preview=\"$DIFF $root/{} | $DELTA\" \
+            --preview-window='left:119:noborder' \
+            --prompt=\"checkout to $branch >  \" \
+            | $UNIQUE_SORT | $LINES_TO_LINE | $rootate")"
 
-            if [[ "$files" != "" ]]; then
-                LBUFFER="$prefix checkout $branch -- $files"
-                zle redisplay
-                typeset -f zle-line-init >/dev/null && zle zle-line-init
-                return 130
-            else
-                zle reset-prompt
-                return 0
-            fi
-        done
-    fi
+        if [ "$value" = "" ]; then
+            zle reset-prompt
+            local retval="0"
+            break
+        fi
+
+        [ "$BUFFER" != "" ] && local command="$BUFFER &&"
+        LBUFFER="$command git checkout $branch -- $value"
+
+        zle redisplay
+        local retval=130
+        break
+    done
+    return "$retval"
 }
 zle -N git_checkout_modified
 
 
-
 git_conflict_solver() {
-    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
-        local root="$(realpath `sh -c "$GIT_ROOT"`)/"
-        local CUT="cut -c $((${#root} + 1))-"
-        local branch=${1:-$(echo "$GIT_BRANCH" | $SHELL)}
-        local differ="echo {} | xargs -I% git diff --color=always --shortstat --patch --diff-algorithm=histogram $branch -- $root/% | $DELTA"
+    local root="`git_root`"
+    [ ! "$root" ] && return 1
+    local branch="`git_current_branch`"
 
-        # local zzz=`git status --porcelain --branch | grep -P '^(UU)' | tabulate -i 2 | sed -r "s:\s\b: $root/:g" | xargs -I% echo "$root%" | sed -z 's:\n: :g' | awk '{$1=$1};1' | xargs -I$ echo "rg --fixed-strings --files-with-matches '<<<<<<<' $" | $SHELL`
-        # echo ">$zzz<"
 
-        while true; do
-            local file="$(git status --porcelain --branch | grep -P '^(AA|UU)' | tabulate -i 2 | sed -r "s:\s\b: $root/:g" | xargs -I% echo "$root%" | sed -z 's:\n: :g' | awk '{$1=$1};1' | xargs -I$ echo "rg --fixed-strings --files-with-matches '<<<<<<<' $ | $CUT" | $SHELL | runiq - | proximity-sort . | \
-                fzf \
-                    --ansi --extended --info='inline' \
-                    --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
-                    --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
-                    --bind='alt-space:jump-accept' \
-                    --bind='alt-w:toggle-preview-wrap' \
-                    --bind='ctrl-c:abort' \
-                    --bind='ctrl-q:abort' \
-                    --bind='end:preview-down' \
-                    --bind='esc:cancel' \
-                    --bind='home:preview-up' \
-                    --bind='pgdn:preview-page-down' \
-                    --bind='pgup:preview-page-up' \
-                    --bind='shift-down:half-page-down' \
-                    --bind='shift-up:half-page-up' \
-                    --color="$FZF_THEME" \
-                    --prompt="solving in $branch >  " \
-                    --filepath-word --preview="$differ" \
-                    --preview-window="left:119:noborder" \
-                | proximity-sort . | sed -z 's:\n: :g' | awk '{$1=$1};1' \
-                | sed -r "s:\s\b: $root/:g" | xargs -I% echo "$root/%"
-            )"
+    local select='git status \
+                    --porcelain \
+                    --branch \
+                    | grep -P "^(AA|UU)" \
+                    | tabulate -i 2'
 
-            if [[ "$file" != "" ]]; then
-                local row=$(grep --line-number --max-count=1 '<<<<<<< HEAD' $file | tabulate -d ':' -i 1)
-                micro $file +$row
-                continue
+    local unroot="cut -c $((${#root} + 2))-"
+    local rootate="sed -r 's:\s\b: $root/:g' | xargs -I@ echo $root/@"
 
-                zle redisplay
-                typeset -f zle-line-init >/dev/null && zle zle-line-init
-                return 130
-            else
-                zle reset-prompt
-                return 0
-            fi
-        done
-    fi
+    while true; do
+        local value="$(
+            sh -c "$select | $rootate | $LINES_TO_LINE \
+            | xargs rg --fixed-strings --files-with-matches '<<<<<<<' | $unroot | $UNIQUE_SORT \
+            | $FZF \
+            --filepath-word \
+            --prompt=\"solving in $branch >  \" \
+            --preview=\"$DIFF $root/{} | $DELTA\" \
+            --preview-window='left:119:noborder' \
+            | $UNIQUE_SORT | $LINES_TO_LINE | $rootate")"
+
+        if [ "$value" = "" ]; then
+            zle reset-prompt
+            local retval="0"
+            break
+        fi
+        local row=$(grep --line-number --max-count=1 '<<<<<<< HEAD' $value | tabulate -d ':' -i 1)
+        $EDITOR $value +$row
+        continue
+    done
+    return "$retval"
 }
 zle -N git_conflict_solver
 
@@ -217,7 +198,7 @@ git_select_commit_then_files_checkout() {
                 --color="$FZF_THEME" \
                 --preview-window="left:84:noborder" \
                 --prompt="$branch: select commit >  " \
-                --preview="echo {} | head -1 | grep -o '[a-f0-9]\{7,\}$' | xargs -I% git diff --color=always --shortstat --patch --diff-algorithm=histogram % $branch | $DELTA --paging='always'" | head -1 | grep -o '[a-f0-9]\{7,\}$'
+                --preview="echo {} | head -1 | grep -o '[a-f0-9]\{7,\}$' | xargs -I% git diff --color=always --shortstat --patch --diff-algorithm=histogram $branch % | $DELTA --paging='always'" | head -1 | grep -o '[a-f0-9]\{7,\}$'
         )"
         if [[ "$commit" == "" ]]; then
             zle redisplay
@@ -462,10 +443,11 @@ zle -N git_select_branch_then_file_show_commits
 git_checkout_tag() {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local latest="$(echo "$GIT_LATEST" | $SHELL)"
+        local current="$(echo "$GIT_BRANCH" | $SHELL)"
+
         local cmd="echo {} | $SHELL $GIT_DIFF_FROM_TAG | $DELTA --paging='always'"
 
-        local differ="echo {} | cut -d ' ' -f 1 | xargs -I% git diff --color=always --stat=\$FZF_PREVIEW_COLUMNS --patch --diff-algorithm=histogram % | $DELTA"
-        # local commit="$(git show-ref --tags -d | grep '\^{}$' | sd '\^\{\}$' '' | sd '^([0-9a-f]+)\srefs/tags/(.+)' '$2 $1' | \
+        local differ="echo {} | cut -d ' ' -f 1 | xargs -I% git diff --color=always --stat=\$FZF_PREVIEW_COLUMNS --patch --diff-algorithm=histogram $current % | $DELTA"
 
         local commit="$(git log --color=always --oneline --decorate --tags --no-walk | \
             fzf \
@@ -513,9 +495,10 @@ zle -N git_checkout_tag
 
 git_checkout_branch() {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
-        local differ="echo {} | cut -d ' ' -f 1 | xargs -I% git diff --color=always --stat=\$FZF_PREVIEW_COLUMNS --patch --diff-algorithm=histogram % | $DELTA"
-        # local commit="$(git show-ref --tags -d | grep '\^{}$' | sd '\^\{\}$' '' | sd '^([0-9a-f]+)\srefs/tags/(.+)' '$2 $1' | \
-        local branch="$($SHELL $GIT_LIST_BRANCHES_EXCEPT_THIS | \
+        local branch="$(echo "$GIT_BRANCH" | $SHELL)"
+        local differ="echo {} | cut -d ' ' -f 1 | xargs -I% git diff --color=always --stat=\$FZF_PREVIEW_COLUMNS --patch --diff-algorithm=histogram $branch % | $DELTA"
+
+        local point="$($SHELL $GIT_LIST_BRANCHES_EXCEPT_THIS | \
             fzf \
                 --ansi --extended --info='inline' \
                 --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
@@ -537,18 +520,18 @@ git_checkout_branch() {
                 --preview="$differ" | cut -d ' ' -f 1
         )"
 
-        if [[ "$branch" == "" ]]; then
+        if [[ "$point" == "" ]]; then
             zle reset-prompt
             return 0
         else
             if [[ "$BUFFER" != "" ]]; then
-                LBUFFER="$BUFFER && git checkout $branch"
+                LBUFFER="$BUFFER && git checkout $point"
                 local ret=$?
                 zle redisplay
                 typeset -f zle-line-init >/dev/null && zle zle-line-init
                 return $ret
             else
-                git checkout $branch 2>/dev/null 1>/dev/null
+                git checkout $point 2>/dev/null 1>/dev/null
                 zle reset-prompt
                 return 0
             fi
@@ -561,9 +544,7 @@ zle -N git_checkout_branch
 git_checkout_commit() {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local branch="$(echo "$GIT_BRANCH" | $SHELL)"
-
-        local differ="echo {} | head -1 | grep -o '[a-f0-9]\{7\}' | cut -d ' ' -f 1 | xargs -I% git diff --color=always --stat=\$FZF_PREVIEW_COLUMNS --patch --diff-algorithm=histogram % | $DELTA"
-        # local commit="$(git show-ref --tags -d | grep '\^{}$' | sd '\^\{\}$' '' | sd '^([0-9a-f]+)\srefs/tags/(.+)' '$2 $1' | \
+        local differ="echo {} | head -1 | grep -o '[a-f0-9]\{7\}' | cut -d ' ' -f 1 | xargs -I% git diff --color=always --stat=\$FZF_PREVIEW_COLUMNS --patch --diff-algorithm=histogram $branch % | $DELTA"
 
         local result="$(git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' --first-parent $branch | \
             fzf \
@@ -610,8 +591,9 @@ zle -N git_checkout_commit
 
 git_merge_branch() {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
-        local differ="echo {} | cut -d ' ' -f 1 | xargs -I% git diff --color=always --stat=\$FZF_PREVIEW_COLUMNS --patch --diff-algorithm=histogram % | $DELTA"
-        local branch="$($SHELL $GIT_LIST_BRANCHES | \
+        local branch="$(echo "$GIT_BRANCH" | $SHELL)"
+        local differ="echo {} | cut -d ' ' -f 1 | xargs -I% git diff --color=always --stat=\$FZF_PREVIEW_COLUMNS --patch --diff-algorithm=histogram $branch % | $DELTA"
+        local point="$($SHELL $GIT_LIST_BRANCHES | \
             fzf \
                 --ansi --extended --info='inline' \
                 --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
@@ -633,18 +615,18 @@ git_merge_branch() {
                 --preview="$differ" | cut -d ' ' -f 1
         )"
 
-        if [[ "$branch" == "" ]]; then
+        if [[ "$point" == "" ]]; then
             zle reset-prompt
             return 0
         else
             if [[ "$BUFFER" != "" ]]; then
-                LBUFFER="$BUFFER $branch"
+                LBUFFER="$BUFFER $point"
                 local ret=$?
                 zle redisplay
                 typeset -f zle-line-init >/dev/null && zle zle-line-init
                 return $ret
             else
-                run_show "git fetch origin $branch 2>/dev/null 1>/dev/null && git merge origin/$branch"
+                run_show "git fetch origin $point 2>/dev/null 1>/dev/null && git merge origin/$point"
                 zle reset-prompt
                 return 0
             fi
@@ -656,8 +638,10 @@ zle -N git_merge_branch
 
 git_fetch_branch() {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
+        local temp="$(echo "$GIT_BRANCH" | $SHELL)"
         local found="$(git show-ref --heads | sd '^([0-9a-f]+)\srefs/heads/(.+)' '^$1 $2$' | sed -z 's:\n: :g' | awk '{$1=$1};1' | sed 's: :|:g')"
-        local differ="echo {} | tabulate -i 1 | xargs -i$ echo 'git diff $ 1&>/dev/null 2&>/dev/null || git fetch origin --depth=1 $ && git diff --color=always --shortstat --patch --diff-algorithm=histogram $' | $SHELL | $DELTA"
+        local differ="echo {} | tabulate -i 1 | xargs -i$ echo 'git diff $ 1&>/dev/null 2&>/dev/null || git fetch origin --depth=1 $ && git diff --color=always --shortstat --patch --diff-algorithm=histogram $temp $' | $SHELL | $DELTA"
+
         local branch="$(git ls-remote --heads --quiet origin | sd '^([0-9a-f]+)\srefs/heads/(.+)' '$1 $2' | grep -Pv "($found)" | sort -Vk 2 | awk '{a[i++]=$0} END {for (j=i-1; j>=0;) print a[j--] }' | \
             fzf \
                 --ansi --extended --info='inline' \
@@ -693,7 +677,7 @@ git_fetch_branch() {
         if [ "$count" -gt 1 ]; then
             local cmd="$track && $fetch && git fetch --tags -all"
         else
-            local cmd="$track && $fetch && is_repository_clean && git checkout --force --quiet $branch && git reset --hard $branch && git pull origin $branch"
+            local cmd="$track && $fetch && is_repository_clean && git checkout --force --quiet $branch && git reset --hard origin/$branch && git pull origin $branch"
         fi
 
         if [[ "$BUFFER" != "" ]]; then
@@ -756,16 +740,12 @@ function spll() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
     [ "$branch" = "" ] && return 1
     run_show "git pull origin $branch"
-    return $?
 }
 
 function sfet() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
     [ "$branch" = "" ] && return 1
     run_show "git fetch origin $branch && git fetch --tags --all"
-    local r="$?"
-    [ $r = 128 ] && echo " <- $branch doesn't exists at remote"
-    return $r
 }
 
 function sall() {
@@ -774,22 +754,19 @@ function sall() {
 
     is_repository_clean;                        [ $? -gt 0 ] && return 1
     sfet $branch 2>/dev/null;                   [ $? -gt 0 ] && return 1
-    run_show "git reset --hard $branch"; [ $? -gt 0 ] && return 1
+    run_show "git reset --hard origin/$branch"; [ $? -gt 0 ] && return 1
     spll $branch
-    return $?
 }
 
 function spsh() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
     run_show "git push origin $branch"
-    return $?
 }
 
 function sfm() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
     sfet $branch 2>/dev/null; [ $? -gt 0 ] && return 1
     run_show "git merge origin/$branch"
-    return $?
 }
 
 function sbrm() {
@@ -798,7 +775,6 @@ function sbrm() {
         return 1
     fi
     run_show "git branch -D $1 && git push origin --delete $1"
-    return $?
 }
 
 function sbmv() {
@@ -808,7 +784,6 @@ function sbmv() {
     fi
     local branch="${2:-`sh -c "$GIT_BRANCH"`}"
     run_show "git branch -m $branch $1 && git push origin :$branch $1"
-    return $?
 }
 
 function stag() {
@@ -817,7 +792,6 @@ function stag() {
         return 1
     fi
     run_show "git tag -a $1 -m \"$1\" && git push --tags && git fetch --tags"
-    return $?
 }
 
 function smtag() {
@@ -829,7 +803,6 @@ function smtag() {
     gcm;                 [ $? -gt 0 ] && return 1
     spll;                [ $? -gt 0 ] && return 1
     stag $1
-    return $?
 }
 
 function stag-() {
@@ -838,7 +811,6 @@ function stag-() {
         return 1
     fi
     run_show "git tag -d \"$1\" && git push --delete origin \"$1\""
-    return $?
 }
 
 function sck() {
@@ -854,7 +826,6 @@ function sck() {
         return 1
     fi
     run_show "git checkout -b $branch 2> /dev/null || git checkout $branch"
-    return $?
 }
 
 function drop_this_branch_right_now() {
@@ -935,10 +906,10 @@ function gub() {
             fi
         else
             if [ "$branch" != "master" ]; then
-                run_silent "git fetch origin $branch && git reset --hard $branch && git pull origin $branch"
+                run_silent "git fetch origin $branch && git reset --hard origin/$branch && git pull origin $branch"
                 echo "  + $branch fetch, reset and pull"
             else
-                run_silent "git reset --hard $branch && git pull origin $branch"
+                run_silent "git reset --hard origin/$branch && git pull origin $branch"
                 echo "  + $branch reset and pull"
             fi
         fi

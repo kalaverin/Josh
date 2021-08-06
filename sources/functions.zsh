@@ -1,9 +1,17 @@
 local THIS_DIR=`dirname "$(readlink -f "$0")"`
+
+local PIP_CHILL="$THIS_DIR/functions/scripts/pip_chill_filtered.sh"
+local PIP_FREEZE="$THIS_DIR/functions/scripts/pip_freeze_filtered.sh"
 local PIP_GET_INFO="$THIS_DIR/functions/scripts/pip_pkg_info.sh"
+
+local UNIQUE_SORT="runiq - | proximity-sort ."
+local LINES_TO_LINE="sed -z 's:\n: :g' | awk '{\$1=\$1};1'"
 
 LISTER_POST="${LISTER_FILE:-less} {} | ${LISTER_LESS} -R"
 FORGIT_CMD_DIFF='git ls-files --modified `git rev-parse --show-toplevel`'
 FZF_JUMPS='0123456789abcdefghijklmnopqrstuvwxyz'
+
+local FZF="fzf --ansi --extended --info='inline' --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' --tiebreak=length,index --jump-labels=\"$FZF_JUMPS\" --bind='alt-space:jump-accept' --bind='alt-w:toggle-preview-wrap' --bind='ctrl-c:abort' --bind='ctrl-q:abort' --bind='end:preview-down' --bind='esc:cancel' --bind='home:preview-up' --bind='pgdn:preview-page-down' --bind='pgup:preview-page-up' --bind='shift-down:half-page-down' --bind='shift-up:half-page-up' --color=\"$FZF_THEME\""
 
 commit_text () {
     local text=`sh -c "$HTTP_GET http://whatthecommit.com/index.txt"`
@@ -365,31 +373,32 @@ visual_freeze() {
     local pip="`which -p pip`"
     [ ! -f "$pip" ] && return 1
 
+    local venv="`basename ${VIRTUAL_ENV:-''}`"
     local preview="echo {} | tabulate -i 1 | xargs -n 1 $SHELL $PIP_GET_INFO"
-    local file=$(
-        PIP_REQUIRE_VIRTUALENV=false \
-        $pip freeze | grep -Pv '^(\s*#)' | grep -Pv '^(-\w )' | grep -Po '^([^\s]+)' | tabulate -d "==" | \
-        fzf \
-        --preview="$preview" \
-        --prompt='grep: ' --query='' --tiebreak='index' \
-        --preview-window='left:104:noborder' \
-        --ansi --extended --info='inline' \
-        --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
-        --jump-labels="$FZF_JUMPS" \
-        --bind='alt-space:jump-accept' \
-        --bind='alt-w:toggle-preview-wrap' \
-        --bind='ctrl-c:abort' \
-        --bind='ctrl-q:abort' \
-        --bind='end:preview-down' \
-        --bind='esc:cancel' \
-        --bind='home:preview-up' \
-        --bind='pgdn:preview-page-down' \
-        --bind='pgup:preview-page-up' \
-        --bind='shift-down:half-page-down' \
-        --bind='shift-up:half-page-up' \
-        --color="$FZF_THEME" \
-    )
-    echo "$file"
+    local value="$(sh -c "
+        $SHELL $PIP_FREEZE | \
+            grep -Pv '^(pipdeptree|setuptools|pkg_resources|wheel|pip-chill)' | \
+            tabulate -d '=='\
+        | $FZF \
+            --multi \
+            --tiebreak='index' \
+            --preview='$preview' \
+            --prompt='packages $venv > ' \
+            --preview-window='left:104:noborder' \
+            --bind='ctrl-d:reload($SHELL $PIP_CHILL),ctrl-f:reload($SHELL $PIP_FREEZE)' \
+        | tabulate -i 1 | $UNIQUE_SORT | $LINES_TO_LINE
+    ")"
+
+    if [ "$value" != "" ]; then
+        if [ "$BUFFER" != "" ]; then
+            local command="$BUFFER"
+        else
+            local command=" pip uninstall"
+        fi
+        LBUFFER="$command $value"
+        RBUFFER=''
+    fi
+
     zle reset-prompt
     return 0
 }
