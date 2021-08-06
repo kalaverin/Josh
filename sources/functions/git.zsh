@@ -774,7 +774,7 @@ function sall() {
 
     is_repository_clean;                        [ $? -gt 0 ] && return 1
     sfet $branch 2>/dev/null;                   [ $? -gt 0 ] && return 1
-    run_show "git reset --hard origin/$branch"; [ $? -gt 0 ] && return 1
+    run_show "git reset --hard $branch"; [ $? -gt 0 ] && return 1
     spll $branch
     return $?
 }
@@ -935,10 +935,10 @@ function gub() {
             fi
         else
             if [ "$branch" != "master" ]; then
-                run_silent "git fetch origin $branch && git reset --hard origin/$branch && git pull origin $branch"
+                run_silent "git fetch origin $branch && git reset --hard $branch && git pull origin $branch"
                 echo "  + $branch fetch, reset and pull"
             else
-                run_silent "git reset --hard origin/$branch && git pull origin $branch"
+                run_silent "git reset --hard $branch && git pull origin $branch"
                 echo "  + $branch reset and pull"
             fi
         fi
