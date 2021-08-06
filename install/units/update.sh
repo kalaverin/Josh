@@ -18,7 +18,7 @@ function pull_update() {
     [ ! "$branch" ] && local branch="master"
 
     cmd="git --work-tree=$JOSH --git-dir=$JOSH/.git"
-    $SHELL -c "$cmd checkout ${1:-master} && $cmd pull"
+    $SHELL -c "$cmd checkout $branch && $cmd pull"
     if [ $? -gt 0 ]; then
         echo ' - fatal: update failed :-\'
         return 1
