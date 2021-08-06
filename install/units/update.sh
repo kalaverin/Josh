@@ -15,7 +15,7 @@ function update_packages() {
 
 function pull_update() {
     cmd="git --work-tree=$JOSH --git-dir=$JOSH/.git"
-    $SHELL -c "$cmd checkout master && $cmd pull"
+    $SHELL -c "$cmd checkout ${1:-master} && $cmd pull"
     if [ $? -gt 0 ]; then
         echo ' - fatal: update failed :-\'
         return 1

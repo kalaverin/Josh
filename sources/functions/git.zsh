@@ -693,7 +693,7 @@ git_fetch_branch() {
         if [ "$count" -gt 1 ]; then
             local cmd="$track && $fetch && git fetch --tags -all"
         else
-            local cmd="$track && $fetch && is_repository_clean && git checkout --force --quiet $branch && git reset --hard origin/$branch && git pull origin $branch"
+            local cmd="$track && $fetch && is_repository_clean && git checkout --force --quiet $branch && git reset --hard $branch && git pull origin $branch"
         fi
 
         if [[ "$BUFFER" != "" ]]; then
