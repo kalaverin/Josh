@@ -14,6 +14,9 @@ function update_packages() {
 }
 
 function pull_update() {
+    local branch="${1:-`sh -c "git rev-parse --quiet --abbrev-ref HEAD 2>/dev/null"`}"
+    [ ! "$branch" ] && local branch="master"
+
     cmd="git --work-tree=$JOSH --git-dir=$JOSH/.git"
     $SHELL -c "$cmd checkout ${1:-master} && $cmd pull"
     if [ $? -gt 0 ]; then

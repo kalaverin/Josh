@@ -568,7 +568,7 @@ zle -N sudoize
 
 
 josh_pull() {
-    . "$JOSH/install/units/update.sh" && pull_update ${1:-master} && \
+    . "$JOSH/install/units/update.sh" && pull_update $1 && \
     (. "$JOSH/install/units/update.sh" && post_update || true) && \
     exec zsh
     return 0
