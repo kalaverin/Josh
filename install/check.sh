@@ -48,7 +48,7 @@ function check_compliance() {
     if [ -n "$(uname | grep -i freebsd)" ]; then
         echo " + os: freebsd `uname -srv`"
         local cmd="sudo pkg install -y"
-        local pkg="zsh git jq pv python3 coreutils gnugrep gnuls gsed"
+        local pkg="zsh git jq pv python3 coreutils gnugrep gnuls gsed openssl"
         REQURED_SYSTEM_BINARIES=(
             /usr/local/bin/grep
             /usr/local/bin/gnuls
