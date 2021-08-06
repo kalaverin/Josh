@@ -12,7 +12,6 @@ commit_text () {
 }
 zle -N commit_text
 
-
 insert_directory() {
     if [ "$LBUFFER" ]; then
         local pre=`echo "$LBUFFER" | grep -Po '([^\s]+)$'`
@@ -565,7 +564,6 @@ sudoize() {
     fi
 }
 zle -N sudoize
-
 
 josh_pull() {
     . "$JOSH/install/units/update.sh" && pull_update $1 && \

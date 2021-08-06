@@ -6,6 +6,7 @@ path=(
     ~/.cargo/bin
     $ZSH/custom/bin
     ~/.local/bin
+    $REAL/bin
     /bin
     /sbin
     /usr/bin
@@ -14,7 +15,6 @@ path=(
     /usr/local/sbin
     /usr/local/etc/rc.d
     /etc/rc.d
-    $REAL/bin
     $path
 )
 source "$JOSH/sources/compat.zsh"
