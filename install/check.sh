@@ -67,14 +67,14 @@ function check_compliance() {
             /usr/local/bin/gsed
         )
 
+    elif [ -n "$(uname -v | grep -Pi '(debian|ubuntu)')" ]; then
+        echo " + os: debian-based `uname -srv`"
+        local cmd="sudo apt-get update --yes --quiet || true && apt-get install --yes --quiet --no-remove"
+        local pkg="zsh git jq pv python3 tree libssl-dev"
+
     elif [ -n "$(uname | grep -i linux)" ]; then
-        if [ -n "$(uname -v | grep -Pi '(debian|ubuntu)')" ]; then
-            echo " + os: debian-based `uname -srv`"
-            local cmd="sudo apt-get update --yes --quiet || true && apt-get install --yes --quiet --no-remove"
-            local pkg="zsh git jq pv python3 tree libssl-dev"
-        else
-            echo ' - unknown linux: `uname -srv`'
-        fi
+        echo ' - unknown linux: `uname -srv`'
+
     else
         echo ' - unknown os: `uname -srv`'
     fi
