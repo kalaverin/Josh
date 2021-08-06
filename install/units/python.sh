@@ -57,14 +57,25 @@ function pip_init() {
 }
 
 function pip_deploy() {
+    local cwd="`pwd`"
+    local venv="$VIRTUAL_ENV"
+
+    if [ "$venv" != "" ]; then
+        cd $venv/bin && source activate && deactivate; cd $cwd
+    fi
+
     pip_init || return $?
     if [ ! -f "$PIP_EXE" ]; then
         echo " - fatal: cargo exe $PIP_EXE isn't found!"
         return 1
     fi
     for pkg in $@; do
-        $PIP_EXE install --upgrade $pkg
+        PIP_REQUIRE_VIRTUALENV=false $PIP_EXE install --upgrade $pkg
     done
+
+    if [ "$venv" != "" ]; then
+        cd $venv/bin && source activate
+    fi
     return 0
 }
 
