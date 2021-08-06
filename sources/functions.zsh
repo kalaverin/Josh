@@ -1,3 +1,6 @@
+local THIS_DIR=`dirname "$(readlink -f "$0")"`
+local PIP_GET_INFO="$THIS_DIR/functions/scripts/pip_pkg_info.sh"
+
 LISTER_POST="${LISTER_FILE:-less} {} | ${LISTER_LESS} -R"
 FORGIT_CMD_DIFF='git ls-files --modified `git rev-parse --show-toplevel`'
 FZF_JUMPS='0123456789abcdefghijklmnopqrstuvwxyz'
@@ -326,6 +329,7 @@ chdir_home() {
 zle -N chdir_home
 
 visual_grep() {
+    # grep: import Email
     local ripgrep="`which -p rg` --max-filesize=50K --hidden --fixed-strings --ignore-file=`realpath ~/.ignore` --ignore-file=`realpath $JOSH/configs/grep.ignore` --smart-case"
     local execute="$JOSH/sources/functions/scripts/rg_query_name_to_micro.sh"
     local preview="echo {}:{q} | grep -Pv '^:' | sed -r 's#(.+?):[0-9]+:(.+?)#>>\2<<//\1#g' | sd '>>(\s*)(.*?)(\s*)<<//(.+)' '$ripgrep  --vimgrep --context 0 \"\$2\" \$4' | $SHELL | tabulate -d ':' -i 2 | huniq | sort -V | sed 's/^/-H/' | tr '\n' ' ' | xargs -I% echo % {} | tabulate -d ':' -i 1 | xargs -I% sh -c 'bat --color=always --terminal-width $COLUMNS %'"
@@ -357,6 +361,67 @@ visual_grep() {
     return 0
 }
 zle -N visual_grep
+
+visual_freeze() {
+    local pip="`which -p pip`"
+    if [ ! -f "$pip" ]; then
+        echo ' - pip not installed?'
+        return 1
+    fi
+        # --bind "change:reload:($ripgrep --count --color=always -- {q} | proximity-sort . || true)" \
+        # --bind="enter:execute(echo "{q}:{}" | $SHELL $execute | xargs -I$ sh -c '$')" \
+         # | sd '(==([^=]+))$' ''
+ # | grep -Pv '^:' | sed -r 's#(.+?):[0-9]+:(.+?)#>>\2<<//\1#g' | sd '>>(\s*)(.*?)(\s*)<<//(.+)' '$ripgrep  --vimgrep --context 0 \"\$2\" \$4' | $SHELL | tabulate -d ':' -i 2 | huniq | sort -V | sed 's/^/-H/' | tr '\n' ' ' | xargs -I% echo % {} | tabulate -d ':' -i 1 | xargs -I% sh -c 'bat --color=always --terminal-width $COLUMNS %'
+    # local preview="echo {} | tabulate -i 1 | xargs -n 1 pip show"
+
+    # local preview="echo {} | tabulate -i 1 | xargs -n 1 pip show"
+
+    # local preview="echo {} | tabulate -i 1 | xargs -n 1 pip show"
+
+    # local pkg_extract="echo {} | tabulate -i 1 | xargs -n 1 sh -c"
+    # local pipdep="pipdeptree -e pipdeptree,setuptools,pkg_resources,wheel -w silence"
+
+    # local pipdep_format="sd '^(\s+)(-\s+)' '\$1' | sd ' \[required: (.+), installed: (.+)\]' '==\$2 (\$1)' | sd '\(Any\)' '~'"
+    # local pipdep_format_rev="sd '^(\s+)(-\s+)' '\$1' | sd ' \[requires: (.+)\]' ' || \$1' | tabulate -d '||'"
+    # local preview="$pkg_extract $pipdep -r -p | $pipdep_format"
+
+    # local preview="$pkg_extract $pipdep -p | $pipdep_format"
+    # local preview="$pkg_extract $pipdep -r -p | $pipdep_format_rev"
+    local preview="echo {} | tabulate -i 1 | xargs -n 1 $SHELL $PIP_GET_INFO"
+
+    # local preview="echo {} | tabulate -i 1 | xargs -n 1 pipdeptree -e pipdeptree,setuptools,pkg_resources,wheel -w silence -p"
+
+    # local preview='pipdeptree -w silence -p {} | grep -Pv "^{}"'
+    # local preview='pipdeptree -w silence -p {} | grep -Pv "^{}"'
+
+    local file=$(
+        PIP_REQUIRE_VIRTUALENV=false \
+        $pip freeze | grep -Pv '^(\s*#)' | grep -Pv '^(-\w )' | grep -Po '^([^\s]+)' | tabulate -d "==" | \
+        fzf \
+        --preview="$preview" \
+        --prompt='grep: ' --query='' --tiebreak='index' \
+        --preview-window='left:104:noborder' \
+        --ansi --extended --info='inline' \
+        --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
+        --jump-labels="$FZF_JUMPS" \
+        --bind='alt-space:jump-accept' \
+        --bind='alt-w:toggle-preview-wrap' \
+        --bind='ctrl-c:abort' \
+        --bind='ctrl-q:abort' \
+        --bind='end:preview-down' \
+        --bind='esc:cancel' \
+        --bind='home:preview-up' \
+        --bind='pgdn:preview-page-down' \
+        --bind='pgup:preview-page-up' \
+        --bind='shift-down:half-page-down' \
+        --bind='shift-up:half-page-up' \
+        --color="$FZF_THEME" \
+    )
+    echo "$file"
+    zle reset-prompt
+    return 0
+}
+zle -N visual_freeze
 
 ps_widget() {
     while true; do
@@ -501,27 +566,23 @@ sudoize() {
 }
 zle -N sudoize
 
-josh_pull() {
-    cmd="git --work-tree=$JOSH --git-dir=$JOSH/.git"
-    $SHELL -c "$cmd checkout master && $cmd pull"
-    if [ $? -gt 0 ]; then
-        echo ' - update failed :-\'
-        return 1
-    fi
 
-    . "$JOSH/install/units/rust.sh"
-    deploy_packages $REQUIRED_PACKAGES
+josh_pull() {
+    . "$JOSH/install/units/update.sh" && pull_update && \
+    (. "$JOSH/install/units/update.sh" && post_update || true) && \
     exec zsh
     return 0
 }
 
 josh_deploy() {
-    url="https://raw.githubusercontent.com/YaakovTooth/Josh/master/install/boot.sh?$RANDOM"
+    url="https://kalaverin.ru/shell?$RANDOM"
     $SHELL -c "$HTTP_GET $url | $SHELL"
     if [ $? -gt 0 ]; then
-        echo ' - install failed :-\'
+        echo ' - fatal: install failed :-\'
         return 1
     fi
+    exec zsh
+    return 0
 }
 
 josh_urls() {
@@ -531,7 +592,7 @@ josh_urls() {
 }
 
 josh_extras() {
-    . "$JOSH/install/units/rust.sh"
+    . "$JOSH/install/units/update.sh"
     deploy_extras
 }
 

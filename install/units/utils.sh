@@ -41,13 +41,14 @@ function deploy_starship() {
             [ $? -gt 0 ] && echo " - failed starship"
         fi
     fi
+    . $SOURCE_ROOT/install/units/configs.sh && copy_starship
     return 0
 }
 
 
 # ——— fzf search
 
-function deploy_fzf() {
+function compile_fzf() {
     url='https://github.com/junegunn/fzf.git'
     clone="`which git` clone --depth 1"
     [ ! -d "$BINARY_DEST" ] && mkdir -p "$BINARY_DEST"
@@ -77,37 +78,14 @@ function deploy_micro() {
         [ $? -gt 0 ] && echo " + failed micro: $BINARY_DEST/micro"
         $SHELL -c "$BINARY_DEST/micro -plugin install fzf wc detectindent bounce editorconfig quickfix"
     fi
+    . $SOURCE_ROOT/install/units/configs.sh && copy_micro
     return 0
 }
 
 
-# ——— fresh pip for python 3
-
-function deploy_pip() {
-    local py="`which python3`"
-    if [ -f "$py" ]; then
-        local pip="/tmp/get-pip.py"
-        $SHELL -c "$HTTP_GET https://bootstrap.pypa.io/get-pip.py > $pip" && \
-        PIP_REQUIRE_VIRTUALENV=false python3 $pip "pip<=20.3.4" "setuptools" "wheel"
-        [ -f "$pip" ] && unlink "$pip"
-    else
-        echo " - require python >=3.6!"
-    fi
-    return 0
-}
-
-
-# ——— httpie client
-
-function deploy_httpie() {
-    local pip="$REAL/.local/bin/pip"
-    if [ ! -f "$pip" ]; then
-        deploy_pip
-    fi
-    if [ ! -f "$pip" ]; then
-        echo " - pip required python >=3.6!"
-    else
-        PIP_REQUIRE_VIRTUALENV=false pip install --user --upgrade httpie
-    fi
-    return 0
+function deploy_binaries() {
+    compile_fzf && \
+    deploy_micro && \
+    deploy_starship && \
+    return "$?"
 }

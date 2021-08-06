@@ -1,6 +1,6 @@
 #!/bin/sh
 
-REQUIRED_PACKAGES=(
+CARGO_REQ_PACKAGES=(
     bat            # modern replace for cat with syntax highlight
     csview         # for commas, tabs, etc
     exa            # fast replace for ls
@@ -19,7 +19,7 @@ REQUIRED_PACKAGES=(
     vivid          # ls colors themes selections system
 )
 
-OPTIONAL_PACKAGES=(
+CARGO_OPT_PACKAGES=(
     atuin            # another yet history manager
     bandwhich        # network bandwhich meter
     bingrep          # extract and grep strings from binaries
@@ -86,10 +86,10 @@ function set_defaults() {
     return 0
 }
 
-function prepare_cargo() {
+function cargo_init() {
     set_defaults
     local CARGO_DIR="$REAL/.cargo/bin"
-    local CARGO_EXE="$CARGO_DIR/cargo"
+    export CARGO_EXE="$CARGO_DIR/cargo"
     if [ ! -d "$CARGO_DIR" ] && mkdir -p "$CARGO_DIR"
 
     url='https://sh.rustup.rs'
@@ -97,37 +97,35 @@ function prepare_cargo() {
         $SHELL -c "$HTTP_GET $url" | RUSTUP_HOME=~/.rustup CARGO_HOME=~/.cargo RUSTUP_INIT_SKIP_PATH_CHECK=yes bash -s - --profile minimal --no-modify-path --quiet -y
         if [ $? -gt 0 ]; then
             $SHELL -c "$HTTP_GET $url" | RUSTUP_HOME=~/.rustup CARGO_HOME=~/.cargo RUSTUP_INIT_SKIP_PATH_CHECK=yes bash -s - --profile minimal --no-modify-path --verbose -y
-            echo " - fatal: cargo deploy failed"
+            echo " - fatal: cargo deploy failed!"
             return 1
+        fi
+        if [ ! -f "$CARGO_EXE" ]; then
+            echo " - fatal: cargo isn't installed ($CARGO_EXE)"
+            return 255
         fi
     else
         $SHELL -c "`realpath $CARGO_DIR/rustup` update"
     fi
 
-    if [ ! -f "$CARGO_DIR/sccache" ]; then
-        $CARGO_EXE install sccache
-    fi
-
-    if [ -f "`which sccache`" ]; then
-        export RUSTC_WRAPPER=`which sccache`
-    fi
+    [ ! -f "$CARGO_DIR/sccache" ] && $CARGO_EXE install sccache
+    [ -f "`which sccache`" ] && export RUSTC_WRAPPER=`which sccache`
     return 0
 }
 
-function deploy_packages() {
-    set_defaults
-    local CARGO_DIR="$REAL/.cargo/bin"
-    local CARGO_EXE="$CARGO_DIR/cargo"
-    if [ ! -d "$CARGO_DIR" ] && mkdir -p "$CARGO_DIR"
-
+function cargo_deploy() {
+    cargo_init || return $?
+    if [ ! -f "$CARGO_EXE" ]; then
+        echo " - fatal: cargo exe $CARGO_EXE isn't found!"
+        return 1
+    fi
     for pkg in $@; do
         $CARGO_EXE install $pkg
     done
     return 0
 }
 
-function deploy_extras() {
-    deploy_packages $REQUIRED_PACKAGES
-    deploy_packages $OPTIONAL_PACKAGES
+function cargo_extras() {
+    cargo_deploy $CARGO_REQ_PACKAGES $CARGO_OPT_PACKAGES
     return 0
 }

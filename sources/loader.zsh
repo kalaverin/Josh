@@ -26,3 +26,7 @@ fi
 if [ -f "`which -p starship`" ]; then
     eval "$(starship init zsh)"
 fi
+
+if [ -f "`which -p pip`" ]; then
+    eval "$(pip completion --zsh)"
+fi

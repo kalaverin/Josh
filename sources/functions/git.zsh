@@ -756,12 +756,16 @@ function spll() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
     [ "$branch" = "" ] && return 1
     run_show "git pull origin $branch"
+    return $?
 }
 
 function sfet() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
     [ "$branch" = "" ] && return 1
     run_show "git fetch origin $branch && git fetch --tags --all"
+    local r="$?"
+    [ $r = 128 ] && echo " <- $branch doesn't exists at remote"
+    return $r
 }
 
 function sall() {
@@ -772,17 +776,20 @@ function sall() {
     sfet $branch 2>/dev/null;                   [ $? -gt 0 ] && return 1
     run_show "git reset --hard origin/$branch"; [ $? -gt 0 ] && return 1
     spll $branch
+    return $?
 }
 
 function spsh() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
     run_show "git push origin $branch"
+    return $?
 }
 
 function sfm() {
     local branch="${1:-`sh -c "$GIT_BRANCH"`}"
     sfet $branch 2>/dev/null; [ $? -gt 0 ] && return 1
     run_show "git merge origin/$branch"
+    return $?
 }
 
 function sbrm() {
@@ -791,6 +798,7 @@ function sbrm() {
         return 1
     fi
     run_show "git branch -D $1 && git push origin --delete $1"
+    return $?
 }
 
 function sbmv() {
@@ -800,6 +808,7 @@ function sbmv() {
     fi
     local branch="${2:-`sh -c "$GIT_BRANCH"`}"
     run_show "git branch -m $branch $1 && git push origin :$branch $1"
+    return $?
 }
 
 function stag() {
@@ -808,6 +817,7 @@ function stag() {
         return 1
     fi
     run_show "git tag -a $1 -m \"$1\" && git push --tags && git fetch --tags"
+    return $?
 }
 
 function smtag() {
@@ -819,6 +829,7 @@ function smtag() {
     gcm;                 [ $? -gt 0 ] && return 1
     spll;                [ $? -gt 0 ] && return 1
     stag $1
+    return $?
 }
 
 function stag-() {
@@ -827,6 +838,7 @@ function stag-() {
         return 1
     fi
     run_show "git tag -d \"$1\" && git push --delete origin \"$1\""
+    return $?
 }
 
 function sck() {
@@ -842,6 +854,7 @@ function sck() {
         return 1
     fi
     run_show "git checkout -b $branch 2> /dev/null || git checkout $branch"
+    return $?
 }
 
 function drop_this_branch_right_now() {

@@ -1,7 +1,7 @@
 add_newline = false
 
 [cmake]
-format = '[$symbol($version)]($style)'
+format = ' [$symbol($version)]($style)'
 
 [cmd_duration]
 min_time = 5000
@@ -13,17 +13,16 @@ show_notifications = false
 min_time_to_notify = 45000
 
 [conda]
-
-format = '[$symbol$environment]($style) '
+format = ' [$symbol$environment]($style)'
 
 [crystal]
-format = '[$symbol($version)]($style)'
+format = ' [$symbol($version)]($style)'
 
 [dart]
-format = '[$symbol($version)]($style)'
+format = ' [$symbol($version)]($style)'
 
 [deno]
-format = '[$symbol($version)]($style)'
+format = ' [$symbol($version)]($style)'
 
 [directory]
 truncation_length = 3
@@ -41,23 +40,22 @@ home_symbol = '~'
 [directory.substitutions]
 
 [docker_context]
-
-format = '[$symbol$context]($style) '
+format = ' [$symbol$context]($style)'
 
 [dotnet]
-format = '[$symbol($version)(🎯 $tfm )]($style)'
+format = ' [$symbol($version)(🎯 $tfm )]($style)'
 
 [elixir]
-format = '[$symbol($version\(OTP $otp_version\) )]($style)'
+format = ' [$symbol($version\(OTP $otp_version\) )]($style)'
 
 [elm]
-format = '[$symbol($version)]($style)'
+format = ' [$symbol($version)]($style)'
 
 [erlang]
-format = '[$symbol($version)]($style)'
+format = ' [$symbol($version)]($style)'
 
 [git_branch]
-format = '[$symbol$branch]($style)(:[$remote]($style))[/](black bold)'
+format = ' [$symbol$branch]($style)(:[$remote]($style))[/](black bold)'
 symbol = ''
 style = 'bold cyan'
 truncation_length = 9223372036854775807
@@ -110,20 +108,19 @@ untracked = '?'
 disabled = false
 
 [golang]
-format = '[$symbol($version)]($style)'
+format = ' [$symbol($version)]($style)'
 
 [helm]
-format = '[$symbol($version)]($style)'
+format = ' [$symbol($version)]($style)'
 
 [hostname]
 ssh_only = false
 trim_at = '.'
-format = '[$hostname]($style)[:](black bold)'
+format = ' [$hostname]($style)[:](black bold)'
 style = 'green bold'
 disabled = false
 
 [java]
-
 format = ' [$symbol($version)]($style)'
 
 [jobs]

@@ -36,17 +36,10 @@ git pull origin master && \
 
 deploy_ohmyzsh && \
 deploy_extensions && \
-deploy_fzf && \
-deploy_httpie && \
-deploy_starship && \
-config_starship && \
-deploy_micro && \
-config_micro && \
-config_git && \
-nano_syntax && \
-grep_ignore && \
-prepare_cargo && \
-deploy_packages $REQUIRED_PACKAGES
+deploy_binaries && \
+pip_deploy $PIP_REQ_PACKAGES && \
+cargo_deploy $CARGO_REQ_PACKAGES && \
+zero_configuration
 
 [ $? -gt 0 ] && return 2
 

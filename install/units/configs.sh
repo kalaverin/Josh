@@ -17,55 +17,59 @@ if [ ! "$CONFIG_DIR" ]; then
     fi
 fi
 
-function config_starship() {
-    [ ! -d "$CONFIG_DIR" ] && mkdir -p $CONFIG_DIR
-    if [ ! -f "$CONFIG_DIR/starship.toml" ]; then
-        cp $SOURCE_ROOT/configs/starship.toml $CONFIG_DIR/starship.toml
-        echo " + copy starship example config: $CONFIG_DIR/starship.toml"
-    fi
-    return 0
+function copy_starship() {
+    local dst="$CONFIG_DIR/starship.toml"
+    [ ! -d "`dirname $dst`" ] && mkdir -p "`dirname $dst`"; [ -f "$dst" ] && return 0
+    echo " + copy starship example config: $dst" && \
+    cp -n $SOURCE_ROOT/configs/starship.toml "$dst"
+    return $?
 }
 
-function config_micro() {
-    [ ! -d "$CONFIG_DIR" ] && mkdir -p $CONFIG_DIR
-    if [ ! -f "$CONFIG_DIR/micro/settings.json" ]; then
-        [ ! -d "$CONFIG_DIR/micro/" ] && mkdir -p "$CONFIG_DIR/micro"
-        cp "$SOURCE_ROOT/configs/micro.json" "$CONFIG_DIR/micro/settings.json"
-        echo " + copy micro editor example config: $CONFIG_DIR/micro/settings.json"
-    fi
-    return 0
+function copy_micro() {
+    local dst="$CONFIG_DIR/micro/settings.json"
+    [ ! -d "`dirname $dst`" ] && mkdir -p "`dirname $dst`"; [ -f "$dst" ] && return 0
+    echo " + copy micro editor example config: $dst" && \
+    cp "$SOURCE_ROOT/configs/micro.json" "$dst"
+    return $?
 }
 
-function config_syncat() {
-    [ ! -d "$CONFIG_DIR" ] && mkdir -p $CONFIG_DIR
-    if [ ! -f "$CONFIG_DIR/syncat/languages.toml" ]; then
-        [ ! -d "$CONFIG_DIR/syncat/" ] && mkdir -p "$CONFIG_DIR/syncat"
-        cp "$SOURCE_ROOT/configs/syncat.toml" "$CONFIG_DIR/syncat/languages.toml"
-        echo " + copy syncat viewer example config: $CONFIG_DIR/syncat/languages.toml"
-    fi
-    if [ ! -d "$CONFIG_DIR/syncat/languages" ]; then
-        syncat install
-    fi
-    return 0
+function copy_pip() {
+    local dst="$CONFIG_DIR/pip/pip.conf"
+    [ ! -d "`dirname $dst`" ] && mkdir -p "`dirname $dst`"; [ -f "$dst" ] && return 0
+    echo " + copy pip example config: $dst" && \
+    cp "$SOURCE_ROOT/configs/pip.conf" "$dst"
+    return $?
+}
+
+function copy_gitignore() {
+    local dst="$REAL/.gitignore"
+    [ -f "$dst" ] && return 0
+    echo " + copy $dst template" && \
+    cp $SOURCE_ROOT/configs/.gitignore "$dst"
+    return $?
 }
 
 function config_git() {
-    git config --global color.branch auto
-    git config --global color.decorate auto
-    git config --global color.diff auto
-    git config --global color.grep auto
-    git config --global color.interactive auto
-    git config --global color.pager true
-    git config --global color.showbranch auto
-    git config --global color.status auto
-    git config --global color.ui auto
-    git config --global core.pager "delta --commit-style='yellow ul' --commit-decoration-style='' --file-style='cyan ul' --file-decoration-style='' --hunk-style normal --zero-style='dim syntax' --24-bit-color='always' --minus-style='syntax #330000' --plus-style='syntax #002200' --file-modified-label='M' --file-removed-label='D' --file-added-label='A' --file-renamed-label='R' --line-numbers-left-format='{nm:^4}' --line-numbers-minus-style='#aa2222' --line-numbers-zero-style='#505055' --line-numbers-plus-style='#229922' --line-numbers --navigate"
-    git config --global core.safecrlf false
+    copy_gitignore
+    if [ ! "`git config --global core.pager | grep -P '^(delta)'`" ]; then
+        git config --global color.branch auto
+        git config --global color.decorate auto
+        git config --global color.diff auto
+        git config --global color.grep auto
+        git config --global color.interactive auto
+        git config --global color.pager true
+        git config --global color.showbranch auto
+        git config --global color.status auto
+        git config --global color.ui auto
+        git config --global core.pager "delta --commit-style='yellow ul' --commit-decoration-style='' --file-style='cyan ul' --file-decoration-style='' --hunk-style normal --zero-style='dim syntax' --24-bit-color='always' --minus-style='syntax #330000' --plus-style='syntax #002200' --file-modified-label='M' --file-removed-label='D' --file-added-label='A' --file-renamed-label='R' --line-numbers-left-format='{nm:^4}' --line-numbers-minus-style='#aa2222' --line-numbers-zero-style='#505055' --line-numbers-plus-style='#229922' --line-numbers --navigate"
+        # git config --global core.filemode false
+        # git config --global core.safecrlf true
+        # git config --global core.autocrlf true
+    fi
     return 0
 }
 
-
-function nano_syntax() {
+function nano_syntax_compile() {
     if [ ! -f "$REAL/.nanorc" ]; then
         # https://github.com/scopatz/nanorc
         if [ -d /usr/local/share/nano/ ]; then
@@ -81,11 +85,10 @@ function nano_syntax() {
     return 0
 }
 
-
-function grep_ignore() {
-    if [ ! -f "$REAL/.ignore" ]; then
-        cp $SOURCE_ROOT/configs/grep.ignore "$REAL/.ignore"
-        echo " + copy grep ignore $REAL/.ignore template"
-    fi
-    return 0
+function zero_configuration() {
+    copy_starship
+    copy_micro
+    copy_pip
+    config_git
+    nano_syntax_compile
 }
