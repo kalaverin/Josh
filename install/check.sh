@@ -72,7 +72,7 @@ function check_compliance() {
             echo " + os: debian-based `uname -srv`"
             local cmd="sudo apt-get update --yes --quiet || true && apt-get install --yes --quiet --no-remove"
             local pkg="zsh git jq pv python3 tree libssl-dev"
-        elif
+        else
             echo ' - unknown linux: `uname -srv`'
         fi
     else
