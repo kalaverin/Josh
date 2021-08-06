@@ -586,9 +586,8 @@ josh_deploy() {
 }
 
 josh_urls() {
-    echo '  (curl -fsSL kalaverin.ru/shell | $SHELL) && zsh'
-    echo '  (wget -qO - kalaverin.ru/shell | $SHELL) && zsh'
-    echo ' (fetch -qo - kalaverin.ru/shell | $SHELL) && zsh'
+    local url="kalaverin.ru/shell"
+    echo "((curl -fsSL $url || wget -qO - $url || fetch -qo - http://$url) | $SHELL) && zsh"
 }
 
 josh_extras() {
