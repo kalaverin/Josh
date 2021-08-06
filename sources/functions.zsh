@@ -363,36 +363,9 @@ zle -N visual_grep
 
 visual_freeze() {
     local pip="`which -p pip`"
-    if [ ! -f "$pip" ]; then
-        echo ' - pip not installed?'
-        return 1
-    fi
-        # --bind "change:reload:($ripgrep --count --color=always -- {q} | proximity-sort . || true)" \
-        # --bind="enter:execute(echo "{q}:{}" | $SHELL $execute | xargs -I$ sh -c '$')" \
-         # | sd '(==([^=]+))$' ''
- # | grep -Pv '^:' | sed -r 's#(.+?):[0-9]+:(.+?)#>>\2<<//\1#g' | sd '>>(\s*)(.*?)(\s*)<<//(.+)' '$ripgrep  --vimgrep --context 0 \"\$2\" \$4' | $SHELL | tabulate -d ':' -i 2 | huniq | sort -V | sed 's/^/-H/' | tr '\n' ' ' | xargs -I% echo % {} | tabulate -d ':' -i 1 | xargs -I% sh -c 'bat --color=always --terminal-width $COLUMNS %'
-    # local preview="echo {} | tabulate -i 1 | xargs -n 1 pip show"
+    [ ! -f "$pip" ] && return 1
 
-    # local preview="echo {} | tabulate -i 1 | xargs -n 1 pip show"
-
-    # local preview="echo {} | tabulate -i 1 | xargs -n 1 pip show"
-
-    # local pkg_extract="echo {} | tabulate -i 1 | xargs -n 1 sh -c"
-    # local pipdep="pipdeptree -e pipdeptree,setuptools,pkg_resources,wheel -w silence"
-
-    # local pipdep_format="sd '^(\s+)(-\s+)' '\$1' | sd ' \[required: (.+), installed: (.+)\]' '==\$2 (\$1)' | sd '\(Any\)' '~'"
-    # local pipdep_format_rev="sd '^(\s+)(-\s+)' '\$1' | sd ' \[requires: (.+)\]' ' || \$1' | tabulate -d '||'"
-    # local preview="$pkg_extract $pipdep -r -p | $pipdep_format"
-
-    # local preview="$pkg_extract $pipdep -p | $pipdep_format"
-    # local preview="$pkg_extract $pipdep -r -p | $pipdep_format_rev"
     local preview="echo {} | tabulate -i 1 | xargs -n 1 $SHELL $PIP_GET_INFO"
-
-    # local preview="echo {} | tabulate -i 1 | xargs -n 1 pipdeptree -e pipdeptree,setuptools,pkg_resources,wheel -w silence -p"
-
-    # local preview='pipdeptree -w silence -p {} | grep -Pv "^{}"'
-    # local preview='pipdeptree -w silence -p {} | grep -Pv "^{}"'
-
     local file=$(
         PIP_REQUIRE_VIRTUALENV=false \
         $pip freeze | grep -Pv '^(\s*#)' | grep -Pv '^(-\w )' | grep -Po '^([^\s]+)' | tabulate -d "==" | \
