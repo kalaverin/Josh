@@ -88,9 +88,12 @@ function set_defaults() {
 
 function cargo_init() {
     set_defaults
+
     local CARGO_DIR="$REAL/.cargo/bin"
-    export CARGO_EXE="$CARGO_DIR/cargo"
     if [ ! -d "$CARGO_DIR" ] && mkdir -p "$CARGO_DIR"
+
+    local CACHE_EXE="$CARGO_DIR/sccache"
+    export CARGO_EXE="$CARGO_DIR/cargo"
 
     url='https://sh.rustup.rs'
     if [ ! -f "$CARGO_EXE" ]; then
@@ -108,8 +111,21 @@ function cargo_init() {
         $SHELL -c "`realpath $CARGO_DIR/rustup` update"
     fi
 
-    [ ! -f "$CARGO_DIR/sccache" ] && $CARGO_EXE install sccache
-    [ -f "`which sccache`" ] && export RUSTC_WRAPPER=`which sccache`
+    if [ ! -f "$CACHE_EXE" ]; then
+        $CARGO_EXE install sccache
+        if [ ! -f "$CACHE_EXE" ]; then
+            echo " - warning: sccache isn't compiled ($CACHE_EXE)"
+        fi
+    fi
+
+    if [ -f "$CACHE_EXE" ]; then
+        export RUSTC_WRAPPER="$CACHE_EXE"
+    elif [ -f "`which sccache`" ]; then
+        export RUSTC_WRAPPER=`which sccache`
+    else
+        echo " - warning: sccache doesn't exists"
+    fi
+
     return 0
 }
 
