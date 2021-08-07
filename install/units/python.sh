@@ -5,6 +5,7 @@ PIP_REQ_PACKAGES=(
     pip-chill
     pipdeptree
     virtualenv
+    "pip<=20.3.4"
 )
 
 PIP_OPT_PACKAGES=(
