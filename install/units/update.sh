@@ -12,6 +12,8 @@ function update_packages() {
     . "$JOSH/install/units/python.sh" && pip_deploy "$PIP_REQ_PACKAGES" || \
         echo " - python related functionality has been disabled" && \
     . "$JOSH/install/units/rust.sh" && cargo_deploy $CARGO_REQ_PACKAGES
+    . "$JOSH/install/units/utils.sh" && deploy_binaries
+    . "$JOSH/install/units/configs.sh" && zero_configuration
 }
 
 function pull_update() {
