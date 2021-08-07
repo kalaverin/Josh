@@ -32,7 +32,7 @@ function set_defaults() {
 }
 
 function python_init() {
-    . $JOSH/install/check.sh
+    . $SOURCE_ROOT/install/check.sh
 
     if [ -f "$PYTHON3" ]; then
         version_not_compatible \
