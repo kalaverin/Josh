@@ -5,7 +5,7 @@ local PIP_FREEZE="$THIS_DIR/functions/scripts/pip_freeze_filtered.sh"
 local PIP_GET_INFO="$THIS_DIR/functions/scripts/pip_pkg_info.sh"
 
 local UNIQUE_SORT="runiq - | proximity-sort ."
-local LINES_TO_LINE="sed -z 's:\n: :g' | awk '{\$1=\$1};1'"
+local LINES_TO_LINE="$JOSH_SED -z 's:\n: :g' | awk '{\$1=\$1};1'"
 
 LISTER_POST="${LISTER_FILE:-less} {} | ${LISTER_LESS} -R"
 FORGIT_CMD_DIFF='git ls-files --modified `git rev-parse --show-toplevel`'
