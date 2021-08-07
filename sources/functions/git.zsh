@@ -617,7 +617,7 @@ git_widget_fetch_branch() {
     else
         git_checkout_branch $value
     fi
-    zle reset-prompt
+    zle redisplay
     return $?
 }
 zle -N git_widget_fetch_branch
