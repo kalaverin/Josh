@@ -26,11 +26,12 @@ local GIT_SEARCH_SETUPCFG="$THIS_DIR/scripts/git_search_setupcfg.sh"
 local GIT_LIST_TAGS="$THIS_DIR/scripts/git_list_tags.sh"
 
 local ARGS_DIFF="--color=always --shortstat --patch --diff-algorithm=histogram"
+local DIFF="git diff $ARGS_DIFF"
 
-local DIFF="git diff $ARGS_DIFF $branch --"
 local UNIQUE_SORT="runiq - | proximity-sort ."
 local LINES_TO_LINE="sed -z 's:\n: :g' | awk '{\$1=\$1};1'"
 
+local FZF_JUMPS='0123456789abcdefghijklmnopqrstuvwxyz'
 local FZF="fzf --ansi --extended --info='inline' --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' --tiebreak=length,index --jump-labels=\"$FZF_JUMPS\" --bind='alt-space:jump-accept' --bind='alt-w:toggle-preview-wrap' --bind='ctrl-c:abort' --bind='ctrl-q:abort' --bind='end:preview-down' --bind='esc:cancel' --bind='home:preview-up' --bind='pgdn:preview-page-down' --bind='pgup:preview-page-up' --bind='shift-down:half-page-down' --bind='shift-up:half-page-up' --color=\"$FZF_THEME\""
 
 
@@ -55,8 +56,7 @@ git_checkout_branch() {
     [ ! "$root" ] && return 1
 
     local cmd="git fetch origin \"$1\":\"$1\" && is_repository_clean && git checkout --force --quiet $1 && git reset --hard $1 && git pull origin $1"
-    echo "$cmd"
-    # run_show "$cmd"
+    run_show "$cmd"
     return $?
 }
 
@@ -76,7 +76,7 @@ git_widget_add() {
             | $FZF \
             --multi \
             --filepath-word \
-            --preview=\"$DIFF {} | $DELTA\" \
+            --preview=\"$DIFF $branch -- {} | $DELTA\" \
             --preview-window='left:119:noborder' \
             --prompt='git add >  ' \
             | $UNIQUE_SORT | $LINES_TO_LINE")"
@@ -124,7 +124,7 @@ git_widget_checkout_modified() {
             | $FZF \
             --multi \
             --filepath-word \
-            --preview=\"$DIFF $root/{} | $DELTA\" \
+            --preview=\"$DIFF $branch -- $root/{} | $DELTA\" \
             --preview-window='left:119:noborder' \
             --prompt=\"checkout to $branch >  \" \
             | $UNIQUE_SORT | $LINES_TO_LINE | $rootate")"
@@ -168,20 +168,18 @@ git_widget_conflict_solver() {
             | $FZF \
             --filepath-word \
             --prompt=\"solving in $branch >  \" \
-            --preview=\"$DIFF $root/{} | $DELTA\" \
+            --preview=\"$DIFF $branch -- $root/{} | $DELTA\" \
             --preview-window='left:119:noborder' \
             | $UNIQUE_SORT | $LINES_TO_LINE | $rootate")"
 
         if [ "$value" = "" ]; then
-            zle reset-prompt
-            local retval="0"
             break
         fi
-        local row=$(grep --line-number --max-count=1 '<<<<<<< HEAD' $value | tabulate -d ':' -i 1)
+        local row=$(grep -P --line-number --max-count=1 "^(>>>>>>> .+)$" $value | tabulate -d ':' -i 1)
         $EDITOR $value +$row
         continue
     done
-    return "$retval"
+    return 0
 }
 zle -N git_widget_conflict_solver
 
@@ -504,49 +502,40 @@ zle -N git_widget_checkout_tag
 
 
 git_widget_checkout_branch() {
-    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
-        local branch="$(echo "$GIT_BRANCH" | $SHELL)"
-        local differ="echo {} | cut -d ' ' -f 1 | xargs -I% git diff --color=always --stat=\$FZF_PREVIEW_COLUMNS --patch --diff-algorithm=histogram $branch % | $DELTA"
+    local branch="`git_current_branch`"
+    [ ! "$branch" ] && return 1
 
-        local point="$($SHELL $GIT_LIST_BRANCHES_EXCEPT_THIS | \
-            fzf \
-                --ansi --extended --info='inline' \
-                --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
-                --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
-                --bind='alt-w:toggle-preview-wrap' \
-                --bind='ctrl-c:abort' \
-                --bind='ctrl-q:abort' \
-                --bind='end:preview-down' \
-                --bind='esc:cancel' \
-                --bind='home:preview-up' \
-                --bind='pgdn:preview-page-down' \
-                --bind='pgup:preview-page-up' \
-                --bind='shift-down:half-page-down' \
-                --bind='shift-up:half-page-up' \
-                --bind='alt-space:jump' \
-                --preview-window="left:84:noborder" \
-                --color="$FZF_THEME" \
-                --prompt="branch >  " \
-                --preview="$differ" | cut -d ' ' -f 1
-        )"
 
-        if [[ "$point" == "" ]]; then
-            zle reset-prompt
-            return 0
-        else
-            if [[ "$BUFFER" != "" ]]; then
-                LBUFFER="$BUFFER && git checkout $point"
-                local ret=$?
-                zle redisplay
-                typeset -f zle-line-init >/dev/null && zle zle-line-init
-                return $ret
-            else
-                git checkout $point 2>/dev/null 1>/dev/null
-                zle reset-prompt
-                return 0
-            fi
+    is_repository_clean >/dev/null || local state='(dirty!) '
+    local differ="echo {} | tabulate -i 1 | xargs -n 1 $DIFF"
+    local select='git for-each-ref \
+                    --sort=-committerdate refs/heads/ \
+                    --color=always \
+                    --format="%(HEAD) %(color:yellow bold)%(refname:short)%(color:reset) %(contents:subject) %(color:black bold)%(authoremail) %(committerdate:relative)" \
+                    | awk "{\$1=\$1};1" | grep -Pv "^(\*\s+)"'
+    while true; do
+        local value="$(
+            $SHELL -c "$select \
+            | $FZF \
+            --preview=\"$differ $branch | $DELTA \" \
+            --preview-window='left:119:noborder' \
+            --prompt=\"branch $state>  \" \
+            | cut -d ' ' -f 1
+        ")"
+
+        if [ ! "$BUFFER" ]; then
+            git checkout $value 2>/dev/null 1>/dev/null
+            local retval=$?
+
+        elif [ "$value" ]; then
+            LBUFFER="$BUFFER && git checkout $value"
         fi
-    fi
+
+        local retval=0
+        break
+    done
+    zle reset-prompt
+    return "$retval"
 }
 zle -N git_widget_checkout_branch
 
@@ -651,10 +640,10 @@ git_widget_fetch_branch() {
     [ ! "$root" ] && return 1
     local branch="`git_current_branch`"
 
-    local already_checked_out_branches="$(git show-ref --heads | sd '^([0-9a-f]+)\srefs/heads/(.+)' '^$1 $2$' | sed -z 's:\n: :g' | awk '{$1=$1};1' | sed 's: :|:g')"
-
     local select='git ls-remote --heads --quiet origin | \
-                    sd "^([0-9a-f]+)\srefs/heads/(.+)" "\$1 \$2"'
+                  sd "^([0-9a-f]+)\srefs/heads/(.+)" "\$1 \$2"'
+
+    local already_checked_out_branches="$(git show-ref --heads | sd '^([0-9a-f]+)\srefs/heads/(.+)' '^$1 $2$' | sed -z 's:\n: :g' | awk '{$1=$1};1' | sed 's: :|:g')"
 
     local filter="grep -Pv '($already_checked_out_branches)' | sort -Vk 2 | awk '{a[i++]=\$0} END {for (j=i-1; j>=0;) print a[j--] }'"
 
@@ -663,7 +652,7 @@ git_widget_fetch_branch() {
     local value="$(
         $SHELL -c "$select | $filter \
         | $FZF \
-        --multi --prompt='fetch >  ' \
+        --prompt='fetch >  ' \
         --preview=\"$differ\" \
         --preview-window='left:109:noborder' \
         | cut -d ' ' -f 2 \
@@ -687,7 +676,7 @@ git_widget_fetch_branch() {
 zle -N git_widget_fetch_branch
 
 
-git_widget_delete_branch() {
+git_widget_delete_remote_branch() {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local cmd="echo {} | $SHELL $GIT_DIFF_FROM_TAG | $DELTA --paging='always'"
         local branches="$(git ls-remote -h origin | sed -r 's%^[a-f0-9]{40}\s+refs/heads/%%g' | sort | \
@@ -721,7 +710,7 @@ git_widget_delete_branch() {
         fi
     fi
 }
-zle -N git_widget_delete_branch
+zle -N git_widget_delete_remote_branch
 
 
 function spll() {
@@ -915,22 +904,22 @@ alias gdr='git ls-files --modified `git rev-parse --show-toplevel`'
 
 # bindkey "^[^M" accept-and-hold # Esc-Enter
 
-# alt-q, commits history
+#              alt-q, commits history
 bindkey "\eq"  git_widget_show_commits
-# shift-alt-q, branch -> history
+#              shift-alt-q, branch -> history
 bindkey "^[Q"  git_widget_select_branch_with_callback
-# ctrl-q, file -> history
+#              ctrl-q, file -> history
 bindkey "^q"   git_widget_select_file_show_commits
-# ctrl-alt-q, branch -> file -> history
+#              ctrl-alt-q, branch -> file -> history
 bindkey "\e^q" git_widget_select_branch_then_file_show_commits
 
-# alt-a, git add
+#              alt-a, git add
 bindkey "\ea"  git_widget_add
-# shift-alt-a, checkout to active branch last commit
+#              shift-alt-a, checkout to active branch last commit
 bindkey "^[A"  git_widget_checkout_modified
-# ctrl-a, on active branch, select commit, checkout files
+#              ctrl-a, on active branch, select commit, checkout files
 bindkey "^a"   git_widget_select_commit_then_files_checkout
-# ctrl-alt-a, select branch, select commit, checkout files
+#              ctrl-alt-a, select branch, select commit, checkout files
 bindkey "\e^a" git_widget_select_branch_then_commit_then_file_checkout
 
 bindkey "^s"   git_widget_checkout_commit
@@ -940,4 +929,5 @@ bindkey "\e^s" git_widget_checkout_tag
 bindkey "\ep"  git_widget_conflict_solver
 
 bindkey "\ef"  git_widget_fetch_branch
-bindkey "\e^f" git_widget_delete_branch  # PUSH TO origin, caution!
+bindkey "^[F"  git_widget_delete_branch
+bindkey "\e^f" git_widget_delete_remote_branch  # PUSH TO origin, caution!

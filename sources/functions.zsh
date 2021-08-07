@@ -9,7 +9,6 @@ local LINES_TO_LINE="sed -z 's:\n: :g' | awk '{\$1=\$1};1'"
 
 LISTER_POST="${LISTER_FILE:-less} {} | ${LISTER_LESS} -R"
 FORGIT_CMD_DIFF='git ls-files --modified `git rev-parse --show-toplevel`'
-FZF_JUMPS='0123456789abcdefghijklmnopqrstuvwxyz'
 
 local FZF="fzf --ansi --extended --info='inline' --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' --tiebreak=length,index --jump-labels=\"$FZF_JUMPS\" --bind='alt-space:jump-accept' --bind='alt-w:toggle-preview-wrap' --bind='ctrl-c:abort' --bind='ctrl-q:abort' --bind='end:preview-down' --bind='esc:cancel' --bind='home:preview-up' --bind='pgdn:preview-page-down' --bind='pgup:preview-page-up' --bind='shift-down:half-page-down' --bind='shift-up:half-page-up' --color=\"$FZF_THEME\""
 
@@ -21,6 +20,7 @@ commit_text () {
 zle -N commit_text
 
 insert_directory() {
+    # анализировать запрос и если есть слеш и такой каталог — то есть уже в нём
     if [ "$LBUFFER" ]; then
         local pre=`echo "$LBUFFER" | grep -Po '([^\s]+)$'`
     else
@@ -369,38 +369,62 @@ visual_grep() {
 }
 zle -N visual_grep
 
+
 visual_freeze() {
-    local pip="`which -p pip`"
-    [ ! -f "$pip" ] && return 1
 
-    local venv="`basename ${VIRTUAL_ENV:-''}`"
-    local preview="echo {} | tabulate -i 1 | xargs -n 1 $SHELL $PIP_GET_INFO"
-    local value="$(sh -c "
-        $SHELL $PIP_FREEZE | \
-            grep -Pv '^(pipdeptree|setuptools|pkg_resources|wheel|pip-chill)' | \
-            tabulate -d '=='\
-        | $FZF \
-            --multi \
-            --tiebreak='index' \
-            --preview='$preview' \
-            --prompt='packages $venv > ' \
-            --preview-window='left:104:noborder' \
-            --bind='ctrl-d:reload($SHELL $PIP_CHILL),ctrl-f:reload($SHELL $PIP_FREEZE)' \
-        | tabulate -i 1 | $UNIQUE_SORT | $LINES_TO_LINE
-    ")"
+    # local t=$(
+    #     ls `dirname $python3` | \
+    #     grep -Po '^(python3\.\d+)' | \
+    #     runiq - | sort -V
+    # )
 
-    if [ "$value" != "" ]; then
-        if [ "$BUFFER" != "" ]; then
-            local command="$BUFFER"
-        else
-            local command=" pip uninstall"
-        fi
-        LBUFFER="$command $value"
-        RBUFFER=''
-    fi
+    # echo ">$t<"
 
-    zle reset-prompt
-    return 0
+    . $JOSH/install/check.sh
+
+    MIN_PYTHON_VERSION=3.6
+
+
+     # && echo 'ok'
+    # echo ">$t<"
+
+    # if [ $? -gt 0 ]; then
+    #     echo 1
+    # else
+    #     echo 2
+    # fi
+
+    # local pip="`which -p pip`"
+    # [ ! -f "$pip" ] && return 1
+
+    # local venv="`basename ${VIRTUAL_ENV:-''}`"
+    # local preview="echo {} | tabulate -i 1 | xargs -n 1 $SHELL $PIP_GET_INFO"
+    # local value="$(sh -c "
+    #     $SHELL $PIP_FREEZE | \
+    #         grep -Pv '^(pipdeptree|setuptools|pkg_resources|wheel|pip-chill)' | \
+    #         tabulate -d '=='\
+    #     | $FZF \
+    #         --multi \
+    #         --tiebreak='index' \
+    #         --preview='$preview' \
+    #         --prompt='packages $venv > ' \
+    #         --preview-window='left:104:noborder' \
+    #         --bind='ctrl-d:reload($SHELL $PIP_CHILL),ctrl-f:reload($SHELL $PIP_FREEZE)' \
+    #     | tabulate -i 1 | $UNIQUE_SORT | $LINES_TO_LINE
+    # ")"
+
+    # if [ "$value" != "" ]; then
+    #     if [ "$BUFFER" != "" ]; then
+    #         local command="$BUFFER"
+    #     else
+    #         local command=" pip uninstall"
+    #     fi
+    #     LBUFFER="$command $value"
+    #     RBUFFER=''
+    # fi
+
+    # zle reset-prompt
+    # return 0
 }
 zle -N visual_freeze
 
@@ -548,13 +572,13 @@ sudoize() {
 zle -N sudoize
 
 josh_update() {
-    josh_pull $1 && \
+    josh_pull $@ && \
     (. "$JOSH/install/units/update.sh" && post_update || true) && \
     exec zsh
     return 0
 }
 josh_pull() {
-    . "$JOSH/install/units/update.sh" && pull_update $1
+    . "$JOSH/install/units/update.sh" && pull_update $@
 }
 
 josh_deploy() {
