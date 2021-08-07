@@ -9,7 +9,8 @@ if [ ! "$JOSH" ]; then
 fi
 
 function update_packages() {
-    . "$JOSH/install/units/python.sh" && pip_deploy "$PIP_REQ_PACKAGES"
+    . "$JOSH/install/units/python.sh" && pip_deploy "$PIP_REQ_PACKAGES" || \
+        echo " - python related functionality has been disabled" && \
     . "$JOSH/install/units/rust.sh" && cargo_deploy $CARGO_REQ_PACKAGES
 }
 
@@ -42,6 +43,7 @@ function post_update() {
 }
 
 function deploy_extras() {
-    . "$JOSH/install/units/python.sh" && pip_extras
+    . "$JOSH/install/units/python.sh" && pip_extras || \
+        echo " - python related functionality has been disabled" && \
     . "$JOSH/install/units/rust.sh" && cargo_extras
 }
