@@ -505,7 +505,6 @@ git_widget_checkout_branch() {
     local branch="`git_current_branch`"
     [ ! "$branch" ] && return 1
 
-
     is_repository_clean >/dev/null || local state='(dirty!) '
     local differ="echo {} | tabulate -i 1 | xargs -n 1 $DIFF"
     local select='git for-each-ref \
@@ -538,6 +537,44 @@ git_widget_checkout_branch() {
     return "$retval"
 }
 zle -N git_widget_checkout_branch
+
+
+git_widget_delete_branch() {
+    local branch="`git_current_branch`"
+    [ ! "$branch" ] && return 1
+
+    is_repository_clean >/dev/null || local state='(dirty!) '
+    local differ="echo {} | tabulate -i 1 | xargs -n 1 $DIFF"
+    local select='git for-each-ref \
+                    --sort=-committerdate refs/heads/ \
+                    --color=always \
+                    --format="%(HEAD) %(color:yellow bold)%(refname:short)%(color:reset) %(contents:subject) %(color:black bold)%(authoremail) %(committerdate:relative)" \
+                    | awk "{\$1=\$1};1" | grep -Pv "^(\*\s+)"'
+    while true; do
+        local value="$(
+            $SHELL -c "$select \
+            | $FZF \
+            --multi \
+            --preview=\"$differ $branch | $DELTA \" \
+            --preview-window='left:119:noborder' \
+            --prompt=\"delete branch $state>  \" \
+            | cut -d ' ' -f 1 | $UNIQUE_SORT | $LINES_TO_LINE
+        ")"
+
+        if [ "$value" ]; then
+            local cmd="git branch -D $value"
+            if [ "$BUFFER" ]; then
+                LBUFFER="$BUFFER && $cmd "
+            else
+                LBUFFER="$cmd"
+            fi
+        fi
+        break
+    done
+    zle reset-prompt
+    return 0
+}
+zle -N git_widget_delete_branch
 
 
 git_widget_checkout_commit() {
