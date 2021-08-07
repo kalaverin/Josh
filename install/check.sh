@@ -93,6 +93,15 @@ function check_compliance() {
     fi
 
     check_executables $REQUIRED_BINARIES $REQURED_SYSTEM_BINARIES
+    if [ $? -gt 0 ]; then
+        if [ "$cmd" ]; then
+            echo " - please, install all packages and try again, may be just run: $cmd $pkg"
+        else
+            echo " - please, install all packages and try again"
+        fi
+        return 0
+    fi
+
     check_libraries $REQUIRED_LIBRARIES
     if [ $? -gt 0 ]; then
         if [ "$cmd" ]; then
@@ -102,6 +111,7 @@ function check_compliance() {
         fi
         return 0
     fi
+
     echo " + all requirements exists: $REQUIRED_BINARIES $REQURED_SYSTEM_BINARIES"
     return 1
 }
