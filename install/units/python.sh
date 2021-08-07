@@ -1,7 +1,7 @@
 #!/bin/sh
 
 PIP_REQ_PACKAGES=(
-    "pip<=20.3.4"
+    \"pip\<=20.3.4\"
     httpie
     pip-chill
     pipdeptree
