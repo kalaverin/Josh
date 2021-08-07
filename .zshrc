@@ -7,11 +7,11 @@ path=(
     $ZSH/custom/bin
     ~/.local/bin
     $REAL/bin
+    /usr/local/bin
     /bin
     /sbin
     /usr/bin
     /usr/sbin
-    /usr/local/bin
     /usr/local/sbin
     /usr/local/etc/rc.d
     /etc/rc.d
