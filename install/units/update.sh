@@ -9,7 +9,7 @@ if [ ! "$JOSH" ]; then
 fi
 
 function update_packages() {
-    . "$JOSH/install/units/python.sh" && pip_deploy $PIP_REQ_PACKAGES
+    . "$JOSH/install/units/python.sh" && pip_deploy "$PIP_REQ_PACKAGES"
     . "$JOSH/install/units/rust.sh" && cargo_deploy $CARGO_REQ_PACKAGES
 }
 
