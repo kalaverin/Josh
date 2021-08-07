@@ -21,7 +21,7 @@ function check_executables() {
         fi
     done
     if [ "$missing" ]; then
-        echo " + missing requirements:$missing"
+        echo " + missing required packages:$missing"
         return 1
     fi
     return 0
@@ -37,7 +37,7 @@ function check_libraries() {
         fi
     done
     if [ "$missing" ]; then
-        echo " + missing requirements:$missing"
+        echo " + missing required libraries:$missing"
         return 1
     fi
     return 0
