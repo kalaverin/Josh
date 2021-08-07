@@ -560,22 +560,28 @@ sudoize() {
 zle -N sudoize
 
 josh_update() {
+    local cwd="`pwd`"
     josh_pull $@ && \
     (. "$JOSH/install/units/update.sh" && post_update || true) && \
+    cd "$cwd"
     exec zsh
     return 0
 }
 josh_pull() {
+    local cwd="`pwd`"
     . "$JOSH/install/units/update.sh" && pull_update $@
+    cd "$cwd"
 }
 
 josh_deploy() {
+    local cwd="`pwd`"
     url='"https://kalaverin.ru/shell?$RANDOM"'
     run_show "$HTTP_GET $url | $SHELL"
     if [ $? -gt 0 ]; then
         echo ' - fatal: something wrong :-\'
         return 1
     fi
+    cd "$cwd"
     exec zsh
     return 0
 }
