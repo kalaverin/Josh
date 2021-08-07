@@ -28,7 +28,7 @@ function pull_update() {
     [ ! "$branch" ] && local branch="master"
     [ "$branch" != "$local_branch" ] && $SHELL -c "git checkout $branch"
 
-    sall $branch
+    git pull origin $branch
     if [ $? -gt 0 ]; then
         echo ' - fatal: update failed :-\'
         return 1
