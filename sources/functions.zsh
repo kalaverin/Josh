@@ -564,7 +564,9 @@ josh_update() {
 josh_pull() {
     local cwd="`pwd`"
     . "$JOSH/install/units/update.sh" && pull_update $@
+    local ret=$?
     cd "$cwd"
+    return $ret
 }
 
 josh_deploy() {
