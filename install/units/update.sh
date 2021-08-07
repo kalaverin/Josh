@@ -32,18 +32,24 @@ function pull_update() {
     git pull origin $branch
     if [ $? -gt 0 ]; then
         echo ' - fatal: update failed :-\'
+        cd "$cwd"
         return 1
     fi
+    cd "$cwd"
     return 0
 }
 
 function post_update() {
+    local cwd="`pwd`"
     update_packages
     . "$JOSH/install/check.sh" && check_compliance
+    cd "$cwd"
 }
 
 function deploy_extras() {
+    local cwd="`pwd`"
     . "$JOSH/install/units/python.sh" && pip_extras || \
         echo " - python related functionality has been disabled" && \
     . "$JOSH/install/units/rust.sh" && cargo_extras
+    cd "$cwd"
 }
