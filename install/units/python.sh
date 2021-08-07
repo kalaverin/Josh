@@ -70,7 +70,7 @@ function pip_deploy() {
         return 1
     fi
     for pkg in $@; do
-        PIP_REQUIRE_VIRTUALENV=false $PIP_EXE install --upgrade $pkg
+        PIP_REQUIRE_VIRTUALENV=false $PIP_EXE install --upgrade --upgrade-strategy eager $pkg
     done
 
     if [ "$venv" != "" ]; then
