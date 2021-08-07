@@ -12,6 +12,16 @@ FORGIT_CMD_DIFF='git ls-files --modified `git rev-parse --show-toplevel`'
 
 local FZF="fzf --ansi --extended --info='inline' --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' --tiebreak=length,index --jump-labels=\"$FZF_JUMPS\" --bind='alt-space:jump-accept' --bind='alt-w:toggle-preview-wrap' --bind='ctrl-c:abort' --bind='ctrl-q:abort' --bind='end:preview-down' --bind='esc:cancel' --bind='home:preview-up' --bind='pgdn:preview-page-down' --bind='pgup:preview-page-up' --bind='shift-down:half-page-down' --bind='shift-up:half-page-up' --color=\"$FZF_THEME\""
 
+function get_preview_width() {
+    let width="$COLUMNS - ($COLUMNS / 3 + 10)"
+    if [ "$width" -lt "84" ]; then
+        export JOSH_WIDTH=84
+    else
+        export JOSH_WIDTH=$width
+    fi
+    echo $JOSH_WIDTH
+}
+
 commit_text () {
     local text=`sh -c "$HTTP_GET http://whatthecommit.com/index.txt"`
     echo "$text" | anyframe-action-insert
@@ -73,7 +83,7 @@ insert_directory() {
         --query="$pre$post" \
         --color="$FZF_THEME" \
         --reverse --min-height='11' --height='11' \
-        --preview-window="right:119:noborder" \
+        --preview-window="rigth:`get_preview_width`:noborder" \
         --prompt="catalog >  " \
         --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}" \
         -i -s --select-1 --filepath-word \
@@ -149,7 +159,7 @@ insert_endpoint() {
         --query="$pre$post" \
         --color="$FZF_THEME" \
         --reverse --min-height='11' --height='11' \
-        --preview-window="right:119:noborder" \
+        --preview-window="right:`get_preview_width`:noborder" \
         --prompt="file >  " \
         --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}" \
         -i --select-1 --filepath-word \
@@ -346,7 +356,8 @@ visual_grep() {
         --bind "change:reload:($ripgrep --count --color=always -- {q} | proximity-sort . || true)" \
         --bind="enter:execute(echo "{q}:{}" | $SHELL $execute | xargs -I$ sh -c '$')" \
         --prompt='grep: ' --query='' --tiebreak='index' \
-        --disabled --preview-window='left:104:noborder' \
+        --disabled \
+        --preview-window="left:`get_preview_width`:noborder" \
         --preview="$preview" \
         --ansi --extended --info='inline' \
         --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
@@ -371,60 +382,37 @@ zle -N visual_grep
 
 
 visual_freeze() {
+    . $JOSH/install/units/python.sh
+    pip_init || return1
 
-    # local t=$(
-    #     ls `dirname $python3` | \
-    #     grep -Po '^(python3\.\d+)' | \
-    #     runiq - | sort -V
-    # )
+    local venv="`basename ${VIRTUAL_ENV:-''}`"
+    local preview="echo {} | tabulate -i 1 | xargs -n 1 $SHELL $PIP_GET_INFO"
+    local value="$(sh -c "
+        $SHELL $PIP_FREEZE | \
+            grep -Pv '^(pipdeptree|setuptools|pkg_resources|wheel|pip-chill)' | \
+            tabulate -d '=='\
+        | $FZF \
+            --multi \
+            --tiebreak='index' \
+            --preview='$preview' \
+            --prompt='packages $venv > ' \
+            --preview-window='left:104:noborder' \
+            --bind='ctrl-d:reload($SHELL $PIP_CHILL),ctrl-f:reload($SHELL $PIP_FREEZE)' \
+        | tabulate -i 1 | $UNIQUE_SORT | $LINES_TO_LINE
+    ")"
 
-    # echo ">$t<"
+    if [ "$value" != "" ]; then
+        if [ "$BUFFER" != "" ]; then
+            local command="$BUFFER"
+        else
+            local command=" pip uninstall"
+        fi
+        LBUFFER="$command $value"
+        RBUFFER=''
+    fi
 
-    . $JOSH/install/check.sh
-
-    MIN_PYTHON_VERSION=3.6
-
-
-     # && echo 'ok'
-    # echo ">$t<"
-
-    # if [ $? -gt 0 ]; then
-    #     echo 1
-    # else
-    #     echo 2
-    # fi
-
-    # local pip="`which -p pip`"
-    # [ ! -f "$pip" ] && return 1
-
-    # local venv="`basename ${VIRTUAL_ENV:-''}`"
-    # local preview="echo {} | tabulate -i 1 | xargs -n 1 $SHELL $PIP_GET_INFO"
-    # local value="$(sh -c "
-    #     $SHELL $PIP_FREEZE | \
-    #         grep -Pv '^(pipdeptree|setuptools|pkg_resources|wheel|pip-chill)' | \
-    #         tabulate -d '=='\
-    #     | $FZF \
-    #         --multi \
-    #         --tiebreak='index' \
-    #         --preview='$preview' \
-    #         --prompt='packages $venv > ' \
-    #         --preview-window='left:104:noborder' \
-    #         --bind='ctrl-d:reload($SHELL $PIP_CHILL),ctrl-f:reload($SHELL $PIP_FREEZE)' \
-    #     | tabulate -i 1 | $UNIQUE_SORT | $LINES_TO_LINE
-    # ")"
-
-    # if [ "$value" != "" ]; then
-    #     if [ "$BUFFER" != "" ]; then
-    #         local command="$BUFFER"
-    #     else
-    #         local command=" pip uninstall"
-    #     fi
-    #     LBUFFER="$command $value"
-    #     RBUFFER=''
-    # fi
-
-    # zle reset-prompt
-    # return 0
+    zle reset-prompt
+    return 0
 }
 zle -N visual_freeze
 
