@@ -82,7 +82,7 @@ function check_compliance() {
         local cmd="sudo apt-get update --yes --quiet || true && apt-get install --yes --quiet --no-remove"
         local pkg="zsh git jq pv python3 tree libssl-dev"
 
-    elif [ -n "$(uname | grep -i gentoo)" ]; then
+    elif [ -n "$(uname -srv | grep -i gentoo)" ]; then
         echo " - os: gentoo: `uname -srv`"
 
     elif [ -n "$(uname | grep -i linux)" ]; then
