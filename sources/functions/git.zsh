@@ -566,7 +566,7 @@ git_widget_delete_branch() {
             if [ "$BUFFER" ]; then
                 LBUFFER="$BUFFER && $cmd "
             else
-                LBUFFER="$cmd"
+                LBUFFER=" $cmd"
             fi
         fi
         break
@@ -575,6 +575,85 @@ git_widget_delete_branch() {
     return 0
 }
 zle -N git_widget_delete_branch
+
+
+git_widget_fetch_branch() {
+    local root="`git_root`"
+    [ ! "$root" ] && return 1
+    local branch="`git_current_branch`"
+
+    local select='git ls-remote --heads --quiet origin | \
+                  sd "^([0-9a-f]+)\srefs/heads/(.+)" "\$1 \$2"'
+
+    local already_checked_out_branches="$(git show-ref --heads | sd '^([0-9a-f]+)\srefs/heads/(.+)' '^$1 $2$' | sed -z 's:\n: :g' | awk '{$1=$1};1' | sed 's: :|:g')"
+
+    local filter="grep -Pv '($already_checked_out_branches)' | sort -Vk 2 | awk '{a[i++]=\$0} END {for (j=i-1; j>=0;) print a[j--] }'"
+
+    local differ="echo {} | tabulate -i 1 | xargs -i$ echo 'git diff $ 1&>/dev/null 2&>/dev/null || git fetch origin --depth=1 $ && git diff --color=always --shortstat --patch --diff-algorithm=histogram $ $branch' | $SHELL | $DELTA"
+
+    local value="$(
+        $SHELL -c "$select | $filter \
+        | $FZF \
+        --prompt='fetch >  ' \
+        --preview=\"$differ\" \
+        --preview-window='left:109:noborder' \
+        | cut -d ' ' -f 2 \
+    ")"
+
+    [ "$value" = "" ] && return 0
+
+    local count=$(echo "$value" | wc -l)
+    local value=$(echo "$value" | sed -e ':a' -e 'N' -e '$!ba' -e 's:\n: :g')
+
+    if [ "$count" -gt 1 ]; then
+        for brnch in `echo "$value" | sd '(\s+)' '\n'`; do
+            git_checkout_branch $brnch
+        done
+    else
+        git_checkout_branch $value
+    fi
+    zle redisplay
+    return $?
+}
+zle -N git_widget_fetch_branch
+
+
+git_widget_delete_remote_branch() {
+    local root="`git_root`"
+    [ ! "$root" ] && return 1
+    local branch="`git_current_branch`"
+
+    local select='git ls-remote --heads --quiet origin | \
+                  sd "^([0-9a-f]+)\srefs/heads/(.+)" "\$1 \$2"'
+
+    local filter="sort -Vk 2 | awk '{a[i++]=\$0} END {for (j=i-1; j>=0;) print a[j--] }'"
+
+    local differ="echo {} | tabulate -i 1 | xargs -i$ echo 'git diff $ 1&>/dev/null 2&>/dev/null || git fetch origin --depth=1 $ && git diff --color=always --shortstat --patch --diff-algorithm=histogram $ $branch' | $SHELL | $DELTA"
+
+    local value="$(
+        $SHELL -c "$select | $filter \
+        | $FZF \
+        --prompt='DELETE REMOTE BRANCH >  ' \
+        --preview=\"$differ\" \
+        --preview-window='left:109:noborder' \
+        | cut -d ' ' -f 2 \
+    ")"
+
+    [ "$value" = "" ] && return 0
+
+    local value=$(echo "$value" | sed -e ':a' -e 'N' -e '$!ba' -e 's:\n: :g')
+    local cmd="git push origin --delete $value && git branch -D $value"
+
+    if [[ "$BUFFER" != "" ]]; then
+        LBUFFER="$BUFFER && $cmd"
+        # typeset -f zle-line-init >/dev/null && zle zle-line-init
+    else
+        LBUFFER=" $cmd"
+    fi
+    zle reset-prompt
+    return 0
+}
+zle -N git_widget_delete_remote_branch
 
 
 git_widget_checkout_commit() {
@@ -670,84 +749,6 @@ git_widget_merge_branch() {
     fi
 }
 zle -N git_widget_merge_branch
-
-
-git_widget_fetch_branch() {
-    local root="`git_root`"
-    [ ! "$root" ] && return 1
-    local branch="`git_current_branch`"
-
-    local select='git ls-remote --heads --quiet origin | \
-                  sd "^([0-9a-f]+)\srefs/heads/(.+)" "\$1 \$2"'
-
-    local already_checked_out_branches="$(git show-ref --heads | sd '^([0-9a-f]+)\srefs/heads/(.+)' '^$1 $2$' | sed -z 's:\n: :g' | awk '{$1=$1};1' | sed 's: :|:g')"
-
-    local filter="grep -Pv '($already_checked_out_branches)' | sort -Vk 2 | awk '{a[i++]=\$0} END {for (j=i-1; j>=0;) print a[j--] }'"
-
-    local differ="echo {} | tabulate -i 1 | xargs -i$ echo 'git diff $ 1&>/dev/null 2&>/dev/null || git fetch origin --depth=1 $ && git diff --color=always --shortstat --patch --diff-algorithm=histogram $ $branch' | $SHELL | $DELTA"
-
-    local value="$(
-        $SHELL -c "$select | $filter \
-        | $FZF \
-        --prompt='fetch >  ' \
-        --preview=\"$differ\" \
-        --preview-window='left:109:noborder' \
-        | cut -d ' ' -f 2 \
-    ")"
-
-    [ "$value" = "" ] && return 0
-
-    local count=$(echo "$value" | wc -l)
-    local value=$(echo "$value" | sed -e ':a' -e 'N' -e '$!ba' -e 's:\n: :g')
-
-    if [ "$count" -gt 1 ]; then
-        for brnch in `echo "$value" | sd '(\s+)' '\n'`; do
-            git_checkout_branch $brnch
-        done
-    else
-        git_checkout_branch $value
-    fi
-    zle redisplay
-    return $?
-}
-zle -N git_widget_fetch_branch
-
-
-git_widget_delete_remote_branch() {
-    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
-        local cmd="echo {} | $SHELL $GIT_DIFF_FROM_TAG | $DELTA --paging='always'"
-        local branches="$(git ls-remote -h origin | sed -r 's%^[a-f0-9]{40}\s+refs/heads/%%g' | sort | \
-            fzf \
-                --multi --color="$FZF_THEME" \
-                --prompt="rm:" \
-                --info='inline' --ansi --extended --filepath-word --no-mouse \
-                --tiebreak=length,index --pointer=">" --marker="+" --margin=0,0,0,0 \
-                --bind='esc:cancel' \
-                --bind='shift-up:half-page-up' --bind='shift-down:half-page-down' \
-                | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g'
-        )"
-
-        if [[ "$branches" == "" ]]; then
-            zle reset-prompt
-            return 0
-        else
-            local cmd="git push origin --delete $branches && git branch -D $branches"
-
-            if [[ "$BUFFER" != "" ]]; then
-                LBUFFER="$BUFFER && $cmd"
-                local ret=$?
-                zle redisplay
-                typeset -f zle-line-init >/dev/null && zle zle-line-init
-                return $ret
-            else
-                LBUFFER="$cmd"
-                zle reset-prompt
-                return 0
-            fi
-        fi
-    fi
-}
-zle -N git_widget_delete_remote_branch
 
 
 function spll() {
