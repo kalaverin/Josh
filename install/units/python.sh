@@ -3,11 +3,11 @@
 MIN_PYTHON_VERSION=3.6
 
 PIP_REQ_PACKAGES=(
-    \"pip\<=20.3.4\"
     httpie
     pip-chill
     pipdeptree
     virtualenv
+    \"pip\<=20.3.4\"
 )
 
 PIP_OPT_PACKAGES=(
