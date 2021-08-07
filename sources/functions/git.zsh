@@ -35,7 +35,7 @@ local FZF="fzf --ansi --extended --info='inline' --no-mouse --marker='+' --point
 
 
 git_root() {
-    local result=$(realpath `sh -c "$GIT_ROOT"`)
+    local result=$(realpath `$SHELL -c "$GIT_ROOT"`)
     [ "$result" ] && echo "$result"
 }
 
@@ -49,7 +49,18 @@ git_current_branch() {
     [ "$result" ] && echo "$result"
 }
 
-git_add() {
+git_checkout_branch() {
+    [ ! "$1" ] && return 1
+    local root="`git_root`"
+    [ ! "$root" ] && return 1
+
+    local cmd="git fetch origin \"$1\":\"$1\" && is_repository_clean && git checkout --force --quiet $1 && git reset --hard $1 && git pull origin $1"
+    echo "$cmd"
+    # run_show "$cmd"
+    return $?
+}
+
+git_widget_add() {
     local branch="`git_current_branch`"
     [ ! "$branch" ] && return 1
 
@@ -61,7 +72,7 @@ git_add() {
                         `git rev-parse --show-toplevel`'
     while true; do
         local value="$(
-            sh -c "$select | $UNIQUE_SORT \
+            $SHELL -c "$select | $UNIQUE_SORT \
             | $FZF \
             --multi \
             --filepath-word \
@@ -96,10 +107,10 @@ git_add() {
     done
     return "$retval"
 }
-zle -N git_add
+zle -N git_widget_add
 
 
-git_checkout_modified() {
+git_widget_checkout_modified() {
     local root="`git_root`"
     [ ! "$root" ] && return 1
     local branch="`git_current_branch`"
@@ -109,7 +120,7 @@ git_checkout_modified() {
 
     while true; do
         local value="$(
-            sh -c "$select | $UNIQUE_SORT \
+            $SHELL -c "$select | $UNIQUE_SORT \
             | $FZF \
             --multi \
             --filepath-word \
@@ -133,14 +144,13 @@ git_checkout_modified() {
     done
     return "$retval"
 }
-zle -N git_checkout_modified
+zle -N git_widget_checkout_modified
 
 
-git_conflict_solver() {
+git_widget_conflict_solver() {
     local root="`git_root`"
     [ ! "$root" ] && return 1
     local branch="`git_current_branch`"
-
 
     local select='git status \
                     --porcelain \
@@ -153,7 +163,7 @@ git_conflict_solver() {
 
     while true; do
         local value="$(
-            sh -c "$select | $rootate | $LINES_TO_LINE \
+            $SHELL -c "$select | $rootate | $LINES_TO_LINE \
             | xargs rg --fixed-strings --files-with-matches '<<<<<<<' | $unroot | $UNIQUE_SORT \
             | $FZF \
             --filepath-word \
@@ -173,10 +183,10 @@ git_conflict_solver() {
     done
     return "$retval"
 }
-zle -N git_conflict_solver
+zle -N git_widget_conflict_solver
 
 
-git_select_commit_then_files_checkout() {
+git_widget_select_commit_then_files_checkout() {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local branch=${1:-$(echo "$GIT_BRANCH" | $SHELL)}
         local commit="$(git_list_commits "$branch" | pipe_remove_dots_and_spaces | pipe_numerate | \
@@ -206,7 +216,7 @@ git_select_commit_then_files_checkout() {
             return 0
         fi
 
-        local root=$(realpath `sh -c "$GIT_ROOT"`)
+        local root=$(realpath `$SHELL -c "$GIT_ROOT"`)
         local differ="echo {} | xargs -I% git diff --color=always --shortstat --patch --diff-algorithm=histogram $branch $commit -- $root/% | $DELTA"
         while true; do
             local files="$(git diff --name-only $branch $commit | proximity-sort . | \
@@ -244,13 +254,13 @@ git_select_commit_then_files_checkout() {
         done
     fi
 }
-zle -N git_select_commit_then_files_checkout
+zle -N git_widget_select_commit_then_files_checkout
 
 
-git_select_branch_then_commit_then_file_checkout() {
-    git_select_branch_with_callback git_select_commit_then_files_checkout
+git_widget_select_branch_then_commit_then_file_checkout() {
+    git_widget_select_branch_with_callback git_widget_select_commit_then_files_checkout
 }
-zle -N git_select_branch_then_commit_then_file_checkout
+zle -N git_widget_select_branch_then_commit_then_file_checkout
 
 
 alias git_list_commits="git log --color=always --format='%C(auto)%D %C(reset)%s %C(black)%C(bold)%ae %cr %<(12,trunc)%H' --first-parent"
@@ -259,7 +269,7 @@ alias -g pipe_numerate="awk '{print NR,\$0}'"
 
 DELTA_FOR_COMMITS_LIST_OUT="xargs -I$ git show --find-renames --find-copies --function-context --format='format:%H %ad%n%an <%ae>%n%s' --diff-algorithm=histogram $ | $DELTA --paging='always'"
 
-git_show_commits() {
+git_widget_show_commits() {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local branch=${1:-$(echo "$GIT_BRANCH" | $SHELL)}
         eval "git_list_commits $branch" | pipe_remove_dots_and_spaces | pipe_numerate | \
@@ -292,10 +302,10 @@ git_show_commits() {
         fi
     fi
 }
-zle -N git_show_commits
+zle -N git_widget_show_commits
 
 
-git_select_branch_with_callback() {
+git_widget_select_branch_with_callback() {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local differ="echo {} | xargs -I% git diff --color=always --shortstat --patch --diff-algorithm=histogram $branch -- % | $DELTA"
         while true; do
@@ -328,7 +338,7 @@ git_select_branch_with_callback() {
                 return 0
             fi
 
-            ${1:-git_show_commits} $branch
+            ${1:-git_widget_show_commits} $branch
             local ret=$?
             if [[ "$ret" == "130" ]]; then
                 zle redisplay
@@ -338,7 +348,7 @@ git_select_branch_with_callback() {
         done
     fi
 }
-zle -N git_select_branch_with_callback
+zle -N git_widget_select_branch_with_callback
 
 
 git_show_branch_file_commits() {
@@ -382,7 +392,7 @@ git_show_branch_file_commits() {
 zle -N git_show_branch_file_commits
 
 
-git_select_file_show_commits() {
+git_widget_select_file_show_commits() {
     # diff full creeen at alt-bs
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local branch=${1:-$(echo "$GIT_BRANCH" | $SHELL)}
@@ -431,16 +441,16 @@ git_select_file_show_commits() {
         done
     fi
 }
-zle -N git_select_file_show_commits
+zle -N git_widget_select_file_show_commits
 
 
-git_select_branch_then_file_show_commits() {
-    git_select_branch_with_callback git_select_file_show_commits
+git_widget_select_branch_then_file_show_commits() {
+    git_widget_select_branch_with_callback git_widget_select_file_show_commits
 }
-zle -N git_select_branch_then_file_show_commits
+zle -N git_widget_select_branch_then_file_show_commits
 
 
-git_checkout_tag() {
+git_widget_checkout_tag() {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local latest="$(echo "$GIT_LATEST" | $SHELL)"
         local current="$(echo "$GIT_BRANCH" | $SHELL)"
@@ -490,10 +500,10 @@ git_checkout_tag() {
         fi
     fi
 }
-zle -N git_checkout_tag
+zle -N git_widget_checkout_tag
 
 
-git_checkout_branch() {
+git_widget_checkout_branch() {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local branch="$(echo "$GIT_BRANCH" | $SHELL)"
         local differ="echo {} | cut -d ' ' -f 1 | xargs -I% git diff --color=always --stat=\$FZF_PREVIEW_COLUMNS --patch --diff-algorithm=histogram $branch % | $DELTA"
@@ -538,10 +548,10 @@ git_checkout_branch() {
         fi
     fi
 }
-zle -N git_checkout_branch
+zle -N git_widget_checkout_branch
 
 
-git_checkout_commit() {
+git_widget_checkout_commit() {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local branch="$(echo "$GIT_BRANCH" | $SHELL)"
         local differ="echo {} | head -1 | grep -o '[a-f0-9]\{7\}' | cut -d ' ' -f 1 | xargs -I% git diff --color=always --stat=\$FZF_PREVIEW_COLUMNS --patch --diff-algorithm=histogram $branch % | $DELTA"
@@ -586,10 +596,10 @@ git_checkout_commit() {
         fi
     fi
 }
-zle -N git_checkout_commit
+zle -N git_widget_checkout_commit
 
 
-git_merge_branch() {
+git_widget_merge_branch() {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local branch="$(echo "$GIT_BRANCH" | $SHELL)"
         local differ="echo {} | cut -d ' ' -f 1 | xargs -I% git diff --color=always --stat=\$FZF_PREVIEW_COLUMNS --patch --diff-algorithm=histogram $branch % | $DELTA"
@@ -633,73 +643,51 @@ git_merge_branch() {
         fi
     fi
 }
-zle -N git_merge_branch
+zle -N git_widget_merge_branch
 
 
-git_fetch_branch() {
-    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
-        local temp="$(echo "$GIT_BRANCH" | $SHELL)"
-        local found="$(git show-ref --heads | sd '^([0-9a-f]+)\srefs/heads/(.+)' '^$1 $2$' | sed -z 's:\n: :g' | awk '{$1=$1};1' | sed 's: :|:g')"
-        local differ="echo {} | tabulate -i 1 | xargs -i$ echo 'git diff $ 1&>/dev/null 2&>/dev/null || git fetch origin --depth=1 $ && git diff --color=always --shortstat --patch --diff-algorithm=histogram $temp $' | $SHELL | $DELTA"
+git_widget_fetch_branch() {
+    local root="`git_root`"
+    [ ! "$root" ] && return 1
+    local branch="`git_current_branch`"
 
-        local branch="$(git ls-remote --heads --quiet origin | sd '^([0-9a-f]+)\srefs/heads/(.+)' '$1 $2' | grep -Pv "($found)" | sort -Vk 2 | awk '{a[i++]=$0} END {for (j=i-1; j>=0;) print a[j--] }' | \
-            fzf \
-                --ansi --extended --info='inline' \
-                --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
-                --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
-                --bind='alt-w:toggle-preview-wrap' \
-                --bind='ctrl-c:abort' \
-                --bind='ctrl-q:abort' \
-                --bind='end:preview-down' \
-                --bind='esc:cancel' \
-                --bind='home:preview-up' \
-                --bind='pgdn:preview-page-down' \
-                --bind='pgup:preview-page-up' \
-                --bind='shift-down:half-page-down' \
-                --bind='shift-up:half-page-up' \
-                --bind='alt-space:jump' \
-                --preview-window="left:84:noborder" \
-                --color="$FZF_THEME" \
-                --multi --prompt="fetch >  " \
-                --preview="$differ" | cut -d ' ' -f 2 \
-        )"
+    local already_checked_out_branches="$(git show-ref --heads | sd '^([0-9a-f]+)\srefs/heads/(.+)' '^$1 $2$' | sed -z 's:\n: :g' | awk '{$1=$1};1' | sed 's: :|:g')"
 
-        if [[ "$branch" == "" ]]; then
-            zle reset-prompt
-            return 0
-        fi
+    local select='git ls-remote --heads --quiet origin | \
+                    sd "^([0-9a-f]+)\srefs/heads/(.+)" "\$1 \$2"'
 
-        local count=$(echo "$branch" | wc -l)
-        local track=$(echo "$branch" | sd '(.+)' 'git branch --force --quiet --track $1' | sed -e ':a' -e 'N' -e '$!ba' -e 's:\n: \&\& :g' | awk '{$1=$1};1')
-        local branch=$(echo "$branch" | sed -e ':a' -e 'N' -e '$!ba' -e 's:\n: :g')
-        local fetch="git fetch origin $branch"
+    local filter="grep -Pv '($already_checked_out_branches)' | sort -Vk 2 | awk '{a[i++]=\$0} END {for (j=i-1; j>=0;) print a[j--] }'"
 
-        if [ "$count" -gt 1 ]; then
-            local cmd="$track && $fetch && git fetch --tags -all"
-        else
-            local cmd="$track && $fetch && is_repository_clean && git checkout --force --quiet $branch && git reset --hard origin/$branch && git pull origin $branch"
-        fi
+    local differ="echo {} | tabulate -i 1 | xargs -i$ echo 'git diff $ 1&>/dev/null 2&>/dev/null || git fetch origin --depth=1 $ && git diff --color=always --shortstat --patch --diff-algorithm=histogram $ $branch' | $SHELL | $DELTA"
 
-        if [[ "$BUFFER" != "" ]]; then
-            LBUFFER="$BUFFER && $cmd"
-            if [[ "$RUFFER" != "" ]]; then
-                LBUFFER=" $RBUFFER"
-            fi
-            local ret=$?
-            zle redisplay
-            typeset -f zle-line-init >/dev/null && zle zle-line-init
-            return $ret
-        else
-            run_show "$cmd"
-            zle reset-prompt
-            return 0
-        fi
+    local value="$(
+        $SHELL -c "$select | $filter \
+        | $FZF \
+        --multi --prompt='fetch >  ' \
+        --preview=\"$differ\" \
+        --preview-window='left:109:noborder' \
+        | cut -d ' ' -f 2 \
+    ")"
+
+    [ "$value" = "" ] && return 0
+
+    local count=$(echo "$value" | wc -l)
+    local value=$(echo "$value" | sed -e ':a' -e 'N' -e '$!ba' -e 's:\n: :g')
+
+    if [ "$count" -gt 1 ]; then
+        for brnch in `echo "$value" | sd '(\s+)' '\n'`; do
+            git_checkout_branch $brnch
+        done
+    else
+        git_checkout_branch $value
     fi
+    zle redisplay
+    return $?
 }
-zle -N git_fetch_branch
+zle -N git_widget_fetch_branch
 
 
-git_delete_branch() {
+git_widget_delete_branch() {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local cmd="echo {} | $SHELL $GIT_DIFF_FROM_TAG | $DELTA --paging='always'"
         local branches="$(git ls-remote -h origin | sed -r 's%^[a-f0-9]{40}\s+refs/heads/%%g' | sort | \
@@ -733,24 +721,24 @@ git_delete_branch() {
         fi
     fi
 }
-zle -N git_delete_branch
+zle -N git_widget_delete_branch
 
 
 function spll() {
-    local branch="${1:-`sh -c "$GIT_BRANCH"`}"
-    [ "$branch" = "" ] && return 1
+    local branch="${1:-`git_current_branch`}"
+    [ ! "$branch" ] && return 1
     run_show "git pull origin $branch"
 }
 
 function sfet() {
-    local branch="${1:-`sh -c "$GIT_BRANCH"`}"
-    [ "$branch" = "" ] && return 1
+    local branch="${1:-`git_current_branch`}"
+    [ ! "$branch" ] && return 1
     run_show "git fetch origin $branch && git fetch --tags --all"
 }
 
 function sall() {
-    local branch="${1:-`sh -c "$GIT_BRANCH"`}"
-    [ "$branch" = "" ] && return 1
+    local branch="${1:-`git_current_branch`}"
+    [ ! "$branch" ] && return 1
 
     is_repository_clean;                        [ $? -gt 0 ] && return 1
     sfet $branch 2>/dev/null;                   [ $? -gt 0 ] && return 1
@@ -759,12 +747,14 @@ function sall() {
 }
 
 function spsh() {
-    local branch="${1:-`sh -c "$GIT_BRANCH"`}"
+    local branch="${1:-`git_current_branch`}"
+    [ ! "$branch" ] && return 1
     run_show "git push origin $branch"
 }
 
 function sfm() {
-    local branch="${1:-`sh -c "$GIT_BRANCH"`}"
+    local branch="${1:-`git_current_branch`}"
+    [ ! "$branch" ] && return 1
     sfet $branch 2>/dev/null; [ $? -gt 0 ] && return 1
     run_show "git merge origin/$branch"
 }
@@ -829,9 +819,10 @@ function sck() {
 }
 
 function drop_this_branch_right_now() {
+    local branch="${1:-`git_current_branch`}"
+    [ ! "$branch" ] && return 1
     is_repository_clean; [ $? -gt 0 ] && return 1
 
-    local branch="${1:-`sh -c "$GIT_BRANCH"`}"
     if [ "$branch" = "master" ]; then
         echo " ! Cannot delete MASTER branch" 1>&2
         return 1
@@ -847,9 +838,10 @@ function drop_this_branch_right_now() {
 }
 
 function DROP_THIS_BRANCH_RIGHT_NOW() {
+    local branch="${1:-`git_current_branch`}"
+    [ ! "$branch" ] && return 1
     is_repository_clean; [ $? -gt 0 ] && return 1
 
-    local branch="${1:-`sh -c "$GIT_BRANCH"`}"
     if [ "$branch" = "master" ]; then
         echo " ! Cannot delete MASTER branch" 1>&2
         return 1
@@ -924,28 +916,28 @@ alias gdr='git ls-files --modified `git rev-parse --show-toplevel`'
 # bindkey "^[^M" accept-and-hold # Esc-Enter
 
 # alt-q, commits history
-bindkey "\eq"  git_show_commits
+bindkey "\eq"  git_widget_show_commits
 # shift-alt-q, branch -> history
-bindkey "^[Q"  git_select_branch_with_callback
+bindkey "^[Q"  git_widget_select_branch_with_callback
 # ctrl-q, file -> history
-bindkey "^q"   git_select_file_show_commits
+bindkey "^q"   git_widget_select_file_show_commits
 # ctrl-alt-q, branch -> file -> history
-bindkey "\e^q" git_select_branch_then_file_show_commits
+bindkey "\e^q" git_widget_select_branch_then_file_show_commits
 
 # alt-a, git add
-bindkey "\ea"  git_add
+bindkey "\ea"  git_widget_add
 # shift-alt-a, checkout to active branch last commit
-bindkey "^[A"  git_checkout_modified
+bindkey "^[A"  git_widget_checkout_modified
 # ctrl-a, on active branch, select commit, checkout files
-bindkey "^a"   git_select_commit_then_files_checkout
+bindkey "^a"   git_widget_select_commit_then_files_checkout
 # ctrl-alt-a, select branch, select commit, checkout files
-bindkey "\e^a" git_select_branch_then_commit_then_file_checkout
+bindkey "\e^a" git_widget_select_branch_then_commit_then_file_checkout
 
-bindkey "^s"   git_checkout_commit
-bindkey "\es"  git_checkout_branch
-bindkey "^[S"  git_merge_branch
-bindkey "\e^s" git_checkout_tag
-bindkey "\ep"  git_conflict_solver
+bindkey "^s"   git_widget_checkout_commit
+bindkey "\es"  git_widget_checkout_branch
+bindkey "^[S"  git_widget_merge_branch
+bindkey "\e^s" git_widget_checkout_tag
+bindkey "\ep"  git_widget_conflict_solver
 
-bindkey "\ef"   git_fetch_branch
-bindkey "\e^f"  git_delete_branch  # PUSH TO origin, caution!
+bindkey "\ef"  git_widget_fetch_branch
+bindkey "\e^f" git_widget_delete_branch  # PUSH TO origin, caution!
