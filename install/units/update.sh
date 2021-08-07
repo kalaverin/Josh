@@ -18,14 +18,15 @@ function pull_update() {
     cd "$JOSH"
 
     . "$JOSH/sources/functions/git.zsh"
-    if [ ! "$branch" ]; then
+    local local_branch="`git_current_branch`"
+    if [ ! "$local_branch" ]; then
         cd "$cwd"
         return 1
     fi
 
-    local branch="${1:-"`git_current_branch`"}"
+    local branch="${1:-$local_branch}"
     [ ! "$branch" ] && local branch="master"
-    [ "$branch" != "`git_current_branch`" ] && $SHELL -c "git checkout $branch"
+    [ "$branch" != "$local_branch" ] && $SHELL -c "git checkout $branch"
 
     sall $branch
     if [ $? -gt 0 ]; then
