@@ -3,8 +3,12 @@ if [ ! "`which git`" ]; then
     return 1
 fi
 
-DEST="`realpath ~`/josh.future"
-[ -d $DEST ] && rm -rf "$DEST"
+HOME="`realpath ~`"
+DEST="$HOME/josh.future"
+
+[ -d "$DEST" ] && rm -rf "$DEST"
+[ -d "$HOME/josh.base" ] && rm -rf "$HOME/josh.base"
+
 echo " + initial deploy to $DEST"
 
 git clone --depth 1 https://github.com/YaakovTooth/Josh.git $DEST
