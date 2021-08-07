@@ -547,11 +547,14 @@ sudoize() {
 }
 zle -N sudoize
 
-josh_pull() {
-    . "$JOSH/install/units/update.sh" && pull_update $1 && \
+josh_update() {
+    josh_pull $1 && \
     (. "$JOSH/install/units/update.sh" && post_update || true) && \
     exec zsh
     return 0
+}
+josh_pull() {
+    . "$JOSH/install/units/update.sh" && pull_update $1
 }
 
 josh_deploy() {
@@ -567,7 +570,7 @@ josh_deploy() {
 
 josh_urls() {
     local url="kalaverin.ru/shell"
-    echo "((curl -fsSL $url || wget -qO - $url || fetch -qo - http://$url) | $SHELL) && zsh"
+    echo "((curl -fsSL $url || wget -qO - $url || fetch -qo - http://$url) | \$SHELL) && zsh"
 }
 
 josh_extras() {
