@@ -29,7 +29,7 @@ local ARGS_DIFF="--color=always --shortstat --patch --diff-algorithm=histogram"
 local DIFF="git diff $ARGS_DIFF"
 
 local UNIQUE_SORT="runiq - | proximity-sort ."
-local LINES_TO_LINE="$JOSH_SED -z 's:\n: :g' | awk '{\$1=\$1};1'"
+local LINES_TO_LINE="sd '\n' ' ' | awk '{\$1=\$1};1'"
 
 local FZF_JUMPS='0123456789abcdefghijklmnopqrstuvwxyz'
 local FZF="fzf --ansi --extended --info='inline' --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' --tiebreak=length,index --jump-labels=\"$FZF_JUMPS\" --bind='alt-space:jump-accept' --bind='alt-w:toggle-preview-wrap' --bind='ctrl-c:abort' --bind='ctrl-q:abort' --bind='end:preview-down' --bind='esc:cancel' --bind='home:preview-up' --bind='pgdn:preview-page-down' --bind='pgup:preview-page-up' --bind='shift-down:half-page-down' --bind='shift-up:half-page-up' --color=\"$FZF_THEME\""
@@ -584,9 +584,15 @@ git_widget_fetch_branch() {
     local select='git ls-remote --heads --quiet origin | \
                   sd "^([0-9a-f]+)\srefs/heads/(.+)" "\$1 \$2"'
 
-    local already_checked_out_branches="$(git show-ref --heads | sd '^([0-9a-f]+)\srefs/heads/(.+)' '^$1 $2$' | sed -z 's:\n: :g' | awk '{$1=$1};1' | sed 's: :|:g')"
+    local already_checked_out_branches="$($SHELL -c " \
+        git show-ref --heads \
+        | sd '^([0-9a-f]+)\srefs/heads/(.+)' '\$2' \
+        | tabulate -i 1 | $LINES_TO_LINE | sd ' ' '|'
+    ")"
 
-    local filter="grep -Pv '($already_checked_out_branches)' | sort -Vk 2 | awk '{a[i++]=\$0} END {for (j=i-1; j>=0;) print a[j--] }'"
+    local filter="sort -Vk 2 | awk '{a[i++]=\$0} END {for (j=i-1; j>=0;) print a[j--] }'"
+    [ "$already_checked_out_branches" ] && \
+        local filter="grep -Pv '($already_checked_out_branches)$'| $filter"
 
     local differ="echo {} | tabulate -i 1 | xargs -i$ echo 'git diff $ 1&>/dev/null 2&>/dev/null || git fetch origin --depth=1 $ && git diff --color=always --shortstat --patch --diff-algorithm=histogram $ $branch' | $SHELL | $DELTA"
 
