@@ -1,5 +1,7 @@
 #!/bin/sh
 
+MIN_PYTHON_VERSION=3.6
+
 PIP_REQ_PACKAGES=(
     \"pip\<=20.3.4\"
     httpie
@@ -29,10 +31,30 @@ function set_defaults() {
     return 0
 }
 
+function python_init() {
+    . $JOSH/install/check.sh
+
+    if [ -f "$PYTHON3" ]; then
+        version_not_compatible \
+            $MIN_PYTHON_VERSION \
+            `$PYTHON3 --version 2>&1 | tabulate -i 2` || return 0
+    fi
+
+    for dir in $(sh -c "echo "$PATH" | sed 's#:#\n#g' | sort -su"); do
+        for exe in $(find $dir -type f -name 'python*' 2>/dev/null | sort -Vr); do
+            local version=$($exe --version 2>&1 | grep -Po '([\d\.]+)$')
+            version_not_compatible $MIN_PYTHON_VERSION $version || local result="$exe"
+            [ "$result" ] && break
+        done
+        [ "$result" ] && break
+    done
+    [ "$result" ] && export PYTHON3="`realpath $result`"
+}
+
 function pip_init() {
-    local py="`which python3`"
-    if [ ! -f "$py" ]; then
-        echo " - require python >=3.6!"
+    python_init
+    if [ ! -f "$PYTHON3" ]; then
+        echo " - fatal: python>=3.6 required!"
         return 1
     fi
 

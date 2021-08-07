@@ -44,6 +44,16 @@ function check_libraries() {
 }
 
 
+version_not_compatible()
+{
+    if [ "$1" != "$2" ]; then
+        local choice=$(sh -c "printf '%s\n%s\n' "$1" "$2" | sort --version-sort | tail -n 1")
+        [ $(sh -c "printf '%s' "$choice" | grep -Pv '^($2)$'") ] && return 0
+    fi
+    return 1
+}
+
+
 function check_compliance() {
     if [ -n "$(uname | grep -i freebsd)" ]; then
         echo " + os: freebsd `uname -srv`"
@@ -82,7 +92,11 @@ function check_compliance() {
     check_executables $REQUIRED_BINARIES $REQURED_SYSTEM_BINARIES
     check_libraries $REQUIRED_LIBRARIES
     if [ $? -gt 0 ]; then
-        echo " - please, install all packages and try again, may be just run: $cmd $pkg"
+        if [ "$cmd" ]; then
+            echo " - please, install all packages and try again, may be just run: $cmd $pkg"
+        else
+            echo " - please, install all packages and try again"
+        fi
         return 0
     fi
     echo " + all requirements exists: $REQUIRED_BINARIES $REQURED_SYSTEM_BINARIES"

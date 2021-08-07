@@ -34,10 +34,10 @@ git pull origin master && \
 
 [ $? -gt 0 ] && return 1
 
+pip_deploy $PIP_REQ_PACKAGES && \
 deploy_ohmyzsh && \
 deploy_extensions && \
 deploy_binaries && \
-pip_deploy $PIP_REQ_PACKAGES && \
 cargo_deploy $CARGO_REQ_PACKAGES && \
 zero_configuration
 
