@@ -30,11 +30,13 @@ git pull origin master && \
 . install/units/oh-my-zsh.sh && \
 . install/units/utils.sh && \
 . install/units/configs.sh && \
+. install/units/python.sh
 . install/units/rust.sh
 
 [ $? -gt 0 ] && return 1
 
-pip_deploy $PIP_REQ_PACKAGES && \
+pip_deploy $PIP_REQ_PACKAGES || \
+    echo " - python related functionality has been disabled" && \
 deploy_ohmyzsh && \
 deploy_extensions && \
 deploy_binaries && \
