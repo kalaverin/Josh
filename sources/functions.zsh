@@ -555,10 +555,10 @@ josh_pull() {
 }
 
 josh_deploy() {
-    url="https://kalaverin.ru/shell?$RANDOM"
-    $SHELL -c "$HTTP_GET $url | $SHELL"
+    url='"https://kalaverin.ru/shell?$RANDOM"'
+    run_show "$HTTP_GET $url | $SHELL"
     if [ $? -gt 0 ]; then
-        echo ' - fatal: install failed :-\'
+        echo ' - fatal: something wrong :-\'
         return 1
     fi
     exec zsh
