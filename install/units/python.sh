@@ -1,11 +1,11 @@
 #!/bin/sh
 
 PIP_REQ_PACKAGES=(
+    "pip<=20.3.4"
     httpie
     pip-chill
     pipdeptree
     virtualenv
-    "pip<=20.3.4"
 )
 
 PIP_OPT_PACKAGES=(
@@ -70,8 +70,9 @@ function pip_deploy() {
         echo " - fatal: cargo exe $PIP_EXE isn't found!"
         return 1
     fi
-    for pkg in $@; do
-        PIP_REQUIRE_VIRTUALENV=false $PIP_EXE install --upgrade --upgrade-strategy eager $pkg
+
+    for line in $@; do
+        PIP_REQUIRE_VIRTUALENV=false $PIP_EXE install --upgrade --upgrade-strategy=eager $line
     done
 
     if [ "$venv" != "" ]; then
@@ -82,6 +83,6 @@ function pip_deploy() {
 
 
 function pip_extras() {
-    pip_deploy $PIP_REQ_PACKAGES $PIP_OPT_PACKAGES
+    pip_deploy "$PIP_REQ_PACKAGES $PIP_OPT_PACKAGES"
     return 0
 }
