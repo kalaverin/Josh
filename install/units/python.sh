@@ -32,12 +32,20 @@ function set_defaults() {
 }
 
 function python_init() {
-    . $SOURCE_ROOT/install/check.sh
+    set_defaults
+    local root=${JOSH:-$SOURCE_ROOT}
+
+    if [ ! -d "$root" ]; then
+        echo " - fatal: source root isn't exists"
+        return 255
+    fi
+
+    . $root/install/check.sh
 
     if [ -f "$PYTHON3" ]; then
         version_not_compatible \
             $MIN_PYTHON_VERSION \
-            `$PYTHON3 --version 2>&1 | tabulate -i 2` || return 0
+            `$PYTHON3 --version 2>&1 | grep -Po '([\d\.]+)$'` || return 0
     fi
 
     for dir in $(sh -c "echo "$PATH" | sed 's#:#\n#g' | sort -su"); do
