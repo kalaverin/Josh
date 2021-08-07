@@ -73,6 +73,7 @@ function pip_init() {
     if [ ! -f "$PIP_EXE" ]; then
         local pip_bootstrap="/tmp/get-pip.py"
         $SHELL -c "$HTTP_GET $url > $pip_bootstrap" && \
+        # TODO: --no-warn-script-location
         PIP_REQUIRE_VIRTUALENV=false python3 $pip_bootstrap "pip<=20.3.4" "setuptools" "wheel"
         [ -f "$pip_bootstrap" ] && unlink "$pip_bootstrap"
         if [ $? -gt 0 ]; then
