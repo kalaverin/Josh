@@ -380,7 +380,6 @@ visual_grep() {
 }
 zle -N visual_grep
 
-
 visual_freeze() {
     . $JOSH/install/units/python.sh
     pip_init || return1
@@ -504,15 +503,6 @@ kill_widget() {
 }
 zle -N kill_widget
 
-autoload znt-history-widget
-zle -N znt-history-widget
-
-autoload znt-kill-widget
-zle -N znt-kill-widget
-
-autoload -U edit-command-line
-zle -N edit-command-line
-
 share_file() {
     if [ $# -eq 0 ]
         then echo -e "No arguments specified. Usage:\necho share /tmp/test.md\ncat /tmp/test.md | share test.md"
@@ -545,14 +535,18 @@ zle -N empty_buffer
 
 sudoize() {
     [[ -z $BUFFER ]] && zle up-history
+
     if [[ $BUFFER == sudo\ * ]]; then
         LBUFFER="${LBUFFER#sudo }"
+
     elif [[ $BUFFER == $EDITOR\ * ]]; then
         LBUFFER="${LBUFFER#$EDITOR }"
         LBUFFER="sudoedit $LBUFFER"
+
     elif [[ $BUFFER == sudoedit\ * ]]; then
         LBUFFER="${LBUFFER#sudoedit }"
         LBUFFER="$EDITOR $LBUFFER"
+
     else
         LBUFFER="sudo $LBUFFER"
     fi
@@ -595,5 +589,14 @@ josh_extras() {
     . "$JOSH/install/units/update.sh"
     deploy_extras
 }
+
+autoload znt-history-widget
+zle -N znt-history-widget
+
+autoload znt-kill-widget
+zle -N znt-kill-widget
+
+autoload -U edit-command-line
+zle -N edit-command-line
 
 find /tmp -maxdepth 1 -name "fuzzy-search-and-edit.*" -user $USER -type d -mmin +30 -exec rm -rf {} \;

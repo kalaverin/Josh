@@ -83,10 +83,10 @@ function check_compliance() {
         local pkg="zsh git jq pv python3 tree libssl-dev"
 
     elif [ -n "$(uname | grep -i linux)" ]; then
-        echo ' - unknown linux: `uname -srv`'
+        echo " - unknown linux: `uname -srv`"
 
     else
-        echo ' - unknown os: `uname -srv`'
+        echo " - unknown os: `uname -srv`"
     fi
 
     check_executables $REQUIRED_BINARIES $REQURED_SYSTEM_BINARIES
