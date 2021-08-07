@@ -52,7 +52,7 @@ function python_init() {
     if [ "$result" ]; then
         local python="`realpath $result`"
         if [ -f "$python" ]; then
-            export PYTHON3=""
+            export PYTHON3="$python"
             return 0
         fi
     fi
