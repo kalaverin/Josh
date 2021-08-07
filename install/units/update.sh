@@ -14,11 +14,17 @@ function update_packages() {
 }
 
 function pull_update() {
-    local branch="${1:-`sh -c "git rev-parse --quiet --abbrev-ref HEAD 2>/dev/null"`}"
-    [ ! "$branch" ] && local branch="master"
+    local cwd="`pwd`"
+    cd "$JOSH"
 
-    cmd="git --work-tree=$JOSH --git-dir=$JOSH/.git"
-    $SHELL -c "$cmd checkout $branch && $cmd pull"
+    . "$JOSH/sources/git.zsh"
+
+    [ ! "$branch" ] && return 1
+    local branch="${1:-"`git_current_branch`"}"
+    [ ! "$branch" ] && local branch="master"
+    [ "$branch" != "`git_current_branch`" ] && $SHELL -c "git checkout $branch"
+
+    sall $branch
     if [ $? -gt 0 ]; then
         echo ' - fatal: update failed :-\'
         return 1
