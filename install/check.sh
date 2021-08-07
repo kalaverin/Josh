@@ -83,7 +83,7 @@ function check_compliance() {
         local pkg="zsh git jq pv python3 tree libssl-dev"
 
     elif [ -n "$(uname -srv | grep -i gentoo)" ]; then
-        echo " - os: gentoo: `uname -srv`"
+        echo " + os: gentoo: `uname -srv`"
 
     elif [ -n "$(uname | grep -i linux)" ]; then
         echo " - unknown linux: `uname -srv`"
@@ -92,24 +92,13 @@ function check_compliance() {
         echo " - unknown os: `uname -srv`"
     fi
 
-    check_executables $REQUIRED_BINARIES $REQURED_SYSTEM_BINARIES
-    if [ $? -gt 0 ]; then
-        if [ "$cmd" ]; then
-            echo " - please, install all packages and try again, may be just run: $cmd $pkg"
-        else
-            echo " - please, install all packages and try again"
-        fi
-        return 0
-    fi
+    check_executables $REQUIRED_BINARIES $REQURED_SYSTEM_BINARIES && \
+        check_libraries $REQUIRED_LIBRARIES
 
-    check_libraries $REQUIRED_LIBRARIES
     if [ $? -gt 0 ]; then
-        if [ "$cmd" ]; then
-            echo " - please, install all packages and try again, may be just run: $cmd $pkg"
-        else
-            echo " - please, install all packages and try again"
-        fi
-        return 0
+        local msg=" - please, install required packages and try again"
+        [ "$cmd" ] && local msg="$msg: $cmd $pkg"
+        echo "$msg" && return 0
     fi
 
     echo " + all requirements exists: $REQUIRED_BINARIES $REQURED_SYSTEM_BINARIES"
