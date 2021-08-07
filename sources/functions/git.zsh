@@ -835,7 +835,7 @@ function sck() {
         return 1
     fi
     local match=`echo "$1" | grep -Po '^([0-9])'`
-    if [ "$1" = "" ]; then
+    if [ "$match" = "" ]; then
         local branch="$1"
     else
         echo " - Branch name cannot be starting with digit." 1>&2
