@@ -17,7 +17,7 @@ function pull_update() {
     local cwd="`pwd`"
     cd "$JOSH"
 
-    . "$JOSH/sources/git.zsh"
+    . "$JOSH/sources/functions/git.zsh"
 
     [ ! "$branch" ] && return 1
     local branch="${1:-"`git_current_branch`"}"
