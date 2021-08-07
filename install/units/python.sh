@@ -97,7 +97,7 @@ function pip_deploy() {
 
     pip_init || return $?
     if [ ! -f "$PIP_EXE" ]; then
-        echo " - fatal: pip exe $PIP_EXE isn't found!"
+        echo " - fatal: pip executive $PIP_EXE isn't found!"
         return 1
     fi
 
