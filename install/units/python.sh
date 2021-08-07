@@ -48,7 +48,15 @@ function python_init() {
         done
         [ "$result" ] && break
     done
-    [ "$result" ] && export PYTHON3="`realpath $result`"
+
+    if [ "$result" ]; then
+        local python="`realpath $result`"
+        if [ -f "$python" ]; then
+            export PYTHON3=""
+            return 0
+        fi
+    fi
+    return 1
 }
 
 function pip_init() {
@@ -89,12 +97,12 @@ function pip_deploy() {
 
     pip_init || return $?
     if [ ! -f "$PIP_EXE" ]; then
-        echo " - fatal: cargo exe $PIP_EXE isn't found!"
+        echo " - fatal: pip exe $PIP_EXE isn't found!"
         return 1
     fi
 
     for line in $@; do
-        $SHELL -c "PIP_REQUIRE_VIRTUALENV=false $PIP_EXE install --upgrade --upgrade-strategy=eager $line"
+        $SHELL -c "PIP_REQUIRE_VIRTUALENV=false $PIP_EXE install --user --upgrade --upgrade-strategy=eager $line"
     done
 
     if [ "$venv" != "" ]; then
