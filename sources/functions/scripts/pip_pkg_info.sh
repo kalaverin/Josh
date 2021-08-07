@@ -3,7 +3,7 @@ PIPDEP_DEFAULT_OPTS="-e pipdeptree,setuptools,pkg_resources,wheel,pip-chill -w s
 function pip_show() {
     local pip="`which -p pip`"
     [ ! -f "$pip" ] && return 1
-    pip show $@ | grep -Pv '^(Require)'
+    PIP_REQUIRE_VIRTUALENV=false pip show $@ | grep -Pv '^(Require)'
     return 0
 }
 
