@@ -46,9 +46,9 @@ if [ -f "`which -p exa`" ]; then
     alias lt="l --sort time"
 fi
 if [ -f "`which -p rg`" ]; then
-    local RIPGREP_OPTS='--context 1 --context-separator "" --require-git --stats --text --ignore-file ~/.ignore --max-columns 140 --max-columns-preview --max-filesize 1M --color always --colors "match:fg:yellow" --colors "path:fg:red"'
-    alias rf="rg --smart-case $RIPGREP_OPTS"
-    alias rg="rg --case-sensitive --fixed-strings --word-regexp $RIPGREP_OPTS"
+    local RIPGREP_OPTS="--hidden --context 1 --context-separator '' --require-git --stats --text --ignore-file ~/.ignore --max-columns 140 --max-columns-preview --max-filesize 1M --color always --colors 'match:fg:yellow' --colors 'path:fg:red' --ignore-file=`realpath -q ~/.ignore` --ignore-file=`realpath -q $JOSH/configs/grep.ignore` --max-filesize=50K"
+    alias rf="`which -p rg` --smart-case $RIPGREP_OPTS"
+    alias ff="`which -p rg` --case-sensitive --fixed-strings --word-regexp $RIPGREP_OPTS"
 fi
 
 svc() {
