@@ -347,7 +347,7 @@ zle -N chdir_home
 
 visual_grep() {
     # grep: import Email
-    local ripgrep="`which -p rg` --max-filesize=50K --hidden --fixed-strings --ignore-file=`realpath ~/.ignore` --ignore-file=`realpath $JOSH/configs/grep.ignore` --smart-case"
+    local ripgrep="`which -p rg` --max-filesize=50K --hidden --fixed-strings --ignore-file=`realpath -q ~/.ignore` --ignore-file=`realpath -q $JOSH/configs/grep.ignore` --smart-case"
     local execute="$JOSH/sources/functions/scripts/rg_query_name_to_micro.sh"
     local preview="echo {}:{q} | grep -Pv '^:' | sed -r 's#(.+?):[0-9]+:(.+?)#>>\2<<//\1#g' | sd '>>(\s*)(.*?)(\s*)<<//(.+)' '$ripgrep  --vimgrep --context 0 \"\$2\" \$4' | $SHELL | tabulate -d ':' -i 2 | huniq | sort -V | sed 's/^/-H/' | tr '\n' ' ' | xargs -I% echo % {} | tabulate -d ':' -i 1 | xargs -I% sh -c 'bat --color=always --terminal-width $COLUMNS %'"
 
