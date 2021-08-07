@@ -72,7 +72,7 @@ function pip_deploy() {
     fi
 
     for line in $@; do
-        PIP_REQUIRE_VIRTUALENV=false $PIP_EXE install --upgrade --upgrade-strategy=eager $line
+        $SHELL -c "PIP_REQUIRE_VIRTUALENV=false $PIP_EXE install --upgrade --upgrade-strategy=eager $line"
     done
 
     if [ "$venv" != "" ]; then
