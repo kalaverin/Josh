@@ -382,9 +382,9 @@ visual_grep() {
 
         while true; do
             local value=$(
-                $SHELL -c "$ripgrep --color=always --count -- "$query" | sd '^(.+):(\d+)$' '\$2 \$1' | sort -grk 1" \
+                $SHELL -c "$ripgrep --color=always --count -- \"$query\" | sd '^(.+):(\d+)$' '\$2 \$1' | sort -grk 1" \
                 | fzf \
-                --prompt="query: $query >  " --query='' --tiebreak='index' \
+                --prompt="query \`$query\` >  " --query='' --tiebreak='index' \
                 --no-sort \
                 --nth=2.. --with-nth=1.. \
                 --preview-window="left:`get_preview_width`:noborder" \
