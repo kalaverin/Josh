@@ -402,11 +402,11 @@ visual_freeze() {
 
     if [ "$value" != "" ]; then
         if [ "$BUFFER" != "" ]; then
-            local command="$BUFFER"
+            local command="$BUFFER "
         else
-            local command=" pip uninstall"
+            local command=""
         fi
-        LBUFFER="$command $value"
+        LBUFFER="$command$value"
         RBUFFER=''
     fi
 
