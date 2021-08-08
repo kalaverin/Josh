@@ -156,6 +156,14 @@ zle -N git_widget_checkout_modified
 
 
 git_widget_conflict_solver() {
+    # error:
+    # UU wotx_biz/accounts/details/commander_skins.py
+    # . wotx_biz/accounts/details/vehicles.py
+    # . wotx_biz/accounts/invoices/constants.py
+    # . wotx_biz/accounts/invoices/vouchers.py
+    # . wotx_biz/logs/financial/views.py
+    # . wotx_glossary.py
+
     local branch="`git_current_branch`"
     [ ! "$branch" ] && return 1
 
@@ -646,6 +654,7 @@ git_widget_delete_remote_branch() {
     local value="$(
         $SHELL -c "$select | $filter \
         | $FZF \
+        --multi \
         --prompt='DELETE REMOTE BRANCH >  ' \
         --preview=\"$differ\" \
         --preview-window=\"left:`get_preview_width`:noborder\" \
