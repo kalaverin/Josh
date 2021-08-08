@@ -79,9 +79,8 @@ git_widget_add() {
         local value="$(
             $SHELL -c "$select | $GIT_STATUS_MARKS \
             | $FZF \
-            --filepath-word \
+            --filepath-word --tac \
             --multi --nth=2.. --with-nth=1.. \
-            --layout=reverse-list \
             --preview=\"$DIFF $branch -- {2} | $DELTA\" \
             --preview-window=\"left:`get_preview_width`:noborder\" \
             --prompt='git add >  ' \
@@ -129,9 +128,8 @@ git_widget_checkout_modified() {
         local value="$(
             $SHELL -c "$select | $GIT_STATUS_MARKS \
             | $FZF \
-            --filepath-word \
+            --filepath-word --tac \
             --multi --nth=2.. --with-nth=1.. \
-            --layout=reverse-list \
             --preview=\"$DIFF $branch -- {2} | $DELTA\" \
             --preview-window=\"left:`get_preview_width`:noborder\" \
             --prompt=\"checkout to $branch >  \" \
@@ -174,9 +172,8 @@ git_widget_conflict_solver() {
         local value="$(
             $SHELL -c "$select | $conflicted | $UNIQUE_SORT \
             | $FZF \
-            --filepath-word \
+            --filepath-word --tac \
             --multi --nth=1.. --with-nth=1.. \
-            --layout=reverse-list \
             --prompt=\"$branch solving >  \" \
             --preview=\"$DIFF $branch -- {1} | $DELTA\" \
             --preview-window=\"left:`get_preview_width`:noborder\" \
@@ -196,8 +193,11 @@ zle -N git_widget_conflict_solver
 git_widget_select_commit_then_files_checkout() {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local branch=${1:-$(echo "$GIT_BRANCH" | $SHELL)}
-        local commit="$(git_list_commits "$branch" | pipe_remove_dots_and_spaces | pipe_numerate | \
-            fzf \
+        local commit="$(git_list_commits "$branch" \
+            | pipe_remove_dots_and_spaces \
+            | sed 1d \
+            | pipe_numerate \
+            | fzf \
                 --ansi --extended --info='inline' \
                 --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
                 --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
@@ -226,7 +226,7 @@ git_widget_select_commit_then_files_checkout() {
         local root=$(realpath `$SHELL -c "$GIT_ROOT"`)
         local differ="echo {} | xargs -I% git diff --color=always --shortstat --patch --diff-algorithm=histogram $branch $commit -- $root/% | $DELTA"
         while true; do
-            local files="$(git diff --name-only $branch $commit | proximity-sort . | \
+            local files="$(git diff --name-only $branch $commit | sort | \
                 fzf \
                     --ansi --extended --info='inline' \
                     --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
@@ -243,9 +243,8 @@ git_widget_select_commit_then_files_checkout() {
                     --bind='shift-up:half-page-up' \
                     --bind='alt-space:jump' \
                     --color="$FZF_THEME" \
-                    --layout=reverse-list \
                     --preview-window="left:`get_preview_width`:noborder" \
-                    --multi \
+                    --multi --tac \
                     --prompt="$branch: select file >  " \
                     --filepath-word --preview="$differ" \
                 | proximity-sort . | sed -z 's:\n: :g' | awk '{$1=$1};1' \
@@ -314,47 +313,47 @@ zle -N git_widget_show_commits
 
 
 git_widget_select_branch_with_callback() {
-    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
-        local differ="echo {} | xargs -I% git diff --color=always --shortstat --patch --diff-algorithm=histogram $branch -- % | $DELTA"
-        while true; do
-            local branch="$($SHELL $GIT_LIST_BRANCHES | \
-                fzf \
-                    --ansi --extended --info='inline' \
-                    --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
-                    --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
-                    --bind='alt-w:toggle-preview-wrap' \
-                    --bind='ctrl-c:abort' \
-                    --bind='ctrl-q:abort' \
-                    --bind='end:preview-down' \
-                    --bind='esc:cancel' \
-                    --bind='home:preview-up' \
-                    --bind='pgdn:preview-page-down' \
-                    --bind='pgup:preview-page-up' \
-                    --bind='shift-down:half-page-down' \
-                    --bind='shift-up:half-page-up' \
-                    --bind='alt-space:jump' \
-                    --color="$FZF_THEME" \
-                    --preview-window="left:`get_preview_width`:noborder" \
-                    --prompt="select branch >  " \
-                    --preview="$differ" \
-                    | cut -d ' ' -f 1
-            )"
-            if [[ "$branch" == "" ]]; then
-                zle redisplay
-                zle reset-prompt
-                typeset -f zle-line-init >/dev/null && zle zle-line-init
-                return 0
-            fi
+    local branch="`git_current_branch`"
+    [ ! "$branch" ] && return 1
 
-            ${1:-git_widget_show_commits} $branch
-            local ret=$?
-            if [[ "$ret" == "130" ]]; then
-                zle redisplay
-                typeset -f zle-line-init >/dev/null && zle zle-line-init
-                return $ret
-            fi
-        done
-    fi
+    while true; do
+        local branch="$($SHELL $GIT_LIST_BRANCHES | sed 1d | \
+            fzf \
+                --ansi --extended --info='inline' \
+                --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
+                --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
+                --bind='alt-w:toggle-preview-wrap' \
+                --bind='ctrl-c:abort' \
+                --bind='ctrl-q:abort' \
+                --bind='end:preview-down' \
+                --bind='esc:cancel' \
+                --bind='home:preview-up' \
+                --bind='pgdn:preview-page-down' \
+                --bind='pgup:preview-page-up' \
+                --bind='shift-down:half-page-down' \
+                --bind='shift-up:half-page-up' \
+                --bind='alt-space:jump' \
+                --color="$FZF_THEME" \
+                --preview-window="left:`get_preview_width`:noborder" \
+                --prompt="select branch >  " \
+                --preview="$DIFF $branch {1} | $DELTA " \
+                | cut -d ' ' -f 1
+        )"
+        if [[ "$branch" == "" ]]; then
+            zle redisplay
+            zle reset-prompt
+            typeset -f zle-line-init >/dev/null && zle zle-line-init
+            return 0
+        fi
+
+        ${1:-git_widget_show_commits} $branch
+        local ret=$?
+        if [[ "$ret" == "130" ]]; then
+            zle redisplay
+            typeset -f zle-line-init >/dev/null && zle zle-line-init
+            return $ret
+        fi
+    done
 }
 zle -N git_widget_select_branch_with_callback
 
@@ -409,7 +408,7 @@ git_widget_select_file_show_commits() {
         local diff_file="'git show --diff-algorithm=histogram --format=\"%C(yellow)%h %ad %an <%ae>%n%s%C(black)%C(bold) %cr\" \$0 --"
 
         while true; do
-            local file="$(git ls-files | \
+            local file="$(git ls-files | sort | \
                 fzf \
                     --ansi --extended --info='inline' \
                     --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
@@ -425,8 +424,7 @@ git_widget_select_file_show_commits() {
                     --bind='shift-down:half-page-down' \
                     --bind='shift-up:half-page-up' \
                     --bind='alt-space:jump' \
-                    --color="$FZF_THEME" \
-                    --layout=reverse-list \
+                    --color="$FZF_THEME" --tac \
                     --preview-window="left:`get_preview_width`:noborder" \
                     --prompt="$branch: select file >  " \
                     --filepath-word --preview="$differ" \
@@ -517,7 +515,6 @@ git_widget_checkout_branch() {
     [ ! "$branch" ] && return 1
 
     is_repository_clean >/dev/null || local state='(dirty!) '
-    local differ="echo {} | tabulate -i 1 | xargs -n 1 $DIFF"
     local select='git for-each-ref \
                     --sort=-committerdate refs/heads/ \
                     --color=always \
@@ -527,7 +524,7 @@ git_widget_checkout_branch() {
         local value="$(
             $SHELL -c "$select \
             | $FZF \
-            --preview=\"$differ $branch | $DELTA \" \
+            --preview=\"$DIFF $branch {1} | $DELTA \" \
             --preview-window=\"left:`get_preview_width`:noborder\" \
             --prompt=\"branch $state>  \" \
             | cut -d ' ' -f 1
