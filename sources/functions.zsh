@@ -347,21 +347,25 @@ zle -N chdir_home
 
 visual_grep() {
     # grep: import Email
-    local ripgrep="`which -p rg` --max-filesize=50K --hidden --fixed-strings --ignore-file=`realpath -q ~/.ignore` --ignore-file=`realpath -q $JOSH/configs/grep.ignore` --smart-case"
+    local ripgrep="`which -p rg` --ignore-file=`realpath --quiet ~/.ignore` --ignore-file=`realpath --quiet  $JOSH/configs/grep.ignore` --max-filesize=50K --hidden --smart-case --fixed-strings "
     local execute="$JOSH/sources/functions/scripts/rg_query_name_to_micro.sh"
-    local preview="echo {}:{q} | grep -Pv '^:' | sed -r 's#(.+?):[0-9]+:(.+?)#>>\2<<//\1#g' | sd '>>(\s*)(.*?)(\s*)<<//(.+)' '$ripgrep  --vimgrep --context 0 \"\$2\" \$4' | $SHELL | tabulate -d ':' -i 2 | huniq | sort -V | sed 's/^/-H/' | tr '\n' ' ' | xargs -I% echo % {} | tabulate -d ':' -i 1 | xargs -I% sh -c 'bat --color=always --terminal-width $COLUMNS %'"
+
+    local preview="echo {2}:{q} | grep -Pv '^:' | sed -r 's#(.+?):(.+?)#>>\2<<//\1#g' | sd '>>(\s*)(.*?)(\s*)<<//(.+)' '$ripgrep --vimgrep --context 0 \"\$2\" \$4' | $SHELL | tabulate -d ':' -i 2 | huniq | sort -V | sed 's/^/-H/' | tr '\n' ' ' | xargs -I@ echo 'bat --terminal-width \$FZF_PREVIEW_COLUMNS --color=always @ {2}' | $SHELL"
 
     local file=$(
         fzf \
-        --bind "change:reload:($ripgrep --count --color=always -- {q} | proximity-sort . || true)" \
-        --bind="enter:execute(echo "{q}:{}" | $SHELL $execute | xargs -I$ sh -c '$')" \
+        --bind "change:reload:(sleep 0.33 && $ripgrep --color=always --count -- {q} | sd '^(.+):(\d+)$' '\$2 \$1' | sort -grk 1 || true)" \
+        --bind="enter:execute(echo "{q}:{2}" | $SHELL $execute | xargs -I$ sh -c '$')" \
         --prompt='grep: ' --query='' --tiebreak='index' \
+        --no-sort \
         --disabled \
+        --nth=2.. --with-nth=1.. \
         --preview-window="left:`get_preview_width`:noborder" \
         --preview="$preview" \
         --ansi --extended --info='inline' \
         --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
         --jump-labels="$FZF_JUMPS" \
+        --layout=reverse-list \
         --bind='alt-space:jump-accept' \
         --bind='alt-w:toggle-preview-wrap' \
         --bind='ctrl-c:abort' \
@@ -375,6 +379,7 @@ visual_grep() {
         --bind='shift-up:half-page-up' \
         --color="$FZF_THEME" \
     )
+
     zle reset-prompt
     return 0
 }
@@ -393,6 +398,7 @@ visual_freeze() {
         | $FZF \
             --multi \
             --tiebreak='index' \
+            --layout=reverse-list \
             --preview='$preview' \
             --prompt='packages $venv > ' \
             --preview-window='left:104:noborder' \
