@@ -304,7 +304,7 @@ insert_command() {
         --bind='pgup:preview-page-up' \
         --bind='shift-down:half-page-down' \
         --bind='shift-up:half-page-up' \
-        --bind='alt-space:jump' \
+        --bind='alt-space:jump-accept' \
         --query="$query" \
         --color="$FZF_THEME" \
         --reverse --min-height='11' --height='11' \
@@ -314,7 +314,7 @@ insert_command() {
 
     if [ "$result" ]; then
         LBUFFER="$result"
-        RBUFFER=""
+        zle accept-line
     fi
     zle redisplay
     return 0
