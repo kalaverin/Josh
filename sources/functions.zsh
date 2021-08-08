@@ -205,7 +205,7 @@ visual_chdir() {
             | sd "^(../$name)/" '' | grep -Pv "^(../$name)$" \
             | runiq - | proximity-sort . | sed '1i ..' |sed '1i .' | fzf \
                 -i \
-                --prompt="chdir to: `pwd`/" \
+                --prompt="`pwd`/" \
                 --bind='enter:accept' \
                 --reverse --min-height='11' --height='11' \
                 --preview-window="right:`get_preview_width`:noborder" \
@@ -257,11 +257,11 @@ visual_recent_chdir() {
     local directory=$(scotty list | sort -rk 2,3 | sed '1d' | tabulate -i 1 | runiq - | xargs -I$ echo "[ -d $ ] && echo $" | $SHELL | grep -Pv 'env/.+/bin' | \
         fzf \
             -i -s --exit-0 --select-1 \
-            --prompt="chdir >  " \
+            --prompt="cd >  " \
             --bind='enter:accept' \
             --reverse --min-height='11' --height='11' \
             --preview-window="right:`get_preview_width`:noborder" \
-            --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first \"{}\"" \
+            --preview='exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first '{}'' \
             --filepath-word --tiebreak=index \
             --ansi --extended --info='inline' \
             --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
@@ -308,7 +308,7 @@ insert_command() {
         --query="$query" \
         --color="$FZF_THEME" \
         --reverse --min-height='11' --height='11' \
-        --prompt="command >  " \
+        --prompt="run >  " \
         -i --select-1 --filepath-word \
     )
 
