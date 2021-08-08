@@ -692,7 +692,7 @@ git_widget_checkout_commit() {
                 --bind='alt-space:jump' \
                 --preview-window="left:`get_preview_width`:noborder" \
                 --color="$FZF_THEME" \
-                --prompt="commit >  " \
+                --prompt="checkout >  " \
                 --preview=$differ | cut -d ' ' -f 1
         )"
 
@@ -735,7 +735,7 @@ git_widget_merge_branch() {
             | $FZF \
             --preview=\"$differ $branch | $DELTA \" \
             --preview-window=\"left:`get_preview_width`:noborder\" \
-            --prompt=\"$branch merge $state>  \" \
+            --prompt=\"merge to $branch $state>  \" \
             | cut -d ' ' -f 1
         ")"
         if [ ! "$value" ]; then
