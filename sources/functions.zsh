@@ -60,11 +60,9 @@ insert_directory() {
     local result=$(fd \
         --type directory \
         --follow \
-        --one-file-system \
         --hidden \
-        --exclude .git/ \
-        --exclude "*.pyc" \
-        --exclude node_modules/ \
+        --one-file-system \
+        --ignore-file ~/.gitignore \
         | fzf \
         --ansi --extended --info='inline' \
         --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
@@ -83,10 +81,10 @@ insert_directory() {
         --query="$pre$post" \
         --color="$FZF_THEME" \
         --reverse --min-height='11' --height='11' \
-        --preview-window="rigth:`get_preview_width`:noborder" \
+        --preview-window="right:`get_preview_width`:noborder" \
         --prompt="catalog >  " \
         --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}" \
-        -i -s --select-1 --filepath-word \
+        -i --filepath-word \
     )
 
     [ ! "$result" ] && local result="$pre$post"
@@ -94,7 +92,7 @@ insert_directory() {
     if [ "$LBUFFER" ]; then
         LBUFFER="$(echo $LBUFFER | sd '(\s+)$' '') $result"
     else
-        LBUFFER="$result"
+        LBUFFER=" $result"
     fi
     if [ "$RBUFFER" ]; then
         RBUFFER=" $(echo $RBUFFER | sd '^(\s+)' '')"
@@ -132,15 +130,13 @@ insert_endpoint() {
 
     local result=$(fd \
         --type file \
-        --type symlink \
-        --type socket \
         --type pipe \
+        --type socket \
+        --type symlink \
         --follow \
-        --one-file-system \
         --hidden \
-        --exclude .git/ \
-        --exclude "*.pyc" \
-        --exclude node_modules/ \
+        --ignore-file ~/.gitignore \
+        --one-file-system \
         | fzf \
         --ansi --extended --info='inline' \
         --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
@@ -162,7 +158,7 @@ insert_endpoint() {
         --preview-window="right:`get_preview_width`:noborder" \
         --prompt="file >  " \
         --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}" \
-        -i --select-1 --filepath-word \
+        -i --filepath-word \
     )
 
     [ ! "$result" ] && local result="$pre$post"
@@ -194,23 +190,25 @@ visual_chdir() {
         return
     fi
     while true; do
+        local cwd="`pwd`"
+        local name="`basename $cwd`"
+
         [ -f "/tmp/.lastdir.tmp" ] && unlink /tmp/.lastdir.tmp
           # TODO: if file preview content
         local directory=$(fd \
             --type directory \
             --follow \
-            --one-file-system \
             --hidden \
-            --exclude .git/ \
-            --exclude "*.pyc" \
-            --exclude node_modules/ \
-            --max-depth 3 \
-            | sed '1i ..' | fzf \
-                -i -s --exit-0 --select-1 \
+            --ignore-file ~/.gitignore \
+            --one-file-system \
+            --max-depth 5 . '../' \
+            | sd "^(../$name)/" '' | grep -Pv "^(../$name)$" \
+            | runiq - | proximity-sort . | sed '1i ..' |sed '1i .' | fzf \
+                -i \
                 --prompt="chdir to: `pwd`/" \
                 --bind='enter:accept' \
                 --reverse --min-height='11' --height='11' \
-                --preview-window="right:119:noborder" \
+                --preview-window="right:`get_preview_width`:noborder" \
                 --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}" \
                 --filepath-word --tiebreak=begin,length,end,index \
                 --bind='alt-bs:execute(echo `realpath {}` > /tmp/.lastdir.tmp)+abort' \
@@ -234,25 +232,16 @@ visual_chdir() {
         if [ -f "/tmp/.lastdir.tmp" ]; then
             builtin cd `cat /tmp/.lastdir.tmp` &> /dev/null
             unlink /tmp/.lastdir.tmp
-            l --git-ignore
+            pwd; l --git-ignore
             zle reset-prompt
             return 0
         fi
 
-        if [ "$directory" = ".." ]; then
-            builtin cd .. &> /dev/null
-
-        elif [ "$directory" ]; then
+        if [ "$directory" ]; then
             builtin cd "$directory" &> /dev/null
-            if [ "`fd --type directory | wc -l`" -gt 0 ]; then
-            else
-                l --git-ignore
-                zle reset-prompt
-                return 0
-            fi
 
         else
-            l --git-ignore
+            pwd; l --git-ignore
             zle reset-prompt
             return 0
         fi
@@ -271,8 +260,8 @@ visual_recent_chdir() {
             --prompt="chdir >  " \
             --bind='enter:accept' \
             --reverse --min-height='11' --height='11' \
-            --preview-window="right:79:noborder" \
-            --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}" \
+            --preview-window="right:`get_preview_width`:noborder" \
+            --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first \"{}\"" \
             --filepath-word --tiebreak=index \
             --ansi --extended --info='inline' \
             --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
@@ -324,7 +313,8 @@ insert_command() {
     )
 
     if [ "$result" ]; then
-        BUFFER="$result"
+        LBUFFER="$result"
+        RBUFFER=""
     fi
     zle redisplay
     return 0
@@ -437,7 +427,7 @@ visual_freeze() {
             --layout=reverse-list \
             --preview='$preview' \
             --prompt='packages $venv > ' \
-            --preview-window='left:104:noborder' \
+            --preview-window="left:`get_preview_width`:noborder" \
             --bind='ctrl-d:reload($SHELL $PIP_CHILL),ctrl-f:reload($SHELL $PIP_FREEZE)' \
         | tabulate -i 1 | $UNIQUE_SORT | $LINES_TO_LINE
     ")"
