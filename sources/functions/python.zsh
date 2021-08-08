@@ -20,9 +20,10 @@ function dact {
 function get_venv_path {
     local cwd="`pwd`"
     unset JOSH_SELECT_VENV_PATH
-    if [ "$1" != "" ]; then
-        if [ -f "/tmp/env/$1/bin/activate" ]; then
-            local env_path="/tmp/env/$1"
+    if [ "$1" ]; then
+        local temp="`get_tempdir`"
+        if [ -f "$temp/env/$1/bin/activate" ]; then
+            local env_path="$temp/env/$1"
         else
             wd env
             if [ -f "$1/bin/activate" ]; then
@@ -62,7 +63,7 @@ function ten {
     fi
     [ ! -f "`which -p virtualenv`" ] && run_show "pip install virtualenv"
 
-    local name="$(dirname `mktemp -duq`)/env/`petname -s . -w 3 -a`"
+    local name="/env/`petname -s . -w 3 -a`"
     mkdir -p "$name" && cd "`realpath $name/../`" && rm -rf "$name"
     run_show "dact; virtualenv --python=$pbin $name && source $name/bin/activate && cd $lwd && pip install -U 'pip<=21.1' && pip install pipdeptree $packages"
 }
@@ -115,7 +116,8 @@ function ten- {
     fi
 
     local vwd="`pwd`"
-    if [[ ! $vwd =~ "^/tmp/env" ]]; then
+    local temp="`get_tempdir`"
+    if [[ ! $vwd =~ "^$temp/env" ]]; then
         echo " * can't remove >>$vwd<< because isn't temporary"
         cd $cwd
         return 1

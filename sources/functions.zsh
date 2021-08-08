@@ -22,6 +22,12 @@ function get_preview_width() {
     echo $JOSH_WIDTH
 }
 
+function get_tempdir() {
+    local path="$(dirname `mktemp -duq`)"
+    [ ! -d "$path" ] && mkdir -p "$path"
+    echo "$path"
+}
+
 commit_text () {
     local text=`sh -c "$HTTP_GET http://whatthecommit.com/index.txt"`
     echo "$text" | anyframe-action-insert
@@ -191,9 +197,10 @@ visual_chdir() {
     fi
     while true; do
         local cwd="`pwd`"
+        local temp="`get_tempdir`"
         local name="`basename $cwd`"
 
-        [ -f "/tmp/.lastdir.tmp" ] && unlink /tmp/.lastdir.tmp
+        [ -f "/$temp/.lastdir.tmp" ] && unlink "$temp/.lastdir.tmp"
           # TODO: if file preview content
         local directory=$(fd \
             --type directory \
@@ -229,9 +236,9 @@ visual_chdir() {
                 --color="$FZF_THEME" \
         )
 
-        if [ -f "/tmp/.lastdir.tmp" ]; then
-            builtin cd `cat /tmp/.lastdir.tmp` &> /dev/null
-            unlink /tmp/.lastdir.tmp
+        if [ -f "$temp/.lastdir.tmp" ]; then
+            builtin cd `cat $temp/.lastdir.tmp` &> /dev/null
+            unlink "$temp/.lastdir.tmp"
             pwd; l --git-ignore
             zle reset-prompt
             return 0
@@ -537,10 +544,11 @@ zle -N kill_widget
 
 share_file() {
     if [ $# -eq 0 ]
-        then echo -e "No arguments specified. Usage:\necho share /tmp/test.md\ncat /tmp/test.md | share test.md"
+        local temp="`get_tempdir`"
+        then echo -e "No arguments specified. Usage:\necho share $temp/test.md\ncat $temp/test.md | share test.md"
         return 1
     fi
-    tmpfile=$( mktemp -t transferXXX )
+    tmpfile=$(mktemp -t transferXXX)
     if tty -s
         then basefile=$(basename "$1" | sed -e 's/[^a-zA-Z0-9._-]/-/g')
         curl --progress-bar --upload-file "$1" "https://transfer.sh/$basefile" >> $tmpfile

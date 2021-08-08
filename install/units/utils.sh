@@ -56,8 +56,10 @@ function compile_fzf() {
     if [ ! -f "$BINARY_DEST/fzf" ]; then
         # $BINARY_DEST/fzf --version | head -n 1 | awk '{print $1}'
         echo " + deploy fzf to $BINARY_DEST/fzf"
-        tempdir="`mktemp -d`"
-        rm -rf "$tempdir"
+
+        local tempdir="$(dirname `mktemp -duq`)/fzf"
+        [ -d "$tempdir" ] && rm -rf "$tempdir"
+
         $SHELL -c "$clone $url $tempdir && $tempdir/install --completion --key-bindings --update-rc --bin && cp -f $tempdir/bin/fzf $BINARY_DEST/fzf && rm -rf $tempdir"
         [ $? -gt 0 ] && echo " - failed fzf"
     fi
