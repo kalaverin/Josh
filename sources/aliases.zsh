@@ -46,9 +46,14 @@ if [ -f "`which -p exa`" ]; then
     alias lt="l --sort time"
 fi
 if [ -f "`which -p rg`" ]; then
-    local RIPGREP_OPTS="--hidden --context 1 --context-separator '' --require-git --stats --text --ignore-file ~/.ignore --max-columns 140 --max-columns-preview --max-filesize 1M --color always --colors 'match:fg:yellow' --colors 'path:fg:red' --ignore-file=`realpath -q ~/.ignore` --ignore-file=`realpath -q $JOSH/configs/grep.ignore` --max-filesize=50K"
-    alias rf="`which -p rg` --smart-case $RIPGREP_OPTS"
-    alias ff="`which -p rg` --case-sensitive --fixed-strings --word-regexp $RIPGREP_OPTS"
+    local ripgrep_fast='--max-columns $COLUMNS --smart-case'
+    local ripgrep_fine='--max-columns $COLUMNS --case-sensitive --fixed-strings --word-regexp'
+
+    export JOSH_RIPGREP="`which -p rg`"
+    export JOSH_RIPGREP_OPTS="--hidden --context 1 --context-separator '' --require-git --stats --text --colors 'match:fg:yellow' --colors 'path:fg:red' --ignore-file=`$JOSH_REALPATH --quiet ~/.gitignore` --max-filesize=50K --max-columns-preview"
+
+    alias rf="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS $ripgrep_fast"
+    alias rr="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS $ripgrep_fine"
 fi
 
 svc() {
@@ -126,12 +131,3 @@ last-modified() {
     fi
     find $args -printf "%T@ %p\n" | sort -n | cut -d' ' -f 2- | tail -n 1
 }
-
-# ——— helpers + hors and so
-# w() {
-#     sh -c "$HTTP_GET \"http://cheat.sh/`urlencode $@`\""
-# }
-
-# q() {
-#     sh -c "$HTTP_GET \"http://cheat.sh/~`urlencode $@`\""
-# }

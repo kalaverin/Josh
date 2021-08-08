@@ -347,16 +347,17 @@ zle -N chdir_home
 
 visual_grep() {
     # grep: import Email
-    local ripgrep="`which -p rg` --ignore-file=`realpath --quiet ~/.ignore` --ignore-file=`realpath --quiet  $JOSH/configs/grep.ignore` --max-filesize=50K --hidden --smart-case --fixed-strings "
+
+    local ripgrep="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS --smart-case --fixed-strings "
     local execute="$JOSH/sources/functions/scripts/rg_query_name_to_micro.sh"
 
-    local preview="echo {2}:{q} | grep -Pv '^:' | sed -r 's#(.+?):(.+?)#>>\2<<//\1#g' | sd '>>(\s*)(.*?)(\s*)<<//(.+)' '$ripgrep --vimgrep --context 0 \"\$2\" \$4' | $SHELL | tabulate -d ':' -i 2 | huniq | sort -V | sed 's/^/-H/' | tr '\n' ' ' | xargs -I@ echo 'bat --terminal-width \$FZF_PREVIEW_COLUMNS --color=always @ {2}' | $SHELL"
+    local preview="echo {2}:{q} | $JOSH_GREP -Pv '^:' | $JOSH_SED -r 's#(.+?):(.+?)#>>\2<<//\1#g' | sd '>>(\s*)(.*?)(\s*)<<//(.+)' '$ripgrep --vimgrep --context 0 \"\$2\" \$4' | $SHELL | tabulate -d ':' -i 2 | runiq - | sort -V | $JOSH_SED 's/^/-H/' | tr '\n' ' ' | xargs -I@ echo 'bat --terminal-width \$FZF_PREVIEW_COLUMNS --color=always @ {2}' | $SHELL"
 
     local file=$(
         fzf \
         --bind "change:reload:(sleep 0.33 && $ripgrep --color=always --count -- {q} | sd '^(.+):(\d+)$' '\$2 \$1' | sort -grk 1 || true)" \
         --bind="enter:execute(echo "{q}:{2}" | $SHELL $execute | xargs -I$ sh -c '$')" \
-        --prompt='grep: ' --query='' --tiebreak='index' \
+        --prompt='grep >  ' --query='' --tiebreak='index' \
         --no-sort \
         --disabled \
         --nth=2.. --with-nth=1.. \
