@@ -89,6 +89,8 @@ bindkey "\eO3B"   insert-cycledright
 # bindkey "\e\e" clear-screen  # esc-esc clears the screen
 # bindkey '\e '
 
+bindkey -s '\el' 'pwd; l\n'
+
 # process management
 bindkey '\e\'  ps_widget    # just select multuple pids and append to command line
 bindkey '^\'   term_widget  # terminate pids
