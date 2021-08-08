@@ -10,7 +10,7 @@
 __pycache__/
 __snapshots__/
 js_package/
-lib/python*/site-packages/
+lib/python?.*/
 node_modules/
 
 *.[mp]o
