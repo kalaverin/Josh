@@ -25,7 +25,8 @@ local GIT_SEARCH_SETUPCFG="$THIS_DIR/scripts/git_search_setupcfg.sh"
 
 local GIT_LIST_TAGS="$THIS_DIR/scripts/git_list_tags.sh"
 
-local ARGS_DIFF="--color=always --shortstat --patch --diff-algorithm=histogram"
+# --stat=\$FZF_PREVIEW_COLUMNS
+local ARGS_DIFF="--color=always --stat --patch --diff-algorithm=histogram"
 local DIFF="git diff $ARGS_DIFF"
 
 local UNIQUE_SORT="runiq - | proximity-sort ."
@@ -523,7 +524,7 @@ git_widget_checkout_branch() {
         ")"
 
         if [ ! "$BUFFER" ]; then
-            git checkout $value 2>/dev/null 1>/dev/null
+            run_show "git checkout $value 2>/dev/null 1>/dev/null"
             local retval=$?
 
         elif [ "$value" ]; then
@@ -710,48 +711,39 @@ zle -N git_widget_checkout_commit
 
 
 git_widget_merge_branch() {
-    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
-        local branch="$(echo "$GIT_BRANCH" | $SHELL)"
-        local differ="echo {} | cut -d ' ' -f 1 | xargs -I% git diff --color=always --stat=\$FZF_PREVIEW_COLUMNS --patch --diff-algorithm=histogram $branch % | $DELTA"
-        local point="$($SHELL $GIT_LIST_BRANCHES | \
-            fzf \
-                --ansi --extended --info='inline' \
-                --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
-                --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
-                --bind='alt-w:toggle-preview-wrap' \
-                --bind='ctrl-c:abort' \
-                --bind='ctrl-q:abort' \
-                --bind='end:preview-down' \
-                --bind='esc:cancel' \
-                --bind='home:preview-up' \
-                --bind='pgdn:preview-page-down' \
-                --bind='pgup:preview-page-up' \
-                --bind='shift-down:half-page-down' \
-                --bind='shift-up:half-page-up' \
-                --bind='alt-space:jump' \
-                --preview-window="left:`get_preview_width`:noborder" \
-                --color="$FZF_THEME" \
-                --prompt="$(echo "$GIT_BRANCH" | $SHELL) merge >  " \
-                --preview="$differ" | cut -d ' ' -f 1
-        )"
+    local branch="`git_current_branch`"
+    [ ! "$branch" ] && return 1
 
-        if [[ "$point" == "" ]]; then
-            zle reset-prompt
-            return 0
-        else
-            if [[ "$BUFFER" != "" ]]; then
-                LBUFFER="$BUFFER $point"
-                local ret=$?
-                zle redisplay
-                typeset -f zle-line-init >/dev/null && zle zle-line-init
-                return $ret
-            else
-                run_show "git fetch origin $point 2>/dev/null 1>/dev/null && git merge origin/$point"
-                zle reset-prompt
-                return 0
-            fi
+    is_repository_clean >/dev/null || local state='(dirty!) '
+    local differ="echo {} | tabulate -i 1 | xargs -n 1 $DIFF"
+    local select='git for-each-ref \
+                    --sort=-committerdate refs/heads/ \
+                    --color=always \
+                    --format="%(HEAD) %(color:yellow bold)%(refname:short)%(color:reset) %(contents:subject) %(color:black bold)%(authoremail) %(committerdate:relative)" \
+                    | awk "{\$1=\$1};1" | grep -Pv "^(\*\s+)"'
+
+    while true; do
+        local value="$(
+            $SHELL -c "$select \
+            | $FZF \
+            --preview=\"$differ $branch | $DELTA \" \
+            --preview-window=\"left:`get_preview_width`:noborder\" \
+            --prompt=\"$branch merge $state>  \" \
+            | cut -d ' ' -f 1
+        ")"
+
+        if [ ! "$BUFFER" ]; then
+            run_show "git fetch origin $value 2>/dev/null 1>/dev/null && git merge origin/$value"
+            local retval=$?
+
+        elif [ "$value" ]; then
+            LBUFFER="$BUFFER && git fetch origin $value && git merge origin/$value"
         fi
-    fi
+
+        local retval=0
+        break
+    done
+    zle reset-prompt
 }
 zle -N git_widget_merge_branch
 
