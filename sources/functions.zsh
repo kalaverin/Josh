@@ -346,40 +346,69 @@ chdir_home() {
 zle -N chdir_home
 
 visual_grep() {
-    # grep: import Email
-
     local ripgrep="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS --smart-case --fixed-strings "
     local execute="$JOSH/sources/functions/scripts/rg_query_name_to_micro.sh"
 
-    local preview="echo {2}:{q} | $JOSH_GREP -Pv '^:' | $JOSH_SED -r 's#(.+?):(.+?)#>>\2<<//\1#g' | sd '>>(\s*)(.*?)(\s*)<<//(.+)' '$ripgrep --vimgrep --context 0 \"\$2\" \$4' | $SHELL | tabulate -d ':' -i 2 | runiq - | sort -V | $JOSH_SED 's/^/-H/' | tr '\n' ' ' | xargs -I@ echo 'bat --terminal-width \$FZF_PREVIEW_COLUMNS --color=always @ {2}' | $SHELL"
+    while true; do
+        local preview="echo {2}:{q} | $JOSH_GREP -Pv '^:' | $JOSH_SED -r 's#(.+?):(.+?)#>>\2<<//\1#g' | sd '>>(\s*)(.*?)(\s*)<<//(.+)' '$ripgrep --vimgrep --context 0 \"\$2\" \$4' | $SHELL | tabulate -d ':' -i 2 | runiq - | sort -V | $JOSH_SED 's/^/-H/' | tr '\n' ' ' | xargs -I@ echo 'bat --terminal-width \$FZF_PREVIEW_COLUMNS --color=always @ {2}' | $SHELL"
+        local query=$(
+            fzf \
+            --bind "change:reload:(sleep 0.33 && $ripgrep --color=always --count -- {q} | sd '^(.+):(\d+)$' '\$2 \$1' | sort -grk 1 || true)" \
+            --prompt='query search >  ' --query='' --tiebreak='index' \
+            --no-sort \
+            --disabled \
+            --nth=2.. --with-nth=1.. \
+            --preview-window="left:`get_preview_width`:noborder" \
+            --preview="$preview" \
+            --ansi --extended --info='inline' \
+            --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
+            --jump-labels="$FZF_JUMPS" \
+            --bind='alt-space:jump-accept' \
+            --bind='alt-w:toggle-preview-wrap' \
+            --bind='ctrl-c:abort' \
+            --bind='ctrl-q:abort' \
+            --bind='end:preview-down' \
+            --bind='esc:cancel' \
+            --bind='home:preview-up' \
+            --bind='pgdn:preview-page-down' \
+            --bind='pgup:preview-page-up' \
+            --bind='shift-down:half-page-down' \
+            --bind='shift-up:half-page-up' \
+            --color="$FZF_THEME" \
+            --print-query | head -n 1
+        )
+        [ ! "$query" ] && break
+        local preview="echo {2}:$query | $JOSH_GREP -Pv '^:' | $JOSH_SED -r 's#(.+?):(.+?)#>>\2<<//\1#g' | sd '>>(\s*)(.*?)(\s*)<<//(.+)' '$ripgrep --vimgrep --context 0 \"\$2\" \$4' | $SHELL | tabulate -d ':' -i 2 | runiq - | sort -V | $JOSH_SED 's/^/-H/' | tr '\n' ' ' | xargs -I@ echo 'bat --terminal-width \$FZF_PREVIEW_COLUMNS --color=always @ {2}' | $SHELL"
 
-    local file=$(
-        fzf \
-        --bind "change:reload:(sleep 0.33 && $ripgrep --color=always --count -- {q} | sd '^(.+):(\d+)$' '\$2 \$1' | sort -grk 1 || true)" \
-        --bind="enter:execute(echo "{q}:{2}" | $SHELL $execute | xargs -I$ sh -c '$')" \
-        --prompt='grep >  ' --query='' --tiebreak='index' \
-        --no-sort \
-        --disabled \
-        --nth=2.. --with-nth=1.. \
-        --preview-window="left:`get_preview_width`:noborder" \
-        --preview="$preview" \
-        --ansi --extended --info='inline' \
-        --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
-        --jump-labels="$FZF_JUMPS" \
-        --layout=reverse-list \
-        --bind='alt-space:jump-accept' \
-        --bind='alt-w:toggle-preview-wrap' \
-        --bind='ctrl-c:abort' \
-        --bind='ctrl-q:abort' \
-        --bind='end:preview-down' \
-        --bind='esc:cancel' \
-        --bind='home:preview-up' \
-        --bind='pgdn:preview-page-down' \
-        --bind='pgup:preview-page-up' \
-        --bind='shift-down:half-page-down' \
-        --bind='shift-up:half-page-up' \
-        --color="$FZF_THEME" \
-    )
+        while true; do
+            local value=$(
+                $SHELL -c "$ripgrep --color=always --count -- "$query" | sd '^(.+):(\d+)$' '\$2 \$1' | sort -grk 1" \
+                | fzf \
+                --prompt="query: $query >  " --query='' --tiebreak='index' \
+                --no-sort \
+                --nth=2.. --with-nth=1.. \
+                --preview-window="left:`get_preview_width`:noborder" \
+                --preview="$preview" \
+                --ansi --extended --info='inline' \
+                --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
+                --jump-labels="$FZF_JUMPS" \
+                --bind='alt-space:jump-accept' \
+                --bind='alt-w:toggle-preview-wrap' \
+                --bind='ctrl-c:abort' \
+                --bind='ctrl-q:abort' \
+                --bind='end:preview-down' \
+                --bind='esc:cancel' \
+                --bind='home:preview-up' \
+                --bind='pgdn:preview-page-down' \
+                --bind='pgup:preview-page-up' \
+                --bind='shift-down:half-page-down' \
+                --bind='shift-up:half-page-up' \
+                --color="$FZF_THEME" | sd '^(\d+\s+)' '' \
+            )
+            [ ! "$value" ] && break
+            micro $value $($SHELL -c "$JOSH_RIPGREP --smart-case --fixed-strings --no-heading --column --with-filename --max-count=1 --color=never \"$query\" \"$value\" | tabulate -d ':' -i 1,2,3 | sd '(.+?)\s+(\d+)\s+(\d+)' '+\$2:\$3'")
+        done
+    done
 
     zle reset-prompt
     return 0
