@@ -741,8 +741,10 @@ git_widget_merge_branch() {
             --prompt=\"$branch merge $state>  \" \
             | cut -d ' ' -f 1
         ")"
+        if [ ! "$value" ]; then
+            break
 
-        if [ ! "$BUFFER" ]; then
+        elif [ ! "$BUFFER" ]; then
             run_show "git fetch origin $value 2>/dev/null 1>/dev/null && git merge origin/$value"
             local retval=$?
 
@@ -750,10 +752,10 @@ git_widget_merge_branch() {
             LBUFFER="$BUFFER && git fetch origin $value && git merge origin/$value"
         fi
 
-        local retval=0
         break
     done
     zle reset-prompt
+    return 0
 }
 zle -N git_widget_merge_branch
 
