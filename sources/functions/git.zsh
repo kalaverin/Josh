@@ -79,8 +79,9 @@ git_widget_add() {
         local value="$(
             $SHELL -c "$select | $GIT_STATUS_MARKS \
             | $FZF \
-            --multi --nth=2.. --with-nth=1.. \
             --filepath-word \
+            --multi --nth=2.. --with-nth=1.. \
+            --layout=reverse-list \
             --preview=\"$DIFF $branch -- {2} | $DELTA\" \
             --preview-window=\"left:`get_preview_width`:noborder\" \
             --prompt='git add >  ' \
@@ -128,8 +129,9 @@ git_widget_checkout_modified() {
         local value="$(
             $SHELL -c "$select | $GIT_STATUS_MARKS \
             | $FZF \
-            --multi --nth=2.. --with-nth=1.. \
             --filepath-word \
+            --multi --nth=2.. --with-nth=1.. \
+            --layout=reverse-list \
             --preview=\"$DIFF $branch -- {2} | $DELTA\" \
             --preview-window=\"left:`get_preview_width`:noborder\" \
             --prompt=\"checkout to $branch >  \" \
@@ -173,7 +175,9 @@ git_widget_conflict_solver() {
             $SHELL -c "$select | $conflicted | $UNIQUE_SORT \
             | $FZF \
             --filepath-word \
-            --prompt=\"solving in $branch >  \" \
+            --multi --nth=1.. --with-nth=1.. \
+            --layout=reverse-list \
+            --prompt=\"$branch solving >  \" \
             --preview=\"$DIFF $branch -- {1} | $DELTA\" \
             --preview-window=\"left:`get_preview_width`:noborder\" \
             | sd '(\s*\d+)$' '' | $UNIQUE_SORT | $LINES_TO_LINE")"
@@ -239,6 +243,7 @@ git_widget_select_commit_then_files_checkout() {
                     --bind='shift-up:half-page-up' \
                     --bind='alt-space:jump' \
                     --color="$FZF_THEME" \
+                    --layout=reverse-list \
                     --preview-window="left:`get_preview_width`:noborder" \
                     --multi \
                     --prompt="$branch: select file >  " \
@@ -421,6 +426,7 @@ git_widget_select_file_show_commits() {
                     --bind='shift-up:half-page-up' \
                     --bind='alt-space:jump' \
                     --color="$FZF_THEME" \
+                    --layout=reverse-list \
                     --preview-window="left:`get_preview_width`:noborder" \
                     --prompt="$branch: select file >  " \
                     --filepath-word --preview="$differ" \
