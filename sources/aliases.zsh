@@ -48,12 +48,13 @@ fi
 if [ -f "`which -p rg`" ]; then
     local ripgrep_fast='--max-columns $COLUMNS --smart-case'
     local ripgrep_fine='--max-columns $COLUMNS --case-sensitive --fixed-strings --word-regexp'
+    local ripgrep_interactive="--stats --text --context 1 --colors 'match:fg:yellow' --colors 'path:fg:red' --context-separator ''"
 
     export JOSH_RIPGREP="`which -p rg`"
-    export JOSH_RIPGREP_OPTS="--hidden --context 1 --context-separator '' --require-git --colors 'match:fg:yellow' --colors 'path:fg:red' --ignore-file=`$JOSH_REALPATH --quiet ~/.gitignore` --max-filesize=50K --max-columns-preview"
+    export JOSH_RIPGREP_OPTS="--require-git --hidden --max-columns-preview --max-filesize=50K --ignore-file=`$JOSH_REALPATH --quiet ~/.gitignore`"
 
-    alias rf="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS $ripgrep_fast --stats --text"
-    alias rr="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS $ripgrep_fine --stats --text"
+    alias rf="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS $ripgrep_interactive $ripgrep_fast"
+    alias rr="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS $ripgrep_interactive $ripgrep_fine"
 fi
 
 svc() {
