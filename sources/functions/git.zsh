@@ -156,33 +156,30 @@ zle -N git_widget_checkout_modified
 
 
 git_widget_conflict_solver() {
-    local root="`git_root`"
-    [ ! "$root" ] && return 1
     local branch="`git_current_branch`"
+    [ ! "$branch" ] && return 1
 
+    local cwd="`pwd`"
     local select='git status \
-                    --porcelain \
-                    --branch \
-                    | grep -P "^(AA|UU)" \
-                    | tabulate -i 2'
+        --short --verbose --no-ahead-behind --untracked-files=no \
+        | grep -P "^(AA|UU)" | tabulate -i 2'
 
-    local unroot="cut -c $((${#root} + 2))-"
-    local rootate="sed -r 's:\s\b: $root/:g' | xargs -I@ echo $root/@"
+    local conflicted='xargs rg \
+        --fixed-strings --files-with-matches --color always \
+        --count --heading --line-number "<<<<<<<" | tabulate -d ":"'
 
     while true; do
         local value="$(
-            $SHELL -c "$select | $rootate | $LINES_TO_LINE \
-            | xargs rg --fixed-strings --files-with-matches '<<<<<<<' | $unroot | $UNIQUE_SORT \
+            $SHELL -c "$select | $conflicted | $UNIQUE_SORT \
             | $FZF \
             --filepath-word \
             --prompt=\"solving in $branch >  \" \
-            --preview=\"$DIFF $branch -- $root/{} | $DELTA\" \
+            --preview=\"$DIFF $branch -- {1} | $DELTA\" \
             --preview-window=\"left:`get_preview_width`:noborder\" \
-            | $UNIQUE_SORT | $LINES_TO_LINE | $rootate")"
+            | sd '(\s*\d+)$' '' | $UNIQUE_SORT | $LINES_TO_LINE")"
 
-        if [ "$value" = "" ]; then
-            break
-        fi
+        [ ! "$value" ] && break
+
         local row=$(grep -P --line-number --max-count=1 "^(>>>>>>> .+)$" $value | tabulate -d ':' -i 1)
         $EDITOR $value +$row
         continue
