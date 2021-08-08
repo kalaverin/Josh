@@ -57,7 +57,7 @@ format = ' [$symbol($version)]($style)'
 [git_branch]
 format = ' [$symbol$branch]($style)(:[$remote]($style))[/](black bold)'
 symbol = ''
-style = 'bold cyan'
+style = 'yellow bold'
 truncation_length = 9223372036854775807
 truncation_symbol = '…'
 only_attached = false
@@ -116,7 +116,7 @@ format = ' [$symbol($version)]($style)'
 [hostname]
 ssh_only = false
 trim_at = '.'
-format = ' [$hostname]($style)[:](black bold)'
+format = '[$hostname]($style)[:](black bold)'
 style = 'green bold'
 disabled = false
 
