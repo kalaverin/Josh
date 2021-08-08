@@ -31,6 +31,7 @@ local DIFF="git diff $ARGS_DIFF"
 
 local UNIQUE_SORT="runiq - | proximity-sort ."
 local LINES_TO_LINE="sd '\n' ' ' | awk '{\$1=\$1};1'"
+local GIT_STATUS_MARKS='sd "^( )" "." | sd "^(.)( )" "$1."'
 
 local FZF_JUMPS='0123456789abcdefghijklmnopqrstuvwxyz'
 local FZF="fzf --ansi --extended --info='inline' --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' --tiebreak=length,index --jump-labels=\"$FZF_JUMPS\" --bind='alt-space:jump-accept' --bind='alt-w:toggle-preview-wrap' --bind='ctrl-c:abort' --bind='ctrl-q:abort' --bind='end:preview-down' --bind='esc:cancel' --bind='home:preview-up' --bind='pgdn:preview-page-down' --bind='pgup:preview-page-up' --bind='shift-down:half-page-down' --bind='shift-up:half-page-up' --color=\"$FZF_THEME\""
@@ -71,42 +72,41 @@ git_widget_add() {
     local branch="`git_current_branch`"
     [ ! "$branch" ] && return 1
 
-    local select='git ls-files \
-                    --modified \
-                    --deleted \
-                    --others \
-                    --exclude-standard \
-                        `git rev-parse --show-toplevel`'
+    local cwd="`pwd`"
+    local select='git status --short --verbose --no-ahead-behind'
+
     while true; do
         local value="$(
-            $SHELL -c "$select | $UNIQUE_SORT \
+            $SHELL -c "$select | $GIT_STATUS_MARKS \
             | $FZF \
-            --multi \
+            --multi --nth=2.. --with-nth=1.. \
             --filepath-word \
-            --preview=\"$DIFF $branch -- {} | $DELTA\" \
+            --preview=\"$DIFF $branch -- {2} | $DELTA\" \
             --preview-window=\"left:`get_preview_width`:noborder\" \
             --prompt='git add >  ' \
-            | $UNIQUE_SORT | $LINES_TO_LINE")"
+            | tabulate -i 2 | sort --human-numeric-sort | $UNIQUE_SORT \
+            | xargs -n 1 realpath --quiet --relative-to=$cwd 2>/dev/null \
+            | $LINES_TO_LINE")"
 
-        if [ "$value" = "" ]; then
+        if [ ! "$value" ]; then
             zle reset-prompt
             local retval="0"
             break
         fi
 
-        if [ "$BUFFER" != "" ]; then
-            local command="$BUFFER && git add"
-        else
+        if [ ! "$BUFFER" ]; then
             local command=" git add"
+        else
+            local command="$BUFFER && git add"
         fi
 
         local conflicts=$(git status --porcelain --branch | grep -P '^(AA|UU)' | tabulate -i 2)
-        if [ "$conflicts" = "" ]; then
-            LBUFFER="$command $value && git commit -m \"$branch: "
-            RBUFFER='"'
-        else
+        if [ "$conflicts" ]; then
             LBUFFER="$command $value "
             RBUFFER=''
+        else
+            LBUFFER="$command $value && git commit -m \"$branch: "
+            RBUFFER='"'
         fi
         zle redisplay
         local retval="$?"
@@ -118,25 +118,26 @@ zle -N git_widget_add
 
 
 git_widget_checkout_modified() {
-    local root="`git_root`"
-    [ ! "$root" ] && return 1
     local branch="`git_current_branch`"
+    [ ! "$branch" ] && return 1
 
-    local select='git diff --name-only $branch'
-    local rootate="sed -r 's:\s\b: $root/:g' | xargs -I@ echo $root/@"
+    local cwd="`pwd`"
+    local select='git status --short --verbose --no-ahead-behind --untracked-files=no'
 
     while true; do
         local value="$(
-            $SHELL -c "$select | $UNIQUE_SORT \
+            $SHELL -c "$select | $GIT_STATUS_MARKS \
             | $FZF \
-            --multi \
+            --multi --nth=2.. --with-nth=1.. \
             --filepath-word \
-            --preview=\"$DIFF $branch -- $root/{} | $DELTA\" \
+            --preview=\"$DIFF $branch -- {2} | $DELTA\" \
             --preview-window=\"left:`get_preview_width`:noborder\" \
             --prompt=\"checkout to $branch >  \" \
-            | $UNIQUE_SORT | $LINES_TO_LINE | $rootate")"
+            | tabulate -i 2 | sort --human-numeric-sort | $UNIQUE_SORT \
+            | xargs -n 1 realpath --quiet --relative-to=$cwd 2>/dev/null \
+            | $LINES_TO_LINE")"
 
-        if [ "$value" = "" ]; then
+        if [ ! "$value" ]; then
             zle reset-prompt
             local retval="0"
             break
