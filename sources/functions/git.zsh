@@ -48,6 +48,12 @@ git_current_hash() {
 
 git_current_branch() {
     local result="`git rev-parse --quiet --abbrev-ref HEAD 2>/dev/null`"
+    if [ "$result" = "HEAD" ]; then
+        if [ ! "`git name-rev --name-only HEAD 2>&1 | grep -Pv '^(Could not get sha1)'`" ]; then
+            echo " - empty repository `git_root` without any commits?" >&2
+            local result="`git symbolic-ref --short HEAD`"
+        fi
+    fi
     [ "$result" ] && echo "$result"
 }
 
