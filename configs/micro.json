@@ -1,3 +1,20 @@
 {
-    "colorscheme": "gruvbox-tc"
+    "autosu": true,
+    "clipboard": "internal",
+    "colorscheme": "gruvbox-tc",
+    "diffgutter": true,
+    "fastdirty": true,
+    "mkparents": true,
+    "mouse": false,
+    "paste": true,
+    "readonly:": "setlocal",
+    "savecursor": true,
+    "saveundo": true,
+    "scrollbar": true,
+    "scrollmargin": 0,
+    "smartpaste": false,
+    "softwrap": true,
+    "tabmovement": true,
+    "tabstospaces": true,
+    "wordwrap": true
 }
