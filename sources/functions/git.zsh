@@ -156,6 +156,12 @@ git_widget_checkout_modified() {
 zle -N git_widget_checkout_modified
 
 
+open_editor_on_conflict() {
+    $EDITOR $* +$(grep -P --line-number --max-count=1 "^(>>>>>>> .+)$" $value | tabulate -d ':' -i 1)
+    return $?
+}
+
+
 git_widget_conflict_solver() {
     local branch="`git_current_branch`"
     [ ! "$branch" ] && return 1
@@ -181,9 +187,7 @@ git_widget_conflict_solver() {
             | sd '(\s*\d+)$' '' | $UNIQUE_SORT | $LINES_TO_LINE")"
 
         [ ! "$value" ] && break
-
-        local row=$(grep -P --line-number --max-count=1 "^(>>>>>>> .+)$" $value | tabulate -d ':' -i 1)
-        $EDITOR $value +$row
+        open_editor_on_conflict $value
         continue
     done
     return 0
