@@ -975,11 +975,14 @@ bindkey "^a"   git_widget_select_commit_then_files_checkout
 #              ctrl-alt-a, select branch, select commit, checkout files
 bindkey "\e^a" git_widget_select_branch_then_commit_then_file_checkout
 
-bindkey "^s"   git_widget_checkout_commit
+#              alt-s, go to branch
 bindkey "\es"  git_widget_checkout_branch
+#              shift-alt-a, fetch another and merge branch
 bindkey "^[S"  git_widget_merge_branch
+#              ctrl-s, go to commit
+bindkey "^s"   git_widget_checkout_commit
+#              ctrl-alt-a, go to tag
 bindkey "\e^s" git_widget_checkout_tag
-bindkey "\ep"  git_widget_conflict_solver
 
 #              alt-f, fetch remote branch and, if possible, checkout to + pull
 bindkey "\ef"  git_widget_fetch_branch
@@ -987,3 +990,6 @@ bindkey "\ef"  git_widget_fetch_branch
 bindkey "^[F"  git_widget_delete_branch
 #              ctrl-alt-a, permanently delete REMOTE branch
 bindkey "\e^f" git_widget_delete_remote_branch  # PUSH TO origin, caution!
+
+#              alt-f, experimental conflict solver
+bindkey "\ep"  git_widget_conflict_solver
