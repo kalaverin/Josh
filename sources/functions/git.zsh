@@ -122,6 +122,7 @@ git_widget_checkout_modified() {
     [ ! "$branch" ] && return 1
 
     local cwd="`pwd`"
+    # TODO: untracked must be removed
     local select='git status --short --verbose --no-ahead-behind --untracked-files=no'
 
     while true; do
@@ -130,7 +131,7 @@ git_widget_checkout_modified() {
             | $FZF \
             --filepath-word --tac \
             --multi --nth=2.. --with-nth=1.. \
-            --preview=\"$DIFF $branch -- {2} | $DELTA\" \
+            --preview=\"$DIFF -R $branch -- {2} | $DELTA\" \
             --preview-window=\"left:`get_preview_width`:noborder\" \
             --prompt=\"checkout to $branch >  \" \
             | tabulate -i 2 | sort --human-numeric-sort | $UNIQUE_SORT \
@@ -156,24 +157,16 @@ zle -N git_widget_checkout_modified
 
 
 git_widget_conflict_solver() {
-    # error:
-    # UU wotx_biz/accounts/details/commander_skins.py
-    # . wotx_biz/accounts/details/vehicles.py
-    # . wotx_biz/accounts/invoices/constants.py
-    # . wotx_biz/accounts/invoices/vouchers.py
-    # . wotx_biz/logs/financial/views.py
-    # . wotx_glossary.py
-
     local branch="`git_current_branch`"
     [ ! "$branch" ] && return 1
 
     local cwd="`pwd`"
     local select='git status \
-        --short --verbose --no-ahead-behind --untracked-files=no \
+        --short --verbose --no-ahead-behind \
         | grep -P "^(AA|UU)" | tabulate -i 2'
 
     local conflicted='xargs rg \
-        --fixed-strings --files-with-matches --color always \
+        --fixed-strings --files-with-matches --with-filename --color always \
         --count --heading --line-number "<<<<<<<" | tabulate -d ":"'
 
     while true; do
@@ -260,6 +253,7 @@ git_widget_select_commit_then_files_checkout() {
             )"
 
             if [[ "$files" != "" ]]; then
+                # TODO: filter files for exists
                 run_show "git checkout $commit -- $files && git reset $files > /dev/null && git diff HEAD --stat --diff-algorithm=histogram --color=always | xargs -I$ echo $"
                 zle reset-prompt
                 return 130
@@ -664,11 +658,10 @@ git_widget_delete_remote_branch() {
     [ "$value" = "" ] && return 0
 
     local value=$(echo "$value" | sed -e ':a' -e 'N' -e '$!ba' -e 's:\n: :g')
-    local cmd="git push origin --delete $value && git branch -D $value"
+    local cmd="git branch -D $value; git push origin --delete $value"
 
     if [[ "$BUFFER" != "" ]]; then
         LBUFFER="$BUFFER && $cmd"
-        # typeset -f zle-line-init >/dev/null && zle zle-line-init
     else
         LBUFFER=" $cmd"
     fi
