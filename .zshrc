@@ -1,5 +1,5 @@
 if [ ! "$JOSH" ]; then
-    . "$(sh -c "dirname `realpath ~/.zshrc`")/install/init.sh"
+    . "$(sh -c "dirname `realpath ~/.zshrc`")/run/init.sh"
 fi
 
 path=(
@@ -17,7 +17,7 @@ path=(
     /etc/rc.d
     $path
 )
-source "$JOSH/sources/compat.zsh"
+source "$JOSH/src/compat.zsh"
 
 HISTSIZE=100000
 SAVEHIST=100000
@@ -145,38 +145,12 @@ autoload -Uz chpwd_recent_dirs cdr add-zsh-hook
 add-zsh-hook chpwd chpwd_recent_dirs
 zstyle ":anyframe:selector:" use fzf
 
+# user can configure some variables, e.g. THEME_BAT, THEME_FZF
 [ -f ~/.zshrclocal ] && source ~/.zshrclocal
 
-source "$JOSH/sources/config.zsh"
+source "$JOSH/src/configure.zsh"
 source "$ZSH/oh-my-zsh.sh"
-source "$JOSH/sources/loader.zsh"
+source "$JOSH/src/loader.zsh"
 
-zmodload zsh/terminfo
-setopt append_history
-setopt extended_history
-setopt hist_reduce_blanks
-setopt hist_expire_dups_first
-setopt hist_ignore_dups
-setopt hist_ignore_space
-setopt hist_ignore_all_dups
-setopt hist_verify
-setopt inc_append_history
-setopt share_history
-setopt IGNORE_EOF
-unsetopt beep
-
-setopt correctall extendedglob nomatch notify
-zstyle ':completion:*' completer _expand _complete _oldlist _ignored _approximate
-zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
-zstyle ':completion:*' use-compctl false
-zstyle :compinstall filename '~/.zshrc'
-zstyle ':completion:*' menu select
-zstyle ':completion:*' matcher-list '' 'm:{a-z\-}={A-Z\_}' 'r:[^[:alpha:]]||[[:alpha:]]=** r:|=* m:{a-z\-}={A-Z\_}' 'r:|?=** m:{a-z\-}={A-Z\_}'
-
-_comp_options+=(globdots)
-
-autoload -Uz compinit
-compinit -u # -u insecure!
-
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+# user can override anything after load all
 [ -f ~/.zshrcbinds ] && source ~/.zshrcbinds
