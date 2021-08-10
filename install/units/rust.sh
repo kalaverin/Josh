@@ -35,7 +35,6 @@ CARGO_OPT_PACKAGES=(
     durt             # du replace, just sum
     feroxbuster      # agressively website dumper
     ffsend           # sharing files tool
-    fselect          # SQL-like wrapper around find
     fw               # workspaces manager
     gfold            # git reps in directory branches status
     git-hist         # git history for selected file
@@ -57,11 +56,9 @@ CARGO_OPT_PACKAGES=(
     rcrawl           # very fast file by pattern in directory
     rhit             # very fast nginx log analyzer with graphical stats
     rmesg            # modern dmesg replacement
-    scout            # another one fuzzy search pipeliner
     scriptisto       # powerful tool, convert every source to executable with build instructions in same file
     so               # stack overflow answers in terminal
     streampager
-    syncat           # cat with syntax
     tokei            # sources stats
     viu              # print images into terminal
     x8               # websites scan tool
