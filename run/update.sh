@@ -19,27 +19,24 @@ function update_packages() {
 
 function pull_update() {
     local cwd="`pwd`"
+
     cd "$JOSH"
-
     . "$JOSH/usr/units/git.zsh"
+
+    local retval=1
     local local_branch="`git_current_branch`"
-    if [ ! "$local_branch" ]; then
-        cd "$cwd"
-        return 1
+
+    if [ "$local_branch" ]; then
+        local branch="${1:-$local_branch}"
+        [ ! "$branch" ] && local branch="master"
+        [ "$branch" != "$local_branch" ] && git checkout $branch
+
+        git pull origin $branch
+        local retval="$?"
     fi
 
-    local branch="${1:-$local_branch}"
-    [ ! "$branch" ] && local branch="master"
-    [ "$branch" != "$local_branch" ] && $SHELL -c "git checkout $branch"
-
-    git pull origin $branch
-    if [ $? -gt 0 ]; then
-        echo ' - fatal: update failed :-\'
-        cd "$cwd"
-        return 1
-    fi
     cd "$cwd"
-    return 0
+    return "$retval"
 }
 
 function post_update() {
