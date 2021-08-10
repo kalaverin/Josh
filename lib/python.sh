@@ -5,7 +5,6 @@ MIN_PYTHON_VERSION=3.6  # minimal version for modern pip
 PIP_REQ_PACKAGES=(
     pip        # python package manager, first
     httpie     # super http client, just try: http head anything.com
-    pip-chill  # simple list independent packages
     pipdeptree # simple, but powerful tool to manage python requirements
     setuptools
     sshuttle   # swiss knife for ssh tunneling & management
