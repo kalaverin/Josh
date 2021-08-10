@@ -268,7 +268,6 @@ git_widget_add() {
             --preview-window=\"left:`get_preview_width`:noborder\" \
             --prompt='git add >  ' \
             | tabulate -i 2 | sort --human-numeric-sort | $UNIQUE_SORT \
-            | xargs -n 1 realpath --quiet --relative-to=$cwd 2>/dev/null \
             | $LINES_TO_LINE")"
 
         if [ ! "$value" ]; then
