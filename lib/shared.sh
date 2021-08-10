@@ -26,7 +26,3 @@ function get_tempdir() {
     [ ! -d "$path" ] && mkdir -p "$path"
     echo "$path"
 }
-
-check() {
-    rr $@ && rcrawl $@
-}

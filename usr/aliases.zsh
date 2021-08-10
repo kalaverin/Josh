@@ -138,3 +138,7 @@ last-modified() {
     fi
     find $args -printf "%T@ %p\n" | sort -n | cut -d' ' -f 2- | tail -n 1
 }
+
+check() {
+    ri $@ && rcrawl $@
+}
