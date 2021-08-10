@@ -21,7 +21,7 @@ function copy_starship() {
     local dst="$CONFIG_DIR/starship.toml"
     [ ! -d "`dirname $dst`" ] && mkdir -p "`dirname $dst`"; [ -f "$dst" ] && return 0
     echo " + copy starship example config: $dst" && \
-    cp -n $SOURCE_ROOT/configs/starship.toml "$dst"
+    cp -n "$SOURCE_ROOT/usr/share/starship.toml" "$dst"
     return $?
 }
 
@@ -29,7 +29,7 @@ function copy_micro() {
     local dst="$CONFIG_DIR/micro/settings.json"
     [ ! -d "`dirname $dst`" ] && mkdir -p "`dirname $dst`"; [ -f "$dst" ] && return 0
     echo " + copy micro editor example config: $dst" && \
-    cp "$SOURCE_ROOT/configs/micro.json" "$dst"
+    cp -n "$SOURCE_ROOT/usr/share/micro.json" "$dst"
     return $?
 }
 
@@ -37,7 +37,7 @@ function copy_pip() {
     local dst="$CONFIG_DIR/pip/pip.conf"
     [ ! -d "`dirname $dst`" ] && mkdir -p "`dirname $dst`"; [ -f "$dst" ] && return 0
     echo " + copy pip example config: $dst" && \
-    cp "$SOURCE_ROOT/configs/pip.conf" "$dst"
+    cp -n "$SOURCE_ROOT/usr/share/pip.conf" "$dst"
     return $?
 }
 
@@ -45,7 +45,7 @@ function copy_gitignore() {
     local dst="$REAL/.gitignore"
     [ -f "$dst" ] && return 0
     echo " + copy $dst template" && \
-    cp $SOURCE_ROOT/configs/.gitignore "$dst"
+    cp -n "$SOURCE_ROOT/usr/share/.gitignore" "$dst"
     return $?
 }
 
