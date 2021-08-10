@@ -1,13 +1,14 @@
 #!/bin/sh
 
-MIN_PYTHON_VERSION=3.6
+MIN_PYTHON_VERSION=3.6  # minimal version for modern pip
 
 PIP_REQ_PACKAGES=(
-    httpie
-    pip-chill
-    pipdeptree
-    virtualenv
-    \"pip\<=20.3.4\"
+    pip        # python package manager, first
+    httpie     # super http client, just try: http head anything.com
+    pip-chill  # simple list independent packages
+    pipdeptree # simple, but powerful tool to manage python requirements
+    sshuttle   # swiss knife for ssh tunneling & management
+    virtualenv # virtual environments for python packaging
 )
 
 PIP_OPT_PACKAGES=(
