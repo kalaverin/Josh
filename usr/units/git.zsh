@@ -10,7 +10,7 @@ local LIST_BRANCHES="$INCLUDE_DIR/git_list_branches.sh"
 local SETUPCFG_LOOKUP="$INCLUDE_DIR/git_search_setupcfg.sh"
 local TAG_FROM_STRING="$INCLUDE_DIR/git_tag_from_str.sh"
 
-local ESCAPE_STATUS='sd "^( )" "." | sd "^(.)( )" "$1."'
+local ESCAPE_STATUS='sd "^( )" "." | sd "^(.)( )" "$1." | sd "^(. )" "++ "'
 local GIT_DIFF="git diff --color=always --stat --patch --diff-algorithm=histogram"
 
 # ———
@@ -35,6 +35,9 @@ function sfet() {
     local branch="${1:-`git_current_branch`}"
     [ ! "$branch" ] && return 1
 
+    if [ ! "$branch" = "`git_current_branch`" ]; then
+        run_show "git fetch origin \"$branch\":\"$branch\"" 2>&1
+    fi
     run_show "git fetch --verbose --all --tags" 2>&1 | grep -v 'up to date'
     return $?
 }
@@ -383,6 +386,7 @@ git_widget_conflict_solver() {
         local value="$(
             $SHELL -c "$select | $conflicted | $UNIQUE_SORT \
             | $FZF \
+            --exit-0 \
             --filepath-word --tac \
             --multi --nth=1.. --with-nth=1.. \
             --prompt=\"$branch solving >  \" \
@@ -391,9 +395,16 @@ git_widget_conflict_solver() {
             | sd '(\s*\d+)$' '' | $UNIQUE_SORT | $LINES_TO_LINE")"
 
         [ ! "$value" ] && break
+
         open_editor_on_conflict $value
-        continue
+
+        local conflits_count=$($SHELL -c "echo \"$value\" | $conflicted | wc -l")
+        if [ "$conflits_count" -gt 0 ]; then
+        else
+            run_hide " git add $value"
+        fi
     done
+    zle redisplay
     return 0
 }
 zle -N git_widget_conflict_solver
