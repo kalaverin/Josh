@@ -1,5 +1,5 @@
 if [ -d "$1" ]; then
-    exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first $1
+    lsd --almost-all --dereference --extensionsort --classify --long --oneline --versionsort --color always --blocks permission,user,group,date,size,name --date +"%Y-%m-%d %H:%M:%S" --group-dirs first --icon never --ignore-glob "*.pyc"  $1
 
 elif [ -f "$1" ]; then
     if [ -f "$JOSH_VIU" ] && [[ "$1" =~ "\.(jpg|png|gif)$" ]]; then
