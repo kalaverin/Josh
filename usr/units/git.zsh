@@ -402,8 +402,8 @@ git_widget_conflict_solver() {
         --files-with-matches --with-filename --color always \
         --count --heading --line-number "^(<<<<<<< HEAD)$" | tabulate -d ":"'
 
+    local need_quit=0
     local last_hash=""
-
 
     while true; do
         while true; do
@@ -418,20 +418,35 @@ git_widget_conflict_solver() {
                 --preview=\"$GIT_DIFF $branch -- {1} | $DELTA\" \
                 --preview-window=\"left:`get_preview_width`:noborder\" \
                 | sd '(\s*\d+)$' '' | $UNIQUE_SORT | $LINES_TO_LINE")"
-
-            [ ! "$value" ] && break
+            if [ ! "$value" ]; then
+                # if exit without selection
+                local need_quit=1
+                break
+            fi
 
             local file_hash="`md5sum $value | tabulate -i 1`"
-            [ "$last_hash" = "$file_hash" ] && break
+            if [ "$last_hash" = "$file_hash" ]; then
+                # prevent infinite loop with select-1
+                local need_quit=1
+                break
+            fi
 
             open_editor_on_conflict $value
-            local last_hash="$file_hash"  # prevent infinite loop with select-1
+            local last_hash="$file_hash"
 
             local conflits_count=$($SHELL -c "echo \"$value\" | $conflicted | wc -l")
             if [ ! "$conflits_count" -gt 0 ]; then
                 run_show " git add $value"
             fi
+
+            local files="$($SHELL -c "$select | $conflicted | $UNIQUE_SORT")"
+            if [ ! "$files" ]; then
+                # if last file committed, but not manually exit from select menu
+                break
+            fi
         done
+
+        [ "$need_quit" -gt 0 ] && break
 
         local state="`get_repository_state`"  # merging, rebase or cherry-pick
         if [ "$state" ]; then
