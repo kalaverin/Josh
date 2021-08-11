@@ -66,8 +66,8 @@ insert_directory() {
         --color="$FZF_THEME" \
         --reverse --min-height='11' --height='11' \
         --preview-window="right:`get_preview_width`:noborder" \
-        --prompt="catalog >  " \
-        --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}" \
+        --prompt="dir >  " \
+        --preview="$SHELL $JOSH/usr/src/viewer.sh {}" \
         -i --filepath-word \
     )
 
@@ -141,7 +141,7 @@ insert_endpoint() {
         --reverse --min-height='11' --height='11' \
         --preview-window="right:`get_preview_width`:noborder" \
         --prompt="file >  " \
-        --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}" \
+        --preview="$SHELL $JOSH/usr/src/viewer.sh {}" \
         -i --filepath-word \
     )
 
@@ -185,7 +185,7 @@ visual_chdir() {
                 --bind='enter:accept' \
                 --reverse --min-height='11' --height='11' \
                 --preview-window="right:`get_preview_width`:noborder" \
-                --preview="exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first {}" \
+                --preview="$SHELL $JOSH/usr/src/viewer.sh {}" \
                 --filepath-word --tiebreak=begin,length,end,index \
                 --bind='alt-bs:execute(echo `realpath {}` > /tmp/.lastdir.tmp)+abort' \
                 --ansi --extended --info='inline' \

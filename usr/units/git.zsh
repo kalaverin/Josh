@@ -418,6 +418,7 @@ git_widget_conflict_solver() {
                 --preview=\"$GIT_DIFF $branch -- {1} | $DELTA\" \
                 --preview-window=\"left:`get_preview_width`:noborder\" \
                 | sd '(\s*\d+)$' '' | $UNIQUE_SORT | $LINES_TO_LINE")"
+
             if [ ! "$value" ]; then
                 # if exit without selection
                 local need_quit=1

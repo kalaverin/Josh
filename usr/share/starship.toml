@@ -4,10 +4,10 @@ add_newline = false
 format = ' @[$symbol($profile )(\($region\) )(\[$duration\])]($style)'
 
 [character]
-format = '$symbol '
-success_symbol = '[λ](bold green)'
-error_symbol = '[λ](bold red)'
-vicmd_symbol = '[λ](bold green)'
+format = '$symbol'
+success_symbol = '[λ](bold green) '
+error_symbol = ''
+vicmd_symbol = '[λ](bold green) '
 disabled = false
 
 [cmake]

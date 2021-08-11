@@ -27,14 +27,18 @@ compinit -u # -u insecure!
 
 # ———
 
-if [ -f "`which -p scotty`" ]; then
-    eval "$(scotty init zsh)"
+if [ -f "`which -p broot`" ]; then
+    eval "$(broot --print-shell-function zsh)"
+fi
+
+if [ -f "`which -p pip`" ]; then
+    eval "$(pip completion --zsh)"
 fi
 
 if [ -f "`which -p starship`" ]; then
     eval "$(starship init zsh)"
 fi
 
-if [ -f "`which -p pip`" ]; then
-    eval "$(pip completion --zsh)"
+if [ -f "`which -p scotty`" ]; then
+    eval "$(scotty init zsh)"
 fi

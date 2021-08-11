@@ -3,11 +3,18 @@ export LANGUAGE='en_US.UTF-8'
 export LC_ALL='en_US.UTF-8'
 export MM_CHARSET='en_US.UTF-8'
 
-if [ -f "`which -p bat`" ]; then
-    export PAGER="bat"
-    export BAT_STYLE="full"
+if [ -f "$JOSH_BAT" ]; then
+    export PAGER="$JOSH_BAT"
+    export BAT_STYLE="numbers,changes"
     export BAT_THEME="${THEME_BAT:-gruvbox-dark}" # select: bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/any/file"
     unset THEME_BAT
+fi
+
+if [ -f "$JOSH_DELTA" ]; then
+    export DELTA="$JOSH_DELTA --commit-style='yellow ul' --commit-decoration-style='' --file-style='cyan ul' --file-decoration-style='' --hunk-style normal --zero-style='dim syntax' --24-bit-color='always' --minus-style='syntax #330000' --plus-style='syntax #002200' --file-modified-label='M' --file-removed-label='D' --file-added-label='A' --file-renamed-label='R' --line-numbers-left-format='{nm:^4}' --line-numbers-minus-style='#aa2222' --line-numbers-zero-style='#505055' --line-numbers-plus-style='#229922' --line-numbers --navigate --relative-paths"
+    if [ "$JOSH_BAT" ]; then
+        export DELTA="$DELTA --pager $JOSH_BAT"
+    fi
 fi
 
 if [ -f "`which -p docker`" ]; then
@@ -24,9 +31,9 @@ if [ -f "`which -p fzf`" ]; then
     unset THEME_FZF
 fi
 
-[ -f "`which -p micro`" ] && export EDITOR="micro"
+[ -f "`which -p micro`" ] && export EDITOR="`which -p micro`"
 [ -f "`which -p rip`" ] && export GRAVEYARD="$REAL/.trash"
-[ -f "`which -p sccache`" ] && export RUSTC_WRAPPER="`which sccache`"
+[ -f "`which -p sccache`" ] && export RUSTC_WRAPPER="`which -p sccache`"
 [ -f "`which -p vivid`" ] && export LS_COLORS="`vivid generate ${THEME_LS:-solarized-dark}`"
 
 EMOJI_CLI_KEYBIND="\eo"
