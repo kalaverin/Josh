@@ -26,36 +26,45 @@ DELTA_FOR_COMMITS_LIST_OUT="xargs -I$ git show --find-renames --find-copies --fu
 function spll() {
     local branch="${1:-`git_current_branch`}"
     [ ! "$branch" ] && return 1
-    run_show "git pull origin $branch"
+
+    run_show "git pull --ff-only --no-edit --no-commit --verbose origin $branch" 2>&1 | grep -v 'up to date'
+    return $?
 }
 
 function sfet() {
     local branch="${1:-`git_current_branch`}"
     [ ! "$branch" ] && return 1
-    run_show "git fetch origin $branch && git fetch --tags --all"
+
+    run_show "git fetch --verbose --all --tags" 2>&1 | grep -v 'up to date'
+    return $?
 }
 
-function sall() {
+function sact() {
     local branch="${1:-`git_current_branch`}"
     [ ! "$branch" ] && return 1
 
     is_repository_clean;                        [ $? -gt 0 ] && return 1
-    sfet $branch 2>/dev/null;                   [ $? -gt 0 ] && return 1
+    sfet $branch;                               [ $? -gt 0 ] && return 1
     run_show "git reset --hard origin/$branch"; [ $? -gt 0 ] && return 1
     spll $branch
+    return $?
 }
 
 function spsh() {
     local branch="${1:-`git_current_branch`}"
     [ ! "$branch" ] && return 1
+
     run_show "git push origin $branch"
+    return $?
 }
 
 function sfm() {
     local branch="${1:-`git_current_branch`}"
     [ ! "$branch" ] && return 1
-    sfet $branch 2>/dev/null; [ $? -gt 0 ] && return 1
+
+    sfet $branch; [ $? -gt 0 ] && return 1
     run_show "git merge origin/$branch"
+    return $?
 }
 
 function sbrm() {
@@ -63,7 +72,9 @@ function sbrm() {
         echo " - Branch name required." 1>&2
         return 1
     fi
+
     run_show "git branch -D $1 && git push origin --delete $1"
+    return $?
 }
 
 function sbmv() {
@@ -71,8 +82,10 @@ function sbmv() {
         echo " - Branch name required." 1>&2
         return 1
     fi
+
     local branch="${2:-`sh -c "$GET_BRANCH"`}"
     run_show "git branch -m $branch $1 && git push origin :$branch $1"
+    return $?
 }
 
 function stag() {
@@ -80,7 +93,9 @@ function stag() {
         echo " - Tag required." 1>&2
         return 1
     fi
+
     run_show "git tag -a $1 -m \"$1\" && git push --tags && git fetch --tags"
+    return $?
 }
 
 function smtag() {
@@ -88,10 +103,12 @@ function smtag() {
         echo " - Tag required." 1>&2
         return 1
     fi
+
     is_repository_clean; [ $? -gt 0 ] && return 1
     gcm;                 [ $? -gt 0 ] && return 1
     spll;                [ $? -gt 0 ] && return 1
     stag $1
+    return $?
 }
 
 function stag-() {
@@ -99,22 +116,25 @@ function stag-() {
         echo " - Tag required." 1>&2
         return 1
     fi
+
     run_show "git tag -d \"$1\" && git push --delete origin \"$1\""
+    return $?
 }
 
 function sck() {
     if [ "$1" = "" ]; then
-        echo " ! task name needed" 1>&2
+        echo " - task name needed" 1>&2
         return 1
     fi
     local match=`echo "$1" | grep -Po '^([0-9])'`
     if [ "$match" = "" ]; then
         local branch="$1"
     else
-        echo " - Branch name cannot be starting with digit." 1>&2
+        echo " - branch name can't starting with digit" 1>&2
         return 1
     fi
     run_show "git checkout -b $branch 2> /dev/null || git checkout $branch"
+    return $?
 }
 
 function drop_this_branch_right_now() {
@@ -134,6 +154,7 @@ function drop_this_branch_right_now() {
 
     run_show "git reset --hard && (git checkout develop 2>/dev/null 1>/dev/null 2> /dev/null || git checkout master 2>/dev/null 1>/dev/null) && git branch -D $branch"
     echo " => git push origin --delete $branch" 1>&2
+    return $?
 }
 
 function DROP_THIS_BRANCH_RIGHT_NOW() {
@@ -151,19 +172,18 @@ function DROP_THIS_BRANCH_RIGHT_NOW() {
         return 1
     fi
 
-    local cmd="git reset --hard && (git checkout develop 2>/dev/null 1>/dev/null 2> /dev/null || git checkout master 2>/dev/null 1>/dev/null) && git branch -D $branch && git push origin --delete $branch"
-    echo " -> $cmd" 1>&2
-    eval ${cmd}
+    run_show "git reset --hard && (git checkout develop 2>/dev/null 1>/dev/null 2> /dev/null || git checkout master 2>/dev/null 1>/dev/null) && git branch -D $branch && git push origin --delete $branch"
+    return $?
 }
 
 function is_repository_clean() {
     local modified='echo $(git ls-files --modified `git rev-parse --show-toplevel`)$(git ls-files --deleted --others --exclude-standard `git rev-parse --show-toplevel`)'
-    if [ "`echo "$modified" | $SHELL`" != "" ]
-    then
+    if [ "`echo "$modified" | $SHELL`" != "" ]; then
         local root="$(echo "$GET_ROOT" | $SHELL)"
         echo " * isn't clean, found unstages changes: $root"
         return 1
     fi
+    return 0
 }
 
 function chdir_to_setupcfg {
@@ -175,6 +195,7 @@ function chdir_to_setupcfg {
         fi
         cd $root
     fi
+    return 0
 }
 
 function gub() {
