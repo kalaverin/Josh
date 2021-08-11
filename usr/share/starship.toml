@@ -1,5 +1,15 @@
 add_newline = false
 
+[aws]
+format = ' @[$symbol($profile )(\($region\) )(\[$duration\])]($style)'
+
+[character]
+format = '$symbol '
+success_symbol = '[λ](bold green)'
+error_symbol = '[λ](bold red)'
+vicmd_symbol = '[λ](bold green)'
+disabled = false
+
 [cmake]
 format = ' [$symbol($version)]($style)'
 
@@ -53,6 +63,9 @@ format = ' [$symbol($version)]($style)'
 
 [erlang]
 format = ' [$symbol($version)]($style)'
+
+[gcloud]
+format = ' [$symbol$account(@$domain)(\($region\))]($style)'
 
 [git_branch]
 format = ' [$symbol$branch]($style)(:[$remote]($style))[/](black bold)'
@@ -155,6 +168,16 @@ format = ' [$symbol($version)]($style)'
 
 [ocaml]
 format = ' [$symbol($version)(\($switch_indicator$switch_name\) )]($style)'
+
+[openstack]
+format = ' [$symbol$cloud(\($project\))]($style) '
+
+[package]
+format = ' [$symbol$version]($style) '
+symbol = '📦 '
+style = '208 bold'
+display_private = false
+disabled = false
 
 [perl]
 format = ' [$symbol($version)]($style)'
