@@ -2,13 +2,16 @@
 
 CARGO_REQ_PACKAGES=(
     bat            # modern replace for cat with syntax highlight
+    broot          # lightweight embeddable file manager
     csview         # for commas, tabs, etc
     exa            # fast replace for ls
     fd-find        # fd, fast replace for find for humans
     git-delta      # fast replace for git delta with steroids
+    lsd            # another ls replacement tool
     mdcat          # Markdown files rendered viewer
     petname        # generate human readable strings
     proximity-sort # path sorter
+    rcrawl         # very fast file by pattern in directory
     ripgrep        # rg, fast replace for grep -ri for humans
     rm-improved    # rip, powerful rm replacement with trashcan
     runiq          # fast uniq replacement
@@ -16,6 +19,7 @@ CARGO_REQ_PACKAGES=(
     sd             # fast sed replacement for humans
     starship       # shell prompt
     tabulate       # autodetect columns in stdin and tabulate
+    viu            # print images into terminal
     vivid          # ls colors themes selections system
 )
 
@@ -23,8 +27,6 @@ CARGO_OPT_PACKAGES=(
     atuin            # another yet history manager
     bandwhich        # network bandwhich meter
     bingrep          # extract and grep strings from binaries
-    broot            # lightweight embeddable file manager
-    cargo-trim
     choose           # awk for humans
     colorizer        # logs colorizer
     conventional_commits_next_version
@@ -47,20 +49,17 @@ CARGO_OPT_PACKAGES=(
     just             # comfortable system for per project frequently used commands like make test, etc
     logtail          # graphical tail logs in termial
     lolcate-rs       # blazing fast filesystem database
-    lsd              # another ls replacement tool
     mrh              # recursively search git reps and return status (detached, tagged, etc)
     onefetch         # graphical statistics for git repository
     paper-terminal   # another yet Markdown printer, naturally like newpaper
     procs            # ps aux replacement for humans
     pueue            # powerful tool to running and management background tasks
-    rcrawl           # very fast file by pattern in directory
     rhit             # very fast nginx log analyzer with graphical stats
     rmesg            # modern dmesg replacement
     scriptisto       # powerful tool, convert every source to executable with build instructions in same file
     so               # stack overflow answers in terminal
     streampager
     tokei            # repository stats
-    viu              # print images into terminal
     x8               # websites scan tool
     ytop             # simple htop
 )
