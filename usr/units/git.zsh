@@ -435,21 +435,21 @@ git_widget_conflict_solver() {
 
         local state="`get_repository_state`"  # merging, rebase or cherry-pick
         if [ "$state" ]; then
-            local files="`git status --short --verbose --no-ahead-behind --ignore-submodules --untracked-file | wc -l`"
 
             # nothing to resolve, just skip
+            local files="`git status --short --verbose --no-ahead-behind --ignore-submodules --untracked-file | wc -l`"
             if [ ! "$files" -gt 0 ]; then
                 run_show " git $state --skip"
+                continue
             fi
-
-            local files="`git status --short --verbose --no-ahead-behind --ignore-submodules --untracked-file | grep -Pv '^(M )' | wc -l`"
 
             # all files resolved and no more changes, then — continue
+            local files="`git status --short --verbose --no-ahead-behind --ignore-submodules --untracked-file | grep -Pv '^(M )' | wc -l`"
             if [ ! "$files" -gt 0 ]; then
                 run_show " git $state --continue"
-            else
-                break
             fi
+        else
+            break
         fi
     done
 
