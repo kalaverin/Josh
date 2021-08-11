@@ -239,7 +239,6 @@ alias gdr='git ls-files --modified `git rev-parse --show-toplevel`'
 
 # ———
 
-
 local GET_ROOT='git rev-parse --quiet --show-toplevel'
 git_root() {
     local result=$(realpath `$SHELL -c "$GET_ROOT"`)
@@ -262,6 +261,22 @@ git_current_branch() {
         fi
     fi
     [ "$result" ] && echo "$result"
+}
+
+get_repository_state() {
+    local root="`git_root`"
+    [ ! "$root" ] && return 1
+
+    if [ -f "$root/.git/CHERRY_PICK_HEAD" ]; then
+        local state="cherry-pick"
+    elif [ -f "$root/.git/REBASE_HEAD" ]; then
+        local state="rebase"
+    elif [ -f "$root/.git/MERGE_HEAD" ]; then
+        local state="merge"
+    fi
+
+    [ ! "$state" ] && return 1
+    echo "$state"
 }
 
 git_checkout_branch() {
@@ -364,8 +379,13 @@ zle -N git_widget_checkout_modified
 
 
 open_editor_on_conflict() {
-    $EDITOR $* +$(grep -P --line-number --max-count=1 "^(>>>>>>> .+)$" $value | tabulate -d ':' -i 1)
-    return $?
+    local line="$($SHELL -c "
+        grep -P --line-number --max-count=1 '^>>>>>>>' $1 | tabulate -d ':' -i 1
+    ")"
+    if [ "$line" -gt 0 ]; then
+        $EDITOR $* +$line
+        return $?
+    fi
 }
 
 
@@ -379,32 +399,61 @@ git_widget_conflict_solver() {
         | grep -P "^(AA|UU)" | tabulate -i 2'
 
     local conflicted='xargs rg \
-        --fixed-strings --files-with-matches --with-filename --color always \
-        --count --heading --line-number "<<<<<<<" | tabulate -d ":"'
+        --files-with-matches --with-filename --color always \
+        --count --heading --line-number "^(<<<<<<< HEAD)$" | tabulate -d ":"'
+
+    local last_hash=""
+
 
     while true; do
-        local value="$(
-            $SHELL -c "$select | $conflicted | $UNIQUE_SORT \
-            | $FZF \
-            --exit-0 \
-            --filepath-word --tac \
-            --multi --nth=1.. --with-nth=1.. \
-            --prompt=\"$branch solving >  \" \
-            --preview=\"$GIT_DIFF $branch -- {1} | $DELTA\" \
-            --preview-window=\"left:`get_preview_width`:noborder\" \
-            | sd '(\s*\d+)$' '' | $UNIQUE_SORT | $LINES_TO_LINE")"
+        while true; do
+            local value="$(
+                $SHELL -c "$select | $conflicted | $UNIQUE_SORT \
+                | $FZF \
+                --exit-0 \
+                --select-1 \
+                --filepath-word --tac \
+                --multi --nth=1.. --with-nth=1.. \
+                --prompt=\"$branch solving >  \" \
+                --preview=\"$GIT_DIFF $branch -- {1} | $DELTA\" \
+                --preview-window=\"left:`get_preview_width`:noborder\" \
+                | sd '(\s*\d+)$' '' | $UNIQUE_SORT | $LINES_TO_LINE")"
 
-        [ ! "$value" ] && break
+            [ ! "$value" ] && break
 
-        open_editor_on_conflict $value
+            local file_hash="`md5sum $value | tabulate -i 1`"
+            [ "$last_hash" = "$file_hash" ] && break
 
-        local conflits_count=$($SHELL -c "echo \"$value\" | $conflicted | wc -l")
-        if [ "$conflits_count" -gt 0 ]; then
-        else
-            run_hide " git add $value"
+            open_editor_on_conflict $value
+            local last_hash="$file_hash"  # prevent infinite loop with select-1
+
+            local conflits_count=$($SHELL -c "echo \"$value\" | $conflicted | wc -l")
+            if [ ! "$conflits_count" -gt 0 ]; then
+                run_show " git add $value"
+            fi
+        done
+
+        local state="`get_repository_state`"  # merging, rebase or cherry-pick
+        if [ "$state" ]; then
+            local files="`git status --short --verbose --no-ahead-behind --ignore-submodules --untracked-file | wc -l`"
+
+            # nothing to resolve, just skip
+            if [ ! "$files" -gt 0 ]; then
+                run_show " git $state --skip"
+            fi
+
+            local files="`git status --short --verbose --no-ahead-behind --ignore-submodules --untracked-file | grep -Pv '^(M )' | wc -l`"
+
+            # all files resolved and no more changes, then — continue
+            if [ ! "$files" -gt 0 ]; then
+                run_show " git $state --continue"
+            else
+                break
+            fi
         fi
     done
-    zle redisplay
+
+    zle reset-prompt
     return 0
 }
 zle -N git_widget_conflict_solver
@@ -956,11 +1005,11 @@ git_widget_merge_branch() {
             break
 
         elif [ ! "$BUFFER" ]; then
-            run_show "git fetch origin $value 2>/dev/null 1>/dev/null && git merge origin/$value"
+            run_show "sfet \"$value\" && git merge --no-commit \"origin/$value\""
             local retval=$?
 
         elif [ "$value" ]; then
-            LBUFFER="$BUFFER && git fetch origin $value && git merge origin/$value"
+            LBUFFER="$BUFFER && git fetch origin \"$value\":\"$value\" && git merge --no-commit \"origin/$value\""
         fi
 
         break
