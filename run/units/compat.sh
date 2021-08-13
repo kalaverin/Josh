@@ -79,7 +79,8 @@ function check_compliance() {
 
     elif [ -n "$(uname -v | grep -Pi '(debian|ubuntu)')" ]; then
         echo " + os: debian-based `uname -srv`"
-        local cmd="(sudo apt-get update --yes --quiet || true) && sudo apt-get install --yes --quiet --no-remove"
+        [ -f "`which -p apt`" ] && local bin="apt" || local bin="apt-get"
+        local cmd="(sudo $bin update --yes --quiet || true) && sudo $bin install --yes --quiet --no-remove"
         local pkg="zsh git jq pv pkg-config python3 python3-distutils tree libssl-dev"
 
     elif [ -n "$(uname -srv | grep -i gentoo)" ]; then
