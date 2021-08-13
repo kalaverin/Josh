@@ -57,25 +57,25 @@ version_not_compatible()
 function check_compliance() {
     if [ -n "$(uname | grep -i freebsd)" ]; then
         echo " + os: freebsd `uname -srv`"
-        local cmd="sudo pkg install -y"
-        local pkg="zsh git jq pv python3 coreutils gnugrep gnuls gsed openssl"
         REQURED_SYSTEM_BINARIES=(
             /usr/local/bin/grep
             /usr/local/bin/gnuls
             /usr/local/bin/grealpath
             /usr/local/bin/gsed
         )
+        local cmd="sudo pkg install -y"
+        local pkg="zsh git jq pv python3 coreutils gnugrep gnuls gsed openssl"
 
     elif [ -n "$(uname | grep -i darwin)" ]; then
         echo " + os: macos `uname -srv`"
-        local cmd="brew update && brew install"
-        local pkg="zsh git jq pv python@3 grep gsed"
         REQURED_SYSTEM_BINARIES=(
             /usr/local/bin/grep
             /usr/local/bin/gnuls
             /usr/local/bin/grealpath
             /usr/local/bin/gsed
         )
+        local cmd="brew update && brew install"
+        local pkg="zsh git jq pv python@3 grep gsed"
 
     elif [ -n "$(uname -v | grep -Pi '(debian|ubuntu)')" ]; then
         echo " + os: debian-based `uname -srv`"
