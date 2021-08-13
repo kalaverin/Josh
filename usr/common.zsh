@@ -313,20 +313,23 @@ zle -N chdir_home
 
 visual_grep() {
     local execute="$INCLUDE_DIR/ripgrep_query_name_to_micro.sh"
+    local search_one="$JOSH/usr/src/ripgrep_spaced_words.sh"
 
     local query=""
     while true; do
-        local ripgrep="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS --smart-case --fixed-strings"
-        local preview="echo {2}:{q} | $JOSH_GREP -Pv '^:' | $JOSH_SED -r 's#(.+?):(.+?)#>>\2<<//\1#g' | sd '>>(\s*)(.*?)(\s*)<<//(.+)' '$ripgrep --vimgrep --context 0 \"\$2\" \$4' | $SHELL | tabulate -d ':' -i 2 | runiq - | sort -V | tr '\n' ' ' | sd '^([^\s]+)(.*)$' ' -r\$1: \$1\$2' | sd '(\s+)(\d+)' ' -H\$2' | xargs -I@ echo 'bat --terminal-width \$FZF_PREVIEW_COLUMNS --color=always @ {2}' | $SHELL"
+        local ripgrep="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS --smart-case"
+            local preview="echo {2} | $JOSH_GREP -Pv '^:' | sd '(^\d+|(?::)\d+)' ' -H\$1' | sd ':' '' | sd '(^\s+|\s+$)' '' | sd '^-H(\d+)' ' -r\$1: -H\$1 ' | sd '(.)$' '\$1 {1}' | xargs bat --terminal-width \$FZF_PREVIEW_COLUMNS --color=always"
+
+        # local preview="echo {2}:{q} | $JOSH_SED -r 's#(.+?):(.+?)#>>\2<<//\1#g' | sd '>>(\s*)(.*?)(\s*)<<//(.+)' '$ripgrep --vimgrep --context 0 \"\$2\" \$4' | $SHELL | tabulate -d ':' -i 2 | runiq - | sort -V | tr '\n' ' ' | sd '^([^\s]+)(.*)$' ' -r\$1: \$1\$2' | sd '(\s+)(\d+)' ' -H\$2' | xargs -I@ echo 'bat --terminal-width \$FZF_PREVIEW_COLUMNS --color=always @ {2}' | $SHELL"
 
         local query=$(
-            $SHELL -c "[ \"$query\" ] && $ripgrep --color=always --count -- \"$query\" | sd '^(.+):(\d+)$' '\$2 \$1' | sort -grk 1 || true" | \
-            fzf \
-            --bind "change:reload:(sleep 0.33 && $ripgrep --color=always --count -- {q} | sd '^(.+):(\d+)$' '\$2 \$1' | sort -grk 1 || true)" \
+            echo "$query" | $SHELL $search_one \
+            | fzf \
             --prompt='query search >  ' --query="$query" --tiebreak='index' \
             --no-sort \
             --disabled \
             --nth=2.. --with-nth=1.. \
+            --bind "change:reload:(echo \"{q}\" | $SHELL $search_one || true)" \
             --preview-window="left:`get_preview_width`:noborder" \
             --preview="$preview" \
             --ansi --extended --info='inline' \
@@ -347,13 +350,16 @@ visual_grep() {
             --print-query | head -n 1
         )
         [ ! "$query" ] && break
+        return 0
 
 
         while true; do
             local ripgrep="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS --smart-case --word-regexp"
             local preview="echo {2}:$query | $JOSH_GREP -Pv '^:' | $JOSH_SED -r 's#(.+?):(.+?)#>>\2<<//\1#g' | sd '>>(\s*)(.*?)(\s*)<<//(.+)' '$ripgrep --vimgrep --context 0 \"\$2\" \$4' | $SHELL | tabulate -d ':' -i 2 | runiq - | sort -V | tr '\n' ' ' | sd '^([^\s]+)(.*)$' ' -r\$1: \$1\$2' | sd '(\s+)(\d+)' ' -H\$2' | xargs -I@ echo 'bat --terminal-width \$FZF_PREVIEW_COLUMNS --color=always @ {2}' | $SHELL"
+
+            # $SHELL -c "$ripgrep --color=always --count -- \"$query\" | sd '^(.+):(\d+)$' '\$2 \$1' | sort -grk 1" \
             local value=$(
-                $SHELL -c "$ripgrep --color=always --count -- \"$query\" | sd '^(.+):(\d+)$' '\$2 \$1' | sort -grk 1" \
+                $SHELL -c "echo \"{q}\" | sd '([^\w\d]+)' ' ' | sd '(^ | $)' '' | sd ' +' '.+' | xargs -n 1 $ripgrep --with-filename --line-number --heading -- | sd '\n^(\d:).+$' ':\$1' | sd ':+' ':' | sd ':$' '' | sd '\n+' '\n' | sd ':([\d:]+)$' ' \$1' | sort -grk 1" \
                 | fzf \
                 --prompt="query \`$query\` >  " --query='' --tiebreak='index' \
                 --no-sort \
