@@ -50,6 +50,12 @@ function python_init() {
             `$PYTHON3 --version 2>&1 | grep -Po '([\d\.]+)$'` || return 0
     fi
 
+    local distutils="`echo 'import distutils; print(distutils)' | $PYTHON3 2>/dev/null | grep from`"
+    if [ ! "$distutils" ]; then
+        echo " - fatal: distutils isn't installed for $PYTHON3"
+        return 255
+    fi
+
     for dir in $(sh -c "echo "$PATH" | sed 's#:#\n#g' | sort -su"); do
         for exe in $(find $dir -type f -name 'python*' 2>/dev/null | sort -Vr); do
             local version=$($exe --version 2>&1 | grep -Po '([\d\.]+)$')
