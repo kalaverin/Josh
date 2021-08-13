@@ -86,7 +86,7 @@ function sbmv() {
         return 1
     fi
 
-    local branch="${2:-`sh -c "$GET_BRANCH"`}"
+    local branch="${2:-`$SHELL -c "$GET_BRANCH"`}"
     run_show "git branch -m $branch $1 && git push origin :$branch $1"
     return $?
 }
@@ -207,7 +207,7 @@ function gub() {
     do
         current_path=$(dirname "$git_directory")
         cd "${current_path}"
-        local branch="`sh -c "$GET_BRANCH"`"
+        local branch="`$SHELL -c "$GET_BRANCH"`"
 
         echo ""
         echo "    `pwd` <- $branch"

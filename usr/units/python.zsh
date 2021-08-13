@@ -108,7 +108,7 @@ function ten {
         rm -rf "$name" && \
     virtualenv --python=$exe "$name" && \
         source $name/bin/activate && cd $cwd && \
-        pip install pip-chill pipdeptree $packages
+        $SHELL -c "pip install pipdeptree $packages"
 }
 
 function cdv {
@@ -168,7 +168,7 @@ visual_freeze() {
 
     local venv="`basename ${VIRTUAL_ENV:-''}`"
     local preview="echo {2} | xargs -n 1 $SHELL $PIP_PKG_INFO"
-    local value="$(sh -c "
+    local value="$($SHELL -c "
         $SHELL $PIP_LIST_TOP \
         | $FZF \
             --multi \
