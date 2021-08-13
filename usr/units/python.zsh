@@ -108,7 +108,7 @@ function ten {
         rm -rf "$name" && \
     virtualenv --python=$exe "$name" && \
         source $name/bin/activate && cd $cwd && \
-        pip install pip-chill pipdeptree $packages
+        $SHELL -c "pip install pip-chill pipdeptree $packages"
 }
 
 function cdv {
