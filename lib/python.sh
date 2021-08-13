@@ -78,7 +78,7 @@ function python_init() {
 function pip_init() {
     python_init
     if [ ! -f "$PYTHON3" ]; then
-        echo " - fatal: python>=3.6 required!"
+        echo " - fatal: python>=$MIN_PYTHON_VERSION required!"
         return 1
     fi
 
