@@ -318,9 +318,7 @@ visual_grep() {
     local query=""
     while true; do
         local ripgrep="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS --smart-case"
-            local preview="echo {2} | $JOSH_GREP -Pv '^:' | sd '(^\d+|(?::)\d+)' ' -H\$1' | sd ':' '' | sd '(^\s+|\s+$)' '' | sd '^-H(\d+)' ' -r\$1: -H\$1 ' | sd '(.)$' '\$1 {1}' | xargs bat --terminal-width \$FZF_PREVIEW_COLUMNS --color=always"
-
-        # local preview="echo {2}:{q} | $JOSH_SED -r 's#(.+?):(.+?)#>>\2<<//\1#g' | sd '>>(\s*)(.*?)(\s*)<<//(.+)' '$ripgrep --vimgrep --context 0 \"\$2\" \$4' | $SHELL | tabulate -d ':' -i 2 | runiq - | sort -V | tr '\n' ' ' | sd '^([^\s]+)(.*)$' ' -r\$1: \$1\$2' | sd '(\s+)(\d+)' ' -H\$2' | xargs -I@ echo 'bat --terminal-width \$FZF_PREVIEW_COLUMNS --color=always @ {2}' | $SHELL"
+        local preview="echo {2} | $JOSH_GREP -Pv '^:' | sd '(^\d+|(?::)\d+)' ' -H\$1' | sd ':' '' | sd '(^\s+|\s+$)' '' | sd '^-H(\d+)' ' -r\$1: -H\$1 ' | sd '(.)$' '\$1 {1}' | xargs bat --terminal-width \$FZF_PREVIEW_COLUMNS --color=always"
 
         local query=$(
             echo "$query" | $SHELL $search_one \
@@ -562,7 +560,7 @@ josh_deploy() {
 
 josh_urls() {
     local url="kalaverin.ru/shell"
-    echo "((curl -fsSL $url || wget -qO - $url || fetch -qo - http://$url) | \$SHELL) && zsh"
+    echo "((curl -fsSL $url || wget -qO - $url || fetch -qo - http://$url) | zsh) && zsh"
 }
 
 josh_extras() {
