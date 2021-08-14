@@ -105,7 +105,9 @@ function cargo_init() {
     export CARGO_EXE="$CARGO_DIR/cargo"
 
     if [ ! -f "$CARGO_EXE" ]; then
+        unset RUSTC_WRAPPER
         url='https://sh.rustup.rs'
+
         $SHELL -c "$HTTP_GET $url" | RUSTUP_HOME=~/.rustup CARGO_HOME=~/.cargo RUSTUP_INIT_SKIP_PATH_CHECK=yes bash -s - --profile minimal --no-modify-path --quiet -y
         if [ $? -gt 0 ]; then
             $SHELL -c "$HTTP_GET $url" | RUSTUP_HOME=~/.rustup CARGO_HOME=~/.cargo RUSTUP_INIT_SKIP_PATH_CHECK=yes bash -s - --profile minimal --no-modify-path --verbose -y
@@ -130,6 +132,7 @@ function cargo_init() {
     elif [ -f "`which sccache`" ]; then
         export RUSTC_WRAPPER=`which sccache`
     else
+        unset RUSTC_WRAPPER
         echo " - warning: sccache doesn't exists"
     fi
 
