@@ -111,10 +111,10 @@ function pip_init() {
     fi
 
     export PIP_EXE="$PIP_DIR/pip"
-    [ ! -d "$PIP_DIR" ] && mkdir -p "$PIP_DIR"
 
-    url="https://bootstrap.pypa.io/get-pip.py"
     if [ ! -f "$PIP_EXE" ]; then
+        [ ! -d "$PIP_DIR" ] && mkdir -p "$PIP_DIR"
+        url="https://bootstrap.pypa.io/get-pip.py"
         local pip_file="/tmp/get-pip.py"
 
         $SHELL -c "$HTTP_GET $url > $pip_file" && \

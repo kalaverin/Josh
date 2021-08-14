@@ -15,13 +15,13 @@ CARGO_REQ_PACKAGES=(
     ripgrep        # rg, fast replace for grep -ri for humans
     rm-improved    # rip, powerful rm replacement with trashcan
     runiq          # fast uniq replacement
+    sccache        # compiler caching backend
     scotty         # directory crawling statistics with search
     sd             # fast sed replacement for humans
     starship       # shell prompt
     tabulate       # autodetect columns in stdin and tabulate
     viu            # print images into terminal
     vivid          # ls colors themes selections system
-    sccache        # compiler caching backend
 )
 
 CARGO_OPT_PACKAGES=(
@@ -104,8 +104,8 @@ function cargo_init() {
     local CACHE_EXE="$CARGO_DIR/sccache"
     export CARGO_EXE="$CARGO_DIR/cargo"
 
-    url='https://sh.rustup.rs'
     if [ ! -f "$CARGO_EXE" ]; then
+        url='https://sh.rustup.rs'
         $SHELL -c "$HTTP_GET $url" | RUSTUP_HOME=~/.rustup CARGO_HOME=~/.cargo RUSTUP_INIT_SKIP_PATH_CHECK=yes bash -s - --profile minimal --no-modify-path --quiet -y
         if [ $? -gt 0 ]; then
             $SHELL -c "$HTTP_GET $url" | RUSTUP_HOME=~/.rustup CARGO_HOME=~/.cargo RUSTUP_INIT_SKIP_PATH_CHECK=yes bash -s - --profile minimal --no-modify-path --verbose -y
