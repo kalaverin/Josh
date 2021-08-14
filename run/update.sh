@@ -1,26 +1,39 @@
-if [ ! "$SOURCE_ROOT" ]; then
-    export SOURCE_ROOT=$(sh -c "realpath `dirname $0`/../")
-    echo " + init from $SOURCE_ROOT"
-    . $SOURCE_ROOT/run/init.sh
+if [ "$JOSH" ] && [ -d "$JOSH" ]; then
+    export SOURCE_ROOT="`realpath $JOSH`"
+
+elif [ ! "$SOURCE_ROOT" ]; then
+    if [ ! -f "`which -p realpath`" ]; then
+        export SOURCE_ROOT="`dirname $0`/../"
+    else
+        export SOURCE_ROOT=$(sh -c "realpath `dirname $0`/../")
+    fi
+
+    if [ ! -d "$SOURCE_ROOT" ]; then
+        echo " - fatal: source root $SOURCE_ROOT isn't correctly defined"
+    else
+        echo " + init from $SOURCE_ROOT"
+        . $SOURCE_ROOT/run/init.sh
+    fi
 fi
-if [ ! "$JOSH" ]; then
+
+if [ ! "$REAL" ]; then
     echo " - fatal: init failed, REAL empty"
     return 255
 fi
 
 function update_packages() {
-    . "$JOSH/lib/rust.sh" && cargo_deploy $CARGO_REQ_PACKAGES
-    . "$JOSH/lib/python.sh" && pip_deploy $PIP_REQ_PACKAGES
+    . "$SOURCE_ROOT/lib/rust.sh" && cargo_deploy $CARGO_REQ_PACKAGES
+    . "$SOURCE_ROOT/lib/python.sh" && pip_deploy $PIP_REQ_PACKAGES
 
-    . "$JOSH/run/units/binaries.sh" && deploy_binaries
-    . "$JOSH/run/units/configs.sh" && zero_configuration
+    . "$SOURCE_ROOT/run/units/binaries.sh" && deploy_binaries
+    . "$SOURCE_ROOT/run/units/configs.sh" && zero_configuration
 }
 
 function pull_update() {
     local cwd="`pwd`"
 
-    cd "$JOSH"
-    . "$JOSH/usr/units/git.zsh"
+    cd "$SOURCE_ROOT"
+    . "$SOURCE_ROOT/usr/units/git.zsh"
 
     local retval=1
     local local_branch="`git_current_branch`"
@@ -41,14 +54,14 @@ function pull_update() {
 function post_update() {
     local cwd="`pwd`"
     update_packages
-    . "$JOSH/run/units/compat.sh" && check_compliance
+    . "$SOURCE_ROOT/run/units/compat.sh" && check_compliance
     cd "$cwd"
 }
 
 function deploy_extras() {
     local cwd="`pwd`"
-    (. "$JOSH/lib/python.sh" && pip_extras || \
+    (. "$SOURCE_ROOT/lib/python.sh" && pip_extras || \
         echo " - warning: something wrong") && \
-    . "$JOSH/lib/rust.sh" && cargo_extras
+    . "$SOURCE_ROOT/lib/rust.sh" && cargo_extras
     cd "$cwd"
 }

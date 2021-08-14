@@ -1,22 +1,21 @@
 #!/bin/sh
 
-if [ ! "$REAL" ]; then
-    export SOURCE_ROOT=$(sh -c "realpath `dirname $0`/../")
-    echo " + init from $SOURCE_ROOT"
-    . $SOURCE_ROOT/run/init.sh
+if [ "$JOSH" ] && [ -d "$JOSH" ]; then
+    export SOURCE_ROOT="`realpath $JOSH`"
 
-    if [ ! "$REAL" ]; then
-        echo " - fatal: init failed"
-        exit 255
+elif [ ! "$SOURCE_ROOT" ]; then
+    if [ ! -f "`which -p realpath`" ]; then
+        export SOURCE_ROOT="`dirname $0`/../../"
+    else
+        export SOURCE_ROOT=$(sh -c "realpath `dirname $0`/../../")
     fi
-fi
-if [ ! "$HTTP_GET" ]; then
-    echo " - fatal: init failed, HTTP_GET empty"
-    exit 255
-fi
-if [ ! "$MERGE_DIR" ]; then
-    echo " - fatal: init failed, MERGE_DIR empty"
-    exit 255
+
+    if [ ! -d "$SOURCE_ROOT" ]; then
+        echo " - fatal: source root $SOURCE_ROOT isn't correctly defined"
+    else
+        echo " + init from $SOURCE_ROOT"
+        . $SOURCE_ROOT/run/init.sh
+    fi
 fi
 
 PLUGIN_DIR="$MERGE_DIR/custom/plugins"

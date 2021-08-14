@@ -16,10 +16,22 @@ PIP_OPT_PACKAGES=(
 )
 
 function set_defaults() {
-    if [ ! "$SOURCE_ROOT" ]; then
-        export SOURCE_ROOT=$(sh -c "realpath `dirname $0`/../")
-        echo " + init from $SOURCE_ROOT"
-        . $SOURCE_ROOT/run/init.sh
+    if [ "$JOSH" ] && [ -d "$JOSH" ]; then
+        export SOURCE_ROOT="`realpath $JOSH`"
+
+    elif [ ! "$SOURCE_ROOT" ]; then
+        if [ ! -f "`which -p realpath`" ]; then
+            export SOURCE_ROOT="`dirname $0`/../"
+        else
+            export SOURCE_ROOT=$(sh -c "realpath `dirname $0`/../")
+        fi
+
+        if [ ! -d "$SOURCE_ROOT" ]; then
+            echo " - fatal: source root $SOURCE_ROOT isn't correctly defined"
+        else
+            echo " + init from $SOURCE_ROOT"
+            . $SOURCE_ROOT/run/init.sh
+        fi
     fi
 
     if [ ! "$REAL" ]; then
@@ -47,17 +59,18 @@ function python_init() {
         return 255
     fi
 
+    . $root/src/compat.sh
     . $root/run/units/compat.sh
 
     if [ -f "$PYTHON3" ]; then
         version_not_compatible \
             $MIN_PYTHON_VERSION \
-            `$PYTHON3 --version 2>&1 | grep -Po '([\d\.]+)$'` || return 0
+            `$PYTHON3 --version 2>&1 | $JOSH_GREP -Po '([\d\.]+)$'` || return 0
     fi
 
     for dir in $(sh -c "echo "$PATH" | sed 's#:#\n#g' | sort -su"); do
         for exe in $(find $dir -type f -name 'python*' 2>/dev/null | sort -Vr); do
-            local version=$($exe --version 2>&1 | grep -Po '([\d\.]+)$')
+            local version=$($exe --version 2>&1 | $JOSH_GREP -Po '([\d\.]+)$')
             version_not_compatible $MIN_PYTHON_VERSION $version || local result="$exe"
             [ "$result" ] && break
         done

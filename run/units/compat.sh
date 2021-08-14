@@ -76,7 +76,7 @@ function check_libraries() {
 }
 
 
-version_not_compatible()
+function version_not_compatible()
 {
     if [ "$1" != "$2" ]; then
         local choice=$(sh -c "printf '%s\n%s\n' "$1" "$2" | sort --version-sort | tail -n 1")

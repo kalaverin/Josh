@@ -1,10 +1,23 @@
 #!/bin/sh
 
-if [ ! "$SOURCE_ROOT" ]; then
-    export SOURCE_ROOT=$(sh -c "realpath `dirname $0`/../../")
-    echo " + init from $SOURCE_ROOT"
-    . $SOURCE_ROOT/run/init.sh
+if [ "$JOSH" ] && [ -d "$JOSH" ]; then
+    export SOURCE_ROOT="`realpath $JOSH`"
+
+elif [ ! "$SOURCE_ROOT" ]; then
+    if [ ! -f "`which -p realpath`" ]; then
+        export SOURCE_ROOT="`dirname $0`/../../"
+    else
+        export SOURCE_ROOT=$(sh -c "realpath `dirname $0`/../../")
+    fi
+
+    if [ ! -d "$SOURCE_ROOT" ]; then
+        echo " - fatal: source root $SOURCE_ROOT isn't correctly defined"
+    else
+        echo " + init from $SOURCE_ROOT"
+        . $SOURCE_ROOT/run/init.sh
+    fi
 fi
+
 if [ ! "$REAL" ]; then
     echo " - fatal: init failed, REAL empty"
     return 255
@@ -13,6 +26,7 @@ if [ ! "$HTTP_GET" ]; then
     echo " - fatal: init failed, HTTP_GET empty"
     return 255
 fi
+
 if [ "$MERGE_DIR" ]; then
     BINARY_DEST="$MERGE_DIR/custom/bin"
 else
