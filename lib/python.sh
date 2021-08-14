@@ -110,6 +110,7 @@ function pip_init() {
         local PIP_DIR="`cat $CACHE_DIR/pip-directory`"
     fi
 
+    export PATH="$PIP_DIR:$PATH"
     export PIP_EXE="$PIP_DIR/pip"
 
     if [ ! -f "$PIP_EXE" ]; then
@@ -140,8 +141,6 @@ function pip_init() {
             return 255
         fi
     fi
-
-    export PATH="$PIP_DIR:$PATH"
     return 0
 }
 

@@ -100,11 +100,13 @@ function cargo_init() {
 
     export CARGO_DIR="$REAL/.cargo/bin"
     if [ ! -d "$CARGO_DIR" ] && mkdir -p "$CARGO_DIR"
+    export PATH="$CARGO_DIR:$PATH"
 
     local CACHE_EXE="$CARGO_DIR/sccache"
     export CARGO_EXE="$CARGO_DIR/cargo"
 
     if [ ! -f "$CARGO_EXE" ]; then
+        export RUSTC_WRAPPER=""
         unset RUSTC_WRAPPER
         url='https://sh.rustup.rs'
 
@@ -132,11 +134,10 @@ function cargo_init() {
     elif [ -f "`which sccache`" ]; then
         export RUSTC_WRAPPER=`which sccache`
     else
+        export RUSTC_WRAPPER=""
         unset RUSTC_WRAPPER
         echo " - warning: sccache doesn't exists"
     fi
-
-    export PATH="$CARGO_DIR:$PATH"
     return 0
 }
 
