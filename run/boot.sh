@@ -5,8 +5,13 @@ if [ ! "`which git`" ]; then
     return 1
 fi
 
-HOME="`realpath ~`"
-DEST="$HOME/josh.future"
+if [ -f "`which -p realpath`" ]; then
+    HOME="`realpath ~`"
+    DEST="$HOME/josh.future"
+else
+    HOME="~"
+    DEST="$HOME/josh.future"
+fi
 
 [ -d "$DEST" ] && rm -rf "$DEST"
 [ -d "$HOME/josh.base" ] && rm -rf "$HOME/josh.base"
