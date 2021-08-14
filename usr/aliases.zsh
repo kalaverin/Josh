@@ -141,6 +141,10 @@ last-modified() {
     find $args -printf "%T@ %p\n" | sort -n | cut -d' ' -f 2- | tail -n 1
 }
 
-check() {
-    ri $@ && rcrawl $@
-}
+alias cds='chdir_to_virtualenv_stdlib'
+alias cdv='chdir_to_virtualenv'
+alias dact='virtualenv_deactivate'
+alias ten-='virtualenv_temporary_destroy'
+alias ten='virtualenv_temporary_create'
+alias vact='virtualenv_path_activate'
+alias ven='virtualenv_activate'

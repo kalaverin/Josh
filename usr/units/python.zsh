@@ -11,18 +11,14 @@ local PIP_PKG_INFO="$INCLUDE_DIR/pip_pkg_info.sh"
 
 # ———
 
-pir() {
-    cat $1 | xargs -n 1 pip install
-}
-
-vact() {
+function virtualenv_path_activate() {
     local cwd="`pwd`"
     local venv="`realpath ${VIRTUAL_ENV:-$1}`"
     [ ! -d "$venv" ] && return 1
-    dact; cd "$venv" && source bin/activate; cd $cwd
+    virtualenv_deactivate; cd "$venv" && source bin/activate; cd $cwd
 }
 
-function dact {
+function virtualenv_deactivate {
     if [ "$VIRTUAL_ENV" != "" ]; then
         local cwd="`pwd`"
         cd $VIRTUAL_ENV/bin && source activate && deactivate
@@ -30,7 +26,7 @@ function dact {
     fi
 }
 
-function get_venv_path {
+function get_virtualenv_path {
     local cwd="`pwd`"
     unset JOSH_SELECT_VENV_PATH
     if [ "$1" ]; then
@@ -58,7 +54,7 @@ function get_venv_path {
     export JOSH_SELECT_VENV_PATH="$env_path"
 }
 
-function ten {
+function virtualenv_temporary_create {
     local cwd="`pwd`"
     local packages="$*"
 
@@ -88,7 +84,7 @@ function ten {
         local exe="`which -p python2.7`"
     fi
 
-    dact
+    virtualenv_deactivate
     if [ ! -f "$exe" ]; then
         echo " - couldn't search selected python for $@" 1>&2
         return 1
@@ -110,8 +106,8 @@ function ten {
         $SHELL -c "pip install pipdeptree $packages"
 }
 
-function cdv {
-    get_venv_path $*
+function chdir_to_virtualenv {
+    get_virtualenv_path $*
     if [ "$JOSH_SELECT_VENV_PATH" != "" ]; then
         cd $JOSH_SELECT_VENV_PATH
         unset JOSH_SELECT_VENV_PATH
@@ -120,9 +116,9 @@ function cdv {
     return 1
 }
 
-function cds {
+function chdir_to_virtualenv_stdlib {
     local cwd="`pwd`"
-    cdv $* || ([ $? -gt 0 ] && return 1)
+    chdir_to_virtualenv $* || ([ $? -gt 0 ] && return 1)
 
     local env_site=`find lib/ -maxdepth 1 -type d -name 'python*'`
     if [ -d "$env_site/site-packages" ]; then
@@ -134,16 +130,15 @@ function cds {
     fi
 }
 
-function ven {
+function virtualenv_activate {
     local cwd="`pwd`"
-    cdv $* || ([ $? -gt 0 ] && return 1)
-
-    dact && source bin/activate && cd $cwd
+    chdir_to_virtualenv $* || ([ $? -gt 0 ] && return 1)
+    virtualenv_deactivate && source bin/activate && cd $cwd
 }
 
-function ten- {
+function virtualenv_temporary_destroy {
     local cwd="`pwd`"
-    cdv $* || ([ $? -gt 0 ] && return 1)
+    chdir_to_virtualenv $* || ([ $? -gt 0 ] && return 1)
 
     local vwd="`pwd`"
     local temp="`get_tempdir`"
@@ -199,5 +194,5 @@ zle -N visual_freeze
 # ———
 
 if [ -d "$VIRTUAL_ENV" ]; then
-    vact $VIRTUAL_ENV
+    virtualenv_path_activate $VIRTUAL_ENV
 fi
