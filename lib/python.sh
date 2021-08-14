@@ -35,11 +35,15 @@ function set_defaults() {
 
 function python_init() {
     set_defaults
-    local root=${JOSH:-$SOURCE_ROOT}
 
-    if [ ! -d "$root" ]; then
-        echo "debug: >$JOSH< >$SOURCE_ROOT<"
-        echo " - fatal: source root \`$root\` isn't exists"
+    if [ "$SOURCE_ROOT" ] && [ -d "$SOURCE_ROOT" ]; then
+        local root="`realpath $SOURCE_ROOT`"
+
+    elif [ "$JOSH" ] && [ -d "$JOSH" ]; then
+        local root="`realpath $JOSH`"
+
+    else
+        echo " - fatal: source root isn't exists, JOSH:\`$JOSH\`, SOURCE_ROOT:\`$SOURCE_ROOT\`"
         return 255
     fi
 
