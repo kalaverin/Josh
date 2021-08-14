@@ -38,7 +38,7 @@ function get_virtualenv_path {
                 local env_path="$JOSH_PIP_ENV_PERSISTENT/$1"
                 cd $cwd
             else
-                echo " * venv \`$1\` isn't found"
+                echo " - venv \`$1\` isn't found"
                 cd $cwd
                 return 1
             fi
@@ -66,11 +66,11 @@ function virtualenv_temporary_create {
         if [ ! -f "$PYTHON3" ]; then
             . $JOSH/lib/python.sh && python_init
             if [ $? -gt 0 ]; then
-                echo " - when detect last python3 something wrong, stop" 1>&2
+                echo " - when detect python something wrong, stop" 1>&2
             fi
         fi
         if [ ! -f "$PYTHON3" ]; then
-            echo " - default \$PYTHON3=\`$PYTHON3\` python isn't accessible" 1>&2
+            echo " - default \$PYTHON3=\`$PYTHON3\` isn't accessible" 1>&2
             return 1
         fi
         local exe="$PYTHON3"
@@ -86,7 +86,7 @@ function virtualenv_temporary_create {
 
     virtualenv_deactivate
     if [ ! -f "$exe" ]; then
-        echo " - couldn't search selected python for $@" 1>&2
+        echo " - couldn't search selected python for \`$@\`" 1>&2
         return 1
     fi
 
@@ -125,7 +125,7 @@ function chdir_to_virtualenv_stdlib {
         cd "$env_site/site-packages"
         [ "${@:2}" ] && cd ${@:2}
     else
-        echo " * something wrong for >>$env_path<<, path: >>$env_site><"
+        echo " - something wrong for \`$env_path\`, path: \`$env_site\`"
         cd $cwd
     fi
 }
@@ -143,7 +143,7 @@ function virtualenv_temporary_destroy {
     local vwd="`pwd`"
     local temp="`get_tempdir`"
     if [[ ! $vwd =~ "^$temp/env" ]]; then
-        echo " * can't remove >>$vwd<< because isn't temporary"
+        echo " * can't remove \`$vwd\` because isn't temporary"
         cd $cwd
         return 1
     fi
