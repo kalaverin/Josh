@@ -101,9 +101,16 @@ function pip_init() {
         return 1
     fi
 
-    local PIP_DIR="$(realpath "`$PYTHON3 -c 'from site import USER_BASE as d; print(d)'`/bin")"
-    export PIP_EXE="$PIP_DIR/pip"
+    local CACHE_DIR="/tmp/.josh"
+    if [ ! -f "$CACHE_DIR/pip-directory" ]; then
+        [ ! -d "$CACHE_DIR" ] && mkdir -p "$CACHE_DIR"
+        local PIP_DIR="$(realpath "`$PYTHON3 -c 'from site import USER_BASE as d; print(d)'`/bin")"
+        echo "$PIP_DIR" > "$CACHE_DIR/pip-directory"
+    else
+        local PIP_DIR="`cat $CACHE_DIR/pip-directory`"
+    fi
 
+    export PIP_EXE="$PIP_DIR/pip"
     [ ! -d "$PIP_DIR" ] && mkdir -p "$PIP_DIR"
 
     url="https://bootstrap.pypa.io/get-pip.py"
