@@ -71,7 +71,7 @@ function ten {
         if [ ! -f "$PYTHON3" ]; then
             . $JOSH/lib/python.sh && python_init
             if [ $? -gt 0 ]; then
-                echo " - when detect last python3 something wrong, stop"
+                echo " - when detect last python3 something wrong, stop" 1>&2
             fi
         fi
         if [ ! -f "$PYTHON3" ]; then
@@ -98,7 +98,7 @@ function ten {
     if [ ! -f "`which -p virtualenv`" ]; then
         . $JOSH/lib/python.sh && pip_init
         if [ $? -gt 0 ]; then
-            echo " - when init virtualenv something wrong, stop"
+            echo " - when init virtualenv something wrong, stop" 1>&2
         fi
     fi
 
