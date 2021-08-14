@@ -105,6 +105,10 @@ function check_compliance() {
         echo " + os: macos `uname -srv`"
         export OS_TYPE="MAC"
 
+        if [ ! -f "`which -p brew2`" ]; then
+            echo ' - brew for MacOS strictly required, just run: $SHELL -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"'
+        fi
+
         local cmd="brew update && brew install"
         local pkg="zsh git coreutils grep gsed jq openssl pkg-config pv python@3 tree"
         REQURED_SYSTEM_BINARIES=(
