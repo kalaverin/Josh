@@ -1,6 +1,10 @@
 #!/bin/sh
 
-export SOURCE_ROOT=$(sh -c "realpath `dirname $0`/../")
+if [ ! -f "`which -p realpath`" ]; then
+    export SOURCE_ROOT="`dirname $0`/../"
+else
+    export SOURCE_ROOT=$(sh -c "realpath `dirname $0`/../")
+fi
 
 if [ ! "$REAL" ]; then
     echo " + init from $SOURCE_ROOT" 1>&2
