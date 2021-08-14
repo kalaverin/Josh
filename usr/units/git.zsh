@@ -322,8 +322,8 @@ git_widget_add() {
             local command="$BUFFER && git add"
         fi
 
-        local conflicts=$(git status --porcelain --branch | grep -P '^(AA|UU)' | tabulate -i 2)
-        if [ "$conflicts" ]; then
+        local state="`get_repository_state`"  # merging, rebase or cherry-pick
+        if [ "$state" ]; then
             LBUFFER="$command $value "
             RBUFFER=''
         else
@@ -389,9 +389,35 @@ open_editor_on_conflict() {
 }
 
 
+git_auto_skip_or_continue() {
+    local state="`get_repository_state`"  # merging, rebase or cherry-pick
+    if [ "$state" ]; then
+        # nothing to resolve, just skip
+        local files="`git status --short --verbose --no-ahead-behind --ignore-submodules --untracked-file | wc -l`"
+        if [ "$files" -eq 0 ]; then
+            run_show " git $state --skip"
+            return 1
+        fi
+
+        # all files resolved and no more changes, then — continue
+        local files="`git status --short --verbose --no-ahead-behind --ignore-submodules --untracked-file | grep -Pv '^(M )' | wc -l`"
+        if [ "$files" -eq 0 ]; then
+            run_show " git $state --continue"
+            return 2
+        fi
+        return 3
+    fi
+    return 0
+}
+
+
 git_widget_conflict_solver() {
     local branch="`git_current_branch`"
     [ ! "$branch" ] && return 1
+
+    git_auto_skip_or_continue
+    local state="$?"
+    [ "$state" -eq 0 ] && return 2
 
     local cwd="`pwd`"
     local select='git status \
@@ -449,27 +475,15 @@ git_widget_conflict_solver() {
 
         [ "$need_quit" -gt 0 ] && break
 
-        local state="`get_repository_state`"  # merging, rebase or cherry-pick
-        if [ "$state" ]; then
-
-            # nothing to resolve, just skip
-            local files="`git status --short --verbose --no-ahead-behind --ignore-submodules --untracked-file | wc -l`"
-            if [ ! "$files" -gt 0 ]; then
-                run_show " git $state --skip"
-                continue
-            fi
-
-            # all files resolved and no more changes, then — continue
-            local files="`git status --short --verbose --no-ahead-behind --ignore-submodules --untracked-file | grep -Pv '^(M )' | wc -l`"
-            if [ ! "$files" -gt 0 ]; then
-                run_show " git $state --continue"
-            fi
-        else
-            break
-        fi
+        git_auto_skip_or_continue
+        [ ! $? -gt 0 ] && break
     done
 
     zle reset-prompt
+    if [ "$state" -eq 3 ]; then
+        echo "+ repository in state \``get_repository_state`\`, but no conflicts found, check git-add widget\n"
+    fi
+    zle redisplay
     return 0
 }
 zle -N git_widget_conflict_solver
