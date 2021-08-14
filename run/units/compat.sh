@@ -59,6 +59,7 @@ function check_libraries() {
                 if [ "$?" -gt 0 ]; then
                     echo " * warning: pkg-config $lib: nothing about openssl.pc in $PKG_CONFIG_PATH"
                     local missing="$missing $lib"
+                    continue
                 fi
                 echo " * warning: pkg-config $lib: all ok, continue"
 
