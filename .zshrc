@@ -4,6 +4,7 @@ fi
 
 path=(
     $ZSH/custom/bin
+    $REAL/.local/bin
     $REAL/bin
     /usr/local/bin
     /bin
