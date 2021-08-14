@@ -44,8 +44,7 @@ function prepare_and_deploy() {
 
     [ $? -gt 0 ] && return 1
 
-    (pip_deploy $PIP_REQ_PACKAGES || \
-        echo " - python related functionality has been disabled" 1>&2) && \
+    pip_deploy $PIP_REQ_PACKAGES && \
     deploy_ohmyzsh && \
     deploy_extensions && \
     deploy_binaries && \

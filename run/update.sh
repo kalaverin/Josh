@@ -10,8 +10,7 @@ fi
 
 function update_packages() {
     . "$JOSH/lib/rust.sh" && cargo_deploy $CARGO_REQ_PACKAGES
-    (. "$JOSH/lib/python.sh" && pip_deploy "$PIP_REQ_PACKAGES" || \
-        echo " - python related functionality has been disabled") && \
+    . "$JOSH/lib/python.sh" && pip_deploy $PIP_REQ_PACKAGES
 
     . "$JOSH/run/units/binaries.sh" && deploy_binaries
     . "$JOSH/run/units/configs.sh" && zero_configuration
@@ -49,7 +48,7 @@ function post_update() {
 function deploy_extras() {
     local cwd="`pwd`"
     (. "$JOSH/lib/python.sh" && pip_extras || \
-        echo " - python related functionality has been disabled") && \
+        echo " - warning: something wrong") && \
     . "$JOSH/lib/rust.sh" && cargo_extras
     cd "$cwd"
 }
