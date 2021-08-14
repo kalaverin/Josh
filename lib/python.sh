@@ -161,7 +161,7 @@ function pip_deploy() {
 
     local retval=0
     for line in $@; do
-        $SHELL -c "PIP_REQUIRE_VIRTUALENV=false $PIP_EXE install --user --upgrade --upgrade-strategy=eager $line"
+        $SHELL -c "PIP_REQUIRE_VIRTUALENV=false $PIP_EXE install --disable-pip-version-check --no-input --no-python-version-warning --no-warn-conflicts --no-warn-script-location --user --upgrade --upgrade-strategy=eager $line"
         if [ "$?" -gt 0 ]; then
             local retval=1
         fi
