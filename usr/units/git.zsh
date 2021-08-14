@@ -322,8 +322,7 @@ git_widget_add() {
             local command="$BUFFER && git add"
         fi
 
-        local state="`get_repository_state`"  # merging, rebase or cherry-pick
-        if [ "$state" ]; then
+        if [ "`get_repository_state`" ]; then  # merging, rebase or cherry-pick
             LBUFFER="$command $value "
             RBUFFER=''
         else

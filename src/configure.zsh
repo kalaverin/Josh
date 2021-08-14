@@ -2,10 +2,10 @@ source "$JOSH/lib/python.sh" && python_env
 source "$JOSH/lib/rust.sh" && rust_env
 source "$JOSH/src/compat.zsh"
 
-export LANG='en_US.UTF-8'
-export LANGUAGE='en_US.UTF-8'
-export LC_ALL='en_US.UTF-8'
-export MM_CHARSET='en_US.UTF-8'
+export LANG="${LANG:-'en_US.UTF-8'}"
+export LANGUAGE="${LANGUAGE:-'en_US.UTF-8'}"
+export LC_ALL="${LC_ALL:-'en_US.UTF-8'}"
+export MM_CHARSET="${MM_CHARSET:-'en_US.UTF-8'}"
 
 if [ -f "$JOSH_BAT" ]; then
     export PAGER="$JOSH_BAT"
@@ -22,9 +22,9 @@ if [ -f "$JOSH_DELTA" ]; then
 fi
 
 if [ -f "`which -p docker`" ]; then
-    export DOCKER_BUILDKIT=1
-    export BUILDKIT_INLINE_CACHE=1
-    export COMPOSE_DOCKER_CLI_BUILD=1
+    export DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1}
+    export BUILDKIT_INLINE_CACHE=${BUILDKIT_INLINE_CACHE:-1}
+    export COMPOSE_DOCKER_CLI_BUILD=${COMPOSE_DOCKER_CLI_BUILD:-1}
 fi
 
 if [ -f "`which -p fzf`" ]; then
@@ -36,7 +36,7 @@ if [ -f "`which -p fzf`" ]; then
 fi
 
 [ -f "`which -p micro`" ] && export EDITOR="`which -p micro`"
-[ -f "`which -p rip`" ] && export GRAVEYARD="$REAL/.trash"
+[ -f "`which -p rip`" ] && export GRAVEYARD=${GRAVEYARD:-"$REAL/.trash"}
 [ -f "`which -p sccache`" ] && export RUSTC_WRAPPER="`which -p sccache`"
 [ -f "`which -p vivid`" ] && export LS_COLORS="`vivid generate ${THEME_LS:-solarized-dark}`"
 
@@ -80,3 +80,5 @@ if [ ! -f $PAGER_BIN ]; then
 else
     LISTER_FILE="$PAGER_BIN --color always --tabs 4 --paging never" # for bat
 fi
+
+export JOSH_PIP_ENV_PERSISTENT="${JOSH_PIP_ENV_PERSISTENT:-"$REAL/.env"}"

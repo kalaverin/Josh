@@ -38,9 +38,8 @@ function get_venv_path {
         if [ -f "$temp/env/$1/bin/activate" ]; then
             local env_path="$temp/env/$1"
         else
-            wd env
-            if [ -f "$1/bin/activate" ]; then
-                local env_path="`pwd`/$1"
+            if [ -f "$JOSH_PIP_ENV_PERSISTENT/$1/bin/activate" ]; then
+                local env_path="$JOSH_PIP_ENV_PERSISTENT/$1"
                 cd $cwd
             else
                 echo " * venv \`$1\` isn't found"
@@ -55,7 +54,7 @@ function get_venv_path {
         fi
         local env_path="$VIRTUAL_ENV"
     fi
-    local env_name=`basename "$env_path"`
+    local env_name="$(realpath `basename "$env_path"`)"
     export JOSH_SELECT_VENV_PATH="$env_path"
 }
 
