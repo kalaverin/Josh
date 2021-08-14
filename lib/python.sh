@@ -159,14 +159,18 @@ function pip_deploy() {
         return 1
     fi
 
+    local retval=0
     for line in $@; do
         $SHELL -c "PIP_REQUIRE_VIRTUALENV=false $PIP_EXE install --user --upgrade --upgrade-strategy=eager $line"
+        if [ "$?" -gt 0 ]; then
+            local retval=1
+        fi
     done
 
     if [ "$venv" != "" ]; then
         cd $venv/bin && source activate
     fi
-    return 0
+    return "$retval"
 }
 
 function pip_extras() {

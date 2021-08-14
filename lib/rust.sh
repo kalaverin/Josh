@@ -146,10 +146,14 @@ function cargo_deploy() {
 
     $SHELL -c "`realpath $CARGO_DIR/rustup` update"
 
+    local retval=0
     for pkg in $@; do
         $CARGO_EXE install $pkg
+        if [ "$?" -gt 0 ]; then
+            local retval=1
+        fi
     done
-    return 0
+    return "$retval"
 }
 
 function cargo_extras() {
