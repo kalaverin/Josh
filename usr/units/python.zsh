@@ -156,7 +156,7 @@ function virtualenv_temporary_destroy {
 
 # ———
 
-visual_freeze() {
+pip_visual_freeze() {
     . $JOSH/lib/python.sh
     pip_init || return 1
 

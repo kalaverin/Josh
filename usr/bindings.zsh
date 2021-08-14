@@ -114,6 +114,6 @@ bindkey '\e^x' visual_chdir      # fast dive into directory
 bindkey '\ec'  visual_recent_chdir
 bindkey '\eC'  insert_directory  # and catalog name
 
-bindkey '\em'  visual_freeze
+bindkey '\em'  pip_visual_freeze
 
 fi
