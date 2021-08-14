@@ -76,11 +76,11 @@ function check_libraries() {
 }
 
 
-function version_not_compatible()
-{
+function version_not_compatible() {
+    local grep=${JOSH_GREP:-"`which -p grep`"}
     if [ "$1" != "$2" ]; then
         local choice=$(sh -c "printf '%s\n%s\n' "$1" "$2" | sort --version-sort | tail -n 1")
-        [ $(sh -c "printf '%s' "$choice" | grep -Pv '^($2)$'") ] && return 0
+        [ $(sh -c "printf '%s' "$choice" | $grep -Pv '^($2)$'") ] && return 0
     fi
     return 1
 }
