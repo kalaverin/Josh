@@ -71,6 +71,12 @@ function python_init() {
         fi
     fi
 
+    local distutils="`echo 'import distutils; print(distutils)' | $PYTHON3 2>/dev/null | grep from`"
+    if [ ! "$distutils" ]; then
+        echo " - fatal: distutils isn't installed for $PYTHON3"
+        return 255
+    fi
+
     for dir in $(sh -c "echo "$PATH" | sed 's#:#\n#g' | sort -su"); do
         for exe in $(find $dir -type f -name 'python*' 2>/dev/null | sort -Vr); do
             local version=$($exe --version 2>&1 | $JOSH_GREP -Po '([\d\.]+)$')
@@ -97,7 +103,7 @@ function pip_init() {
     set_defaults
     python_init
     if [ ! -f "$PYTHON3" ]; then
-        echo " - fatal: python>=3.6 required!"
+        echo " - fatal: python>=$MIN_PYTHON_VERSION required!"
         return 1
     fi
 

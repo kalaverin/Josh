@@ -1,0 +1,1 @@
+sd '([^\w\d]+)' ' ' | sd '(^ | $)' '' | sd ' +' '.+' | $SHELL -c "xargs -n 1 $JOSH_RIPGREP $JOSH_RIPGREP_OPTS --with-filename --line-number --heading -- " | sd '\n^(\d+:).+$' ':$1' | sd ':+' ':' | sd ':$' '' | sd '\n+' '\n' | sd ':([\d:]+)$' ' $1' | sort -grk 1

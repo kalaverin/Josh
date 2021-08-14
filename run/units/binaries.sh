@@ -67,8 +67,16 @@ function compile_fzf() {
     clone="`which git` clone --depth 1"
     [ ! -d "$BINARY_DEST" ] && mkdir -p "$BINARY_DEST"
 
+    if [ -f "$BINARY_DEST/fzf" ]; then
+        [ -f "$BINARY_DEST/fzf.bak" ] && rm "$BINARY_DEST/fzf.bak"
+
+        local found="`find $BINARY_DEST/fzf -mmin +129600 2>/dev/null | grep fzf`"
+        if [ "$found" ]; then
+            mv "$BINARY_DEST/fzf" "$BINARY_DEST/fzf.bak"
+        fi
+    fi
+
     if [ ! -f "$BINARY_DEST/fzf" ]; then
-        # $BINARY_DEST/fzf --version | head -n 1 | awk '{print $1}'
         echo " + deploy fzf to $BINARY_DEST/fzf"
 
         local tempdir="$(dirname `mktemp -duq`)/fzf"
@@ -76,6 +84,14 @@ function compile_fzf() {
 
         $SHELL -c "$clone $url $tempdir && $tempdir/install --completion --key-bindings --update-rc --bin && cp -f $tempdir/bin/fzf $BINARY_DEST/fzf && rm -rf $tempdir"
         [ $? -gt 0 ] && echo " - failed fzf"
+    fi
+
+    if [ -f "$BINARY_DEST/fzf.bak" ]; then
+        if [ -f "$BINARY_DEST/fzf" ]; then
+            rm "$BINARY_DEST/fzf.bak"
+        else
+            mv "$BINARY_DEST/fzf.bak" "$BINARY_DEST/fzf"
+        fi
     fi
     return 0
 }
