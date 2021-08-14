@@ -18,4 +18,4 @@ source "$JOSH/usr/units/python.zsh"
 source "$JOSH/usr/units/files.zsh"
 
 local unified_path="$(echo "$PATH" | sd ':' '\n' | runiq - | xargs -n 1 realpath 2>/dev/null | sd '\n' ':' | sd '(^:|:$)' '')"
-[ "$unified_path " ] && export PATH="$unified_path"
+[ "$?" = 0 ] && [ "$unified_path " ] && export PATH="$unified_path"
