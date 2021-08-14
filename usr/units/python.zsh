@@ -91,7 +91,7 @@ function ten {
 
     dact
     if [ ! -f "$exe" ]; then
-        echo " - couldn't search selected python \`$exe\`" 1>&2
+        echo " - couldn't search selected python for $@" 1>&2
         return 1
     fi
 

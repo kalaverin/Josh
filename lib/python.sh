@@ -66,7 +66,7 @@ function python_init() {
         local version="`$PYTHON3 --version 2>&1 | $JOSH_GREP -Po '([\d\.]+)$'`"
         version_not_compatible $MIN_PYTHON_VERSION $version
         if [ "$?" -gt 0 ]; then
-            echo " - info: using python $version from $PYTHON3"
+            echo " * info: using python $version from $PYTHON3"
             return 0
         fi
     fi
@@ -74,7 +74,7 @@ function python_init() {
     for dir in $(sh -c "echo "$PATH" | sed 's#:#\n#g' | sort -su"); do
         for exe in $(find $dir -type f -name 'python*' 2>/dev/null | sort -Vr); do
             local version=$($exe --version 2>&1 | $JOSH_GREP -Po '([\d\.]+)$')
-            echo " - info: check python $version from $exe"
+            echo " * info: check python $version from $exe"
             version_not_compatible $MIN_PYTHON_VERSION $version || local result="$exe"
             [ "$result" ] && break
         done
@@ -85,11 +85,11 @@ function python_init() {
         local python="`realpath $result`"
         if [ -f "$python" ]; then
             export PYTHON3="$python"
-            echo " - info: using python $version from $PYTHON3"
+            echo " * info: using python $version from $PYTHON3"
             return 0
         fi
     fi
-    echo " - info: python >=$MIN_PYTHON_VERSION isn't detected"
+    echo " * info: python >=$MIN_PYTHON_VERSION isn't detected"
     return 1
 }
 
@@ -101,7 +101,12 @@ function pip_init() {
     fi
 
     set_defaults
-    export PIP_EXE="$REAL/.local/bin/pip"
+
+    export PIP_DIR="$(realpath "`$PYTHON3 -c 'from site import USER_BASE as d; print(d)'`/bin")"
+    export PIP_EXE="$PIP_DIR/pip"
+
+    export PATH="$PIP_DIR:$PATH"
+    [ ! -d "$PIP_DIR" ] && mkdir -p "$PIP_DIR"
 
     url="https://bootstrap.pypa.io/get-pip.py"
     if [ ! -f "$PIP_EXE" ]; then
@@ -109,7 +114,13 @@ function pip_init() {
 
         $SHELL -c "$HTTP_GET $url > $pip_file" && \
             PIP_REQUIRE_VIRTUALENV=false $PYTHON3 $pip_file \
-            --no-warn-script-location --user pip
+                --disable-pip-version-check \
+                --no-input \
+                --no-python-version-warning \
+                --no-warn-conflicts \
+                --no-warn-script-location \
+                --user \
+                pip
 
         local retval=$?
         [ -f "$pip_file" ] && unlink "$pip_file"
