@@ -2,7 +2,7 @@
 
 # ———
 
-local THIS_DIR=`dirname "$(readlink -f "$0")"`
+local THIS_DIR=`dirname "$($JOSH_READLINK -f "$0")"`
 local INCLUDE_DIR="`realpath $THIS_DIR/pip`"
 
 local PIP_LIST_ALL="$INCLUDE_DIR/pip_list_all.sh"

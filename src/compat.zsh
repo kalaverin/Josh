@@ -1,6 +1,7 @@
 if [ -n "$(uname | grep -i freebsd)" ]; then
     export JOSH_GREP='/usr/local/bin/grep'
     export JOSH_LS='/usr/local/bin/gnuls'
+    export JOSH_READLINK='/usr/local/bin/greadlink'
     export JOSH_REALPATH='/usr/local/bin/grealpath'
     export JOSH_SED='/usr/local/bin/gsed'
     export OS_TYPE="BSD"
@@ -9,6 +10,7 @@ if [ -n "$(uname | grep -i freebsd)" ]; then
 elif [ -n "$(uname | grep -i darwin)" ]; then
     export JOSH_GREP='/usr/local/bin/ggrep'
     export JOSH_LS='/usr/local/bin/gls'
+    export JOSH_READLINK='/usr/local/bin/greadlink'
     export JOSH_REALPATH='/usr/local/bin/grealpath'
     export JOSH_SED='/usr/local/bin/gsed'
     export OS_TYPE="MAC"
@@ -17,6 +19,7 @@ elif [ -n "$(uname | grep -i darwin)" ]; then
 else
     export JOSH_GREP="`which -p grep`"
     export JOSH_LS="`which -p ls`"
+    export JOSH_READLINK="`which -p readlink`"
     export JOSH_REALPATH="`which -p realpath`"
     export JOSH_SED="`which -p sed`"
 
