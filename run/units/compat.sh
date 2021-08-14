@@ -58,8 +58,9 @@ function check_compliance() {
     if [ -n "$(uname | grep -i freebsd)" ]; then
         echo " + os: freebsd `uname -srv`"
         local cmd="sudo pkg install -y"
-        local pkg="zsh git jq pv python3 coreutils gnugrep gnuls gsed openssl"
+        local pkg="zsh git coreutils gnugrep gnuls gsed jq openssl pkgconf pv python39"
         REQURED_SYSTEM_BINARIES=(
+            pkg
             /usr/local/bin/grep
             /usr/local/bin/gnuls
             /usr/local/bin/grealpath
@@ -69,10 +70,11 @@ function check_compliance() {
     elif [ -n "$(uname | grep -i darwin)" ]; then
         echo " + os: macos `uname -srv`"
         local cmd="brew update && brew install"
-        local pkg="zsh git jq pv python@3 grep gsed"
+        local pkg="zsh git coreutils grep gsed jq openssl pkg-config pv python@3 tree"
         REQURED_SYSTEM_BINARIES=(
-            /usr/local/bin/grep
-            /usr/local/bin/gnuls
+            brew
+            /usr/local/bin/ggrep
+            /usr/local/bin/gls
             /usr/local/bin/grealpath
             /usr/local/bin/gsed
         )
@@ -81,6 +83,9 @@ function check_compliance() {
         echo " + os: debian-based `uname -srv`"
         local cmd="sudo apt-get update --yes --quiet || true && apt-get install --yes --quiet --no-remove"
         local pkg="zsh git jq pv python3 python3-distutils tree libssl-dev"
+        REQURED_SYSTEM_BINARIES=(
+            apt
+        )
 
     elif [ -n "$(uname -srv | grep -i gentoo)" ]; then
         echo " + os: gentoo: `uname -srv`"
