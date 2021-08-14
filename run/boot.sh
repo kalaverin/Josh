@@ -1,7 +1,7 @@
 #!/bin/sh
 
 if [ ! "`which git`" ]; then
-    echo " - fatal: git required"
+    echo " - fatal: git required, please install"
     return 1
 fi
 
