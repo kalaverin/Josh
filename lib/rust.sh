@@ -130,8 +130,8 @@ function cargo_init() {
 
     if [ -f "$CACHE_EXE" ]; then
         export RUSTC_WRAPPER="$CACHE_EXE"
-    elif [ -f "`which sccache`" ]; then
-        export RUSTC_WRAPPER=`which sccache`
+    elif [ -f "`which -p sccache`" ]; then
+        export RUSTC_WRAPPER="`which -p sccache`"
     else
         export RUSTC_WRAPPER=""
         unset RUSTC_WRAPPER
