@@ -47,7 +47,7 @@ function deploy_ohmyzsh() {
         cd $MERGE_DIR && git reset --hard && git pull origin master
     else
         echo " + deploy oh-my-zsh to $MERGE_DIR"
-        $SHELL -c "$HTTP_GET $url | CHSH=no RUNZSH=no KEEP_ZSHRC=yes ZSH=$MERGE_DIR bash -s - --unattended --keep-zshrc"
+        $SHELL -c "$HTTP_GET $url | CHSH=no RUNZSH=no KEEP_ZSHRC=yes ZSH=$MERGE_DIR $SHELL -s - --unattended --keep-zshrc"
         [ $? -gt 0 ] && return 1
     fi
     return 0
