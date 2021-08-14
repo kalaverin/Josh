@@ -98,7 +98,7 @@ function cargo_init() {
     set_defaults
 
     export CARGO_DIR="$REAL/.cargo/bin"
-    if [ ! -d "$CARGO_DIR" ] && mkdir -p "$CARGO_DIR"
+    [ ! -d "$CARGO_DIR" ] && mkdir -p "$CARGO_DIR"
     export PATH="$CARGO_DIR:$PATH"
 
     local CACHE_EXE="$CARGO_DIR/sccache"
