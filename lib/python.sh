@@ -59,7 +59,7 @@ function python_init() {
         return 255
     fi
 
-    . $root/src/compat.sh
+    . $root/src/compat.zsh
     . $root/run/units/compat.sh
 
     if [ -f "$PYTHON3" ]; then
