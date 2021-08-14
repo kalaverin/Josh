@@ -1,3 +1,7 @@
+source "$JOSH/lib/python.sh" && python_env
+source "$JOSH/lib/rust.sh" && rust_env
+source "$JOSH/src/compat.zsh"
+
 export LANG='en_US.UTF-8'
 export LANGUAGE='en_US.UTF-8'
 export LC_ALL='en_US.UTF-8'

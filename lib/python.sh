@@ -133,6 +133,7 @@ function pip_init() {
             return 255
         fi
     fi
+
     export PATH="$PIP_DIR:$PATH"
     return 0
 }

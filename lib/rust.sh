@@ -21,6 +21,7 @@ CARGO_REQ_PACKAGES=(
     tabulate       # autodetect columns in stdin and tabulate
     viu            # print images into terminal
     vivid          # ls colors themes selections system
+    sccache        # compiler caching backend
 )
 
 CARGO_OPT_PACKAGES=(
@@ -97,7 +98,7 @@ function set_defaults() {
 function cargo_init() {
     set_defaults
 
-    local CARGO_DIR="$REAL/.cargo/bin"
+    export CARGO_DIR="$REAL/.cargo/bin"
     if [ ! -d "$CARGO_DIR" ] && mkdir -p "$CARGO_DIR"
 
     local CACHE_EXE="$CARGO_DIR/sccache"
@@ -115,16 +116,16 @@ function cargo_init() {
             echo " - fatal: cargo isn't installed ($CARGO_EXE)"
             return 255
         fi
-    else
-        $SHELL -c "`realpath $CARGO_DIR/rustup` update"
-    fi
 
-    if [ ! -f "$CACHE_EXE" ]; then
-        $CARGO_EXE install sccache
         if [ ! -f "$CACHE_EXE" ]; then
-            echo " - warning: sccache isn't compiled ($CACHE_EXE)"
+            $CARGO_EXE install sccache
+            if [ ! -f "$CACHE_EXE" ]; then
+                echo " - warning: sccache isn't compiled ($CACHE_EXE)"
+            fi
         fi
     fi
+
+    export PATH="$CARGO_DIR:$PATH"
 
     if [ -f "$CACHE_EXE" ]; then
         export RUSTC_WRAPPER="$CACHE_EXE"
@@ -133,8 +134,6 @@ function cargo_init() {
     else
         echo " - warning: sccache doesn't exists"
     fi
-
-    export PATH="$CARGO_DIR:$PATH"
     return 0
 }
 
@@ -144,6 +143,9 @@ function cargo_deploy() {
         echo " - fatal: cargo exe $CARGO_EXE isn't found!"
         return 1
     fi
+
+    $SHELL -c "`realpath $CARGO_DIR/rustup` update"
+
     for pkg in $@; do
         $CARGO_EXE install $pkg
     done
