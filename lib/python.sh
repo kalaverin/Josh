@@ -38,7 +38,8 @@ function python_init() {
     local root=${JOSH:-$SOURCE_ROOT}
 
     if [ ! -d "$root" ]; then
-        echo " - fatal: source root isn't exists"
+        echo "debug: >$JOSH< >$SOURCE_ROOT<"
+        echo " - fatal: source root \`$root\` isn't exists"
         return 255
     fi
 
