@@ -105,7 +105,7 @@ function check_compliance() {
         echo " + os: macos `uname -srv`"
         export OS_TYPE="MAC"
 
-        if [ ! -f "`which -p brew2`" ]; then
+        if [ ! -f "`which -p brew`" ]; then
             echo ' - brew for MacOS strictly required, just run: $SHELL -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"'
         fi
 

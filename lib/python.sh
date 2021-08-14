@@ -16,15 +16,15 @@ PIP_OPT_PACKAGES=(
 )
 
 function set_defaults() {
-    if [ ! "$REAL" ]; then
+    if [ ! "$SOURCE_ROOT" ]; then
         export SOURCE_ROOT=$(sh -c "realpath `dirname $0`/../")
         echo " + init from $SOURCE_ROOT"
         . $SOURCE_ROOT/run/init.sh
+    fi
 
-        if [ ! "$REAL" ]; then
-            echo " - fatal: init failed"
-            return 255
-        fi
+    if [ ! "$REAL" ]; then
+        echo " - fatal: init failed, REAL empty"
+        return 255
     fi
     if [ ! "$HTTP_GET" ]; then
         echo " - fatal: init failed, HTTP_GET empty"
