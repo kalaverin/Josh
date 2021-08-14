@@ -3,9 +3,7 @@ if [ ! "$JOSH" ]; then
 fi
 
 path=(
-    ~/.cargo/bin
     $ZSH/custom/bin
-    ~/.local/bin
     $REAL/bin
     /usr/local/bin
     /bin

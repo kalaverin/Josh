@@ -66,7 +66,7 @@ function python_init() {
         local version="`$PYTHON3 --version 2>&1 | $JOSH_GREP -Po '([\d\.]+)$'`"
         version_not_compatible $MIN_PYTHON_VERSION $version
         if [ "$?" -gt 0 ]; then
-            echo " * info: using python $version from $PYTHON3"
+            # echo " * info: using python $version from $PYTHON3"
             return 0
         fi
     fi
@@ -74,7 +74,7 @@ function python_init() {
     for dir in $(sh -c "echo "$PATH" | sed 's#:#\n#g' | sort -su"); do
         for exe in $(find $dir -type f -name 'python*' 2>/dev/null | sort -Vr); do
             local version=$($exe --version 2>&1 | $JOSH_GREP -Po '([\d\.]+)$')
-            echo " * info: check python $version from $exe"
+            # echo " * info: check python $version from $exe"
             version_not_compatible $MIN_PYTHON_VERSION $version || local result="$exe"
             [ "$result" ] && break
         done
@@ -85,7 +85,7 @@ function python_init() {
         local python="`realpath $result`"
         if [ -f "$python" ]; then
             export PYTHON3="$python"
-            echo " * info: using python $version from $PYTHON3"
+            # echo " * info: using python $version from $PYTHON3"
             return 0
         fi
     fi
@@ -94,18 +94,16 @@ function python_init() {
 }
 
 function pip_init() {
+    set_defaults
     python_init
     if [ ! -f "$PYTHON3" ]; then
         echo " - fatal: python>=3.6 required!"
         return 1
     fi
 
-    set_defaults
-
-    export PIP_DIR="$(realpath "`$PYTHON3 -c 'from site import USER_BASE as d; print(d)'`/bin")"
+    local PIP_DIR="$(realpath "`$PYTHON3 -c 'from site import USER_BASE as d; print(d)'`/bin")"
     export PIP_EXE="$PIP_DIR/pip"
 
-    export PATH="$PIP_DIR:$PATH"
     [ ! -d "$PIP_DIR" ] && mkdir -p "$PIP_DIR"
 
     url="https://bootstrap.pypa.io/get-pip.py"
@@ -135,6 +133,7 @@ function pip_init() {
             return 255
         fi
     fi
+    export PATH="$PIP_DIR:$PATH"
     return 0
 }
 
@@ -165,4 +164,8 @@ function pip_deploy() {
 function pip_extras() {
     pip_deploy "$PIP_REQ_PACKAGES $PIP_OPT_PACKAGES"
     return 0
+}
+
+function python_env() {
+    pip_init
 }

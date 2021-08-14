@@ -6,6 +6,9 @@ source "$ZSH/custom/plugins/zsh-plugin-fzf-finder/fzf-finder.plugin.zsh"
 source "$ZSH/custom/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 source "$ZSH/custom/plugins/zsh-syntax-highlighting-filetypes/zsh-syntax-highlighting-filetypes.zsh"
 
+source "$JOSH/lib/python.sh" && python_env
+source "$JOSH/lib/rust.sh" && rust_env
+
 source "$JOSH/src/completion.zsh"
 source "$JOSH/src/options.zsh"
 

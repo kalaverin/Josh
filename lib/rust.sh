@@ -134,6 +134,7 @@ function cargo_init() {
         echo " - warning: sccache doesn't exists"
     fi
 
+    export PATH="$CARGO_DIR:$PATH"
     return 0
 }
 
@@ -152,4 +153,8 @@ function cargo_deploy() {
 function cargo_extras() {
     cargo_deploy $CARGO_REQ_PACKAGES $CARGO_OPT_PACKAGES
     return 0
+}
+
+function rust_env() {
+    cargo_init
 }

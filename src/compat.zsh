@@ -12,6 +12,7 @@ elif [ -n "$(uname | grep -i darwin)" ]; then
     export JOSH_REALPATH='/usr/local/bin/grealpath'
     export JOSH_SED='/usr/local/bin/gsed'
     export OS_TYPE="MAC"
+    export PATH="$PATH:/Library/Apple/usr/bin"
 
 else
     export JOSH_GREP="`which -p grep`"
