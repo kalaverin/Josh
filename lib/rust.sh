@@ -125,8 +125,6 @@ function cargo_init() {
         fi
     fi
 
-    export PATH="$CARGO_DIR:$PATH"
-
     if [ -f "$CACHE_EXE" ]; then
         export RUSTC_WRAPPER="$CACHE_EXE"
     elif [ -f "`which sccache`" ]; then
@@ -134,6 +132,8 @@ function cargo_init() {
     else
         echo " - warning: sccache doesn't exists"
     fi
+
+    export PATH="$CARGO_DIR:$PATH"
     return 0
 }
 
