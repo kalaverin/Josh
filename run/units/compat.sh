@@ -33,7 +33,27 @@ function check_libraries() {
     for lib in $@; do
         $SHELL -c "pkg-config --libs --cflags $lib" 1&>/dev/null 2&>/dev/null
         if [ "$?" -gt 0 ]; then
-            local missing="$missing $lib"
+            if [ "$lib" == "openssl" ]; then
+                if [ "$OS_TYPE" == "MAC" ]; then
+                    local openssl_path="$(dirname `find /usr/local/opt/ -type f -name "openssl.pc" -follow 2>/dev/null | head -n 1`)"
+                elif [ "$OS_TYPE" == "LINUX" ]; then
+                    local openssl_path="$(dirname `find /usr/lib/ -type f -name "openssl.pc" -follow 2>/dev/null | head -n 1`)"
+                elif [ "$OS_TYPE" == "BSD" ]; then
+                    local openssl_path="$(dirname `find /usr/local/ -type f -name "openssl.pc" -follow 2>/dev/null | head -n 1`)"
+                fi
+
+                if [ -d "$openssl_path" ]; then
+                    export PKG_CONFIG_PATH="$openssl_path"
+                fi
+
+                $SHELL -c "pkg-config --libs --cflags $lib" 1&>/dev/null 2&>/dev/null
+                if [ "$?" -gt 0 ]; then
+                    local missing="$missing $lib"
+                fi
+
+            else
+                local missing="$missing $lib"
+            fi
         fi
     done
     if [ "$missing" ]; then
@@ -57,6 +77,8 @@ version_not_compatible()
 function check_compliance() {
     if [ -n "$(uname | grep -i freebsd)" ]; then
         echo " + os: freebsd `uname -srv`"
+        export OS_TYPE="BSD"
+
         local cmd="sudo pkg install -y"
         local pkg="zsh git coreutils gnugrep gnuls gsed jq openssl pkgconf pv python39"
         REQURED_SYSTEM_BINARIES=(
@@ -69,6 +91,8 @@ function check_compliance() {
 
     elif [ -n "$(uname | grep -i darwin)" ]; then
         echo " + os: macos `uname -srv`"
+        export OS_TYPE="MAC"
+
         local cmd="brew update && brew install"
         local pkg="zsh git coreutils grep gsed jq openssl pkg-config pv python@3 tree"
         REQURED_SYSTEM_BINARIES=(
@@ -81,6 +105,8 @@ function check_compliance() {
 
     elif [ -n "$(uname -v | grep -Pi '(debian|ubuntu)')" ]; then
         echo " + os: debian-based `uname -srv`"
+        export OS_TYPE="LINUX"
+
         local cmd="sudo apt-get update --yes --quiet || true && apt-get install --yes --quiet --no-remove"
         local pkg="zsh git jq pv python3 python3-distutils tree libssl-dev"
         REQURED_SYSTEM_BINARIES=(
@@ -89,12 +115,15 @@ function check_compliance() {
 
     elif [ -n "$(uname -srv | grep -i gentoo)" ]; then
         echo " + os: gentoo: `uname -srv`"
+        export OS_TYPE="LINUX"
 
     elif [ -n "$(uname | grep -i linux)" ]; then
         echo " - unknown linux: `uname -srv`"
+        export OS_TYPE="LINUX"
 
     else
         echo " - unknown os: `uname -srv`"
+        export OS_TYPE="UNKNOWN"
     fi
 
     check_executables $REQUIRED_BINARIES $REQURED_SYSTEM_BINARIES && \
