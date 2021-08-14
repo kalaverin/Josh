@@ -15,7 +15,6 @@ CARGO_REQ_PACKAGES=(
     ripgrep        # rg, fast replace for grep -ri for humans
     rm-improved    # rip, powerful rm replacement with trashcan
     runiq          # fast uniq replacement
-    sccache        # compiler caching backend
     scotty         # directory crawling statistics with search
     sd             # fast sed replacement for humans
     starship       # shell prompt
