@@ -33,23 +33,34 @@ function check_libraries() {
     for lib in $@; do
         $SHELL -c "pkg-config --libs --cflags $lib" 1&>/dev/null 2&>/dev/null
         if [ "$?" -gt 0 ]; then
-            if [ "$lib" == "openssl" ]; then
-                if [ "$OS_TYPE" == "MAC" ]; then
-                    local openssl_path="$(dirname `find /usr/local/opt/ -type f -name "openssl.pc" -follow 2>/dev/null | head -n 1`)"
-                elif [ "$OS_TYPE" == "LINUX" ]; then
-                    local openssl_path="$(dirname `find /usr/lib/ -type f -name "openssl.pc" -follow 2>/dev/null | head -n 1`)"
-                elif [ "$OS_TYPE" == "BSD" ]; then
-                    local openssl_path="$(dirname `find /usr/local/ -type f -name "openssl.pc" -follow 2>/dev/null | head -n 1`)"
+            if [ "$lib" = "openssl" ]; then
+                if [ "$OS_TYPE" = "MAC" ]; then
+                    local lookup_path="/usr/local/opt/"
+                elif [ "$OS_TYPE" = "LINUX" ]; then
+                    local lookup_path="/usr/lib/"
+                elif [ "$OS_TYPE" = "BSD" ]; then
+                    local lookup_path="/usr/local/"
+                else
+                    local missing="$missing $lib"
+                    continue
                 fi
+                echo " * warning: pkg-config $lib failed, we try to lookup openssl.pc in $lookup_path"
 
-                if [ -d "$openssl_path" ]; then
-                    export PKG_CONFIG_PATH="$openssl_path"
+                local openssl_path="$(dirname `find $lookup_path -type f -name "openssl.pc" -follow 2>/dev/null | head -n 1`)"
+                if [ ! -d "$openssl_path" ]; then
+                    echo " * warning: pkg-config $lib: nothing about openssl.pc in $lookup_path"
+                    local missing="$missing $lib"
+                    continue
                 fi
+                echo " * warning: retry pkg-config $lib: openssl.pc found in $openssl_path"
 
+                export PKG_CONFIG_PATH="$openssl_path"
                 $SHELL -c "pkg-config --libs --cflags $lib" 1&>/dev/null 2&>/dev/null
                 if [ "$?" -gt 0 ]; then
+                    echo " * warning: pkg-config $lib: nothing about openssl.pc in $PKG_CONFIG_PATH"
                     local missing="$missing $lib"
                 fi
+                echo " * warning: pkg-config $lib: all ok, continue"
 
             else
                 local missing="$missing $lib"
