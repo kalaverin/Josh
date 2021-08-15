@@ -154,6 +154,6 @@ function check_compliance() {
         echo "$msg" && return 0
     fi
 
-    echo " + all requirements exists: $REQUIRED_BINARIES $REQURED_SYSTEM_BINARIES"
+    echo " + all requirements exists: $REQUIRED_BINARIES $REQUIRED_LIBRARIES $REQURED_SYSTEM_BINARIES"
     return 1
 }
