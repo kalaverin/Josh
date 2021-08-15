@@ -38,28 +38,6 @@ else
 fi
 
 
-# ——— starship prompt
-
-function deploy_starship() {
-    url='https://starship.rs/install.sh'
-    [ ! -d "$BINARY_DEST" ] && mkdir -p "$BINARY_DEST"
-
-    if [ ! -f "$BINARY_DEST/starship" ]; then
-        # static binary from official installer not found, ok
-        if [ -f "`which starship`" ]; then
-            echo " + use installed starship from `which starship`"
-        else
-            # and binary not found in system -> download
-            echo " + deploy starship to $BINARY_DEST/starship"
-            $SHELL -c "$HTTP_GET $url" | BIN_DIR=$BINARY_DEST FORCE=1 $SHELL
-            [ $? -gt 0 ] && echo " - failed starship"
-        fi
-    fi
-    . $SOURCE_ROOT/run/units/configs.sh && copy_starship
-    return 0
-}
-
-
 # ——— fzf search
 
 function compile_fzf() {
@@ -117,6 +95,5 @@ function deploy_micro() {
 function deploy_binaries() {
     compile_fzf && \
     deploy_micro && \
-    deploy_starship && \
     return "$?"
 }
