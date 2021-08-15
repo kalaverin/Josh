@@ -103,6 +103,7 @@ function zero_configuration() {
     copy_starship
     copy_micro
     copy_pip
+    copy_gitignore
     config_git
     nano_syntax_compile
 }
