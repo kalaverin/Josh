@@ -2,10 +2,12 @@ source "$JOSH/lib/python.sh" && python_env
 source "$JOSH/lib/rust.sh" && rust_env
 source "$JOSH/src/compat.zsh"
 
-export LANG="${LANG:-'en_US.UTF-8'}"
-export LANGUAGE="${LANGUAGE:-'en_US.UTF-8'}"
-export LC_ALL="${LC_ALL:-'en_US.UTF-8'}"
-export MM_CHARSET="${MM_CHARSET:-'en_US.UTF-8'}"
+export LANG="${LANG:-"en_US.UTF-8"}"
+export LANGUAGE="${LANGUAGE:-"en_US:en"}"
+export LC_ALL="${LC_ALL:-"en_US.UTF-8"}"
+if [ "$OS_TYPE" = "BSD" ]; then
+    export MM_CHARSET="${MM_CHARSET:-"en_US.UTF-8"}"
+fi
 
 if [ -f "$JOSH_BAT" ]; then
     export PAGER="$JOSH_BAT"
