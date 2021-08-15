@@ -106,7 +106,7 @@ function python_exe() {
 }
 
 function python_init() {
-    local cache_dir="$HOME/.tmp/josh"
+    local cache_dir="$HOME/.cache/josh"
     local cache_file="$cache_dir/python-executive"
 
     if [ ! -f "$cache_file" ] || [ "`find $cache_file -mmin +1440 2>/dev/null | grep $cache_file`" ]; then
@@ -124,7 +124,7 @@ function python_init() {
 }
 
 function pip_dir() {
-    local cache_dir="$HOME/.tmp/josh"
+    local cache_dir="$HOME/.cache/josh"
     local cache_file="$cache_dir/pip-directory"
 
     if [ ! -f "$cache_file" ] || [ "`find $cache_file -mmin +1440 2>/dev/null | grep $cache_file`" ]; then
