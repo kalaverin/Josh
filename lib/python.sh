@@ -109,17 +109,18 @@ function python_init() {
     local cache_dir="$HOME/.tmp/josh"
     local cache_file="$cache_dir/python-executive"
 
-    local result="`cat $cache_file 2>/dev/null`"
     if [ ! -f "$cache_file" ] || [ "`find $cache_file -mmin +1440 2>/dev/null | grep $cache_file`" ]; then
         [ ! -d "$cache_dir" ] && mkdir -p "$cache_dir"
 
         python_exe
-        [ $PYTHON3 ] && [ -f $PYTHON3 ] && [ $? -eq 0 ] && echo "$PYTHON3" > "$cache_file"
-        local result="`cat $cache_file`"
+        [ $? -eq 0 ] && echo "$PYTHON3" > "$cache_file"
     else
-        local result="$PYTHON3"
+        unset PYTHON3
+        export PYTHON3="`cat $cache_file 2>/dev/null`"
     fi
-    echo "$result"
+
+    [ $PYTHON3 ] && [ -f $PYTHON3 ] && return 0
+    return 1
 }
 
 function pip_dir() {
@@ -139,7 +140,7 @@ function pip_dir() {
 
 function pip_init() {
     set_defaults
-    local PYTHON3="`python_init`"
+    python_init
     if [ ! -f "$PYTHON3" ]; then
         echo " - fatal: python>=$MIN_PYTHON_VERSION required!"
         return 1
