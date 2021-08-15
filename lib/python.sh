@@ -109,17 +109,21 @@ function python_init() {
     local cache_dir="$HOME/.cache/josh"
     local cache_file="$cache_dir/python-executive"
 
-    if [ ! -f "$cache_file" ] || [ "`find $cache_file -mmin +1440 2>/dev/null | grep $cache_file`" ]; then
+    local result="`cat $cache_file 2>/dev/null`"
+    if [ ! "$result" ] || [ ! -f "$result" ] || [ ! -f "$cache_file" ] || [ "`find $cache_file -mmin +1440 2>/dev/null | grep $cache_file`" ]; then
         [ ! -d "$cache_dir" ] && mkdir -p "$cache_dir"
 
         python_exe
         [ $? -eq 0 ] && echo "$PYTHON3" > "$cache_file"
-    else
-        unset PYTHON3
-        export PYTHON3="`cat $cache_file 2>/dev/null`"
+        local result="`cat $cache_file 2>/dev/null`"
     fi
 
-    [ $PYTHON3 ] && [ -f $PYTHON3 ] && return 0
+    if [ -f "$result" ]; then
+        unset PYTHON3
+        export PYTHON3="$result"
+    fi
+
+    [ "$PYTHON3" ] && [ -f "$PYTHON3" ] && return 0
     return 1
 }
 
@@ -127,14 +131,14 @@ function pip_dir() {
     local cache_dir="$HOME/.cache/josh"
     local cache_file="$cache_dir/pip-directory"
 
-    if [ ! -f "$cache_file" ] || [ "`find $cache_file -mmin +1440 2>/dev/null | grep $cache_file`" ]; then
+    local result="`cat $cache_file 2>/dev/null`"
+    if [ ! -d "$result" ] || [ "`find $cache_file -mmin +1440 2>/dev/null | grep $cache_file`" ]; then
         [ ! -d "$cache_dir" ] && mkdir -p "$cache_dir"
 
         local result="$(realpath "`$PYTHON3 -c 'from site import USER_BASE as d; print(d)'`/bin")"
         echo "$result" > "$cache_file"
-    else
-        local result="`cat $cache_file 2>/dev/null`"
     fi
+    mkdir -p "$result"
     echo "$result"
 }
 
