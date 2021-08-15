@@ -70,8 +70,7 @@ function compile_fzf() {
     if [ -f "$BINARY_DEST/fzf" ]; then
         [ -f "$BINARY_DEST/fzf.bak" ] && rm "$BINARY_DEST/fzf.bak"
 
-        local found="`find $BINARY_DEST/fzf -mmin +129600 2>/dev/null | grep fzf`"
-        if [ "$found" ]; then
+        if [ "`find $BINARY_DEST/fzf -mmin +129600 2>/dev/null | grep fzf`" ]; then
             mv "$BINARY_DEST/fzf" "$BINARY_DEST/fzf.bak"
         fi
     fi

@@ -45,7 +45,12 @@ function set_defaults() {
     return 0
 }
 
-function python_init() {
+function python_distutils() {
+    local distutils="`echo 'import distutils; print(distutils)' | $1 2>/dev/null | grep from`"
+    ([ "$distutils" ] && echo 1) || echo 0
+}
+
+function python_exe() {
     set_defaults
 
     if [ "$SOURCE_ROOT" ] && [ -d "$SOURCE_ROOT" ]; then
@@ -64,25 +69,25 @@ function python_init() {
 
     if [ -f "$PYTHON3" ]; then
         local version="`$PYTHON3 --version 2>&1 | $JOSH_GREP -Po '([\d\.]+)$'`"
-        version_not_compatible $MIN_PYTHON_VERSION $version
-        if [ "$?" -gt 0 ]; then
-            # echo " * info: using python $version from $PYTHON3"
-            return 0
-        fi
-    fi
+        [ ! "$version" ] && continue
 
-    local distutils="`echo 'import distutils; print(distutils)' | $PYTHON3 2>/dev/null | grep from`"
-    if [ ! "$distutils" ]; then
-        echo " - fatal: distutils isn't installed for $PYTHON3"
-        return 255
+        version_not_compatible $MIN_PYTHON_VERSION $version
+        [ $? -gt 0 ] && [ "`python_distutils $exe`" -gt 0 ] && return 0
     fi
 
     for dir in $(sh -c "echo "$PATH" | sed 's#:#\n#g' | sort -su"); do
         for exe in $(find $dir -type f -name 'python*' 2>/dev/null | sort -Vr); do
             local version=$($exe --version 2>&1 | $JOSH_GREP -Po '([\d\.]+)$')
-            # echo " * info: check python $version from $exe"
-            version_not_compatible $MIN_PYTHON_VERSION $version || local result="$exe"
-            [ "$result" ] && break
+            [ ! "$version" ] && continue
+
+            unset result
+            version_not_compatible $MIN_PYTHON_VERSION $version
+            [ $? -gt 0 ] && [ "`python_distutils $exe`" -gt 0 ] && local result="$exe"
+
+            if [ "$result" ]; then
+                echo " * info: python $version from $exe with distutils detected"
+                break
+            fi
         done
         [ "$result" ] && break
     done
@@ -91,33 +96,63 @@ function python_init() {
         local python="`realpath $result`"
         if [ -f "$python" ]; then
             export PYTHON3="$python"
-            # echo " * info: using python $version from $PYTHON3"
+            echo " * info: using python $version from $PYTHON3"
             return 0
         fi
     fi
+    unset PYTHON3
     echo " * info: python >=$MIN_PYTHON_VERSION isn't detected"
     return 1
 }
 
+function python_init() {
+    local cache_dir="$HOME/.tmp/josh"
+    local cache_file="$cache_dir/python-executive"
+
+    local result="`cat $cache_file 2>/dev/null`"
+    if [ ! -f "$cache_file" ] || [ "`find $cache_file -mmin +1440 2>/dev/null | grep $cache_file`" ]; then
+        [ ! -d "$cache_dir" ] && mkdir -p "$cache_dir"
+
+        python_exe
+        [ $PYTHON3 ] && [ -f $PYTHON3 ] && [ $? -eq 0 ] && echo "$PYTHON3" > "$cache_file"
+        local result="`cat $cache_file`"
+    else
+        local result="$PYTHON3"
+    fi
+    echo "$result"
+}
+
+function pip_dir() {
+    local cache_dir="$HOME/.tmp/josh"
+    local cache_file="$cache_dir/pip-directory"
+
+    if [ ! -f "$cache_file" ] || [ "`find $cache_file -mmin +1440 2>/dev/null | grep $cache_file`" ]; then
+        [ ! -d "$cache_dir" ] && mkdir -p "$cache_dir"
+
+        local result="$(realpath "`$PYTHON3 -c 'from site import USER_BASE as d; print(d)'`/bin")"
+        echo "$result" > "$cache_file"
+    else
+        local result="`cat $cache_file 2>/dev/null`"
+    fi
+    echo "$result"
+}
+
 function pip_init() {
     set_defaults
-    python_init
+    local PYTHON3="`python_init`"
     if [ ! -f "$PYTHON3" ]; then
         echo " - fatal: python>=$MIN_PYTHON_VERSION required!"
         return 1
     fi
 
-    local CACHE_DIR="/tmp/.josh"
-    if [ ! -f "$CACHE_DIR/pip-directory" ]; then
-        [ ! -d "$CACHE_DIR" ] && mkdir -p "$CACHE_DIR"
-        local PIP_DIR="$(realpath "`$PYTHON3 -c 'from site import USER_BASE as d; print(d)'`/bin")"
-        echo "$PIP_DIR" > "$CACHE_DIR/pip-directory"
-    else
-        local PIP_DIR="`cat $CACHE_DIR/pip-directory`"
+    export PIP_DIR="`pip_dir`"
+    if [ ! -d "$PIP_DIR" ]; then
+        echo " - fatal: PIP_DIR=\`$PIP_DIR\`"
+        return 1
     fi
 
-    export PATH="$PIP_DIR:$PATH"
     export PIP_EXE="$PIP_DIR/pip"
+    export PATH="$PIP_DIR:$PATH"
 
     if [ ! -f "$PIP_EXE" ]; then
         [ ! -d "$PIP_DIR" ] && mkdir -p "$PIP_DIR"
