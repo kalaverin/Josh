@@ -101,7 +101,7 @@ function python_exe() {
         fi
     fi
     unset PYTHON3
-    echo " * info: python >=$MIN_PYTHON_VERSION isn't detected"
+    echo " * info: python>=$MIN_PYTHON_VERSION isn't detected"
     return 1
 }
 
