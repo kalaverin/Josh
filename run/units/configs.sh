@@ -63,6 +63,14 @@ function copy_gitignore() {
     return $?
 }
 
+function copy_cargo() {
+    local dst="$REAL/.cargo/config.toml"
+    [ ! -d "`dirname $dst`" ] && mkdir -p "`dirname $dst`"; [ -f "$dst" ] && return 0
+    echo " + copy cargo example config: $dst" && \
+    cp -n "$SOURCE_ROOT/usr/share/cargo.toml" "$dst"
+    return $?
+}
+
 function config_git() {
     copy_gitignore
     if [ ! "`git config --global core.pager | grep -P '^(delta)'`" ]; then
@@ -100,10 +108,11 @@ function nano_syntax_compile() {
 }
 
 function zero_configuration() {
-    copy_starship
+    copy_cargo
+    copy_gitignore
     copy_micro
     copy_pip
-    copy_gitignore
+    copy_starship
     config_git
     nano_syntax_compile
 }

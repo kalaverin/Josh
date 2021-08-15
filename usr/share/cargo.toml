@@ -1,0 +1,14 @@
+[profile.release]
+codegen-units = 1
+debug = false
+incremental = true
+lto = true
+opt-level = 3
+panic = 'abort'
+# strip = true  # strip symbols from the binary, nightly feature
+
+[profile.release.build-override]
+codegen-units = 1
+debug = false
+incremental = true
+opt-level = 3
