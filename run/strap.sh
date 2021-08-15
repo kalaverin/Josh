@@ -48,8 +48,8 @@ function prepare_and_deploy() {
     deploy_ohmyzsh && \
     deploy_extensions && \
     deploy_binaries && \
-    cargo_deploy $CARGO_REQ_PACKAGES && \
-    zero_configuration
+    zero_configuration && \
+    cargo_deploy $CARGO_REQ_PACKAGES
 
     [ $? -gt 0 ] && return 2
 
