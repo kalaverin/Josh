@@ -31,8 +31,8 @@ if [ "$MERGE_DIR" ]; then
     BINARY_DEST="$MERGE_DIR/custom/bin"
 else
     BINARY_DEST="$ZSH/custom/bin"
-    if [ ! -d "$BINARY_DEST" ]; then
-        echo " - fatal: init failed, BINARY_DEST must me created when call not in deploy context"
+    if [ ! -d "$ZSH/custom" ]; then
+        echo " - fatal: init failed, \$ZSH/custom=\`$ZSH/custom\` isn't found"
         return 255
     fi
 fi
