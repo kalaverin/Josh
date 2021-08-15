@@ -22,11 +22,11 @@ if [ ! "$REAL" ]; then
 fi
 
 function update_packages() {
-    . "$SOURCE_ROOT/lib/rust.sh" && cargo_deploy $CARGO_REQ_PACKAGES
-    . "$SOURCE_ROOT/lib/python.sh" && pip_deploy $PIP_REQ_PACKAGES
-
     . "$SOURCE_ROOT/run/units/binaries.sh" && deploy_binaries
     . "$SOURCE_ROOT/run/units/configs.sh" && zero_configuration
+
+    . "$SOURCE_ROOT/lib/rust.sh" && cargo_deploy $CARGO_REQ_PACKAGES
+    . "$SOURCE_ROOT/lib/python.sh" && pip_deploy $PIP_REQ_PACKAGES
 }
 
 function pull_update() {
