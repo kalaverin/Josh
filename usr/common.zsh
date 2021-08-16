@@ -290,7 +290,7 @@ insert_command() {
 
     if [ "$result" ]; then
         LBUFFER="$result"
-        zle accept-line
+        RBUFFER=""
     fi
     zle redisplay
     return 0
