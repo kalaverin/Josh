@@ -3,6 +3,7 @@
 CARGO_REQ_PACKAGES=(
     bat            # modern replace for cat with syntax highlight
     broot          # lightweight embeddable file manager
+    cargo-update   # packages for auto-update installed crates
     csview         # for commas, tabs, etc
     exa            # fast replace for ls
     fd-find        # fd, fast replace for find for humans
@@ -137,6 +138,15 @@ function cargo_init() {
         unset RUSTC_WRAPPER
         echo " - warning: sccache doesn't exists"
     fi
+
+    local UPDATE_EXE="$CARGO_DIR/cargo-install-update"
+    if [ ! -f "$UPDATE_EXE" ]; then
+        $CARGO_EXE install cargo-update
+        if [ ! -f "$UPDATE_EXE" ]; then
+            echo " - warning: cargo-update isn't compiled ($UPDATE_EXE)"
+        fi
+    fi
+
     return 0
 }
 
@@ -156,12 +166,43 @@ function cargo_deploy() {
             local retval=1
         fi
     done
+    cargo_update
     return "$retval"
 }
 
 function cargo_extras() {
     cargo_deploy $CARGO_REQ_PACKAGES $CARGO_OPT_PACKAGES
     return 0
+}
+
+function cargo_recompile() {
+    cargo_init || return $?
+    if [ ! -f "$CARGO_EXE" ]; then
+        echo " - fatal: cargo exe $CARGO_EXE isn't found!"
+        return 1
+    fi
+
+    local packages="$($CARGO_EXE install --list | egrep '^[a-z0-9_-]+ v[0-9.]+:$' | cut -f1 -d' ')"
+    if [ "$packages" ]; then
+        $CARGO_EXE install --force $packages
+    fi
+}
+
+function cargo_update() {
+    cargo_init || return $?
+    if [ ! -f "$CARGO_EXE" ]; then
+        echo " - fatal: cargo exe $CARGO_EXE isn't found!"
+        return 1
+    fi
+
+    local UPDATE_EXE="$CARGO_DIR/cargo-install-update"
+    if [ ! -f "$UPDATE_EXE" ]; then
+        echo " - fatal: cargo-update exe $UPDATE_EXE isn't found!"
+        return 1
+    fi
+
+    $CARGO_EXE install-update -a
+    return "$?"
 }
 
 function rust_env() {

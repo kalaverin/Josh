@@ -532,30 +532,33 @@ zle -N sudoize
 josh_update() {
     local cwd="`pwd`"
     josh_pull $@ && \
-    (. "$JOSH/run/update.sh" && post_update || true) && \
+    . "$JOSH/run/update.sh" && post_update $@
+    local retval="$?"
     cd "$cwd"
     exec zsh
-    return 0
+    return $retval
 }
+
 josh_pull() {
     local cwd="`pwd`"
     . "$JOSH/run/update.sh" && pull_update $@
-    local ret=$?
+    local retval="$?"
     cd "$cwd"
-    return $ret
+    return $retval
 }
 
-josh_deploy() {
+josh_reinstall() {
     local cwd="`pwd`"
     url='"https://kalaverin.ru/shell?$RANDOM"'
     run_show "$HTTP_GET $url | $SHELL"
-    if [ $? -gt 0 ]; then
+    local retval="$?"
+    if [ "$retval" -gt 0 ]; then
         echo ' - fatal: something wrong :-\'
         return 1
     fi
     cd "$cwd"
     exec zsh
-    return 0
+    return $retval
 }
 
 josh_urls() {
