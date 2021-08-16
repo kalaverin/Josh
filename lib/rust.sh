@@ -22,7 +22,7 @@ CARGO_REQ_PACKAGES=(
     tabulate       # autodetect columns in stdin and tabulate
     viu            # print images into terminal
     vivid          # ls colors themes selections system
-)
+)  # TODO: checks for missing binaries!
 
 CARGO_OPT_PACKAGES=(
     atuin            # another yet history manager
@@ -182,9 +182,9 @@ function cargo_recompile() {
         return 1
     fi
 
-    local packages="$($CARGO_EXE install --list | egrep '^[a-z0-9_-]+ v[0-9.]+:$' | cut -f1 -d' ')"
+    local packages="$($CARGO_EXE install --list | egrep '^[a-z0-9_-]+ v[0-9.]+:$' | cut -f1 -d' ' | sed -z 's:\n: :g')"
     if [ "$packages" ]; then
-        $CARGO_EXE install --force $packages
+        $SHELL -c "$CARGO_EXE install --force $packages"
     fi
 }
 
