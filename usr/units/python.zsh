@@ -189,7 +189,7 @@ pip_visual_freeze() {
     zle reset-prompt
     return 0
 }
-zle -N visual_freeze
+zle -N pip_visual_freeze
 
 # ———
 
