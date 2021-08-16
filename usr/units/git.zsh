@@ -140,6 +140,12 @@ function sck() {
     return $?
 }
 
+function git_abort() {
+    local state="`get_repository_state`"  # merging, rebase or cherry-pick
+    [ "$?" -gt 0 ] && return 0
+    [ "$state" ] && $SHELL -c "git $state --abort"
+}
+
 function drop_this_branch_right_now() {
     local branch="${1:-`git_current_branch`}"
     [ ! "$branch" ] && return 1
@@ -241,8 +247,11 @@ alias gdr='git ls-files --modified `git rev-parse --show-toplevel`'
 
 local GET_ROOT='git rev-parse --quiet --show-toplevel'
 git_root() {
-    local result=$(realpath `$SHELL -c "$GET_ROOT"`)
-    [ "$result" ] && echo "$result"
+    local result="`$SHELL -c "$GET_ROOT" 2>/dev/null`"
+    if [ "$result" ]; then
+        local result=$(realpath --quiet `$SHELL -c "$GET_ROOT" 2>/dev/null`)
+        [ "$result" ] && echo "$result"
+    fi
 }
 
 local GET_HASH='git rev-parse --quiet --verify HEAD 2>/dev/null'
@@ -265,6 +274,7 @@ git_current_branch() {
 
 get_repository_state() {
     local root="`git_root`"
+    # local root="`git_root 2>/dev/null`"
     [ ! "$root" ] && return 1
 
     if [ -f "$root/.git/CHERRY_PICK_HEAD" ]; then
