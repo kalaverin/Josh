@@ -42,7 +42,7 @@ function sfet() {
     return $?
 }
 
-function sact() {
+function sall() {
     local branch="${1:-`git_current_branch`}"
     [ ! "$branch" ] && return 1
 
