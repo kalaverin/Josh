@@ -435,7 +435,7 @@ git_widget_conflict_solver() {
 
     local conflicted='xargs rg \
         --files-with-matches --with-filename --color always \
-        --count --heading --line-number "^(<<<<<<< HEAD)$" | tabulate -d ":"'
+        --count --heading --line-number "^(<<<<<<< HEAD)\s*$" | tabulate -d ":"'
 
     local need_quit=0
     local last_hash=""
