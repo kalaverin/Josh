@@ -1,7 +1,7 @@
 [profile.release]
 codegen-units = 1
 debug = false
-incremental = true
+incremental = false
 lto = true
 opt-level = 3
 panic = 'abort'
@@ -10,5 +10,5 @@ panic = 'abort'
 [profile.release.build-override]
 codegen-units = 1
 debug = false
-incremental = true
+incremental = false
 opt-level = 3
