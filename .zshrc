@@ -1,6 +1,6 @@
 if [ ! "$JOSH" ]; then
     local auto="$(sh -c "dirname `realpath $0`")"
-    [ ! -d "$auto" ] && local auto="~/.josh/custom/plugins/josh/"
+    [ ! -d "$auto" ] && local auto="~/.josh/custom/plugins/josh"
     . "$auto/run/init.sh"
 fi
 
