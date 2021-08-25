@@ -1,5 +1,16 @@
-export REAL="$HOME"
-[ -f "`which -p realpath`" ] && export REAL="`realpath $HOME`"
+if [ "$HOME" ] && [ -d "$HOME" ]; then
+    export REAL="$HOME"
+else
+    export REAL="~"
+fi
+
+if [ -f "`which -p realpath`" ]; then
+    export REAL="`realpath -q $REAL`"
+elif [ -f "`which -p readlink`" ]; then
+    export REAL="`readlink -qf $REAL`"
+else
+    export REAL="`dirname $REAL`/`basename $REAL`"
+fi
 
 export ZSH="$REAL/.josh"
 export JOSH="$ZSH/custom/plugins/josh"
