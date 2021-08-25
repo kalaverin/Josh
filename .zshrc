@@ -1,7 +1,10 @@
 if [ ! "$JOSH" ]; then
     local auto="$(sh -c "dirname `realpath $0`")"
     [ ! -d "$auto" ] && local auto="~/.josh/custom/plugins/josh"
-    . "$auto/run/init.sh"
+    zsh -c ". $auto/run/init.sh"
+    if [ ! "$JOSH" ]; then
+        echo " - fatal: init from \`$auto\` failed"
+    fi
 fi
 
 path=(
