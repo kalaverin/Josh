@@ -2,12 +2,12 @@ if [ ! "$JOSH" ]; then
     local home="$HOME"
     [ ! -d "$home" ] && local home="~"
 
-    local auto="$(sh -c "dirname `realpath $0 2>/dev/null`" 2>/dev/null)"
-    [ ! -d "$auto" ] && local auto="$home/.josh/custom/plugins/josh"
+    local auto="$home/.josh/custom/plugins/josh"
 
     . "$auto/run/init.sh"
     if [ ! "$JOSH" ]; then
-        echo " - fatal: init from \`$auto\` failed"
+        export JOSH="$HOME/.josh/custom/plugins/josh"
+        echo " - fatal: init from \`$auto\` failed, try \`$JOSH\`"
     fi
 fi
 
