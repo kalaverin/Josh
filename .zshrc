@@ -1,5 +1,7 @@
 if [ ! "$JOSH" ]; then
-    . "$(sh -c "dirname `realpath ~/.zshrc`")/run/init.sh"
+    local auto="$(sh -c "dirname `realpath $0`")"
+    [ ! -d "$auto" ] && local auto="~/.josh/custom/plugins/josh/"
+    . "$auto/run/init.sh"
 fi
 
 path=(
