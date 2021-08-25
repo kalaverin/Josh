@@ -63,6 +63,44 @@ CARGO_OPT_PACKAGES=(
     tokei            # repository stats
     x8               # websites scan tool
     ytop             # simple htop
+    # coreutils        # rust reimplementation for GNU tools
+    watchexec-cli    # watchdog for filesystem and runs callback on hit
+    python-launcher
+    rustscan
+    bropages
+    bump-bin
+    qrrs
+    connchk
+    credit
+    skim
+    git-trim
+    vergit
+    what-bump
+    git-branchless
+    loadem
+    gitall
+    autocshell
+    tickrs
+    investments
+    kras
+    ssup
+    git-bonsai
+    multi-tunnel
+    elephantry-cli
+    ntimes
+    estunnel
+    xkpwgen  # like pet name
+    pipecolor
+    git-state
+    hexdmp
+    git-who
+    git-warp-time
+    ff-find
+    pingkeeper
+    filetreelist
+    limber  # elk import export
+    jfmt
+    # file-sniffer
 )
 
 function set_defaults() {
