@@ -404,7 +404,11 @@ git_auto_skip_or_continue() {
         # nothing to resolve, just skip
         local files="`git status --short --verbose --no-ahead-behind --ignore-submodules --untracked-file | wc -l`"
         if [ "$files" -eq 0 ]; then
-            run_show " git $state --skip"
+            if [ "$state" != "merge" ]; then
+                run_show " git $state --skip"
+            else
+                run_show " git merge --continue"
+            fi
             return 1
         fi
 
