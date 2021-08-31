@@ -144,7 +144,9 @@ function git_abort() {
     local state="`get_repository_state`"  # merging, rebase or cherry-pick
     [ "$?" -gt 0 ] && return 0
     [ "$state" ] && $SHELL -c "git $state --abort"
+    zle reset-prompt
 }
+zle -N git_abort
 
 function drop_this_branch_right_now() {
     local branch="${1:-`git_current_branch`}"
@@ -1098,5 +1100,7 @@ bindkey "^[F"  git_widget_delete_branch
 #              ctrl-alt-a, permanently delete REMOTE branch
 bindkey "\e^f" git_widget_delete_remote_branch  # PUSH TO origin, caution!
 
-#              alt-f, experimental conflict solver
+#              alt-p, experimental conflict solver
 bindkey "\ep"  git_widget_conflict_solver
+#              ctrl-p, git abort
+bindkey "^p"   git_abort
