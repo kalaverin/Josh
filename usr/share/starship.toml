@@ -68,7 +68,7 @@ format = ' [$symbol($version)]($style)'
 format = ' [$symbol$account(@$domain)(\($region\))]($style)'
 
 [git_branch]
-format = ' [$symbol$branch]($style)(:[$remote]($style))[/](black bold)'
+format = '[$symbol$branch]($style)(:[$remote]($style))[/](black bold)'
 symbol = ''
 style = 'yellow bold'
 truncation_length = 9223372036854775807
@@ -173,7 +173,7 @@ format = ' [$symbol($version)(\($switch_indicator$switch_name\) )]($style)'
 format = ' [$symbol$cloud(\($project\))]($style) '
 
 [package]
-format = ' [$symbol$version]($style) '
+format = ' [$symbol$version]($style)'
 symbol = '📦 '
 style = '208 bold'
 display_private = false
@@ -244,7 +244,7 @@ disabled = false
 format = ' [$symbol($version)]($style)'
 
 [terraform]
-format = ' [$symbol$workspace ]($style)'
+format = ' [$symbol$workspace]($style)'
 
 [time]
 format = '[$time]($style) '
