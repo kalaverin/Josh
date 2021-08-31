@@ -415,7 +415,7 @@ git_auto_skip_or_continue() {
         fi
 
         # all files resolved and no more changes, then — continue
-        local files="`git status --short --verbose --no-ahead-behind --ignore-submodules --untracked-file | grep -Pv '^(M )' | wc -l`"
+        local files="`git status --short --verbose --no-ahead-behind --ignore-submodules --untracked-file | grep -Pv '^([AM] )' | wc -l`"
         if [ "$files" -eq 0 ]; then
             run_show " git $state --continue"
             return 2
@@ -1052,6 +1052,7 @@ git_widget_merge_branch() {
         elif [ ! "$BUFFER" ]; then
             run_show "sfet \"$value\" && git merge --no-commit \"origin/$value\""
             local retval=$?
+            git_widget_conflict_solver
 
         elif [ "$value" ]; then
             LBUFFER="$BUFFER && git fetch origin \"$value\":\"$value\" && git merge --no-commit \"origin/$value\""
