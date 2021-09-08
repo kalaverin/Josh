@@ -28,9 +28,9 @@ CARGO_OPT_PACKAGES=(
     atuin            # another yet history manager
     bandwhich        # network bandwhich meter
     bingrep          # extract and grep strings from binaries
+    bump-bin         # versions with semver specification
     choose           # awk for humans
     colorizer        # logs colorizer
-    conventional_commits_next_version
     dirstat-rs       # ds, du replace, summary tree
     du-dust          # dust, du replace, verbose tree
     dull             # strip any ANSI (color) sequences from pipe
@@ -68,7 +68,6 @@ CARGO_OPT_PACKAGES=(
     python-launcher
     rustscan
     bropages
-    bump-bin
     qrrs
     connchk
     credit
