@@ -15,15 +15,77 @@ function virtualenv_path_activate() {
     local cwd="`pwd`"
     local venv="`realpath ${VIRTUAL_ENV:-$1}`"
     [ ! -d "$venv" ] && return 1
-    virtualenv_deactivate; cd "$venv" && source bin/activate; cd $cwd
+    virtualenv_deactivate; cd "$venv" && source bin/activate; cd "$cwd"
 }
 
 function virtualenv_deactivate {
     if [ "$VIRTUAL_ENV" != "" ]; then
         local cwd="`pwd`"
-        cd $VIRTUAL_ENV/bin && source activate && deactivate
-        cd $cwd
+        cd "$VIRTUAL_ENV/bin" && source activate && deactivate; cd "$cwd"
     fi
+}
+
+function virtualenv_node_deploy {
+    . $JOSH/lib/python.sh
+    pip_init || return 1
+
+    local venv="${VIRTUAL_ENV:-''}"
+    if [ ! -d "$venv" ]; then
+        echo " - fatal: venv must be activated"
+        return 1
+    fi
+    local venvname=`basename "$venv"`
+
+    echo " + using venv: $venvname ($venv)"
+    virtualenv_path_activate "$venv"
+
+    local pip="`which -p pip`"
+    if [ ! -f "$pip" ]; then
+        echo " - fatal: pip in venv \`$VIRTUAL_ENV\` isn't found"
+        return 2
+    fi
+    echo " + using pip: $pip"
+
+    local pip="$pip --no-python-version-warning --disable-pip-version-check --no-input --quiet"
+    if [ `$SHELL -c "$pip freeze | grep nodeenv | wc -l"` -eq 0 ]; then
+        run_show "$pip install nodeenv" && virtualenv_path_activate "$venv"
+    fi
+
+    local nodeenv="`which -p nodeenv`"
+    if [ ! -f "$nodeenv" ]; then
+        echo " - fatal: nodeenv in venv \`$VIRTUAL_ENV\` isn't found"
+        return 3
+    fi
+    echo " + using nodeenv: $nodeenv"
+
+    local value="$($SHELL -c "
+        nodeenv --list 2>&1 | sd '\n' ' ' | sd '\s+' '\n' | sort -rV \
+        | $FZF \
+            --ansi --extended --info='inline' \
+            --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
+            --tiebreak=index --jump-labels="$FZF_JUMPS" \
+            --bind='alt-w:toggle-preview-wrap' \
+            --bind='ctrl-c:abort' \
+            --bind='ctrl-q:abort' \
+            --bind='end:preview-down' \
+            --bind='esc:abort' \
+            --bind='home:preview-up' \
+            --bind='pgdn:preview-page-down' \
+            --bind='pgup:preview-page-up' \
+            --bind='shift-down:half-page-down' \
+            --bind='shift-up:half-page-up' \
+            --bind='alt-space:jump-accept' \
+            --color="$FZF_THEME" \
+            --reverse --min-height='11' --height='11' \
+            --prompt='select node version for $venvname > ' \
+            -i --select-1 --filepath-word
+    ")"
+
+    if [ "$value" != "" ]; then
+        run_show "nodeenv --python-virtualenv --node=$value"
+    fi
+
+    return 0
 }
 
 function get_virtualenv_path {
