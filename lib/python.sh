@@ -9,6 +9,7 @@ PIP_REQ_PACKAGES=(
     setuptools
     sshuttle   # swiss knife for ssh tunneling & management
     virtualenv # virtual environments for python packaging
+    nodeenv    # virtual environments for node packaging
     wheel
 )
 
