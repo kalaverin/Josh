@@ -31,27 +31,11 @@ if [ ! "$CONFIG_DIR" ]; then
     fi
 fi
 
-function copy_starship() {
-    local dst="$CONFIG_DIR/starship.toml"
+function copy_cargo() {
+    local dst="$REAL/.cargo/config.toml"
     [ ! -d "`dirname $dst`" ] && mkdir -p "`dirname $dst`"; [ -f "$dst" ] && return 0
-    echo " + copy starship example config: $dst" && \
-    cp -n "$SOURCE_ROOT/usr/share/starship.toml" "$dst"
-    return $?
-}
-
-function copy_micro() {
-    local dst="$CONFIG_DIR/micro/settings.json"
-    [ ! -d "`dirname $dst`" ] && mkdir -p "`dirname $dst`"; [ -f "$dst" ] && return 0
-    echo " + copy micro editor example config: $dst" && \
-    cp -n "$SOURCE_ROOT/usr/share/micro.json" "$dst"
-    return $?
-}
-
-function copy_pip() {
-    local dst="$CONFIG_DIR/pip/pip.conf"
-    [ ! -d "`dirname $dst`" ] && mkdir -p "`dirname $dst`"; [ -f "$dst" ] && return 0
-    echo " + copy pip example config: $dst" && \
-    cp -n "$SOURCE_ROOT/usr/share/pip.conf" "$dst"
+    echo " + copy cargo example config: $dst" && \
+    cp -n "$SOURCE_ROOT/usr/share/cargo.toml" "$dst"
     return $?
 }
 
@@ -63,11 +47,35 @@ function copy_gitignore() {
     return $?
 }
 
-function copy_cargo() {
-    local dst="$REAL/.cargo/config.toml"
+function copy_micro() {
+    local dst="$CONFIG_DIR/micro/settings.json"
     [ ! -d "`dirname $dst`" ] && mkdir -p "`dirname $dst`"; [ -f "$dst" ] && return 0
-    echo " + copy cargo example config: $dst" && \
-    cp -n "$SOURCE_ROOT/usr/share/cargo.toml" "$dst"
+    echo " + copy micro editor example config: $dst" && \
+    cp -n "$SOURCE_ROOT/usr/share/micro.json" "$dst"
+    return $?
+}
+
+function copy_nodeenv() {
+    local dst="$REAL/.nodeenvrc"
+    [ -f "$dst" ] && return 0
+    echo " + copy $dst template" && \
+    cp -n "$SOURCE_ROOT/usr/share/nodeenv.conf" "$dst"
+    return $?
+}
+
+function copy_pip() {
+    local dst="$CONFIG_DIR/pip/pip.conf"
+    [ ! -d "`dirname $dst`" ] && mkdir -p "`dirname $dst`"; [ -f "$dst" ] && return 0
+    echo " + copy pip example config: $dst" && \
+    cp -n "$SOURCE_ROOT/usr/share/pip.conf" "$dst"
+    return $?
+}
+
+function copy_starship() {
+    local dst="$CONFIG_DIR/starship.toml"
+    [ ! -d "`dirname $dst`" ] && mkdir -p "`dirname $dst`"; [ -f "$dst" ] && return 0
+    echo " + copy starship example config: $dst" && \
+    cp -n "$SOURCE_ROOT/usr/share/starship.toml" "$dst"
     return $?
 }
 
@@ -111,6 +119,7 @@ function zero_configuration() {
     copy_cargo
     copy_gitignore
     copy_micro
+    copy_nodeenv
     copy_pip
     copy_starship
     config_git
