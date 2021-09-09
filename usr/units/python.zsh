@@ -58,31 +58,37 @@ function virtualenv_node_deploy {
     fi
     echo " + using nodeenv: $nodeenv"
 
-    local value="$($SHELL -c "
-        nodeenv --list 2>&1 | sd '\n' ' ' | sd '\s+' '\n' | sort -rV \
-        | $FZF \
-            --ansi --extended --info='inline' \
-            --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
-            --tiebreak=index --jump-labels="$FZF_JUMPS" \
-            --bind='alt-w:toggle-preview-wrap' \
-            --bind='ctrl-c:abort' \
-            --bind='ctrl-q:abort' \
-            --bind='end:preview-down' \
-            --bind='esc:abort' \
-            --bind='home:preview-up' \
-            --bind='pgdn:preview-page-down' \
-            --bind='pgup:preview-page-up' \
-            --bind='shift-down:half-page-down' \
-            --bind='shift-up:half-page-up' \
-            --bind='alt-space:jump-accept' \
-            --color="$FZF_THEME" \
-            --reverse --min-height='11' --height='11' \
-            --prompt='select node version for $venvname > ' \
-            -i --select-1 --filepath-word
-    ")"
+    if [[ "$1" =~ ^[0-9] ]]; then
+        # TODO: need: 14.5 -> 14.5.0 and versionlist too
+        local version="$1"
+    else
+        local version="$($SHELL -c "
+            nodeenv --list 2>&1 | sd '\n' ' ' | sd '\s+' '\n' | sort -rV \
+            | $FZF \
+                --ansi --extended --info='inline' \
+                --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
+                --tiebreak=index --jump-labels="$FZF_JUMPS" \
+                --bind='alt-w:toggle-preview-wrap' \
+                --bind='ctrl-c:abort' \
+                --bind='ctrl-q:abort' \
+                --bind='end:preview-down' \
+                --bind='esc:abort' \
+                --bind='home:preview-up' \
+                --bind='pgdn:preview-page-down' \
+                --bind='pgup:preview-page-up' \
+                --bind='shift-down:half-page-down' \
+                --bind='shift-up:half-page-up' \
+                --bind='alt-space:jump-accept' \
+                --color="$FZF_THEME" \
+                --reverse --min-height='11' --height='11' \
+                --prompt='select node version for $venvname > ' \
+                -i --select-1 --filepath-word
+        ")"
+    fi
 
-    if [ "$value" != "" ]; then
-        run_show "nodeenv --python-virtualenv --node=$value"
+    if [ "$version" != "" ]; then
+        echo " + deploy node v$version"
+        run_show "nodeenv --python-virtualenv --node=$version"
     fi
 
     return 0
@@ -114,6 +120,58 @@ function get_virtualenv_path {
     fi
     local env_name="$(realpath `basename "$env_path"`)"
     export JOSH_SELECT_VENV_PATH="$env_path"
+}
+
+function virtualenv_create {
+    local cwd="`pwd`"
+    local packages="$*"
+
+    if [[ "$1" =~ ^[0-9]\.[0-9]$ ]]; then
+        local exe="`which -p python$1`"
+        local packages="${@:2}"
+
+    elif [ "$1" = "3" ]; then
+        if [ ! -f "$PYTHON3" ]; then
+            . $JOSH/lib/python.sh && python_init
+            if [ $? -gt 0 ]; then
+                echo " - when detect python something wrong, stop" 1>&2
+            fi
+        fi
+        if [ ! -f "$PYTHON3" ]; then
+            echo " - default \$PYTHON3=\`$PYTHON3\` isn't accessible" 1>&2
+            return 1
+        fi
+        local exe="$PYTHON3"
+        local packages="${@:2}"
+
+    elif [[ "$1" =~ ^[0-9] ]]; then
+        echo " - couldn't autodetect python for version \`$1\`" 1>&2
+        return 2
+
+    else
+        local exe="`which -p python2.7`"
+    fi
+
+    virtualenv_deactivate
+    if [ ! -f "$exe" ]; then
+        echo " - couldn't search selected python for \`$@\`" 1>&2
+        return 1
+    fi
+
+    if [ ! -f "`which -p virtualenv`" ]; then
+        . $JOSH/lib/python.sh && pip_init
+        if [ $? -gt 0 ]; then
+            echo " - when init virtualenv something wrong, stop" 1>&2
+        fi
+    fi
+
+    local name="$(dirname `mktemp -duq`)/env/`petname -s . -w 3 -a`"
+    mkdir -p "$name" && \
+        cd "`realpath $name/../`" && \
+        rm -rf "$name" && \
+    virtualenv --python=$exe "$name" && \
+        source $name/bin/activate && cd $cwd && \
+        $SHELL -c "pip install pipdeptree $packages"
 }
 
 function virtualenv_temporary_create {
