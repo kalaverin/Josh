@@ -1,6 +1,7 @@
 #!/bin/sh
 
 REQUIRED_BINARIES=(
+    cc
     git
     jq
     pkg-config
@@ -127,7 +128,7 @@ function check_compliance() {
 
         [ -f "`which -p apt`" ] && local bin="apt" || local bin="apt-get"
         local cmd="(sudo $bin update --yes --quiet || true) && sudo $bin install --yes --quiet --no-remove"
-        local pkg="zsh git jq pv pkg-config python3 python3-distutils tree libssl-dev"
+        local pkg="zsh git jq pv clang pkg-config python3 python3-distutils tree libssl-dev"
         REQURED_SYSTEM_BINARIES=(
             apt
         )
