@@ -1,6 +1,7 @@
 #!/bin/sh
 
 CARGO_REQ_PACKAGES=(
+    sccache        # compile time cargo cache, must have, first
     bat            # modern replace for cat with syntax highlight
     broot          # lightweight embeddable file manager
     cargo-update   # packages for auto-update installed crates
@@ -16,7 +17,6 @@ CARGO_REQ_PACKAGES=(
     ripgrep        # rg, fast replace for grep -ri for humans
     rm-improved    # rip, powerful rm replacement with trashcan
     runiq          # fast uniq replacement
-    sccache        # compile time cargo cache, must have
     scotty         # directory crawling statistics with search
     sd             # fast sed replacement for humans
     starship       # shell prompt
