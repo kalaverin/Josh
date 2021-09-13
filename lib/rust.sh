@@ -1,7 +1,6 @@
 #!/bin/sh
 
 CARGO_REQ_PACKAGES=(
-    sccache        # compile time cargo cache, must have, first
     bat            # modern replace for cat with syntax highlight
     broot          # lightweight embeddable file manager
     cargo-update   # packages for auto-update installed crates
@@ -158,12 +157,12 @@ function cargo_init() {
             echo " - fatal: cargo isn't installed ($CARGO_EXE)"
             return 255
         fi
+    fi
 
+    if [ ! -f "$CACHE_EXE" ]; then
+        $CARGO_EXE install sccache
         if [ ! -f "$CACHE_EXE" ]; then
-            $CARGO_EXE install sccache
-            if [ ! -f "$CACHE_EXE" ]; then
-                echo " - warning: sccache isn't compiled ($CACHE_EXE)"
-            fi
+            echo " - warning: sccache isn't compiled ($CACHE_EXE)"
         fi
     fi
 
