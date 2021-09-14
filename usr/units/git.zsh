@@ -356,6 +356,7 @@ git_widget_checkout_modified() {
 
     local cwd="`pwd`"
     # TODO: untracked must be removed
+    # TODO: deleted must be restored
     local select='git status --short --verbose --no-ahead-behind --untracked-files=no'
 
     while true; do
