@@ -496,7 +496,14 @@ git_widget_conflict_solver() {
 
     zle reset-prompt
     if [ "$state" -eq 3 ]; then
-        echo "+ repository in state \``get_repository_state`\`, but no conflicts found, check git-add widget\n"
+        local state="`get_repository_state`"
+        local conflicted="$($SHELL -c "$select | $conflicted | $UNIQUE_SORT | wc -l")"
+        if [ "$conflicted" -gt 0 ]; then
+            local conflicted=" and $conflicted files with conflicts block auto$state"
+        else
+            local conflicted=", but no conflicts found (check git-add widget?)"
+        fi
+        echo "* repository in state \`$state\`$conflicted\n"
     fi
     zle redisplay
     return 0
