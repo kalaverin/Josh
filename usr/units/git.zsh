@@ -9,7 +9,7 @@ local DIFF_FROM_TAG="$INCLUDE_DIR/git_diff_from_tag.sh"
 local LIST_BRANCHES="$INCLUDE_DIR/git_list_branches.sh"
 local SETUPCFG_LOOKUP="$INCLUDE_DIR/git_search_setupcfg.sh"
 local TAG_FROM_STRING="$INCLUDE_DIR/git_tag_from_str.sh"
-
+local LIST_TO_ADD="git status --short --verbose --no-ahead-behind --ignore-submodules --untracked-file"
 local ESCAPE_STATUS='sd "^( )" "." | sd "^(.)( )" "$1." | sd "^(. )" "++ "'
 local GIT_DIFF="git diff --color=always --stat --patch --diff-algorithm=histogram"
 
@@ -306,12 +306,11 @@ git_widget_add() {
     [ ! "$branch" ] && return 1
 
     local cwd="`pwd`"
-    local select='git status --short --verbose --no-ahead-behind --ignore-submodules --untracked-file'
     # local select='git ls-files --deleted --others --exclude-standard'
 
     while true; do
         local value="$(
-            $SHELL -c "$select | $ESCAPE_STATUS \
+            $SHELL -c "$LIST_TO_ADD | $ESCAPE_STATUS \
             | $FZF \
             --filepath-word --tac \
             --multi --nth=2.. --with-nth=1.. \
@@ -405,7 +404,7 @@ git_auto_skip_or_continue() {
     local state="`get_repository_state`"  # merging, rebase or cherry-pick
     if [ "$state" ]; then
         # nothing to resolve, just skip
-        local files="`git status --short --verbose --no-ahead-behind --ignore-submodules --untracked-file | wc -l`"
+        local files=$($SHELL -c "$LIST_TO_ADD | wc -l")
         if [ "$files" -eq 0 ]; then
             if [ "$state" != "merge" ]; then
                 run_show " git $state --skip"
@@ -416,7 +415,7 @@ git_auto_skip_or_continue() {
         fi
 
         # all files resolved and no more changes, then — continue
-        local files="`git status --short --verbose --no-ahead-behind --ignore-submodules --untracked-file | grep -Pv '^([AM] )' | wc -l`"
+        local files=$($SHELL -c "$LIST_TO_ADD | grep -Pv '^([AMD] )' | wc -l")
         if [ "$files" -eq 0 ]; then
             run_show " git $state --continue"
             return 2
