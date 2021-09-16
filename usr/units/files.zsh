@@ -1,7 +1,7 @@
 . $JOSH/lib/shared.sh
 
 function bak {
-    if [ "$BAK_RESTORE" != "" ]; then
+    if [ -f "$BAK_RESTORE" ]; then
         echo " * backup already found: $BAK_RESTORE"
         return 1
     fi
