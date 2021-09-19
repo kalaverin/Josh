@@ -100,7 +100,7 @@ function python_exe() {
         if [ -f "$python" ]; then
             export PYTHON3="$python"
             local version="`$python --version 2>&1 | $JOSH_GREP -Po '([\d\.]+)$'`"
-            echo " * info: using python $version from $PYTHON3"
+            # echo " * info: using python $version from $PYTHON3"
             return 0
         fi
     fi
