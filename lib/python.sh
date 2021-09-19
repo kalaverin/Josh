@@ -13,6 +13,8 @@ PIP_REQ_PACKAGES=(
 )
 
 PIP_OPT_PACKAGES=(
+    mycli      # python-driver MySQL client
+    pgcli      # python-driver PostgreSQL client
     nodeenv    # virtual environments for node packaging
 )
 

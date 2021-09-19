@@ -79,6 +79,22 @@ function copy_starship() {
     return $?
 }
 
+function copy_mycli() {
+    local dst="$REAL/.myclirc"
+    [ ! -d "`dirname $dst`" ] && mkdir -p "`dirname $dst`"; [ -f "$dst" ] && return 0
+    echo " + copy mycli example config: $dst" && \
+    cp -n "$SOURCE_ROOT/usr/share/mycli.conf" "$dst"
+    return $?
+}
+
+function copy_pgcli() {
+    local dst="$CONFIG_DIR/pgcli/config"
+    [ ! -d "`dirname $dst`" ] && mkdir -p "`dirname $dst`"; [ -f "$dst" ] && return 0
+    echo " + copy pgcli example config: $dst" && \
+    cp -n "$SOURCE_ROOT/usr/share/pgcli.conf" "$dst"
+    return $?
+}
+
 function config_git() {
     copy_gitignore
     if [ ! "`git config --global core.pager | grep -P '^(delta)'`" ]; then
@@ -122,6 +138,8 @@ function zero_configuration() {
     copy_nodeenv
     copy_pip
     copy_starship
+    copy_mycli
+    copy_pgcli
     config_git
     nano_syntax_compile
 }
