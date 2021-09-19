@@ -105,14 +105,15 @@ bindkey "\e^?" autosuggest-execute  # alt+backspace, accept suggestion and enter
 bindkey "\e]"  copy-prev-shell-word # just copy and paste last word
 
 bindkey '\ez'  visual_grep       # grep and view
+bindkey '\e^z' visual_chdir      # fast dive into directory
 # bindkey "\eZ" fuzzy-search-and-edit  # temporary disabled
 
 bindkey '\ex'  insert_command      # search from recent history
 bindkey '\eX'  insert_endpoint   # search and paste to command line filename
-bindkey '\e^x' visual_chdir      # fast dive into directory
+bindkey '\e^x' insert_directory  # and catalog name
 
 bindkey '\ec'  visual_recent_chdir
-bindkey '\eC'  insert_directory  # and catalog name
+bindkey '\eC'  visual_warp_chdir
 
 bindkey '\em'  pip_visual_freeze
 

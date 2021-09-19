@@ -264,6 +264,44 @@ visual_recent_chdir() {
 }
 zle -N visual_recent_chdir
 
+
+visual_warp_chdir() {
+    local directory=$(wd list | sd '(.+?)\s+->\s+(.+)' '$1 $2' | sed '1d' | sort -k 1 | \
+        fzf \
+            -i -s --exit-0 --select-1 \
+            --prompt="wd >  " \
+            --bind='enter:accept' \
+            --reverse --min-height='11' --height='11' \
+            --preview-window="right:`get_preview_width`:noborder" \
+            --preview='exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first '{2}'' \
+            --filepath-word --tiebreak=index \
+            --ansi --extended --info='inline' \
+            --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
+            --jump-labels="$FZF_JUMPS" \
+            --bind='alt-space:jump-accept' \
+            --bind='alt-w:toggle-preview-wrap' \
+            --bind='ctrl-c:abort' \
+            --bind='ctrl-q:abort' \
+            --bind='end:preview-down' \
+            --bind='esc:cancel' \
+            --bind='home:preview-up' \
+            --bind='pgdn:preview-page-down' \
+            --bind='pgup:preview-page-up' \
+            --bind='shift-down:half-page-down' \
+            --bind='shift-up:half-page-up' \
+            --color="$FZF_THEME" \
+        | tabulate -i 1
+    )
+
+    if [ "$directory" ]; then
+        wd "$directory"
+    fi
+    zle reset-prompt
+    return 0
+}
+zle -N visual_warp_chdir
+
+
 insert_command() {
     local query="`echo "$BUFFER" | sd '(\s+)' ' ' | sd '(^\s+|\s+$)' ''`"
     local result=$(cat $HISTFILE | grep -PIs '^(: \d+:\d+;)' | sd ': \d+:\d+;' '' | grep -Pv '^\s+' | runiq - | awk '{arr[i++]=$0} END {while (i>0) print arr[--i] }' | sed 1d | fzf \
