@@ -62,7 +62,7 @@ function python_exe() {
         local root="`realpath $JOSH`"
     fi
 
-    if [ ! -d "$root" ]
+    if [ ! -d "$root" ]; then
         echo " - fatal: source root:\`$root\` isn't exists, JOSH:\`$JOSH\`, SOURCE_ROOT:\`$SOURCE_ROOT\`"
         return 255
     fi
