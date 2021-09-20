@@ -37,12 +37,16 @@ function prepare_and_deploy() {
     local branch="`git rev-parse --quiet --abbrev-ref HEAD`"
 
     echo " + pull \`$branch\`" && \
-    cd "$SOURCE_ROOT" && \
+    cd "$SOURCE_ROOT"
+    echo "d $SOURCE_ROOT"
     git pull --ff-only --no-edit --no-commit origin "$branch"
 
+    echo "c $SOURCE_ROOT"
     [ $? -gt 0 ] && return 1
 
+    echo "b $SOURCE_ROOT"
     echo " + works in \``pwd`\`"
+    echo "a $SOURCE_ROOT"
 
     . run/units/oh-my-zsh.sh
     echo "1 $SOURCE_ROOT"
