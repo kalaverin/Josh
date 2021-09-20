@@ -107,11 +107,21 @@ CARGO_OPT_PACKAGES=(
     dssim   # pictures similar rating
     bottom  # btm, another yet htop
     zoxide  # fast cd, like wd
+    binary-security-check
+    git-bonsai
+    dtool   # code decode swiss knife
+    git-trim
+    doh-proxy
+    encrypted-dns
+    diffsitter
+    xcompress
+    doh-client
+    hx
+    pingkeeper
     bropages
     qrrs
     connchk
     # skim ?
-    git-trim
     vergit
     what-bump
     git-branchless
@@ -119,24 +129,15 @@ CARGO_OPT_PACKAGES=(
     autocshell
     kras  # colorizer
     ssup
-    git-bonsai
     multi-tunnel
     elephantry-cli
     # estunnel ?
-    hexdmp
-    git-who
-    pingkeeper
     # file-sniffer
-    doh-proxy
     xplr    # current broken
-    encrypted-dns
-    hx
     silicon
-    diffsitter
     parallel-disk-usage
     hunter
     tab
-    xcompress
     menyoki # screencast
     sheldon
     termscp
@@ -149,16 +150,12 @@ CARGO_OPT_PACKAGES=(
     lms     # threaded rsync for local
     chit    # crates info
     diffr   # word based diff
-    doh-client
     gitweb  # git open in browser helper
     lolcrab
-    binary-security-check
     copycat
     repgrep
-    dtool   # code decode swiss knife
     runscript
     quickdash # hasher
-    git-hooks-dispatch
 )
 
 function set_defaults() {
