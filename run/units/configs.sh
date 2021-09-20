@@ -1,9 +1,6 @@
 #!/bin/sh
 
-if [ "$JOSH" ] && [ -d "$JOSH" ]; then
-    export SOURCE_ROOT="`realpath $JOSH`"
-
-elif [ ! "$SOURCE_ROOT" ]; then
+if [ ! "$SOURCE_ROOT" ]; then
     if [ ! -f "`which -p realpath`" ]; then
         export SOURCE_ROOT="`dirname $0`/../../"
     else
