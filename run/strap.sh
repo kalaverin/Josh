@@ -45,21 +45,13 @@ function prepare_and_deploy() {
     echo " + works in \``pwd`\`"
 
     . run/units/oh-my-zsh.sh
-    echo "1 $SOURCE_ROOT"
-
     . run/units/binaries.sh
-    echo "2 $SOURCE_ROOT"
-
     . run/units/configs.sh
-    echo "3 $SOURCE_ROOT"
-
     . lib/python.sh
-    echo "4 $SOURCE_ROOT"
-
     . lib/rust.sh
-    echo "5 $SOURCE_ROOT"
 
-    if [ "$SOURCE_ROOT" != "`pwd`" ]; then
+    cd ~
+    if [ ! "$SOURCE_ROOT" = "`pwd`" ]; then
         echo " - fatal: WORKDIR=\``pwd`\` != SOURCE_ROOT=\`$SOURCE_ROOT\`"
     fi
 
