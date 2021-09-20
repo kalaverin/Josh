@@ -136,15 +136,20 @@ function pip_dir() {
     local cache_file="$cache_dir/pip-directory"
 
     local result="`cat $cache_file 2>/dev/null`"
+    echo "1 >$result<" >&2
     if [ ! -d "$result" ] || [ "`find $cache_file -mmin +1440 2>/dev/null | grep $cache_file`" ]; then
+        echo "2 >$cache_dir<" >&2
         [ ! -d "$cache_dir" ] && mkdir -p "$cache_dir"
 
         local local_bin="`$PYTHON3 -c 'from site import USER_BASE as d; print(d)'`/bin"
+        echo "3 >$local_bin<" >&2
         [ ! -d "$local_bin" ] && mkdir -p "$local_bin"
 
         local result="$(realpath $local_bin)"
+        echo "4 >$result<" >&2
         echo "$result" > "$cache_file"
     fi
+    echo "5 >$result<" >&2
     mkdir -p "$result"
     echo "$result"
 }
