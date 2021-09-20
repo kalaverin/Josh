@@ -113,7 +113,6 @@ function zero_configuration() {
     nano_syntax_compile
 
     copy_config "$CONFIG_ROOT/cargo.toml" "$REAL/.cargo/config.toml"
-    copy_config "$CONFIG_ROOT/micro.json" "$CONFIG_DIR/micro/settings.json"
     copy_config "$CONFIG_ROOT/nodeenv.conf" "$REAL/.nodeenvrc"
     copy_config "$CONFIG_ROOT/pip.conf" "$CONFIG_DIR/pip/pip.conf"
     copy_config "$CONFIG_ROOT/starship.toml" "$CONFIG_DIR/starship.toml"
