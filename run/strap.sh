@@ -36,7 +36,7 @@ function check_requirements() {
 function prepare_and_deploy() {
     local branch="`git rev-parse --quiet --abbrev-ref HEAD`"
 
-    echo " + pull \`$branch\` \`$SOURCE_ROOT\`"
+    echo " + pull \`$branch\` into \`$SOURCE_ROOT\`"
 
     cd "$SOURCE_ROOT" &&
     git pull --ff-only --no-edit --no-commit \
