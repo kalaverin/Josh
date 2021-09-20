@@ -141,7 +141,7 @@ function sck() {
 }
 
 function git_abort() {
-    local state="`get_repository_state`"  # merging, rebase or cherry-pick
+    local state="`get_repository_state`"  # merge, rebase or cherry-pick
     [ "$?" -gt 0 ] && return 0
     [ "$state" ] && $SHELL -c "git $state --abort"
     zle reset-prompt
@@ -279,6 +279,8 @@ get_repository_state() {
     # local root="`git_root 2>/dev/null`"
     [ ! "$root" ] && return 1
 
+    # elif [ -f "$root/.git/rebase-merge/git-rebase-todo" ]; then
+    #     local state="rebase"
     if [ -f "$root/.git/CHERRY_PICK_HEAD" ]; then
         local state="cherry-pick"
     elif [ -f "$root/.git/REBASE_HEAD" ]; then
