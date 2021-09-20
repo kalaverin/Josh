@@ -42,12 +42,24 @@ function prepare_and_deploy() {
 
     [ $? -gt 0 ] && return 1
 
-    echo " + works in \``pwd`\`" && \
-    . run/units/oh-my-zsh.sh && \
-    . run/units/binaries.sh && \
-    . run/units/configs.sh && \
-    . lib/python.sh && \
+    echo " + works in \``pwd`\`"
+
+    . run/units/oh-my-zsh.sh
+    echo "1 $SOURCE_ROOT"
+
+    . run/units/binaries.sh
+    echo "2 $SOURCE_ROOT"
+
+    . run/units/configs.sh
+    echo "3 $SOURCE_ROOT"
+
+    . lib/python.sh
+    echo "4 $SOURCE_ROOT"
+
     . lib/rust.sh
+    echo "5 $SOURCE_ROOT"
+
+    return 255
 
     [ $? -gt 0 ] && return 2
 
