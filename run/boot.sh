@@ -20,7 +20,7 @@ if [ "$JOSH_BRANCH" ]; then
     echo " + using Josh branch \`$JOSH_BRANCH\`"
 
     GIT="git --git-dir=\"$DEST/.git\" --work-tree=\"$DEST\""
-    local cmd="$GIT fetch origin "$JOSH_BRANCH":"$JOSH_BRANCH" && $GIT checkout --force --quiet $JOSH_BRANCH && $GIT reset --hard $JOSH_BRANCH && $GIT pull origin $JOSH_BRANCH"
+    local cmd="$GIT fetch origin "$JOSH_BRANCH":"$JOSH_BRANCH" && $GIT checkout --force --quiet $JOSH_BRANCH && $GIT reset --hard $JOSH_BRANCH && $GIT pull --ff-only --no-edit --no-commit --verbose origin $JOSH_BRANCH"
 
     echo " -> $cmd" && $SHELL -c "$cmd"
     [ $? -gt 0 ] && return 3
