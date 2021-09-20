@@ -8,6 +8,7 @@ CARGO_REQ_PACKAGES=(
     exa            # fast replace for ls
     fd-find        # fd, fast replace for find for humans
     git-delta      # fast replace for git delta with steroids
+    git-interactive-rebase-tool
     lsd            # another ls replacement tool
     mdcat          # Markdown files rendered viewer
     petname        # generate human readable strings
