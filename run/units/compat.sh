@@ -14,6 +14,7 @@ REQUIRED_BINARIES=(
 REQUIRED_LIBRARIES=(
     openssl
 )
+# python-dev libpq-dev libevent-dev for pgcli
 
 function check_executables() {
     local missing=""
