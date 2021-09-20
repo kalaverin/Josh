@@ -22,33 +22,44 @@ if [ ! "$REAL" ]; then
 fi
 
 function update_packages() {
-    . "$SOURCE_ROOT/run/units/binaries.sh" && deploy_binaries
-    . "$SOURCE_ROOT/run/units/configs.sh" && zero_configuration
+    local cwd="`pwd`" && \
+    cd "$SOURCE_ROOT" && \
 
-    . "$SOURCE_ROOT/lib/rust.sh" && cargo_deploy $CARGO_REQ_PACKAGES
-    . "$SOURCE_ROOT/lib/python.sh" && pip_deploy $PIP_REQ_PACKAGES
+    . "run/units/configs.sh" && zero_configuration
+    . "run/units/binaries.sh" && deploy_binaries
+
+    . "lib/rust.sh" && cargo_deploy $CARGO_REQ_PACKAGES
+    . "lib/python.sh" && pip_deploy $PIP_REQ_PACKAGES
+
+    cd "$cwd"
 }
 
 function pull_update() {
-    local cwd="`pwd`"
 
-    cd "$SOURCE_ROOT"
-    . "$SOURCE_ROOT/usr/units/git.zsh"
+    local cwd="`pwd`" && \
+    cd "$SOURCE_ROOT" && \
 
     local retval=1
-    local local_branch="`git_current_branch`"
+    local local_branch="`git rev-parse --quiet --abbrev-ref HEAD`"
 
     if [ "$local_branch" ]; then
-        local branch="${1:-$local_branch}"
-        [ ! "$branch" ] && local branch="master"
-        [ "$branch" != "$local_branch" ] && git checkout $branch
+        local target_branch="${1:-$local_branch}"
+        if [ ! "$target_branch" ]; then
+            # if nothing selected, failover
+            local target_branch="master"
+        fi
 
-        git pull origin $branch
+        if [ "$target_branch" != "$local_branch" ];
+            . "usr/units/git.zsh" && \
+            git_checkout_branch "$target_branch" || return 1
+        fi
+        echo " + pull \`$target_branch\` to \`$SOURCE_ROOT\`"
+
+        git pull --ff-only --no-edit --no-commit origin "$target_branch"
         local retval="$?"
     fi
 
-    cd "$cwd"
-    return "$retval"
+    cd "$cwd" && return "$retval"
 }
 
 function post_update() {
