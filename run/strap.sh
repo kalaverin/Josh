@@ -36,18 +36,20 @@ function check_requirements() {
 function prepare_and_deploy() {
     local branch="`git rev-parse --quiet --abbrev-ref HEAD`"
 
-    echo " + pull \`$branch\` into \`$SOURCE_ROOT\`"
+    echo " + pull \`$branch\`" && \
+    cd "$SOURCE_ROOT" && \
+    git pull --ff-only --no-edit --no-commit origin "$branch"
 
-    cd "$SOURCE_ROOT" &&
-    git pull --ff-only --no-edit --no-commit \
-        origin "" && \
+    [ $? -gt 0 ] && return 1
+
+    echo " + works in \``pwd`\`" && \
     source $SOURCE_ROOT/run/units/oh-my-zsh.sh && \
     source $SOURCE_ROOT/run/units/binaries.sh && \
     source $SOURCE_ROOT/run/units/configs.sh && \
     source $SOURCE_ROOT/lib/python.sh && \
     source $SOURCE_ROOT/lib/rust.sh
 
-    [ $? -gt 0 ] && return 1
+    [ $? -gt 0 ] && return 2
 
     pip_deploy $PIP_REQ_PACKAGES && \
     deploy_ohmyzsh && \
@@ -56,7 +58,7 @@ function prepare_and_deploy() {
     zero_configuration && \
     cargo_deploy $CARGO_REQ_PACKAGES
 
-    [ $? -gt 0 ] && return 2
+    [ $? -gt 0 ] && return 3
 
     return 0
 }
