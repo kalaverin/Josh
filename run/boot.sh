@@ -16,6 +16,16 @@ echo " + initial deploy to $DEST"
 git clone --depth 1 https://github.com/YaakovTooth/Josh.git $DEST
 [ $? -gt 0 ] && return 2
 
+
+if [ "$JOSH_BRANCH" ]; then
+    local git_exe="git --git-dir=\"$DEST/.git\" --work-tree=\"$DEST\""
+    git_exe fetch origin "$JOSH_BRANCH":"$JOSH_BRANCH" && \
+    git_exe checkout --force --quiet $JOSH_BRANCH && \
+    git_exe git reset --hard $JOSH_BRANCH && \
+    git_exe git pull origin $JOSH_BRANCH
+    [ $? -gt 0 ] && return 3
+fi
+
 cd "$DEST/run/"
 . "$DEST/run/strap.sh"
 
