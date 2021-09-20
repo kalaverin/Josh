@@ -162,7 +162,6 @@ function pip_init() {
         return 1
     fi
 
-    pip_dir
     export PIP_DIR="`pip_dir`"
     if [ ! -d "$PIP_DIR" ]; then
         echo " - fatal: PIP_DIR=\`$PIP_DIR\`"
