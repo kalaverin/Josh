@@ -144,10 +144,11 @@ function pip_dir() {
 
         [ ! -d "$local_bin" ] && mkdir -p "$local_bin"
 
-        local result="$(realpath $local_bin)"
-        if [ $? -eq 0 ]; then
-            echo "$result" > "$cache_file"
-        fi
+        local result="$local_bin"
+        # local result="$(realpath $local_bin)"
+        # if [ $? -eq 0 ]; then
+        #     echo "$result" > "$cache_file"
+        # fi
     fi
 
     if [ ! "$result" ]; then
