@@ -139,16 +139,12 @@ function pip_dir() {
     if [ ! -d "$result" ] || [ "`find $cache_file -mmin +1440 2>/dev/null | grep $cache_file`" ]; then
         [ ! -d "$cache_dir" ] && mkdir -p "$cache_dir"
 
-        local local_dir="$($PYTHON3 -c 'from site import USER_BASE as base; print(base)')"
-        local local_bin="$local_dir/bin"
-
+        local local_bin="`$PYTHON3 -c 'from site import USER_BASE as base; print(base)'`/bin"
         [ ! -d "$local_bin" ] && mkdir -p "$local_bin"
 
         local result="$local_bin"
-        # local result="$(realpath $local_bin)"
-        # if [ $? -eq 0 ]; then
-        #     echo "$result" > "$cache_file"
-        # fi
+        local result="`realpath $local_bin`"
+        [ $? -eq 0 ] && echo "$result" > "$cache_file"
     fi
 
     if [ ! "$result" ]; then
@@ -172,7 +168,7 @@ function pip_init() {
     return 255
     export PIP_DIR="`pip_dir`"
     if [ ! -d "$PIP_DIR" ]; then
-        echo " - fatal2: PIP_DIR=\`$PIP_DIR\`"
+        echo " - fatal: PIP_DIR=\`$PIP_DIR\`"
         return 1
     fi
 
