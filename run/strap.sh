@@ -41,11 +41,11 @@ function prepare_and_deploy() {
     cd "$SOURCE_ROOT" &&
     git pull --ff-only --no-edit --no-commit \
         origin "" && \
-    . $SOURCE_ROOT/run/units/oh-my-zsh.sh && \
-    . $SOURCE_ROOT/run/units/binaries.sh && \
-    . $SOURCE_ROOT/run/units/configs.sh && \
-    . $SOURCE_ROOT/lib/python.sh && \
-    . $SOURCE_ROOT/lib/rust.sh
+    source $SOURCE_ROOT/run/units/oh-my-zsh.sh && \
+    source $SOURCE_ROOT/run/units/binaries.sh && \
+    source $SOURCE_ROOT/run/units/configs.sh && \
+    source $SOURCE_ROOT/lib/python.sh && \
+    source $SOURCE_ROOT/lib/rust.sh
 
     [ $? -gt 0 ] && return 1
 
