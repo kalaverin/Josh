@@ -43,11 +43,11 @@ function prepare_and_deploy() {
     [ $? -gt 0 ] && return 1
 
     echo " + works in \``pwd`\`" && \
-    . $SOURCE_ROOT/run/units/oh-my-zsh.sh && \
-    . $SOURCE_ROOT/run/units/binaries.sh && \
-    . $SOURCE_ROOT/run/units/configs.sh && \
-    . $SOURCE_ROOT/lib/python.sh && \
-    . $SOURCE_ROOT/lib/rust.sh && echo " + all units load ok HOME=$HOME READ=$REAL SOURCE_ROOT=$SOURCE_ROOT"
+    . run/units/oh-my-zsh.sh && \
+    . run/units/binaries.sh && \
+    . run/units/configs.sh && \
+    . lib/python.sh && \
+    . lib/rust.sh && echo " + all units load ok, SOURCE_ROOT=$SOURCE_ROOT"
 
     [ $? -gt 0 ] && return 2
 
