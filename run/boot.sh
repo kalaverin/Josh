@@ -16,7 +16,6 @@ echo " + initial deploy to $DEST"
 git clone --depth 1 https://github.com/YaakovTooth/Josh.git $DEST
 [ $? -gt 0 ] && return 2
 
-
 if [ "$JOSH_BRANCH" ]; then
     echo " + using Josh branch \`$JOSH_BRANCH\`"
 
