@@ -35,9 +35,7 @@ function update_packages() {
 }
 
 function pull_update() {
-
-    local cwd="`pwd`" && \
-    cd "$SOURCE_ROOT" && \
+    local cwd="`pwd`" && cd "$SOURCE_ROOT"
 
     local retval=1
     local local_branch="`git rev-parse --quiet --abbrev-ref HEAD`"
@@ -49,7 +47,7 @@ function pull_update() {
             local target_branch="master"
         fi
 
-        if [ "$target_branch" != "$local_branch" ];
+        if [ "$target_branch" != "$local_branch" ]; then
             . "usr/units/git.zsh" && \
             git_checkout_branch "$target_branch" || return 1
         fi
