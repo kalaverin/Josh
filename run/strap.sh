@@ -38,26 +38,22 @@ function prepare_and_deploy() {
 
     echo " + pull \`$branch\`" && \
     cd "$SOURCE_ROOT" && \
-    git pull --ff-only --no-edit --no-commit origin "$branch"
-
+    git pull --ff-only --no-edit --no-commit origin "$branch" && \
     [ $? -gt 0 ] && return 1
 
-    echo " + works in \``pwd`\`"
-
-    . run/units/oh-my-zsh.sh
-    . run/units/binaries.sh
-    . run/units/configs.sh
-    . lib/python.sh
+    echo " + works in \``pwd`\`" && \
+    . run/units/oh-my-zsh.sh && \
+    . run/units/binaries.sh && \
+    . run/units/configs.sh && \
+    . lib/python.sh && \
     . lib/rust.sh
 
-    cd ~
     if [ ! "$SOURCE_ROOT" = "`pwd`" ]; then
         echo " - fatal: WORKDIR=\``pwd`\` != SOURCE_ROOT=\`$SOURCE_ROOT\`"
+        return 2
     fi
 
-    return 255
-
-    [ $? -gt 0 ] && return 2
+    [ $? -gt 0 ] && return 3
 
     pip_deploy $PIP_REQ_PACKAGES && \
     deploy_ohmyzsh && \
@@ -66,7 +62,7 @@ function prepare_and_deploy() {
     zero_configuration && \
     cargo_deploy $CARGO_REQ_PACKAGES
 
-    [ $? -gt 0 ] && return 3
+    [ $? -gt 0 ] && return 4
 
     return 0
 }
