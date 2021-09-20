@@ -2,7 +2,6 @@
 
 CARGO_REQ_PACKAGES=(
     bat            # modern replace for cat with syntax highlight
-    broot          # lightweight embeddable file manager
     cargo-update   # packages for auto-update installed crates
     csview         # for commas, tabs, etc
     exa            # fast replace for ls
@@ -29,6 +28,7 @@ CARGO_OPT_PACKAGES=(
     atuin            # another yet history manager
     bandwhich        # network bandwhich meter
     bingrep          # extract and grep strings from binaries
+    broot            # lightweight embeddable file manager
     bump-bin         # versions with semver specification
     choose           # awk for humans
     colorizer        # logs colorizer
@@ -66,108 +66,98 @@ CARGO_OPT_PACKAGES=(
     ytop             # simple htop
     # coreutils        # rust reimplementation for GNU tools
     watchexec-cli    # watchdog for filesystem and runs callback on hit
+    git-warp-time    # set mtime to last change time from git
+    gip     # show my ip
+    genact  # console activity generator
+    prose   # reformat text to width
+    imdl    # torrent-file helper
+    cw      # words, lines, bytes and chars counter
+    pgen    # human passphrase generator
+    jsonfmt # another json minifier
+    rjo     # json generator from key=value args
+    xkpwgen         # like pet name
+    ff-find   # ff, fd-find interface
+    ipgeo   # fast geoloc by hostname/ip
     python-launcher
-    rustscan
+    rustscan  # scanner around nmap
+    loadem    # website load maker
+    ntimes    # ntimes 3 -- echo 'lol'
+    jfmt      # json minifier
+    fblog    # json log viewer
+    ruplacer # in file tree replacer
+    amber    # in file tree replacer, threaded, mmap
+    blockish # view images in terminal
+    fcp      # fast cp with threading
+    checkpwn # check passwords
+    fclones  # find and clean trash
+    tidy-viewer # csv prettry printer
+    songrec # shazam!
+    sbyte   # hexeditor
+    gbump   # semver
+    jen     # json generator
+    yj      # yaml to json
+    b0x     # info about input vars
+    miniserve  # directory serving over http
+    code-minimap  # terminal code minimap
+    mandown  # convert markdown to man
+    tickrs      # realtime ticker
+    investments # stocks tools
+    pipecolor  # colorizer
+    limber  # elk import export
+    dssim   # pictures similar rating
+    bottom  # btm, another yet htop
+    zoxide  # fast cd, like wd
     bropages
     qrrs
     connchk
-    credit
-    skim
+    # skim ?
     git-trim
     vergit
     what-bump
     git-branchless
-    loadem
     gitall
     autocshell
-    tickrs
-    investments
-    kras
+    kras  # colorizer
     ssup
     git-bonsai
     multi-tunnel
     elephantry-cli
-    ntimes
-    estunnel
-    xkpwgen  # like pet name
-    pipecolor
-    git-state
+    # estunnel ?
     hexdmp
     git-who
-    git-warp-time
-    ff-find
     pingkeeper
-    filetreelist
-    limber  # elk import export
-    jfmt
     # file-sniffer
-    dssim
-    bottom
-    zoxide
-    minify-html
     doh-proxy
-    xplr
-    miniserve
-    code-minimap
-    requestty
-    mandown
+    xplr    # current broken
     encrypted-dns
     hx
     silicon
     diffsitter
     parallel-disk-usage
-    fblog
-    ruplacer
     hunter
-    blockish
-    fcp
-    checkpwn
     tab
-    fclones
     xcompress
-    tidy-viewer
-    amber
-    menyoki
-    terminal-menu
-    songrec
+    menyoki # screencast
     sheldon
     termscp
-    cli-timer
-    hors
-    sic
-    sbyte
+    sic     # pictures swiss knife
     t-rec
     lino
-    gbump
-    ipgeo
     jex
-    jen
-    yj
-    rhit
-    b0x
     mprober
-    thwack
-    lms
-    gip
-    chit
-    genact
-    diffr
+    thwack  # find and run
+    lms     # threaded rsync for local
+    chit    # crates info
+    diffr   # word based diff
     doh-client
-    gitweb
-    prose
+    gitweb  # git open in browser helper
     lolcrab
     binary-security-check
     copycat
-    imdl
-    cw
-    pgen
-    jsonfmt
     repgrep
-    dtool
-    git-hist
-    rjo
+    dtool   # code decode swiss knife
     runscript
-    quickdash
+    quickdash # hasher
     git-hooks-dispatch
 )
 
