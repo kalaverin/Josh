@@ -36,10 +36,15 @@ function check_requirements() {
 function prepare_and_deploy() {
     local branch="`git rev-parse --quiet --abbrev-ref HEAD`"
 
+    if [ "$branch" = "HEAD" ]; then
+        echo " - fatal: can't upgrade from \`$branch\`"
+        return 1
+    fi
+
     echo " + pull \`$branch\`" && \
     cd "$SOURCE_ROOT" && \
     git pull --ff-only --no-edit --no-commit origin "$branch" && \
-    [ $? -gt 0 ] && return 1
+    [ $? -gt 0 ] && return 2
 
     echo " + works in \``pwd`\`" && \
     . run/units/oh-my-zsh.sh && \
@@ -50,10 +55,10 @@ function prepare_and_deploy() {
 
     if [ ! "$SOURCE_ROOT" = "`pwd`" ]; then
         echo " - fatal: WORKDIR=\``pwd`\` != SOURCE_ROOT=\`$SOURCE_ROOT\`"
-        return 2
+        return 3
     fi
 
-    [ $? -gt 0 ] && return 3
+    [ $? -gt 0 ] && return 4
 
     pip_deploy $PIP_REQ_PACKAGES && \
     deploy_ohmyzsh && \
@@ -62,7 +67,7 @@ function prepare_and_deploy() {
     zero_configuration && \
     cargo_deploy $CARGO_REQ_PACKAGES
 
-    [ $? -gt 0 ] && return 4
+    [ $? -gt 0 ] && return 5
 
     return 0
 }
