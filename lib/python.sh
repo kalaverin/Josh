@@ -58,12 +58,12 @@ function python_exe() {
 
     if [ "$SOURCE_ROOT" ] && [ -d "$SOURCE_ROOT" ]; then
         local root="`realpath $SOURCE_ROOT`"
-
     elif [ "$JOSH" ] && [ -d "$JOSH" ]; then
         local root="`realpath $JOSH`"
+    fi
 
-    else
-        echo " - fatal: source root isn't exists, JOSH:\`$JOSH\`, SOURCE_ROOT:\`$SOURCE_ROOT\`"
+    if [ ! -d "$root" ]
+        echo " - fatal: source root:\`$root\` isn't exists, JOSH:\`$JOSH\`, SOURCE_ROOT:\`$SOURCE_ROOT\`"
         return 255
     fi
 
@@ -215,7 +215,8 @@ function pip_deploy() {
     pip_init || return $?
     if [ ! -f "$PIP_EXE" ]; then
         echo " - fatal: pip executive $PIP_EXE isn't found!"
-        return 1
+        [ "$venv" != "" ] && cd $venv/bin && source activate
+        cd $cwd; return 1
     fi
 
     local retval=0
@@ -226,10 +227,8 @@ function pip_deploy() {
         fi
     done
 
-    if [ "$venv" != "" ]; then
-        cd $venv/bin && source activate
-    fi
-    return "$retval"
+    [ "$venv" != "" ] && cd $venv/bin && source activate
+    cd $cwd; return 1
 }
 
 function pip_extras() {
