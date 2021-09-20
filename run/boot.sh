@@ -18,11 +18,12 @@ git clone --depth 1 https://github.com/YaakovTooth/Josh.git $DEST
 
 
 if [ "$JOSH_BRANCH" ]; then
+    echo " * using custom JOSH branch $JOSH_BRANCH"
     local git_exe="git --git-dir=\"$DEST/.git\" --work-tree=\"$DEST\""
-    git_exe fetch origin "$JOSH_BRANCH":"$JOSH_BRANCH" && \
-    git_exe checkout --force --quiet $JOSH_BRANCH && \
-    git_exe git reset --hard $JOSH_BRANCH && \
-    git_exe git pull origin $JOSH_BRANCH
+    $git_exe fetch origin "$JOSH_BRANCH":"$JOSH_BRANCH" && \
+    $git_exe checkout --force --quiet $JOSH_BRANCH && \
+    $git_exe git reset --hard $JOSH_BRANCH && \
+    $git_exe git pull origin $JOSH_BRANCH
     [ $? -gt 0 ] && return 3
 fi
 
