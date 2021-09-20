@@ -49,6 +49,7 @@ function prepare_and_deploy() {
     source $SOURCE_ROOT/lib/python.sh && \
     source $SOURCE_ROOT/lib/rust.sh
 
+    echo "all ok"
     [ $? -gt 0 ] && return 2
 
     pip_deploy $PIP_REQ_PACKAGES && \
