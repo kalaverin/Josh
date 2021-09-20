@@ -44,7 +44,6 @@ function backup_file() {
 function copy_config() {
     local dst="$2"
     if [ -f "$dst" ] && [ ! "$JOSH_RENEW_CONFIGS" ]; then
-        echo " * already exists: \`$dst\`"
         return 0
     fi
 
@@ -58,70 +57,6 @@ function copy_config() {
     [ ! -d "`dirname $dst`" ] && mkdir -p "`dirname $dst`";
 
     echo " + ${3:-"copy: $src -> $dst"}" && cp -n "$src" "$dst"
-    return $?
-}
-
-function copy_cargo() {
-    local dst="$REAL/.cargo/config.toml"
-    [ ! -d "`dirname $dst`" ] && mkdir -p "`dirname $dst`"; [ -f "$dst" ] && return 0
-    echo " + copy cargo example config: $dst" && \
-    cp -n "$SOURCE_ROOT/usr/share/cargo.toml" "$dst"
-    return $?
-}
-
-function copy_gitignore() {
-    local dst="$REAL/.gitignore"
-    [ -f "$dst" ] && return 0
-    echo " + copy $dst template" && \
-    cp -n "$SOURCE_ROOT/usr/share/.gitignore" "$dst"
-    return $?
-}
-
-function copy_micro() {
-    local dst="$CONFIG_DIR/micro/settings.json"
-    [ ! -d "`dirname $dst`" ] && mkdir -p "`dirname $dst`"; [ -f "$dst" ] && return 0
-    echo " + copy micro editor example config: $dst" && \
-    cp -n "$SOURCE_ROOT/usr/share/micro.json" "$dst"
-    return $?
-}
-
-function copy_nodeenv() {
-    local dst="$REAL/.nodeenvrc"
-    [ -f "$dst" ] && return 0
-    echo " + copy $dst template" && \
-    cp -n "$SOURCE_ROOT/usr/share/nodeenv.conf" "$dst"
-    return $?
-}
-
-function copy_pip() {
-    local dst="$CONFIG_DIR/pip/pip.conf"
-    [ ! -d "`dirname $dst`" ] && mkdir -p "`dirname $dst`"; [ -f "$dst" ] && return 0
-    echo " + copy pip example config: $dst" && \
-    cp -n "$SOURCE_ROOT/usr/share/pip.conf" "$dst"
-    return $?
-}
-
-function copy_starship() {
-    local dst="$CONFIG_DIR/starship.toml"
-    [ ! -d "`dirname $dst`" ] && mkdir -p "`dirname $dst`"; [ -f "$dst" ] && return 0
-    echo " + copy starship example config: $dst" && \
-    cp -n "$SOURCE_ROOT/usr/share/starship.toml" "$dst"
-    return $?
-}
-
-function copy_mycli() {
-    local dst="$REAL/.myclirc"
-    [ ! -d "`dirname $dst`" ] && mkdir -p "`dirname $dst`"; [ -f "$dst" ] && return 0
-    echo " + copy mycli example config: $dst" && \
-    cp -n "$SOURCE_ROOT/usr/share/mycli.conf" "$dst"
-    return $?
-}
-
-function copy_pgcli() {
-    local dst="$CONFIG_DIR/pgcli/config"
-    [ ! -d "`dirname $dst`" ] && mkdir -p "`dirname $dst`"; [ -f "$dst" ] && return 0
-    echo " + copy pgcli example config: $dst" && \
-    cp -n "$SOURCE_ROOT/usr/share/pgcli.conf" "$dst"
     return $?
 }
 
