@@ -22,8 +22,7 @@ if [ ! "$REAL" ]; then
 fi
 
 function update_packages() {
-    local cwd="`pwd`" && \
-    cd "$SOURCE_ROOT" && \
+    local cwd="`pwd`" && cd "$SOURCE_ROOT"
 
     . "run/units/configs.sh" && zero_configuration
     . "run/units/binaries.sh" && deploy_binaries
@@ -40,7 +39,7 @@ function pull_update() {
     local retval=1
     local local_branch="`git rev-parse --quiet --abbrev-ref HEAD`"
 
-    if [ "$local_branch" ]; then
+    if [ "$local_branch" ] && [ ! "$local_branch" = "HEAD" ]; then
         local target_branch="${1:-$local_branch}"
         if [ ! "$target_branch" ]; then
             # if nothing selected, failover
@@ -61,16 +60,17 @@ function pull_update() {
 }
 
 function post_update() {
-    local cwd="`pwd`"
+    local cwd="`pwd`" && cd "$SOURCE_ROOT"
+
     update_packages
-    . "$SOURCE_ROOT/run/units/compat.sh" && check_compliance
+    . "run/units/compat.sh" && check_compliance
     cd "$cwd"
 }
 
 function deploy_extras() {
-    local cwd="`pwd`"
-    (. "$SOURCE_ROOT/lib/python.sh" && pip_extras || \
-        echo " - warning: something wrong") && \
-    . "$SOURCE_ROOT/lib/rust.sh" && cargo_extras
+    local cwd="`pwd`" && cd "$SOURCE_ROOT"
+
+    (. "lib/python.sh" && pip_extras || echo " - warning (python): something went wrong") && \
+    (. "lib/rust.sh" && cargo_extras || echo " - warning (rust): something went wrong")
     cd "$cwd"
 }
