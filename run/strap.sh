@@ -47,7 +47,7 @@ function prepare_and_deploy() {
     . run/units/binaries.sh && \
     . run/units/configs.sh && \
     . lib/python.sh && \
-    . lib/rust.sh && echo " + all units load ok, SOURCE_ROOT=$SOURCE_ROOT"
+    . lib/rust.sh
 
     [ $? -gt 0 ] && return 2
 
