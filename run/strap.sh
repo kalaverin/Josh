@@ -36,7 +36,7 @@ function check_requirements() {
 function prepare_and_deploy() {
     cd "$SOURCE_ROOT" &&
     git pull --ff-only --no-edit --no-commit \
-        origin "git rev-parse --quiet --abbrev-ref HEAD`" && \
+        origin "`git rev-parse --quiet --abbrev-ref HEAD`" && \
     . $SOURCE_ROOT/run/units/oh-my-zsh.sh && \
     . $SOURCE_ROOT/run/units/binaries.sh && \
     . $SOURCE_ROOT/run/units/configs.sh && \
