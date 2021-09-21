@@ -37,7 +37,7 @@ fi
 # ——— ondir events runner
 
 function compile_ondir() {
-    if [ -x "`which ondir`" ]; then
+    if [ -x "$BINARY_DEST/ondir" ]; then
         return 0
     fi
 
@@ -66,7 +66,7 @@ function compile_fzf() {
     clone="`which git` clone --depth 1"
     [ ! -d "$BINARY_DEST" ] && mkdir -p "$BINARY_DEST"
 
-    if [ -f "$BINARY_DEST/fzf" ]; then
+    if [ -x "$BINARY_DEST/fzf" ]; then
         [ -f "$BINARY_DEST/fzf.bak" ] && rm "$BINARY_DEST/fzf.bak"
 
         if [ "`find $BINARY_DEST/fzf -mmin +129600 2>/dev/null | grep fzf`" ]; then
@@ -100,7 +100,7 @@ function deploy_micro() {
     url='https://getmic.ro'
     [ ! -d "$BINARY_DEST" ] && mkdir -p "$BINARY_DEST"
 
-    if [ ! -f "$BINARY_DEST/micro" ]; then
+    if [ ! -x "$BINARY_DEST/micro" ]; then
         # $BINARY_DEST/micro --version | head -n 1 | awk '{print $2}'
         echo " + deploy micro: $BINARY_DEST/micro"
         cd "$BINARY_DEST" && $SHELL -c "$HTTP_GET $url | $SHELL"
