@@ -266,7 +266,7 @@ zle -N visual_recent_chdir
 
 
 visual_warp_chdir() {
-    local directory=$(wd list | sd '(.+?)\s+->\s+(.+)' '$1 $2' | sed '1d' | sort -k 1 | \
+    local directory=$(wd list | sd '(.+?)\s+->\s+(.+)' '$1::$2' | sed '1d' | sort -k 1 | sd '::(~)' "::$HOME" | tabulate -d '::' | \
         fzf \
             -i -s --exit-0 --select-1 \
             --prompt="wd >  " \
