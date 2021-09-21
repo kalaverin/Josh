@@ -279,12 +279,14 @@ get_repository_state() {
     # local root="`git_root 2>/dev/null`"
     [ ! "$root" ] && return 1
 
-    # elif [ -f "$root/.git/rebase-merge/git-rebase-todo" ]; then
-    #     local state="rebase"
-    if [ -f "$root/.git/CHERRY_PICK_HEAD" ]; then
-        local state="cherry-pick"
-    elif [ -f "$root/.git/REBASE_HEAD" ]; then
+    if [ -f "$root/.git/rebase-merge/git-rebase-todo" ]; then
+        return 1
+    fi
+
+    if [ -f "$root/.git/REBASE_HEAD" ]; then
         local state="rebase"
+    elif [ -f "$root/.git/CHERRY_PICK_HEAD" ]; then
+        local state="cherry-pick"
     elif [ -f "$root/.git/MERGE_HEAD" ]; then
         local state="merge"
     fi
@@ -1087,7 +1089,7 @@ git_widget_rebase_branch() {
                     --format="%(HEAD) %(color:yellow bold)%(refname:short)%(color:reset) %(contents:subject) %(color:black bold)%(authoremail) %(committerdate:relative)" \
                     | awk "{\$1=\$1};1" | grep -Pv "^(\*\s+)"'
 
-    local git="git rebase --stat --interactive --no-autosquash --autostash --strategy=recursive --strategy-option=diff-algorithm=histogram"
+    local git="git rebase --stat --no-autosquash --autostash --strategy=recursive --strategy-option=diff-algorithm=histogram"
     while true; do
         local value="$(
             $SHELL -c "$select \
@@ -1115,6 +1117,16 @@ git_widget_rebase_branch() {
     return 0
 }
 zle -N git_widget_rebase_branch
+
+function git_squash_already_pushed() {
+    local branch="${1:-`git_current_branch`}"
+    [ ! "$branch" ] && return 1
+
+    local parent="$(git show-branch | grep '*' | grep -v "`git rev-parse --abbrev-ref HEAD`" | head -n 1 | sd '^(.+)\[' '' | tabulate -d '] ' -i 1)"
+    [ ! "$parent" ] && return 1
+
+    run_show "git rebase --interactive --no-autosquash --no-autostash --strategy=recursive --strategy-option=ours --strategy-option=diff-algorithm=histogram \"$parent\""
+}
 
 # ———
 
