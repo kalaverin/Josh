@@ -1034,7 +1034,7 @@ git_widget_checkout_commit() {
 zle -N git_widget_checkout_commit
 
 
-git_widget_merge_branch() {
+git_widget_rebase_branch() {
     local branch="`git_current_branch`"
     [ ! "$branch" ] && return 1
 
@@ -1046,6 +1046,7 @@ git_widget_merge_branch() {
                     --format="%(HEAD) %(color:yellow bold)%(refname:short)%(color:reset) %(contents:subject) %(color:black bold)%(authoremail) %(committerdate:relative)" \
                     | awk "{\$1=\$1};1" | grep -Pv "^(\*\s+)"'
 
+    local git="git rebase --verbose --stat --interactive --no-autosquash --autostash --strategy=recursive --strategy-option=diff-algorithm=histogram"
     while true; do
         local value="$(
             $SHELL -c "$select \
@@ -1059,12 +1060,12 @@ git_widget_merge_branch() {
             break
 
         elif [ ! "$BUFFER" ]; then
-            run_show "sfet \"$value\" && git merge --no-commit \"origin/$value\""
+            run_show "sfet \"$value\" && $git \"$value\""
             local retval=$?
             git_widget_conflict_solver
 
         elif [ "$value" ]; then
-            LBUFFER="$BUFFER && git fetch origin \"$value\":\"$value\" && git merge --no-commit \"origin/$value\""
+            LBUFFER="$BUFFER && git fetch origin \"$value\":\"$value\" && $git \"$value\""
         fi
 
         break
@@ -1072,7 +1073,7 @@ git_widget_merge_branch() {
     zle reset-prompt
     return 0
 }
-zle -N git_widget_merge_branch
+zle -N git_widget_rebase_branch
 
 # ———
 
@@ -1097,7 +1098,7 @@ bindkey "\e^a" git_widget_select_branch_then_commit_then_file_checkout
 #              alt-s, go to branch
 bindkey "\es"  git_widget_checkout_branch
 #              shift-alt-a, fetch another and merge branch
-bindkey "^[S"  git_widget_merge_branch
+bindkey "^[S"  git_widget_rebase_branch
 #              ctrl-s, go to commit
 bindkey "^s"   git_widget_checkout_commit
 #              ctrl-alt-a, go to tag
