@@ -3,3 +3,14 @@
 enter /anything/path/on/drive
     # for example - activate virtualenv
     echo "wow, this is simple autorun!"
+
+# I have these directories setgid, so I want my umask to allow group writes.
+enter /opt/music:/opt/movies
+    # Preserve umask
+    OLDUMASK=`umask`
+    umask 007
+
+# Back to normal
+final leave /opt/music:/opt/movies
+    umask $OLDUMASK
+    unset OLDUMASK
