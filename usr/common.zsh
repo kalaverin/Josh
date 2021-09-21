@@ -572,7 +572,7 @@ josh_update() {
     josh_pull $@ && \
     . "$JOSH/run/update.sh" && post_update $@
     local retval="$?"
-    cd "$cwd"
+    builtin cd "$cwd"
     exec zsh
     return $retval
 }
@@ -581,7 +581,7 @@ josh_pull() {
     local cwd="`pwd`"
     . "$JOSH/run/update.sh" && pull_update $@
     local retval="$?"
-    cd "$cwd"
+    builtin cd "$cwd"
     return $retval
 }
 
@@ -594,7 +594,7 @@ josh_reinstall() {
         echo ' - fatal: something wrong :-\'
         return 1
     fi
-    cd "$cwd"
+    builtin cd "$cwd"
     exec zsh
     return $retval
 }
