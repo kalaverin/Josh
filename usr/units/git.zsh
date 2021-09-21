@@ -1094,7 +1094,7 @@ git_widget_rebase_branch() {
             | $FZF \
             --preview=\"$differ $branch | $DELTA \" \
             --preview-window=\"left:`get_preview_width`:noborder\" \
-            --prompt=\"rebase with $branch $state>  \" \
+            --prompt=\"rebase $branch $state>  \" \
             | cut -d ' ' -f 1
         ")"
         if [ ! "$value" ]; then
