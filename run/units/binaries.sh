@@ -40,7 +40,7 @@ function compile_ondir() {
     local PLUGIN_DIR="`dirname $BINARY_DEST`/plugins"
 
     if [ ! "$PLUGIN_DIR" ]; then
-        echo " - fatal: plugins dir isn't detected, BINARY_DEST:\`$BINARY_DEST\`"
+        echo " - warning: ondir, plugins dir isn't detected, BINARY_DEST:\`$BINARY_DEST\`"
         return 1
     elif [ ! -d "$PLUGIN_DIR" ]; then
         git clone --depth 1 "https://github.com/alecthomas/ondir.git" "$PLUGIN_DIR/ondir"
@@ -49,7 +49,7 @@ function compile_ondir() {
 
     builtin cd "$PLUGIN_DIR/ondir" && make clean && make && mv ondir "$BINARY_DEST/ondir" && make clean
     local retval="$?"
-    [ "$retval" -gt 0 ] && echo " - failed ondir"
+    [ "$retval" -gt 0 ] && echo " - warning: failed ondir $BINARY_DEST/ondir"
 
     builtin cd "$cwd"
     return "$retval"
@@ -77,7 +77,7 @@ function compile_fzf() {
         [ -d "$tempdir" ] && rm -rf "$tempdir"
 
         $SHELL -c "$clone $url $tempdir && $tempdir/install --completion --key-bindings --update-rc --bin && cp -f $tempdir/bin/fzf $BINARY_DEST/fzf && rm -rf $tempdir"
-        [ $? -gt 0 ] && echo " - failed fzf"
+        [ $? -gt 0 ] && echo " - warning: failed fzf $BINARY_DEST/fzf"
     fi
 
     if [ -f "$BINARY_DEST/fzf.bak" ]; then
@@ -100,7 +100,7 @@ function deploy_micro() {
         # $BINARY_DEST/micro --version | head -n 1 | awk '{print $2}'
         echo " + deploy micro: $BINARY_DEST/micro"
         cd "$BINARY_DEST" && $SHELL -c "$HTTP_GET $url | $SHELL"
-        [ $? -gt 0 ] && echo " + failed micro: $BINARY_DEST/micro"
+        [ $? -gt 0 ] && echo " + warning: failed micro $BINARY_DEST/micro"
         $SHELL -c "$BINARY_DEST/micro -plugin install fzf wc detectindent bounce editorconfig quickfix"
     fi
     . $SOURCE_ROOT/run/units/configs.sh && copy_config "$CONFIG_ROOT/micro.json" "$CONFIG_DIR/micro/settings.json"
