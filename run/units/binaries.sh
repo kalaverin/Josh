@@ -34,6 +34,26 @@ else
     fi
 fi
 
+# ——— ondir events runner
+
+function compile_ondir() {
+    local PLUGIN_DIR="`dirname $BINARY_DEST`/plugins"
+
+    if [ ! "$PLUGIN_DIR" ]; then
+        echo " - fatal: plugins dir isn't detected, BINARY_DEST:\`$BINARY_DEST\`"
+        return 1
+    elif [ ! -d "$PLUGIN_DIR" ]; then
+        git clone --depth 1 "https://github.com/alecthomas/ondir.git" "$PLUGIN_DIR/ondir"
+    fi
+    local cwd="`pwd`"
+
+    builtin cd "$PLUGIN_DIR/ondir" && make clean && make && mv ondir "$BINARY_DEST/ondir" && make clean
+    local retval="$?"
+    [ "$retval" -gt 0 ] && echo " - failed ondir"
+
+    builtin cd "$cwd"
+    return "$retval"
+}
 
 # ——— fzf search
 
@@ -70,7 +90,6 @@ function compile_fzf() {
     return 0
 }
 
-
 # ——— micro editor
 
 function deploy_micro() {
@@ -92,5 +111,6 @@ function deploy_micro() {
 function deploy_binaries() {
     compile_fzf && \
     deploy_micro && \
+    compile_ondir
     return "$?"
 }

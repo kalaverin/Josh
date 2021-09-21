@@ -17,6 +17,7 @@ fi
 
 PLUGIN_DIR="$MERGE_DIR/custom/plugins"
 PACKAGES=(
+    "https://github.com/alecthomas/ondir.git $PLUGIN_DIR/ondir"
     "https://github.com/b4b4r07/emoji-cli $PLUGIN_DIR/emoji-cli"
     "https://github.com/chrissicool/zsh-256color $PLUGIN_DIR/zsh-256color"
     "https://github.com/hlissner/zsh-autopair.git $PLUGIN_DIR/zsh-autopair"
