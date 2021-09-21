@@ -12,16 +12,21 @@ local PIP_PKG_INFO="$INCLUDE_DIR/pip_pkg_info.sh"
 # ———
 
 function virtualenv_path_activate() {
-    local cwd="`pwd`"
     local venv="`realpath ${VIRTUAL_ENV:-$1}`"
-    [ ! -d "$venv" ] && return 1
-    virtualenv_deactivate; cd "$venv" && source bin/activate; cd "$cwd"
+    if [ ! -d "$venv" ]; then
+        return 1
+    elif [ "$VIRTUAL_ENV" = "$venv" ]; then
+        source $venv/bin/activate
+    elif [ "$VIRTUAL_ENV" ]; then
+        virtualenv_deactivate; source $venv/bin/activate
+    else
+        source $venv/bin/activate
+    fi
 }
 
 function virtualenv_deactivate {
     if [ "$VIRTUAL_ENV" != "" ]; then
-        local cwd="`pwd`"
-        cd "$VIRTUAL_ENV/bin" && source activate && deactivate; cd "$cwd"
+        source $VIRTUAL_ENV/bin/activate && deactivate
     fi
 }
 
@@ -95,31 +100,21 @@ function virtualenv_node_deploy {
 }
 
 function get_virtualenv_path {
-    local cwd="`pwd`"
-    unset JOSH_SELECT_VENV_PATH
     if [ "$1" ]; then
-        local temp="`get_tempdir`"
-        if [ -f "$temp/env/$1/bin/activate" ]; then
-            local env_path="$temp/env/$1"
+        if [ -f "$JOSH_PIP_ENV_PERSISTENT/$1/bin/activate" ]; then
+            echo "$JOSH_PIP_ENV_PERSISTENT/$1"
         else
-            if [ -f "$JOSH_PIP_ENV_PERSISTENT/$1/bin/activate" ]; then
-                local env_path="$JOSH_PIP_ENV_PERSISTENT/$1"
-                cd $cwd
+            local temp="`get_tempdir`"
+            if [ -f "$temp/env/$1/bin/activate" ]; then
+                echo "$temp/env/$1"
             else
-                echo " - venv \`$1\` isn't found"
-                cd $cwd
-                return 1
+                echo " - venv \`$1\` isn't found" >&2
             fi
         fi
-    else
-        if [ "$VIRTUAL_ENV" = "" ]; then
-            echo " - venv isn't activated"
-            return 1
-        fi
-        local env_path="$VIRTUAL_ENV"
+
+    elif [ "$VIRTUAL_ENV" ]; then
+        echo "$VIRTUAL_ENV"
     fi
-    local env_name="$(realpath `basename "$env_path"`)"
-    export JOSH_SELECT_VENV_PATH="$env_path"
 }
 
 function virtualenv_create {
@@ -167,10 +162,10 @@ function virtualenv_create {
 
     local name="$(dirname `mktemp -duq`)/env/`petname -s . -w 3 -a`"
     mkdir -p "$name" && \
-        cd "`realpath $name/../`" && \
+        builtin cd "`realpath $name/../`" && \
         rm -rf "$name" && \
     virtualenv --python=$exe "$name" && \
-        source $name/bin/activate && cd $cwd && \
+        source $name/bin/activate && builtin cd $cwd && \
         $SHELL -c "pip install pipdeptree $packages"
 }
 
@@ -219,18 +214,17 @@ function virtualenv_temporary_create {
 
     local name="$(dirname `mktemp -duq`)/env/`petname -s . -w 3 -a`"
     mkdir -p "$name" && \
-        cd "`realpath $name/../`" && \
+        builtin cd "`realpath $name/../`" && \
         rm -rf "$name" && \
     virtualenv --python=$exe "$name" && \
-        source $name/bin/activate && cd $cwd && \
+        source $name/bin/activate && builtin cd $cwd && \
         $SHELL -c "pip install pipdeptree $packages"
 }
 
 function chdir_to_virtualenv {
-    get_virtualenv_path $*
-    if [ "$JOSH_SELECT_VENV_PATH" != "" ]; then
-        cd $JOSH_SELECT_VENV_PATH
-        unset JOSH_SELECT_VENV_PATH
+    local venv="`get_virtualenv_path $*`"
+    if [ "$venv" ] && [ -d "$venv" ]; then
+        builtin cd $venv
         return 0
     fi
     return 1
@@ -242,18 +236,19 @@ function chdir_to_virtualenv_stdlib {
 
     local env_site=`find lib/ -maxdepth 1 -type d -name 'python*'`
     if [ -d "$env_site/site-packages" ]; then
-        cd "$env_site/site-packages"
-        [ "${@:2}" ] && cd ${@:2}
+        builtin cd "$env_site/site-packages"
+        [ "${@:2}" ] && builtin cd ${@:2}
     else
         echo " - something wrong for \`$env_path\`, path: \`$env_site\`"
-        cd $cwd
+        builtin cd $cwd
     fi
 }
 
 function virtualenv_activate {
-    local cwd="`pwd`"
-    chdir_to_virtualenv $* || ([ $? -gt 0 ] && return 1)
-    virtualenv_deactivate && source bin/activate && cd $cwd
+    local venv="`get_virtualenv_path $*`"
+    if [ "$venv" ] && [ -d "$venv" ]; then
+        virtualenv_deactivate && source $venv/bin/activate
+    fi
 }
 
 function virtualenv_temporary_destroy {
@@ -262,16 +257,17 @@ function virtualenv_temporary_destroy {
 
     local vwd="`pwd`"
     local temp="`get_tempdir`"
+
     if [[ ! $vwd =~ "^$temp/env" ]]; then
         echo " * can't remove \`$vwd\` because isn't temporary"
-        cd $cwd
+        builtin cd $cwd
         return 1
     fi
 
     if [ "$VIRTUAL_ENV" = "$vwd" ]; then
-        run_show "cd $VIRTUAL_ENV/bin && source activate && deactivate && cd .."
+        run_show "builtin cd $VIRTUAL_ENV/bin && source activate && deactivate && builtin cd .."
     fi
-    run_show "rm -rf $vwd 2>/dev/null; cd $cwd || cd ~"
+    run_show "rm -rf $vwd 2>/dev/null; builtin cd $cwd || builtin cd ~"
 }
 
 # ———
