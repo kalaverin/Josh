@@ -42,7 +42,7 @@ function compile_ondir() {
     if [ ! "$PLUGIN_DIR" ]; then
         echo " - warning: ondir, plugins dir isn't detected, BINARY_DEST:\`$BINARY_DEST\`"
         return 1
-    elif [ ! -d "$PLUGIN_DIR" ]; then
+    elif [ ! -d "$PLUGIN_DIR/ondir" ]; then
         git clone --depth 1 "https://github.com/alecthomas/ondir.git" "$PLUGIN_DIR/ondir"
     fi
     local cwd="`pwd`"
