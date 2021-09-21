@@ -51,6 +51,7 @@ function compile_ondir() {
     fi
     local cwd="`pwd`"
 
+    echo " + deploy ondir to $BINARY_DEST/ondir"
     builtin cd "$PLUGIN_DIR/ondir" && make clean && make && mv ondir "$BINARY_DEST/ondir" && make clean
     local retval="$?"
     [ "$retval" -gt 0 ] && echo " - warning: failed ondir $BINARY_DEST/ondir"
