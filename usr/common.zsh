@@ -230,7 +230,8 @@ visual_recent_chdir() {
         builtin cd "$@";
         return
     fi
-    local directory=$(scotty list | sort -rk 2,3 | sed '1d' | tabulate -i 1 | runiq - | xargs -I$ echo "[ -d \"$\" ] && echo \"$\"" | $SHELL | grep -Pv 'env/.+/bin' | \
+
+    local directory=$(scotty list | sed '1d' | sort -rk 2,3 | sd '(.+?)\s+(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2}:\d{2}\.\d+)$' '$2-$3 $1' | sort -rk 1 | tabulate -i 2 | runiq - | xargs -I$ echo "[ -d \"$\" ] && echo \"$\"" | $SHELL | grep -Pv 'env/.+/bin' | \
         fzf \
             -i -s --exit-0 --select-1 \
             --prompt="cd >  " \
