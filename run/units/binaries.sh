@@ -37,6 +37,10 @@ fi
 # ——— ondir events runner
 
 function compile_ondir() {
+    if [ -x "`which ondir`" ]; then
+        return 0
+    fi
+
     local PLUGIN_DIR="`dirname $BINARY_DEST`/plugins"
 
     if [ ! "$PLUGIN_DIR" ]; then
