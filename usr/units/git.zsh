@@ -1034,6 +1034,47 @@ git_widget_checkout_commit() {
 zle -N git_widget_checkout_commit
 
 
+git_widget_merge_branch() {
+    local branch="`git_current_branch`"
+    [ ! "$branch" ] && return 1
+
+    is_repository_clean >/dev/null || local state='(dirty!) '
+    local differ="echo {} | tabulate -i 1 | xargs -n 1 $GIT_DIFF"
+    local select='git for-each-ref \
+                    --sort=-committerdate refs/heads/ \
+                    --color=always \
+                    --format="%(HEAD) %(color:yellow bold)%(refname:short)%(color:reset) %(contents:subject) %(color:black bold)%(authoremail) %(committerdate:relative)" \
+                    | awk "{\$1=\$1};1" | grep -Pv "^(\*\s+)"'
+
+    while true; do
+        local value="$(
+            $SHELL -c "$select \
+            | $FZF \
+            --preview=\"$differ $branch | $DELTA \" \
+            --preview-window=\"left:`get_preview_width`:noborder\" \
+            --prompt=\"merge to $branch $state>  \" \
+            | cut -d ' ' -f 1
+        ")"
+        if [ ! "$value" ]; then
+            break
+
+        elif [ ! "$BUFFER" ]; then
+            run_show "sfet \"$value\" && git merge --no-commit \"origin/$value\""
+            local retval=$?
+            git_widget_conflict_solver
+
+        elif [ "$value" ]; then
+            LBUFFER="$BUFFER && git fetch origin \"$value\":\"$value\" && git merge --no-commit \"origin/$value\""
+        fi
+
+        break
+    done
+    zle reset-prompt
+    return 0
+}
+zle -N git_widget_merge_branch
+
+
 git_widget_rebase_branch() {
     local branch="`git_current_branch`"
     [ ! "$branch" ] && return 1
