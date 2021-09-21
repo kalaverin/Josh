@@ -9,7 +9,7 @@ function bak {
     local last_path="`pwd`"
     mktp
     local temp_path="`pwd`"
-    cd $last_path
+    builtin cd $last_path
 
     local dir_name=`basename "$last_path"`
     local backup="$temp_path/$dir_name.tar.xz"

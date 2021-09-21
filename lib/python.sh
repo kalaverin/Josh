@@ -205,30 +205,29 @@ function pip_init() {
 }
 
 function pip_deploy() {
-    local cwd="`pwd`"
-    local venv="$VIRTUAL_ENV"
-
-    if [ "$venv" != "" ]; then
-        cd $venv/bin && source activate && deactivate; cd $cwd
+    if [ ! "$VIRTUAL_ENV" ] || [ ! -f "$VIRTUAL_ENV/bin/activate" ]; then
+        function reactivate() {}
+    else
+        local venv="$VIRTUAL_ENV"
+        source $venv/bin/activate && deactivate
+        function reactivate() {
+            source $venv/bin/activate
+        }
     fi
 
     pip_init || return $?
     if [ ! -f "$PIP_EXE" ]; then
         echo " - fatal: pip executive $PIP_EXE isn't found!"
-        [ "$venv" != "" ] && cd $venv/bin && source activate
-        cd $cwd; return 1
+        reactivate; return 1
     fi
 
     local retval=0
     for line in $@; do
         $SHELL -c "PIP_REQUIRE_VIRTUALENV=false $PIP_EXE install --disable-pip-version-check --no-input --no-python-version-warning --no-warn-conflicts --no-warn-script-location --user --upgrade --upgrade-strategy=eager $line"
-        if [ "$?" -gt 0 ]; then
-            local retval=1
-        fi
+        [ "$?" -gt 0 ] && local retval=1
     done
 
-    [ "$venv" != "" ] && cd $venv/bin && source activate
-    cd $cwd; return 1
+    reactivate; return $retval
 }
 
 function pip_extras() {

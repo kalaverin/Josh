@@ -204,7 +204,7 @@ function chdir_to_setupcfg {
             echo " - setup.cfg not found in $cwd" 1>&2
             return 1
         fi
-        cd $root
+        builtin cd $root
     fi
     return 0
 }
@@ -214,7 +214,7 @@ function gub() {
     find . -maxdepth 3 -type d -name .git | while read git_directory
     do
         current_path=$(dirname "$git_directory")
-        cd "${current_path}"
+        builtin cd "${current_path}"
         local branch="`$SHELL -c "$GET_BRANCH"`"
 
         echo ""
@@ -236,7 +236,7 @@ function gub() {
                 echo "  + $branch reset and pull"
             fi
         fi
-        cd "${cwd}"
+        builtin cd "${cwd}"
     done
 }
 
