@@ -112,4 +112,5 @@ function zero_configuration() {
     copy_config "$CONFIG_ROOT/starship.toml" "$CONFIG_DIR/starship.toml"
     copy_config "$CONFIG_ROOT/mycli.conf" "$REAL/.myclirc"
     copy_config "$CONFIG_ROOT/pgcli.conf" "$CONFIG_DIR/pgcli/config"
+    copy_config "$CONFIG_ROOT/ondir.rc" "$REAL/.ondirrc"
 }

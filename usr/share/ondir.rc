@@ -1,0 +1,5 @@
+# please, read https://github.com/alecthomas/ondir before start
+
+enter /anything/path/on/drive
+    # for example - activate virtualenv
+    echo "wow, this is simple autorun!"
