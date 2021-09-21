@@ -50,9 +50,11 @@ function copy_config() {
         return 1
     fi
 
-    diff --ignore-blank-lines --strip-trailing-cr --brief "$src" "$dst" 1>/dev/null
-    if [ $? -eq 0 ]; then
-        return 0
+    if [ -f "$dst" ]; then
+        diff --ignore-blank-lines --strip-trailing-cr --brief "$src" "$dst" 1>/dev/null
+        if [ $? -eq 0 ]; then
+            return 0
+        fi
     fi
 
     [ -f "$dst" ] && backup_file "$dst" && unlink "$dst"
