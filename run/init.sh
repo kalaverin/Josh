@@ -44,7 +44,7 @@ if [ -n "$(uname | grep -i freebsd)" ]; then
     export JOSH_READLINK='/usr/local/bin/greadlink'
     export JOSH_REALPATH='/usr/local/bin/grealpath'
     export JOSH_SED='/usr/local/bin/gsed'
-    export OSTYPE="BSD"
+    export JOSH_OS="BSD"
 
 
 elif [ -n "$(uname | grep -i darwin)" ]; then
@@ -53,7 +53,7 @@ elif [ -n "$(uname | grep -i darwin)" ]; then
     export JOSH_READLINK='/usr/local/bin/greadlink'
     export JOSH_REALPATH='/usr/local/bin/grealpath'
     export JOSH_SED='/usr/local/bin/gsed'
-    export OSTYPE="MAC"
+    export JOSH_OS="MAC"
     export PATH="$PATH:/Library/Apple/usr/bin"
 
 else
@@ -64,9 +64,9 @@ else
     export JOSH_SED="`lookup sed`"
 
     if [ -n "$(uname | grep -i linux)" ]; then
-        export OSTYPE="LINUX"
+        export JOSH_OS="LINUX"
     else
         echo " - ERROR: unsupported OS!"
-        export OSTYPE="UNKNOWN"
+        export JOSH_OS="UNKNOWN"
     fi
 fi

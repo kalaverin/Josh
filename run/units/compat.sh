@@ -37,11 +37,11 @@ function check_libraries() {
         $SHELL -c "pkg-config --libs --cflags $lib" 1&>/dev/null 2&>/dev/null
         if [ "$?" -gt 0 ]; then
             if [ "$lib" = "openssl" ]; then
-                if [ "$OSTYPE" = "MAC" ]; then
+                if [ "$JOSH_OS" = "MAC" ]; then
                     local lookup_path="/usr/local/opt/"
-                elif [ "$OSTYPE" = "LINUX" ]; then
+                elif [ "$JOSH_OS" = "LINUX" ]; then
                     local lookup_path="/usr/lib/"
-                elif [ "$OSTYPE" = "BSD" ]; then
+                elif [ "$JOSH_OS" = "BSD" ]; then
                     local lookup_path="/usr/local/"
                 else
                     local missing="$missing $lib"
@@ -92,7 +92,7 @@ function version_not_compatible() {
 function check_compliance() {
     if [ -n "$(uname | grep -i freebsd)" ]; then
         echo " + os: freebsd `uname -srv`"
-        export OSTYPE="BSD"
+        export JOSH_OS="BSD"
 
         local cmd="sudo pkg install -y"
         local pkg="zsh git coreutils gnugrep gnuls gsed jq openssl pkgconf pv python39"
@@ -107,7 +107,7 @@ function check_compliance() {
 
     elif [ -n "$(uname | grep -i darwin)" ]; then
         echo " + os: macos `uname -srv`"
-        export OSTYPE="MAC"
+        export JOSH_OS="MAC"
 
         if [ ! -x "`lookup brew`" ]; then
             echo ' - brew for MacOS strictly required, just run: $SHELL -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"'
@@ -126,7 +126,7 @@ function check_compliance() {
 
     elif [ -n "$(uname -v | grep -Pi '(debian|ubuntu)')" ]; then
         echo " + os: debian-based `uname -srv`"
-        export OSTYPE="LINUX"
+        export JOSH_OS="LINUX"
 
         [ -x "`lookup apt`" ] && local bin="apt" || local bin="apt-get"
         local cmd="(sudo $bin update --yes --quiet || true) && sudo $bin install --yes --quiet --no-remove"
@@ -137,15 +137,15 @@ function check_compliance() {
 
     elif [ -n "$(uname -srv | grep -i gentoo)" ]; then
         echo " + os: gentoo: `uname -srv`"
-        export OSTYPE="LINUX"
+        export JOSH_OS="LINUX"
 
     elif [ -n "$(uname | grep -i linux)" ]; then
         echo " - unknown linux: `uname -srv`"
-        export OSTYPE="LINUX"
+        export JOSH_OS="LINUX"
 
     else
         echo " - unknown os: `uname -srv`"
-        export OSTYPE="UNKNOWN"
+        export JOSH_OS="UNKNOWN"
     fi
 
     check_executables $REQUIRED_BINARIES $REQURED_SYSTEM_BINARIES && \
