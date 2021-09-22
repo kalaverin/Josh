@@ -18,7 +18,13 @@ function pull_update() {
     local local_branch="`git rev-parse --quiet --abbrev-ref HEAD`"
 
     if [ "$local_branch" ] && [ ! "$local_branch" = "HEAD" ]; then
-        local target_branch="${1:-$local_branch}"
+
+        if [ -n "$JOSH_BRANCH" ]; then
+            local target_branch="$JOSH_BRANCH"
+        else
+            local target_branch="${1:-$local_branch}"
+        fi
+
         if [ ! "$target_branch" ]; then
             # if branch don't selected by hands - just use failover
             local target_branch="master"
