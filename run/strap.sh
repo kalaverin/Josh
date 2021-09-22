@@ -60,7 +60,7 @@ function prepare_and_deploy() {
 
     [ $? -gt 0 ] && return 4
 
-    pip_deploy $PIP_REQ_PACKAGES && \
+    pip_deploy $PIP_REQ_PACKAGES
     deploy_ohmyzsh && \
     deploy_extensions && \
     deploy_binaries && \

@@ -111,7 +111,6 @@ function python_exe() {
         fi
     fi
     unset PYTHON3
-    # echo " * info: python>=$MIN_PYTHON_VERSION isn't detected"
     return 1
 }
 
@@ -166,7 +165,6 @@ function pip_init() {
     set_defaults
     python_init
     if [ ! -f "$PYTHON3" ]; then
-        # echo " - fatal: python>=$MIN_PYTHON_VERSION required!"
         return 1
     fi
 
@@ -211,6 +209,18 @@ function pip_init() {
 }
 
 function pip_deploy() {
+    python_init
+    if [ ! -x "$PYTHON3" ]; then
+        echo " - fatal: python>=$MIN_PYTHON_VERSION required!"
+        return 1
+    fi
+
+    pip_init
+    if [ ! -x "$PIP_EXE" ]; then
+        echo " - fatal: pip executive $PIP_EXE isn't found!"
+        return 2
+    fi
+
     if [ ! "$VIRTUAL_ENV" ] || [ ! -f "$VIRTUAL_ENV/bin/activate" ]; then
         function reactivate() {}
     else
@@ -219,12 +229,6 @@ function pip_deploy() {
         function reactivate() {
             source $venv/bin/activate
         }
-    fi
-
-    pip_init || return $?
-    if [ ! -f "$PIP_EXE" ]; then
-        echo " - fatal: pip executive $PIP_EXE isn't found!"
-        reactivate; return 1
     fi
 
     local retval=0
