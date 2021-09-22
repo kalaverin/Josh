@@ -1139,6 +1139,8 @@ function git_replace_all_commits_with_one() {
     local parent="$(git show-branch | grep '*' | grep -v "`git rev-parse --abbrev-ref HEAD`" | head -n 1 | sd '^(.+)\[' '' | tabulate -d '] ' -i 1)"
     [ ! "$parent" ] && return 2
 
+    sfet "$parent"
+
     local count="$(git rev-list --first-parent --count "^$parent" "$branch")"
     [ "$count" -eq 0 ] && return 3
 
