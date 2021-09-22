@@ -9,7 +9,7 @@ if [[ -n ${(M)zsh_eval_context:#file} ]]; then
             echo " + install oh-my-zsh to \`$DEST\`"
         fi
     else
-        DEST="$JOSH"
+        DEST="$ZSH"
     fi
 fi
 
