@@ -53,6 +53,13 @@ function python_distutils() {
     ([ "$distutils" ] && echo 1) || echo 0
 }
 
+function python_get_version() {
+    if [ ! -x "$1" ]; then
+        echo " - warning: isn't exists executable $1" >&2
+    fi
+    echo "`$1 --version 2>&1 | $JOSH_GREP -Po '([\d\.]+)$'`"
+}
+
 function python_exe() {
     set_defaults
 
@@ -70,8 +77,8 @@ function python_exe() {
     . $root/src/compat.zsh
     . $root/run/units/compat.sh
 
-    if [ -f "$PYTHON3" ]; then
-        local version="`$PYTHON3 --version 2>&1 | $JOSH_GREP -Po '([\d\.]+)$'`"
+    if [ -x "$PYTHON3" ]; then
+        local version="`python_get_version $PYTHON3`"
         [ ! "$version" ] && continue
 
         version_not_compatible $MIN_PYTHON_VERSION $version
@@ -80,7 +87,7 @@ function python_exe() {
 
     for dir in $(sh -c "echo "$PATH" | sed 's#:#\n#g' | sort -su"); do
         for exe in $(find $dir -type f -name 'python*' 2>/dev/null | sort -Vr); do
-            local version=$($exe --version 2>&1 | $JOSH_GREP -Po '([\d\.]+)$')
+            local version="`python_get_version $exe`"
             [ ! "$version" ] && continue
 
             unset result
@@ -97,15 +104,14 @@ function python_exe() {
 
     if [ "$result" ]; then
         local python="`realpath $result`"
-        if [ -f "$python" ]; then
+        if [ -x "$python" ]; then
             export PYTHON3="$python"
-            local version="`$python --version 2>&1 | $JOSH_GREP -Po '([\d\.]+)$'`"
-            # echo " * info: using python $version from $PYTHON3"
+            local version="`python_get_version $python`"
             return 0
         fi
     fi
     unset PYTHON3
-    echo " * info: python>=$MIN_PYTHON_VERSION isn't detected"
+    # echo " * info: python>=$MIN_PYTHON_VERSION isn't detected"
     return 1
 }
 
@@ -160,7 +166,7 @@ function pip_init() {
     set_defaults
     python_init
     if [ ! -f "$PYTHON3" ]; then
-        echo " - fatal: python>=$MIN_PYTHON_VERSION required!"
+        # echo " - fatal: python>=$MIN_PYTHON_VERSION required!"
         return 1
     fi
 
