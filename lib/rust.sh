@@ -183,6 +183,7 @@ CARGO_BIN="$CARGO_BINARIES/cargo"
 function cargo_init() {
     local cache_exe="$CARGO_BINARIES/sccache"
 
+
     if [ ! -x "$CARGO_BIN" ]; then
         export RUSTC_WRAPPER=""
         unset RUSTC_WRAPPER
@@ -197,7 +198,7 @@ function cargo_init() {
         fi
     fi
 
-    source $HOME/.cargo/env
+    export PATH="$CARGO_BINARIES:$PATH"
 
     if [ ! -x "$cache_exe" ]; then
         $CARGO_BIN install sccache

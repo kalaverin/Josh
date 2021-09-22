@@ -3,9 +3,9 @@ if [ ! "$JOSH" ]; then
 fi
 
 path=(
-    $ZSH/custom/bin
     $HOME/.local/bin
     $HOME/bin
+    $ZSH/custom/bin
     /usr/local/bin
     /bin
     /sbin
