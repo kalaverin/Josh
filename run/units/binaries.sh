@@ -22,17 +22,16 @@ function compile_ondir() {
         return 0
     fi
 
-    if [ ! "$OMZ_PLUGIN_DIR" ]; then
+    if [ -z "$OMZ_PLUGIN_DIR" ]; then
         echo " - warning by ondir: plugins dir isn't detected, BINARY_DEST:\`$BINARY_DEST\`"
         return 1
 
     elif [ ! -d "$OMZ_PLUGIN_DIR/ondir" ]; then
         git clone --depth 1 "https://github.com/alecthomas/ondir.git" "$OMZ_PLUGIN_DIR/ondir"
-
     fi
 
     local cwd="`pwd`"
-    echo " + deploy ondir to $BINARY_DEST/ondir"
+    echo " + compile ondir in \`$OMZ_PLUGIN_DIR\` and copy to \`$BINARY_DEST\`"
     builtin cd "$OMZ_PLUGIN_DIR/ondir" && make clean && make && mv ondir "$BINARY_DEST/ondir" && make clean
 
     local retval="$?"
