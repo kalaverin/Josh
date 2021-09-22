@@ -8,6 +8,9 @@ if [ "$OS_TYPE" = "BSD" ]; then
     export MM_CHARSET="${MM_CHARSET:-"en_US.UTF-8"}"
 fi
 
+local unified_path="$(echo "$PATH" | sd ':' '\n' | runiq - | xargs -n 1 realpath 2>/dev/null | sd '\n' ':' | sd '(^:|:$)' '')"
+[ "$?" = 0 ] && [ "$unified_path " ] && export PATH="$unified_path"
+
 [ -x "`lookup bat`" ] && export JOSH_BAT="`lookup bat`" || true
 [ -x "`lookup delta`" ] && export JOSH_DELTA="`lookup delta`" || true
 [ -x "`lookup http`" ] && export JOSH_HTTP="`lookup http`" || true
