@@ -154,9 +154,13 @@ function check_compliance() {
     if [ $? -gt 0 ]; then
         local msg=" - please, install required packages and try again"
         [ "$cmd" ] && local msg="$msg: $cmd $pkg"
-        echo "$msg" && return 0
+        if [ ! "$JOSH_SKIP_REQUIREMENTS_CHECK" ]; then
+            echo "$msg" && return 0
+        else
+            echo "$msg"
+        fi
+    else
+        echo " + all requirements exists: $REQUIRED_BINARIES $REQUIRED_LIBRARIES $REQURED_SYSTEM_BINARIES"
     fi
-
-    echo " + all requirements exists: $REQUIRED_BINARIES $REQUIRED_LIBRARIES $REQURED_SYSTEM_BINARIES"
     return 1
 }
