@@ -61,6 +61,14 @@ function spsh() {
     return $?
 }
 
+function spshf() {
+    local branch="${1:-`git_current_branch`}"
+    [ ! "$branch" ] && return 1
+
+    run_show "git push --force origin $branch"
+    return $?
+}
+
 function sfm() {
     local branch="${1:-`git_current_branch`}"
     [ ! "$branch" ] && return 1
@@ -279,11 +287,7 @@ get_repository_state() {
     # local root="`git_root 2>/dev/null`"
     [ ! "$root" ] && return 1
 
-    if [ -f "$root/.git/rebase-merge/git-rebase-todo" ]; then
-        return 1
-    fi
-
-    if [ -f "$root/.git/REBASE_HEAD" ]; then
+    if [ -d "$root/.git/rebase-merge" ]; then
         local state="rebase"
     elif [ -f "$root/.git/CHERRY_PICK_HEAD" ]; then
         local state="cherry-pick"
@@ -1128,6 +1132,29 @@ function git_squash_already_pushed() {
     run_show "git rebase --interactive --no-autosquash --no-autostash --strategy=recursive --strategy-option=ours --strategy-option=diff-algorithm=histogram \"$parent\""
 }
 
+function git_replace_all_commits_with_one() {
+    local branch="${1:-`git_current_branch`}"
+    [ ! "$branch" ] && return 1
+
+    local parent="$(git show-branch | grep '*' | grep -v "`git rev-parse --abbrev-ref HEAD`" | head -n 1 | sd '^(.+)\[' '' | tabulate -d '] ' -i 1)"
+    [ ! "$parent" ] && return 2
+
+    local count="$(git rev-list --first-parent --count "^$parent" "$branch")"
+    [ "$count" -eq 0 ] && return 3
+
+    local command=" git reset --soft HEAD~$count && git add ."
+    [ "$BUFFER" ] && local command="$BUFFER && $command"
+
+    if [ "`get_repository_state`" ]; then  # merging, rebase or cherry-pick
+        LBUFFER="$command"
+        RBUFFER=''
+    else
+        LBUFFER="$command && git commit -m \"$branch: "
+        RBUFFER='"'
+    fi
+}
+zle -N  git_replace_all_commits_with_one
+
 # ———
 
 #              alt-q, commits history
@@ -1166,5 +1193,7 @@ bindkey "\e^f" git_widget_delete_remote_branch  # PUSH TO origin, caution!
 
 #              alt-p, experimental conflict solver
 bindkey "\ep"  git_widget_conflict_solver
+#              shift-alt-p, squash all
+bindkey "^[P"  git_replace_all_commits_with_one
 #              ctrl-p, git abort
 bindkey "^p"   git_abort
