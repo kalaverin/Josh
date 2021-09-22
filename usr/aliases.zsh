@@ -5,6 +5,7 @@ alias ps='ps'
 alias rm='rm'
 alias tt='tail -f -n 100'
 alias svc='service'
+alias sudo='sudo -H'
 # alias pipdeptree='python -m pipdeptree'
 
 alias ri="$JOSH_GREP -rnH --exclude '*.js' --exclude '*.min.css' --exclude '.git/' --exclude 'node_modules/' --exclude 'lib/python*/site-packages/' --exclude '__snapshots__/' --exclude '.eggs/' --exclude '*.pyc' --exclude '*.po' --exclude '*.svg' --color=auto"
