@@ -1,36 +1,16 @@
-#!/bin/sh
+#!/bin/zsh
 
-if [ ! "$SOURCE_ROOT" ]; then
-    if [ ! -f "`which -p realpath`" ]; then
-        export SOURCE_ROOT="`dirname $0`/../../"
+if [[ -n ${(M)zsh_eval_context:#file} ]]; then
+    [ -z "$HTTP_GET" ] && source "`dirname $0`/../boot.sh"
+
+    BINARY_DEST="$HOME/.local/bin"
+    [ ! -d "$BINARY_DEST" ] && mkdir -p "$BINARY_DEST"
+
+    if [ -n "$JOSH_DEST" ]; then
+        echo " + compile binaries to \`$BINARY_DEST\`"
+        BASE="$JOSH_BASE"
     else
-        export SOURCE_ROOT=$(sh -c "realpath `dirname $0`/../../")
-    fi
-
-    if [ ! -d "$SOURCE_ROOT" ]; then
-        echo " - fatal: source root $SOURCE_ROOT isn't correctly defined"
-    else
-        echo " + init from $SOURCE_ROOT"
-        . $SOURCE_ROOT/run/init.sh
-    fi
-fi
-
-if [ ! "$REAL" ]; then
-    echo " - fatal: init failed, REAL empty"
-    return 255
-fi
-if [ ! "$HTTP_GET" ]; then
-    echo " - fatal: init failed, HTTP_GET empty"
-    return 255
-fi
-
-if [ "$MERGE_DIR" ]; then
-    BINARY_DEST="$MERGE_DIR/custom/bin"
-else
-    BINARY_DEST="$ZSH/custom/bin"
-    if [ ! -d "$ZSH/custom" ]; then
-        echo " - fatal: init failed, \$ZSH/custom=\`$ZSH/custom\` isn't found"
-        return 255
+        BASE="$JOSH"
     fi
 fi
 
@@ -41,18 +21,21 @@ function compile_ondir() {
         return 0
     fi
 
-    local PLUGIN_DIR="`dirname $BINARY_DEST`/plugins"
+    [ -z "$OMZ_PLUGIN_DIR" ] && source "`dirname $0`/oh-my-zsh.sh"
 
-    if [ ! "$PLUGIN_DIR" ]; then
-        echo " - warning: ondir, plugins dir isn't detected, BINARY_DEST:\`$BINARY_DEST\`"
+    if [ ! "$OMZ_PLUGIN_DIR" ]; then
+        echo " - warning by ondir: plugins dir isn't detected, BINARY_DEST:\`$BINARY_DEST\`"
         return 1
-    elif [ ! -d "$PLUGIN_DIR/ondir" ]; then
-        git clone --depth 1 "https://github.com/alecthomas/ondir.git" "$PLUGIN_DIR/ondir"
-    fi
-    local cwd="`pwd`"
 
+    elif [ ! -d "$OMZ_PLUGIN_DIR/ondir" ]; then
+        git clone --depth 1 "https://github.com/alecthomas/ondir.git" "$OMZ_PLUGIN_DIR/ondir"
+
+    fi
+
+    local cwd="`pwd`"
     echo " + deploy ondir to $BINARY_DEST/ondir"
-    builtin cd "$PLUGIN_DIR/ondir" && make clean && make && mv ondir "$BINARY_DEST/ondir" && make clean
+    builtin cd "$OMZ_PLUGIN_DIR/ondir" && make clean && make && mv ondir "$BINARY_DEST/ondir" && make clean
+
     local retval="$?"
     [ "$retval" -gt 0 ] && echo " - warning: failed ondir $BINARY_DEST/ondir"
 
@@ -103,12 +86,16 @@ function deploy_micro() {
 
     if [ ! -x "$BINARY_DEST/micro" ]; then
         # $BINARY_DEST/micro --version | head -n 1 | awk '{print $2}'
+
+        local cwd="`pwd`"
         echo " + deploy micro: $BINARY_DEST/micro"
         cd "$BINARY_DEST" && $SHELL -c "$HTTP_GET $url | $SHELL"
+
         [ $? -gt 0 ] && echo " + warning: failed micro $BINARY_DEST/micro"
         $SHELL -c "$BINARY_DEST/micro -plugin install fzf wc detectindent bounce editorconfig quickfix"
+        builtin cd "$cwd"
     fi
-    . $SOURCE_ROOT/run/units/configs.sh && copy_config "$CONFIG_ROOT/micro.json" "$CONFIG_DIR/micro/settings.json"
+    source "$BASE/run/units/configs.sh" && copy_config "$CONFIG_ROOT/micro.json" "$CONFIG_DIR/micro/settings.json"
     return 0
 }
 

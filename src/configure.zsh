@@ -1,6 +1,5 @@
 source "$JOSH/lib/python.sh" && python_env
 source "$JOSH/lib/rust.sh" && rust_env
-source "$JOSH/src/compat.zsh"
 
 export LANG="${LANG:-"en_US.UTF-8"}"
 export LANGUAGE="${LANGUAGE:-"en_US:en"}"
@@ -8,6 +7,11 @@ export LC_ALL="${LC_ALL:-"en_US.UTF-8"}"
 if [ "$OS_TYPE" = "BSD" ]; then
     export MM_CHARSET="${MM_CHARSET:-"en_US.UTF-8"}"
 fi
+
+[ -x "`lookup bat`" ] && export JOSH_BAT="`lookup bat`" || true
+[ -x "`lookup delta`" ] && export JOSH_DELTA="`lookup delta`" || true
+[ -x "`lookup http`" ] && export JOSH_HTTP="`lookup http`" || true
+[ -x "`lookup viu`" ] && export JOSH_VIU="`lookup viu`" || true
 
 if [ -f "$JOSH_BAT" ]; then
     export PAGER="$JOSH_BAT"
@@ -38,7 +42,7 @@ if [ -f "`which -p fzf`" ]; then
 fi
 
 [ -f "`which -p micro`" ] && export EDITOR="`which -p micro`"
-[ -f "`which -p rip`" ] && export GRAVEYARD=${GRAVEYARD:-"$REAL/.trash"}
+[ -f "`which -p rip`" ] && export GRAVEYARD=${GRAVEYARD:-"$HOME/.trash"}
 [ -f "`which -p sccache`" ] && export RUSTC_WRAPPER="`which -p sccache`"
 [ -f "`which -p vivid`" ] && export LS_COLORS="`vivid generate ${THEME_LS:-solarized-dark}`"
 
@@ -83,4 +87,4 @@ else
     LISTER_FILE="$PAGER_BIN --color always --tabs 4 --paging never" # for bat
 fi
 
-export JOSH_PIP_ENV_PERSISTENT="${JOSH_PIP_ENV_PERSISTENT:-"$REAL/.env"}"
+export JOSH_PIP_ENV_PERSISTENT="${JOSH_PIP_ENV_PERSISTENT:-"$HOME/.env"}"

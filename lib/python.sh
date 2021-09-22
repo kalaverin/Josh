@@ -1,5 +1,23 @@
 #!/bin/sh
 
+if [[ -n ${(M)zsh_eval_context:#file} ]]; then
+    if [ -z "$HTTP_GET" ] || [ -z "$JOSH" ] || [ -z "$JOSH_BASE" ]; then
+        source "`dirname $0`/../run/boot.sh"
+    fi
+
+    JOSH_CACHE_DIR="$HOME/.cache/josh"
+    if [ ! -d "$JOSH_CACHE_DIR" ]; then
+        mkdir -p "$JOSH_CACHE_DIR"
+        echo " * make Josh cache directory \`$JOSH_CACHE_DIR\`"
+    fi
+
+    if [ -n "$JOSH_DEST" ]; then
+        BASE="$JOSH_BASE"
+    else
+        BASE="$JOSH"
+    fi
+fi
+
 MIN_PYTHON_VERSION=3.6  # minimal version for modern pip
 
 PIP_REQ_PACKAGES=(
@@ -18,36 +36,6 @@ PIP_OPT_PACKAGES=(
     nodeenv    # virtual environments for node packaging
 )
 
-function set_defaults() {
-    if [ "$JOSH" ] && [ -d "$JOSH" ]; then
-        export SOURCE_ROOT="`realpath $JOSH`"
-
-    elif [ ! "$SOURCE_ROOT" ]; then
-        if [ ! -f "`which -p realpath`" ]; then
-            export SOURCE_ROOT="`dirname $0`/../"
-        else
-            export SOURCE_ROOT=$(sh -c "realpath `dirname $0`/../")
-        fi
-
-        if [ ! -d "$SOURCE_ROOT" ]; then
-            echo " - fatal: source root $SOURCE_ROOT isn't correctly defined"
-        else
-            echo " + init from $SOURCE_ROOT"
-            . $SOURCE_ROOT/run/init.sh
-        fi
-    fi
-
-    if [ ! "$REAL" ]; then
-        echo " - fatal: init failed, REAL empty"
-        return 255
-    fi
-    if [ ! "$HTTP_GET" ]; then
-        echo " - fatal: init failed, HTTP_GET empty"
-        return 255
-    fi
-    return 0
-}
-
 function python_distutils() {
     local distutils="`echo 'import distutils; print(distutils)' | $1 2>/dev/null | grep from`"
     ([ "$distutils" ] && echo 1) || echo 0
@@ -61,21 +49,11 @@ function python_get_version() {
 }
 
 function python_exe() {
-    set_defaults
-
-    if [ "$SOURCE_ROOT" ] && [ -d "$SOURCE_ROOT" ]; then
-        local root="`realpath $SOURCE_ROOT`"
-    elif [ "$JOSH" ] && [ -d "$JOSH" ]; then
-        local root="`realpath $JOSH`"
-    fi
-
-    if [ ! -d "$root" ]; then
-        echo " - fatal: source root:\`$root\` isn't exists, JOSH:\`$JOSH\`, SOURCE_ROOT:\`$SOURCE_ROOT\`"
+    source $BASE/run/units/compat.sh
+    if [ $? -gt 0 ]; then
+        echo " - fatal python: something wrong, source BASE:\`$BASE\`"
         return 255
     fi
-
-    . $root/src/compat.zsh
-    . $root/run/units/compat.sh
 
     if [ -x "$PYTHON3" ]; then
         local version="`python_get_version $PYTHON3`"
@@ -115,12 +93,11 @@ function python_exe() {
 }
 
 function python_init() {
-    local cache_dir="$HOME/.cache/josh"
-    local cache_file="$cache_dir/python-executive"
+    local cache_file="$JOSH_CACHE_DIR/python-executive"
 
     local result="`cat $cache_file 2>/dev/null`"
     if [ ! "$result" ] || [ ! -f "$result" ] || [ ! -f "$cache_file" ] || [ "`find $cache_file -mmin +1440 2>/dev/null | grep $cache_file`" ]; then
-        [ ! -d "$cache_dir" ] && mkdir -p "$cache_dir"
+        [ ! -d "$JOSH_CACHE_DIR" ] && mkdir -p "$JOSH_CACHE_DIR"
 
         python_exe
         [ $? -eq 0 ] && echo "$PYTHON3" > "$cache_file"
@@ -137,12 +114,11 @@ function python_init() {
 }
 
 function pip_dir() {
-    local cache_dir="$HOME/.cache/josh"
-    local cache_file="$cache_dir/pip-directory"
+    local cache_file="$JOSH_CACHE_DIR/pip-directory"
 
     local result="`cat $cache_file 2>/dev/null`"
     if [ ! -d "$result" ] || [ "`find $cache_file -mmin +1440 2>/dev/null | grep $cache_file`" ]; then
-        [ ! -d "$cache_dir" ] && mkdir -p "$cache_dir"
+        [ ! -d "$JOSH_CACHE_DIR" ] && mkdir -p "$JOSH_CACHE_DIR"
 
         local local_bin="`$PYTHON3 -c 'from site import USER_BASE as base; print(base)'`/bin"
         [ ! -d "$local_bin" ] && mkdir -p "$local_bin"
@@ -162,22 +138,21 @@ function pip_dir() {
 }
 
 function pip_init() {
-    set_defaults
     python_init
     if [ ! -f "$PYTHON3" ]; then
         return 1
     fi
 
-    export PIP_DIR="`pip_dir`"
+    PIP_DIR="`pip_dir`"
     if [ ! -d "$PIP_DIR" ]; then
         echo " - fatal: PIP_DIR=\`$PIP_DIR\`"
         return 1
     fi
 
-    export PIP_EXE="$PIP_DIR/pip"
+    export JOSH_PIP="$PIP_DIR/pip"
     export PATH="$PIP_DIR:$PATH"
 
-    if [ ! -f "$PIP_EXE" ]; then
+    if [ ! -f "$JOSH_PIP" ]; then
         [ ! -d "$PIP_DIR" ] && mkdir -p "$PIP_DIR"
         url="https://bootstrap.pypa.io/get-pip.py"
         local pip_file="/tmp/get-pip.py"
@@ -200,8 +175,8 @@ function pip_init() {
             return 1
         fi
 
-        if [ ! -f "$PIP_EXE" ]; then
-            echo " - fatal: pip isn't installed ($PIP_EXE)"
+        if [ ! -f "$JOSH_PIP" ]; then
+            echo " - fatal: pip isn't installed ($JOSH_PIP)"
             return 255
         fi
     fi
@@ -216,8 +191,8 @@ function pip_deploy() {
     fi
 
     pip_init
-    if [ ! -x "$PIP_EXE" ]; then
-        echo " - fatal: pip executive $PIP_EXE isn't found!"
+    if [ ! -x "$JOSH_PIP" ]; then
+        echo " - fatal: pip executive $JOSH_PIP isn't found!"
         return 2
     fi
 
@@ -233,7 +208,7 @@ function pip_deploy() {
 
     local retval=0
     for line in $@; do
-        $SHELL -c "PIP_REQUIRE_VIRTUALENV=false $PIP_EXE install --disable-pip-version-check --no-input --no-python-version-warning --no-warn-conflicts --no-warn-script-location --user --upgrade --upgrade-strategy=eager $line"
+        $SHELL -c "PIP_REQUIRE_VIRTUALENV=false $JOSH_PIP install --disable-pip-version-check --no-input --no-python-version-warning --no-warn-conflicts --no-warn-script-location --user --upgrade --upgrade-strategy=eager $line"
         [ "$?" -gt 0 ] && local retval=1
     done
 

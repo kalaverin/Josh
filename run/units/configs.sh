@@ -1,32 +1,24 @@
-#!/bin/sh
+#!/bin/zsh
 
-if [ ! "$SOURCE_ROOT" ]; then
-    if [ ! -f "`which -p realpath`" ]; then
-        export SOURCE_ROOT="`dirname $0`/../../"
+if [[ -n ${(M)zsh_eval_context:#file} ]]; then
+    if [ -z "$JOSH" ] || [ -z "$JOSH_BASE" ]; then
+        source "`dirname $0`/../boot.sh"
+    fi
+
+    CONFIG_DIR="$HOME/.config"
+    [ ! -d "$CONFIG_DIR" ] && mkdir -p "$CONFIG_DIR"
+
+    if [ -n "$JOSH_DEST" ]; then
+        BASE="$JOSH_BASE"
+        if [ -z "$CONFIG_ROOT" ]; then
+            echo " + copy template configs to \`$CONFIG_DIR\`"
+        fi
     else
-        export SOURCE_ROOT=$(sh -c "realpath `dirname $0`/../../")
-    fi
-
-    if [ ! -d "$SOURCE_ROOT" ]; then
-        echo " - fatal: source root $SOURCE_ROOT isn't correctly defined"
-    else
-        echo " + init from $SOURCE_ROOT"
-        . $SOURCE_ROOT/run/init.sh
+        BASE="$JOSH"
     fi
 fi
 
-if [ ! "$REAL" ]; then
-    echo " - fatal: init failed, REAL empty"
-    return 255
-fi
-
-if [ ! "$CONFIG_DIR" ]; then
-    export CONFIG_DIR="$REAL/.config"
-    if [ ! -d "$CONFIG_DIR" ]; then
-        echo " - fatal: init failed, CONFIG_DIR must me created when call not in deploy context"
-        return 255
-    fi
-fi
+CONFIG_ROOT="$BASE/usr/share"
 
 function backup_file() {
     if [ -f "$1" ]; then
@@ -65,10 +57,10 @@ function copy_config() {
 }
 
 function config_git() {
-    copy_config "$SOURCE_ROOT/usr/share/.gitignore" "$REAL/.gitignore"
+    copy_config "$BASE/usr/share/.gitignore" "$HOME/.gitignore"
 
     if [ ! "`git config --global core.pager | grep -P '^(delta)'`" ]; then
-        backup_file "$REAL/.gitconfig" && \
+        backup_file "$HOME/.gitconfig" && \
         git config --global color.branch auto && \
         git config --global color.decorate auto && \
         git config --global color.diff auto && \
@@ -82,7 +74,7 @@ function config_git() {
     fi
 
     if [ ! "`git config --global sequence.editor`" ] && [ -f "`which -p interactive-rebase-tool`" ]; then
-        backup_file "$REAL/.gitconfig" && \
+        backup_file "$HOME/.gitconfig" && \
         git config --global sequence.editor interactive-rebase-tool
     fi
 
@@ -90,34 +82,32 @@ function config_git() {
 }
 
 function nano_syntax_compile() {
-    if [ ! -f "$REAL/.nanorc" ]; then
+    if [ ! -f "$HOME/.nanorc" ]; then
         # https://github.com/scopatz/nanorc
 
         if [ -d /usr/share/nano/ ]; then
             # linux
-            find /usr/share/nano/ -iname "*.nanorc" -exec echo include {} \; >> $REAL/.nanorc
+            find /usr/share/nano/ -iname "*.nanorc" -exec echo include {} \; >> $HOME/.nanorc
 
         elif [ -d /usr/local/share/nano/ ]; then
             # freebsd
-            find /usr/local/share/nano/ -iname "*.nanorc" -exec echo include {} \; >> $REAL/.nanorc
+            find /usr/local/share/nano/ -iname "*.nanorc" -exec echo include {} \; >> $HOME/.nanorc
 
         fi
-        [ -f "$REAL/.nanorc" ] && echo " + nano syntax highlighting generated to $REAL/.nanorc ok"
+        [ -f "$HOME/.nanorc" ] && echo " + nano syntax highlighting generated to $HOME/.nanorc ok"
     fi
     return 0
 }
 
 function zero_configuration() {
-    local CONFIG_ROOT="$SOURCE_ROOT/usr/share"
-
     config_git
     nano_syntax_compile
 
-    copy_config "$CONFIG_ROOT/cargo.toml" "$REAL/.cargo/config.toml"
-    copy_config "$CONFIG_ROOT/nodeenv.conf" "$REAL/.nodeenvrc"
+    copy_config "$CONFIG_ROOT/cargo.toml" "$HOME/.cargo/config.toml"
+    copy_config "$CONFIG_ROOT/nodeenv.conf" "$HOME/.nodeenvrc"
     copy_config "$CONFIG_ROOT/pip.conf" "$CONFIG_DIR/pip/pip.conf"
     copy_config "$CONFIG_ROOT/starship.toml" "$CONFIG_DIR/starship.toml"
-    copy_config "$CONFIG_ROOT/mycli.conf" "$REAL/.myclirc"
+    copy_config "$CONFIG_ROOT/mycli.conf" "$HOME/.myclirc"
     copy_config "$CONFIG_ROOT/pgcli.conf" "$CONFIG_DIR/pgcli/config"
-    copy_config "$CONFIG_ROOT/ondir.rc" "$REAL/.ondirrc"
+    copy_config "$CONFIG_ROOT/ondir.rc" "$HOME/.ondirrc"
 }

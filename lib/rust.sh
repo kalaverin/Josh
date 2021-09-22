@@ -1,4 +1,24 @@
-#!/bin/sh
+#!/bin/zsh
+
+if [[ -n ${(M)zsh_eval_context:#file} ]]; then
+    if [ -z "$HTTP_GET" ] || [ -z "$JOSH" ] || [ -z "$JOSH_BASE" ]; then
+        source "`dirname $0`/../run/boot.sh"
+    fi
+
+    CARGO_BINARIES="$HOME/.cargo/bin"
+    [ ! -d "$CARGO_BINARIES" ] && mkdir -p "$CARGO_BINARIES"
+
+    if [ ! -d "$CARGO_BINARIES" ]; then
+        mkdir -p "$CARGO_BINARIES"
+        echo " * make Cargo goods directory \`$CARGO_BINARIES\`"
+    fi
+
+    if [ -n "$JOSH_DEST" ]; then
+        BASE="$JOSH_BASE"
+    else
+        BASE="$JOSH"
+    fi
+fi
 
 CARGO_REQ_PACKAGES=(
     bat            # modern replace for cat with syntax highlight
@@ -158,85 +178,49 @@ CARGO_OPT_PACKAGES=(
     quickdash # hasher
 )
 
-function set_defaults() {
-    if [ "$JOSH" ] && [ -d "$JOSH" ]; then
-        export SOURCE_ROOT="`realpath $JOSH`"
-
-    elif [ ! "$SOURCE_ROOT" ]; then
-        if [ ! -f "`which -p realpath`" ]; then
-            export SOURCE_ROOT="`dirname $0`/../"
-        else
-            export SOURCE_ROOT=$(sh -c "realpath `dirname $0`/../")
-        fi
-
-        if [ ! -d "$SOURCE_ROOT" ]; then
-            echo " - fatal: source root $SOURCE_ROOT isn't correctly defined"
-        else
-            echo " + init from $SOURCE_ROOT"
-            . $SOURCE_ROOT/run/init.sh
-        fi
-    fi
-
-    if [ ! "$REAL" ]; then
-        echo " - fatal: init failed, REAL empty"
-        return 255
-    fi
-    if [ ! "$HTTP_GET" ]; then
-        echo " - fatal: init failed, HTTP_GET empty"
-        return 255
-    fi
-    return 0
-}
+CARGO_BIN="$CARGO_BINARIES/cargo"
 
 function cargo_init() {
-    set_defaults
+    local cache_exe="$CARGO_BINARIES/sccache"
 
-    export CARGO_DIR="$REAL/.cargo/bin"
-    [ ! -d "$CARGO_DIR" ] && mkdir -p "$CARGO_DIR"
-    export PATH="$CARGO_DIR:$PATH"
-
-    local CACHE_EXE="$CARGO_DIR/sccache"
-    export CARGO_EXE="$CARGO_DIR/cargo"
-
-    if [ ! -f "$CARGO_EXE" ]; then
+    if [ ! -x "$CARGO_BIN" ]; then
         export RUSTC_WRAPPER=""
         unset RUSTC_WRAPPER
+
         url='https://sh.rustup.rs'
 
-        $SHELL -c "$HTTP_GET $url" | RUSTUP_HOME=~/.rustup CARGO_HOME=~/.cargo RUSTUP_INIT_SKIP_PATH_CHECK=yes $SHELL -s - --profile minimal --no-modify-path --quiet -y
-        if [ $? -gt 0 ]; then
-            $SHELL -c "$HTTP_GET $url" | RUSTUP_HOME=~/.rustup CARGO_HOME=~/.cargo RUSTUP_INIT_SKIP_PATH_CHECK=yes $SHELL -s - --profile minimal --no-modify-path --verbose -y
-            echo " - fatal: cargo deploy failed!"
-            return 1
-        fi
-        if [ ! -f "$CARGO_EXE" ]; then
-            echo " - fatal: cargo isn't installed ($CARGO_EXE)"
+        $SHELL -c "$HTTP_GET $url" | RUSTUP_HOME="$HOME/.rustup" CARGO_HOME="`dirname $CARGO_BINARIES`" RUSTUP_INIT_SKIP_PATH_CHECK=yes $SHELL -s - --profile minimal --no-modify-path --quiet -y
+
+        if [ $? -gt 0 ] || [ ! -x "$CARGO_BIN" ]; then
+            echo " - fatal: cargo \`$CARGO_BIN\` isn't installed"
             return 255
         fi
     fi
 
-    if [ ! -f "$CACHE_EXE" ]; then
-        $CARGO_EXE install sccache
-        if [ ! -f "$CACHE_EXE" ]; then
-            echo " - warning: sccache isn't compiled ($CACHE_EXE)"
+    source $HOME/.cargo/env
+
+    if [ ! -x "$cache_exe" ]; then
+        $CARGO_BIN install sccache
+        if [ ! -x "$cache_exe" ]; then
+            echo " - warning: sccache \`$cache_exe\` isn't compiled"
         fi
     fi
 
-    if [ -f "$CACHE_EXE" ]; then
-        export RUSTC_WRAPPER="$CACHE_EXE"
-    elif [ -f "`which -p sccache`" ]; then
-        export RUSTC_WRAPPER="`which -p sccache`"
+    if [ -x "$cache_exe" ]; then
+        export RUSTC_WRAPPER="$cache_exe"
+    elif [ -x "`lookup sccache`" ]; then
+        export RUSTC_WRAPPER="`lookup sccache`"
     else
         export RUSTC_WRAPPER=""
         unset RUSTC_WRAPPER
         echo " - warning: sccache doesn't exists"
     fi
 
-    local UPDATE_EXE="$CARGO_DIR/cargo-install-update"
-    if [ ! -f "$UPDATE_EXE" ]; then
-        $CARGO_EXE install cargo-update
-        if [ ! -f "$UPDATE_EXE" ]; then
-            echo " - warning: cargo-update isn't compiled ($UPDATE_EXE)"
+    local update_exe="$CARGO_BINARIES/cargo-install-update"
+    if [ ! -x "$update_exe" ]; then
+        $CARGO_BIN install cargo-update
+        if [ ! -x "$update_exe" ]; then
+            echo " - warning: cargo-update \`$update_exe\` isn't compiled"
         fi
     fi
 
@@ -245,16 +229,16 @@ function cargo_init() {
 
 function cargo_deploy() {
     cargo_init || return $?
-    if [ ! -f "$CARGO_EXE" ]; then
-        echo " - fatal: cargo exe $CARGO_EXE isn't found!"
+    if [ ! -x "$CARGO_BIN" ]; then
+        echo " - fatal: cargo exe \`$CARGO_BIN\` isn't found!"
         return 1
     fi
 
-    $SHELL -c "`realpath $CARGO_DIR/rustup` update"
+    $SHELL -c "`realpath $CARGO_BINARIES/rustup` update"
 
     local retval=0
     for pkg in $@; do
-        $CARGO_EXE install $pkg
+        $CARGO_BIN install $pkg
         if [ "$?" -gt 0 ]; then
             local retval=1
         fi
@@ -270,31 +254,31 @@ function cargo_extras() {
 
 function cargo_recompile() {
     cargo_init || return $?
-    if [ ! -f "$CARGO_EXE" ]; then
-        echo " - fatal: cargo exe $CARGO_EXE isn't found!"
+    if [ ! -x "$CARGO_BIN" ]; then
+        echo " - fatal: cargo exe $CARGO_BIN isn't found!"
         return 1
     fi
 
-    local packages="$($CARGO_EXE install --list | egrep '^[a-z0-9_-]+ v[0-9.]+:$' | cut -f1 -d' ' | sed -z 's:\n: :g')"
+    local packages="$($CARGO_BIN install --list | egrep '^[a-z0-9_-]+ v[0-9.]+:$' | cut -f1 -d' ' | sed -z 's:\n: :g')"
     if [ "$packages" ]; then
-        $SHELL -c "$CARGO_EXE install --force $packages"
+        $SHELL -c "$CARGO_BIN install --force $packages"
     fi
 }
 
 function cargo_update() {
     cargo_init || return $?
-    if [ ! -f "$CARGO_EXE" ]; then
-        echo " - fatal: cargo exe $CARGO_EXE isn't found!"
+    if [ ! -x "$CARGO_BIN" ]; then
+        echo " - fatal: cargo exe $CARGO_BIN isn't found!"
         return 1
     fi
 
-    local UPDATE_EXE="$CARGO_DIR/cargo-install-update"
-    if [ ! -f "$UPDATE_EXE" ]; then
-        echo " - fatal: cargo-update exe $UPDATE_EXE isn't found!"
+    local update_exe="$CARGO_BINARIES/cargo-install-update"
+    if [ ! -x "$update_exe" ]; then
+        echo " - fatal: cargo-update exe $update_exe isn't found!"
         return 1
     fi
 
-    $CARGO_EXE install-update -a
+    $CARGO_BIN install-update -a
     return "$?"
 }
 

@@ -1,20 +1,11 @@
 if [ ! "$JOSH" ]; then
-    local home="$HOME"
-    [ ! -d "$home" ] && local home="~"
-
-    local auto="$home/.josh/custom/plugins/josh"
-
-    . "$auto/run/init.sh"
-    if [ ! "$JOSH" ]; then
-        export JOSH="$HOME/.josh/custom/plugins/josh"
-        echo " - fatal: init from \`$auto\` failed, try \`$JOSH\`"
-    fi
+    source "$HOME/.josh/custom/plugins/josh/run/init.sh"
 fi
 
 path=(
     $ZSH/custom/bin
-    $REAL/.local/bin
-    $REAL/bin
+    $HOME/.local/bin
+    $HOME/bin
     /usr/local/bin
     /bin
     /sbin
@@ -25,7 +16,6 @@ path=(
     /etc/rc.d
     $path
 )
-source "$JOSH/src/compat.zsh"
 
 HISTSIZE=100000
 SAVEHIST=100000

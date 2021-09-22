@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/zsh
 
 REQUIRED_BINARIES=(
     cc
@@ -19,7 +19,7 @@ REQUIRED_LIBRARIES=(
 function check_executables() {
     local missing=""
     for exe in $@; do
-        if [ ! -f "`which $exe`" ]; then
+        if [ ! -x "`lookup $exe`" ]; then
             local missing="$missing $exe"
         fi
     done
@@ -37,11 +37,11 @@ function check_libraries() {
         $SHELL -c "pkg-config --libs --cflags $lib" 1&>/dev/null 2&>/dev/null
         if [ "$?" -gt 0 ]; then
             if [ "$lib" = "openssl" ]; then
-                if [ "$OS_TYPE" = "MAC" ]; then
+                if [ "$OSTYPE" = "MAC" ]; then
                     local lookup_path="/usr/local/opt/"
-                elif [ "$OS_TYPE" = "LINUX" ]; then
+                elif [ "$OSTYPE" = "LINUX" ]; then
                     local lookup_path="/usr/lib/"
-                elif [ "$OS_TYPE" = "BSD" ]; then
+                elif [ "$OSTYPE" = "BSD" ]; then
                     local lookup_path="/usr/local/"
                 else
                     local missing="$missing $lib"
@@ -80,7 +80,7 @@ function check_libraries() {
 
 
 function version_not_compatible() {
-    local grep=${JOSH_GREP:-"`which -p grep`"}
+    local grep=${JOSH_GREP:-"`lookup grep`"}
     if [ "$1" != "$2" ]; then
         local choice=$(sh -c "printf '%s\n%s\n' "$1" "$2" | sort --version-sort | tail -n 1")
         [ $(sh -c "printf '%s' "$choice" | $grep -Pv '^($2)$'") ] && return 0
@@ -92,7 +92,7 @@ function version_not_compatible() {
 function check_compliance() {
     if [ -n "$(uname | grep -i freebsd)" ]; then
         echo " + os: freebsd `uname -srv`"
-        export OS_TYPE="BSD"
+        export OSTYPE="BSD"
 
         local cmd="sudo pkg install -y"
         local pkg="zsh git coreutils gnugrep gnuls gsed jq openssl pkgconf pv python39"
@@ -107,9 +107,9 @@ function check_compliance() {
 
     elif [ -n "$(uname | grep -i darwin)" ]; then
         echo " + os: macos `uname -srv`"
-        export OS_TYPE="MAC"
+        export OSTYPE="MAC"
 
-        if [ ! -f "`which -p brew`" ]; then
+        if [ ! -x "`lookup brew`" ]; then
             echo ' - brew for MacOS strictly required, just run: $SHELL -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"'
         fi
 
@@ -126,9 +126,9 @@ function check_compliance() {
 
     elif [ -n "$(uname -v | grep -Pi '(debian|ubuntu)')" ]; then
         echo " + os: debian-based `uname -srv`"
-        export OS_TYPE="LINUX"
+        export OSTYPE="LINUX"
 
-        [ -f "`which -p apt`" ] && local bin="apt" || local bin="apt-get"
+        [ -x "`lookup apt`" ] && local bin="apt" || local bin="apt-get"
         local cmd="(sudo $bin update --yes --quiet || true) && sudo $bin install --yes --quiet --no-remove"
         local pkg="zsh git jq pv clang make pkg-config python3 python3-distutils tree libssl-dev python-dev libpq-dev libevent-dev"
         REQURED_SYSTEM_BINARIES=(
@@ -137,15 +137,15 @@ function check_compliance() {
 
     elif [ -n "$(uname -srv | grep -i gentoo)" ]; then
         echo " + os: gentoo: `uname -srv`"
-        export OS_TYPE="LINUX"
+        export OSTYPE="LINUX"
 
     elif [ -n "$(uname | grep -i linux)" ]; then
         echo " - unknown linux: `uname -srv`"
-        export OS_TYPE="LINUX"
+        export OSTYPE="LINUX"
 
     else
         echo " - unknown os: `uname -srv`"
-        export OS_TYPE="UNKNOWN"
+        export OSTYPE="UNKNOWN"
     fi
 
     check_executables $REQUIRED_BINARIES $REQURED_SYSTEM_BINARIES && \
@@ -155,12 +155,12 @@ function check_compliance() {
         local msg=" - please, install required packages and try again"
         [ "$cmd" ] && local msg="$msg: $cmd $pkg"
         if [ ! "$JOSH_SKIP_REQUIREMENTS_CHECK" ]; then
-            echo "$msg" && return 0
+            echo "$msg" && return 1
         else
             echo "$msg"
         fi
     else
         echo " + all requirements exists: $REQUIRED_BINARIES $REQUIRED_LIBRARIES $REQURED_SYSTEM_BINARIES"
     fi
-    return 1
+    return 0
 }
