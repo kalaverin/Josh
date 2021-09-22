@@ -2,6 +2,7 @@
 
 if [[ -n ${(M)zsh_eval_context:#file} ]]; then
     [ -z "$HTTP_GET" ] && source "`dirname $0`/../boot.sh"
+    [ -z "$OMZ_PLUGIN_DIR" ] && source "`dirname $0`/oh-my-zsh.sh"
 
     BINARY_DEST="$HOME/.local/bin"
     [ ! -d "$BINARY_DEST" ] && mkdir -p "$BINARY_DEST"
@@ -20,8 +21,6 @@ function compile_ondir() {
     if [ -x "$BINARY_DEST/ondir" ]; then
         return 0
     fi
-
-    [ -z "$OMZ_PLUGIN_DIR" ] && source "`dirname $0`/oh-my-zsh.sh"
 
     if [ ! "$OMZ_PLUGIN_DIR" ]; then
         echo " - warning by ondir: plugins dir isn't detected, BINARY_DEST:\`$BINARY_DEST\`"
