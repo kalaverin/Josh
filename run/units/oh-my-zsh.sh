@@ -2,12 +2,18 @@
 
 if [[ -n ${(M)zsh_eval_context:#file} ]]; then
     [ -z "$HTTP_GET" ] && source "`dirname $0`/../boot.sh"
-    if [ -n "$JOSH_DEST" ] && [ -z "$OMZ_PLUGIN_DIR" ]; then
-        echo " + install oh-my-zsh to \`$JOSH_DEST\`"
+
+    if [ -n "$JOSH_DEST" ]; then
+        DEST="$JOSH_DEST"
+        if [ -z "$OMZ_PLUGIN_DIR" ]; then
+            echo " + install oh-my-zsh to \`$DEST\`"
+        fi
+    else
+        DEST="$JOSH"
     fi
 fi
 
-OMZ_PLUGIN_DIR="$JOSH_DEST/custom/plugins"
+OMZ_PLUGIN_DIR="$DEST/custom/plugins"
 PACKAGES=(
     "https://github.com/alecthomas/ondir.git $OMZ_PLUGIN_DIR/ondir"
     "https://github.com/b4b4r07/emoji-cli $OMZ_PLUGIN_DIR/emoji-cli"
