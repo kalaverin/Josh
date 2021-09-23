@@ -7,10 +7,11 @@ setopt hist_ignore_space
 setopt hist_ignore_all_dups
 setopt hist_verify
 setopt inc_append_history
-setopt share_history
+unsetopt sharehistory
 
 unsetopt beep
-unsetopt correct_all
 unsetopt correct
+unsetopt correct_all
+unsetopt interactive_comments
 
 zmodload zsh/terminfo

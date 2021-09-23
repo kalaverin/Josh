@@ -11,7 +11,7 @@ compctl -K __pip_completion pip
 
 # ———
 
-setopt extendedglob nomatch notify
+setopt extendedglob notify
 zstyle ':completion:*' completer _expand _complete _oldlist _ignored _approximate
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 zstyle ':completion:*' use-compctl false
