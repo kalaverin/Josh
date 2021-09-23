@@ -125,7 +125,7 @@ else
             prepare_and_deploy && \
             replace_existing_installation
 
-            cd "$HOME" && exec zsh
+            builtin cd "$HOME" && exec zsh
         fi
     else
         if [ -z "$HTTP_GET" ]; then

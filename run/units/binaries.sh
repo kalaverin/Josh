@@ -87,7 +87,7 @@ function deploy_micro() {
 
         local cwd="`pwd`"
         echo " + deploy micro: $BINARY_DEST/micro"
-        cd "$BINARY_DEST" && $SHELL -c "$HTTP_GET $url | $SHELL"
+        builtin cd "$BINARY_DEST" && $SHELL -c "$HTTP_GET $url | $SHELL"
 
         [ $? -gt 0 ] && echo " + warning: failed micro $BINARY_DEST/micro"
         $SHELL -c "$BINARY_DEST/micro -plugin install fzf wc detectindent bounce editorconfig quickfix"
