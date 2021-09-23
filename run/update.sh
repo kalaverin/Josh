@@ -53,6 +53,9 @@ function pull_update() {
         echo " + pull \`$target_branch\` to \`$SOURCE_ROOT\`"
 
         git pull --ff-only --no-edit --no-commit origin "$target_branch"
+        if [ -x "`which -p git-warp-time`" ]; then
+            git-warp-time
+        fi
         local retval="$?"
     fi
 
