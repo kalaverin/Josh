@@ -8,7 +8,7 @@ CARGO_REQ_PACKAGES=(
     fd-find        # fd, fast replace for find for humans
     git-delta      # fast replace for git delta with steroids
     git-interactive-rebase-tool
-    git-warp-time    # set mtime to last change time from git
+    # git-warp-time  # set mtime to last change time from git - unstable, temporary disable
     lsd            # another ls replacement tool
     mdcat          # Markdown files rendered viewer
     petname        # generate human readable strings
