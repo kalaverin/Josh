@@ -49,6 +49,8 @@ fi
 [ -f "`which -p sccache`" ] && export RUSTC_WRAPPER="`which -p sccache`"
 [ -f "`which -p vivid`" ] && export LS_COLORS="`vivid generate ${THEME_LS:-solarized-dark}`"
 
+export THEFUCK_EXCLUDE_RULES="fix_file"
+
 EMOJI_CLI_KEYBIND="\eo"
 
 ZSH_HIGHLIGHT_HIGHLIGHTERS+=brackets
