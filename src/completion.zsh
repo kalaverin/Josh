@@ -42,3 +42,7 @@ fi
 if [ -f "`which -p scotty`" ]; then
     eval "$(scotty init zsh)"
 fi
+
+if [ -f "`which -p fuck`" ]; then
+    eval $(thefuck --alias --enable-experimental-instant-mode)
+fi

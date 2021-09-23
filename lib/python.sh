@@ -8,6 +8,7 @@ PIP_REQ_PACKAGES=(
     pipdeptree # simple, but powerful tool to manage python requirements
     setuptools
     sshuttle   # swiss knife for ssh tunneling & management
+    thefuck    # misspelling everyday helper
     virtualenv # virtual environments for python packaging
     wheel
 )
