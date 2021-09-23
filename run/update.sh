@@ -54,7 +54,7 @@ function pull_update() {
 
         git pull --ff-only --no-edit --no-commit origin "$target_branch"
         if [ -x "`which -p git-warp-time`" ]; then
-            git-warp-time
+            git-warp-time --quiet
         fi
         local retval="$?"
     fi
