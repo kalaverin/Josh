@@ -28,6 +28,7 @@ CARGO_REQ_PACKAGES=(
     fd-find        # fd, fast replace for find for humans
     git-delta      # fast replace for git delta with steroids
     git-interactive-rebase-tool
+    git-warp-time    # set mtime to last change time from git
     lsd            # another ls replacement tool
     mdcat          # Markdown files rendered viewer
     petname        # generate human readable strings
@@ -86,7 +87,6 @@ CARGO_OPT_PACKAGES=(
     ytop             # simple htop
     # coreutils        # rust reimplementation for GNU tools
     watchexec-cli    # watchdog for filesystem and runs callback on hit
-    git-warp-time    # set mtime to last change time from git
     gip     # show my ip
     genact  # console activity generator
     prose   # reformat text to width

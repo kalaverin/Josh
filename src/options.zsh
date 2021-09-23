@@ -8,7 +8,6 @@ setopt hist_ignore_all_dups
 setopt hist_verify
 setopt inc_append_history
 setopt share_history
-setopt IGNORE_EOF
 
 unsetopt beep
 unsetopt correct_all
