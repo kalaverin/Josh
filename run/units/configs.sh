@@ -40,7 +40,7 @@ function backup_file() {
 
 function copy_config() {
     local dst="$2"
-    if [ -f "$dst" ] && [ ! "$JOSH_RENEW_CONFIGS" ]; then
+    if [ -f "$dst" ] && [ ! "$JOSH_RENEW_CONFIGS" ] && [ ! "$JOSH_FORCE_CONFIGS" ]; then
         return 0
     fi
 
@@ -60,7 +60,11 @@ function copy_config() {
     [ -f "$dst" ] && backup_file "$dst" && unlink "$dst"
     [ ! -d "`dirname $dst`" ] && mkdir -p "`dirname $dst`";
 
-    echo " + ${3:-"copy: $src -> $dst"}" && cp -n "$src" "$dst"
+    if [ "$JOSH_RENEW_CONFIGS" ]; then
+        echo " + ${3:-"renew: $src -> $dst"}" && cp -nu "$src" "$dst"
+    else
+        echo " + ${3:-"copy: $src -> $dst"}" && cp -n "$src" "$dst"
+    fi
     return $?
 }
 
