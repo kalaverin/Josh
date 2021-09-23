@@ -305,7 +305,7 @@ zle -N visual_warp_chdir
 
 insert_command() {
     local query="`echo "$BUFFER" | sd '(\s+)' ' ' | sd '(^\s+|\s+$)' ''`"
-    local result=$(cat $HISTFILE | grep -PIs '^(: \d+:\d+;)' | sd ': \d+:\d+;' '' | grep -Pv '^\s+' | runiq - | awk '{arr[i++]=$0} END {while (i>0) print arr[--i] }' | sed 1d | fzf \
+    local result="$(cat $HISTFILE | grep -PIs '^(: \d+:\d+;)' | sd ': \d+:\d+;' '' | grep -Pv '^\s+' | runiq - | awk '{arr[i++]=$0} END {while (i>0) print arr[--i] }' | sed 1d | fzf \
         --ansi --extended --info='inline' \
         --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
         --tiebreak=index --jump-labels="$FZF_JUMPS" \
@@ -325,7 +325,7 @@ insert_command() {
         --reverse --min-height='11' --height='11' \
         --prompt="run >  " \
         -i --select-1 --filepath-word \
-    )
+    )"
 
     if [ "$result" ]; then
         LBUFFER="$result"
