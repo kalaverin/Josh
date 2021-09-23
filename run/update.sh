@@ -49,7 +49,6 @@ function pull_update() {
         if [ "$target_branch" != "$local_branch" ]; then
             . "usr/units/git.zsh" && \
             git_checkout_branch "$target_branch" || return 1
-            exec zsh
         fi
         echo " + pull \`$target_branch\` to \`$SOURCE_ROOT\`"
 
