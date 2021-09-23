@@ -76,7 +76,9 @@ function get_realhome() {
 if [ -z "$JOSH" ]; then
     home="`get_realhome`"
     if [ -x "$home" ] && [ ! "$home" = "$HOME" ]; then
-        echo " * set HOME:\`$HOME\` -> \`$home\`"
+        if [ ! "`realpath $home`" = "`realpath $HOME`" ]; then
+            echo " * set HOME:\`$HOME\` -> \`$home\`"
+        fi
         export HOME="$home"
     fi
 
