@@ -76,8 +76,8 @@ function get_realhome() {
 if [ -z "$JOSH" ]; then
     home="`get_realhome`"
     if [ -x "$home" ] && [ ! "$home" = "$HOME" ]; then
+        echo " * set HOME:\`$HOME\` -> \`$home\`"
         export HOME="$home"
-        echo " * set HOME:\`$HOME\`"
     fi
 
     export ZSH="$HOME/$JOSH_SUBDIR"
