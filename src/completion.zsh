@@ -44,5 +44,5 @@ if [ -f "`which -p scotty`" ]; then
 fi
 
 if [ -f "`which -p fuck`" ]; then
-    eval $(thefuck --alias --enable-experimental-instant-mode)
+    eval $(thefuck --alias)
 fi
