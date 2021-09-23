@@ -1,4 +1,4 @@
-add_newline = true
+add_newline = false
 
 [aws]
 format = ' @[$symbol($profile )(\($region\) )(\[$duration\])]($style)'
