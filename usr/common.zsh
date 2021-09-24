@@ -571,7 +571,7 @@ zle -N sudoize
 josh_update() {
     local cwd="`pwd`"
     josh_pull $@ && \
-    . "$JOSH/run/update.sh" && post_update $@
+    source "$JOSH/run/update.sh" && post_update $@
     local retval="$?"
     builtin cd "$cwd"
     exec zsh
@@ -580,7 +580,7 @@ josh_update() {
 
 josh_pull() {
     local cwd="`pwd`"
-    . "$JOSH/run/update.sh" && pull_update $@
+    source "$JOSH/run/update.sh" && pull_update $@
     local retval="$?"
     builtin cd "$cwd"
     return $retval
@@ -606,13 +606,21 @@ josh_bootstrap_command() {
 }
 
 josh_bootstrap_command_branched() {
-    local branch="${1:-"develop"}"
+    if [ -n "$1" ]; then
+        local branch="$1"
+
+    else
+        local branch="$(
+            git --git-dir="$JOSH/.git" --work-tree="$JOSH/" \
+            rev-parse --quiet --abbrev-ref HEAD 2>/dev/null)"
+    fi
+
     local url="https://raw.githubusercontent.com/YaakovTooth/Josh/$branch/run/boot.sh"
-    echo "export JOSH_RENEW_CONFIGS=1 && export JOSH_BRANCH="$branch" && (curl -fsSL $url || wget -qO - $url || fetch -qo - $url); unset JOSH_RENEW_CONFIGS && unset JOSH_BRANCH"
+    echo "export JOSH_RENEW_CONFIGS=1 && export JOSH_BRANCH="$branch" && ((curl -fsSL $url || wget -qO - $url || fetch -qo - $url) | zsh); unset JOSH_RENEW_CONFIGS && unset JOSH_BRANCH"
 }
 
 josh_extras() {
-    . "$JOSH/run/update.sh"
+    source "$JOSH/run/update.sh"
     deploy_extras
 }
 
