@@ -600,9 +600,14 @@ josh_reinstall() {
     return $retval
 }
 
-josh_urls() {
-    local url="kalaverin.ru/shell"
-    echo "((curl -fsSL $url || wget -qO - $url || fetch -qo - http://$url) | zsh) && zsh"
+josh_bootstrap_command() {
+    local url="${1:-"http://kalaverin.ru/shell}"}"
+    echo "((curl -fsSL $url || wget -qO - $url || fetch -qo - $url) | zsh) && zsh"
+}
+
+josh_bootstrap_command_branched() {
+    local branch="${1:-"develop"}"
+    echo "export JOSH_RENEW_CONFIGS=1 && export JOSH_BRANCH="$branch" && `josh_bootstrap_command "https://raw.githubusercontent.com/YaakovTooth/Josh/$branch/run/boot.sh"`"
 }
 
 josh_extras() {
