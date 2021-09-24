@@ -62,7 +62,6 @@ function replace_existing_installation() {
         [ $? -gt 0 ] && return 3
 
         builtin cd $HOME && echo ' + oh my josh! now, just run: exec zsh' 1>&2
-        source ~/.zshrc
     fi
 }
 
