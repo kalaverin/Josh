@@ -607,7 +607,8 @@ josh_bootstrap_command() {
 
 josh_bootstrap_command_branched() {
     local branch="${1:-"develop"}"
-    echo "export JOSH_RENEW_CONFIGS=1 && export JOSH_BRANCH="$branch" && `josh_bootstrap_command "https://raw.githubusercontent.com/YaakovTooth/Josh/$branch/run/boot.sh"`"
+    local url="https://raw.githubusercontent.com/YaakovTooth/Josh/$branch/run/boot.sh"
+    echo "export JOSH_RENEW_CONFIGS=1 && export JOSH_BRANCH="$branch" && (curl -fsSL $url || wget -qO - $url || fetch -qo - $url); unset JOSH_RENEW_CONFIGS && unset JOSH_BRANCH"
 }
 
 josh_extras() {
