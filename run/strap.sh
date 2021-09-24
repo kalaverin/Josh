@@ -19,7 +19,6 @@ function prepare_and_deploy() {
     fi
 
     echo " + pull last changes from \`$branch\` to \`$BASE\`" && \
-    builtin cd "$SOURCE_ROOT" && \
     git pull --ff-only --no-edit --no-commit origin "$branch" && \
     [ $? -gt 0 ] && return 2
 
