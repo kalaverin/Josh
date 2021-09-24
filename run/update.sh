@@ -34,15 +34,24 @@ function pull_update() {
             . "$JOSH/usr/units/git.zsh" && \
             git_checkout_branch "$target_branch" || return 1
         fi
-        echo " + pull \`$target_branch\` to \`$JOSH\`"
 
+        echo " + pull last changes from \`$target_branch\` to \`$cwd\`" && \
         git pull --ff-only --no-edit --no-commit origin "$target_branch"
-        if [ -x "`which -p git-warp-time`" ]; then
-            git-warp-time --quiet
-        fi
         local retval="$?"
-    fi
 
+        if [ $retval -eq 0 ]; then
+            git update-index --refresh &>>/dev/null
+            if [ "$?" -gt 0 ] || [ "`git status --porcelain=v1 &>>/dev/null | wc -l`" -gt 0 ]; then
+                echo " - fatal: \`$cwd\` is dirty, couldn't automatic fast forward"
+                local retval=2
+            elif [ -x "`which -p git-warp-time`" ]; then
+                git-warp-time --quiet
+            fi
+        else
+            echo " - fatal: \`$cwd\` is dirty, pull failed"
+            local retval=3
+        fi
+    fi
     builtin cd "$cwd" && return "$retval"
 }
 
