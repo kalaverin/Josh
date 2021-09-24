@@ -110,7 +110,7 @@ function check_compliance() {
         export JOSH_OS="MAC"
 
         if [ ! -x "`lookup brew`" ]; then
-            echo ' - brew for MacOS strictly required, just run: $SHELL -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"'
+            echo ' - brew for MacOS strictly required, just run: curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | zsh"'
         fi
 
         local cmd="brew update && brew install"
