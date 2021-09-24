@@ -17,3 +17,15 @@ source "$JOSH/usr/common.zsh"
 source "$JOSH/usr/units/git.zsh"
 source "$JOSH/usr/units/python.zsh"
 source "$JOSH/usr/units/files.zsh"
+
+local branch="`josh_branch`"
+if [ -z "$branch" ]; then
+    echo " - Josh branch couldn't detected, something wrong!"
+
+elif [ ! "$branch" = 'master' ]; then
+    local last_commit="$(
+        git --git-dir="$JOSH/.git" --work-tree="$JOSH/" \
+        git log -1 --format=%cr 2>/dev/null
+    )"
+    echo " + Josh \`$branch\` updated $last_commit"
+fi
