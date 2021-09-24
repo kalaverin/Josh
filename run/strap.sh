@@ -18,11 +18,16 @@ function prepare_and_deploy() {
         return 1
     fi
 
-    echo " + pull last changes from \`$branch\`" && \
+    echo " + pull last changes from \`$branch\` to \`$BASE\`" && \
     builtin cd "$SOURCE_ROOT" && \
     git pull --ff-only --no-edit --no-commit origin "$branch" && \
     [ $? -gt 0 ] && return 2
 
+    git update-index --refresh &>>/dev/null
+    if [ "$?" -gt 0 ] || [ "`git status --porcelain=v1 &>>/dev/null | wc -l`" -gt 0 ]; then
+        echo " - fatal: \`$BASE\` is dirty, couldn't automatic fast forward"
+        return 3
+    fi
 
     echo " + works in \``pwd`\`" && \
     source run/units/oh-my-zsh.sh && \
@@ -31,7 +36,7 @@ function prepare_and_deploy() {
     source lib/python.sh && \
     source lib/rust.sh
 
-    [ $? -gt 0 ] && return 3
+    [ $? -gt 0 ] && return 4
 
     pip_deploy $PIP_REQ_PACKAGES
     deploy_ohmyzsh && \
