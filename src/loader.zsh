@@ -25,7 +25,7 @@ if [ -z "$branch" ]; then
 elif [ ! "$branch" = 'master' ]; then
     local last_commit="$(
         git --git-dir="$JOSH/.git" --work-tree="$JOSH/" \
-        git log -1 --format=%cr 2>/dev/null
+        log -1 --format="at %h updated %cr" 2>/dev/null
     )"
-    echo " + Josh \`$branch\` updated $last_commit"
+    echo " + Josh $branch $last_commit."
 fi
