@@ -605,14 +605,19 @@ josh_bootstrap_command() {
     echo "((curl -fsSL $url || wget -qO - $url || fetch -qo - $url) | zsh) && zsh"
 }
 
+josh_branch() {
+    echo "$(
+        git --git-dir="$JOSH/.git" --work-tree="$JOSH/" \
+        rev-parse --quiet --abbrev-ref HEAD 2>/dev/null
+    )"
+}
+
 josh_bootstrap_command_branched() {
     if [ -n "$1" ]; then
         local branch="$1"
 
     else
-        local branch="$(
-            git --git-dir="$JOSH/.git" --work-tree="$JOSH/" \
-            rev-parse --quiet --abbrev-ref HEAD 2>/dev/null)"
+        local branch="`josh_branch`"
     fi
 
     local url="https://raw.githubusercontent.com/YaakovTooth/Josh/$branch/run/boot.sh"
