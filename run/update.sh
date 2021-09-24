@@ -14,43 +14,46 @@ function update_packages() {
 function pull_update() {
     local cwd="`pwd`" && builtin cd "$JOSH"
 
-    local retval=1
-    local local_branch="`git rev-parse --quiet --abbrev-ref HEAD`"
+    local detected="`git rev-parse --quiet --abbrev-ref HEAD`"
 
-    if [ "$local_branch" ] && [ ! "$local_branch" = "HEAD" ]; then
+    if [ "$detected" ] && [ ! "$detected" = "HEAD" ]; then
 
-        if [ -n "$JOSH_BRANCH" ]; then
-            local target_branch="$JOSH_BRANCH"
+        if [ -n "$1" ]; then
+            local branch="$1"
+        elif [ -n "$JOSH_BRANCH" ]; then
+            local branch="$JOSH_BRANCH"
         else
-            local target_branch="${1:-$local_branch}"
+            local branch="$detected"
         fi
 
-        if [ ! "$target_branch" ]; then
-            # if branch don't selected by hands - just use failover
-            local target_branch="master"
+        if [ "$branch" != "$detected" ]; then
+            . "$JOSH/usr/units/git.zsh" && git_checkout_branch "$branch"
+            local retval=$?
+        else
+            local retval=0
         fi
-
-        if [ "$target_branch" != "$local_branch" ]; then
-            . "$JOSH/usr/units/git.zsh" && \
-            git_checkout_branch "$target_branch" || return 1
-        fi
-
-        echo " + pull last changes from \`$target_branch\` to \`$cwd\`" && \
-        git pull --ff-only --no-edit --no-commit origin "$target_branch"
-        local retval="$?"
 
         if [ $retval -eq 0 ]; then
-            git update-index --refresh &>>/dev/null
-            if [ "$?" -gt 0 ] || [ "`git status --porcelain=v1 &>>/dev/null | wc -l`" -gt 0 ]; then
-                echo " - fatal: \`$cwd\` is dirty, couldn't automatic fast forward"
-                local retval=2
-            elif [ -x "`which -p git-warp-time`" ]; then
-                git-warp-time --quiet
+            echo " + pull last changes from \`$branch\` to \`$cwd\`" && \
+            git pull --ff-only --no-edit --no-commit origin "$branch"
+            local retval="$?"
+
+            if [ $retval -eq 0 ]; then
+                git update-index --refresh &>>/dev/null
+                if [ "$?" -gt 0 ] || [ "`git status --porcelain=v1 &>>/dev/null | wc -l`" -gt 0 ]; then
+                    echo " - fatal: \`$cwd\` is dirty, couldn't automatic fast forward"
+                    local retval=2
+                elif [ -x "`which -p git-warp-time`" ]; then
+                    git-warp-time --quiet
+                fi
+            else
+                echo " - fatal: \`$cwd\` is dirty, pull failed"
             fi
         else
-            echo " - fatal: \`$cwd\` is dirty, pull failed"
-            local retval=3
+            echo " - fatal: \`$cwd\` checkout failed"
         fi
+    else
+        local retval=1
     fi
     builtin cd "$cwd" && return "$retval"
 }
