@@ -124,34 +124,30 @@ function check_compliance() {
             /usr/local/bin/gsed
         )
 
-    elif [ -n "$(uname -v | grep -Pi '(debian|ubuntu)')" ]; then
-        echo " + os: debian-based `uname -srv`"
+
+    elif [ -n "$(uname -srv | grep -i linux)" ]; then
         export JOSH_OS="LINUX"
 
-        [ -x "`lookup apt`" ] && local bin="apt" || local bin="apt-get"
-        local cmd="(sudo $bin update --yes --quiet || true) && sudo $bin install --yes --quiet --no-remove"
-        local pkg="zsh git jq pv clang make pkg-config python3 python3-distutils tree libssl-dev python-dev libpq-dev libevent-dev"
-        REQURED_SYSTEM_BINARIES=(
-            apt
-        )
+        if [ -f "/etc/debian_version" ] || [ -n "$(uname -v | grep -Pi '(debian|ubuntu)')" ]; then
+            echo " + os: debian-based `uname -srv`"
+            [ -x "`lookup apt`" ] && local bin="apt" || local bin="apt-get"
 
-    elif [ -n "$(uname -srv | grep -i gentoo)" ]; then
-        echo " + os: gentoo: `uname -srv`"
-        export JOSH_OS="LINUX"
+            local cmd="(sudo $bin update --yes --quiet || true) && sudo $bin install --yes --quiet --no-remove"
+            local pkg="zsh git jq pv clang make build-essential pkg-config python3 python3-distutils tree libssl-dev python-dev libpq-dev libevent-dev"
+            REQURED_SYSTEM_BINARIES=(
+                apt
+            )
 
+        elif [ -n "$(uname -srv | grep -i gentoo)" ]; then
+            echo " + os: gentoo: `uname -srv`"
 
-    elif [ -n "$(uname -srv | grep -i microsoft)" ] && [ -n "$(uname | grep -i linux)" ]; then
-        [ -x "`lookup apt`" ] && local bin="apt" || local bin="apt-get"
-        export JOSH_OS="LINUX"
-        local cmd="for debian based just run: sudo $bin install --yes --quiet --no-remove"
-        local pkg="zsh git jq pv clang make pkg-config python3 python3-distutils tree libssl-dev python-dev libpq-dev libevent-dev"
+        elif [ -n "$(uname -srv | grep -i microsoft)" ]; then
+            echo " + os: unknown WSL: `uname -srv`"
 
-        if [ -n "$(uname -srv | grep -i microsoft)" ]; then
-            echo " + os: windows linux subsystem: `uname -srv`"
-        elif [ -n "$(uname | grep -i linux)" ]; then
+        else
             echo " - unknown linux: `uname -srv`"
-        fi
 
+        fi
     else
         echo " - unknown os: `uname -srv`"
         export JOSH_OS="UNKNOWN"
