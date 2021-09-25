@@ -4,7 +4,7 @@ source "$JOSH/lib/rust.sh" && rust_env
 export LANG="${LANG:-"en_US.UTF-8"}"
 export LANGUAGE="${LANGUAGE:-"en_US:en"}"
 export LC_ALL="${LC_ALL:-"en_US.UTF-8"}"
-if [ "$OS_TYPE" = "BSD" ]; then
+if [ "$JOSH_OS" = "BSD" ]; then
     export MM_CHARSET="${MM_CHARSET:-"en_US.UTF-8"}"
 fi
 
