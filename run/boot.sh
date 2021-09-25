@@ -86,7 +86,7 @@ if [ -z "$JOSH" ]; then
     export JOSH="$ZSH/custom/plugins/josh"
 fi
 
-if [[ ! "$SHELL" =~ "/zsh$" ]] && [ -z "$WSL_DISTRO_NAME" ]; then
+if [[ ! "$SHELL" =~ "/zsh$" ]]; then
     if [ -x "`lookup zsh`" ]; then
         echo " - fatal: execute installer via zsh from `lookup zsh`"
     else

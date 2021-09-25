@@ -139,7 +139,7 @@ function check_compliance() {
         echo " + os: gentoo: `uname -srv`"
         export JOSH_OS="LINUX"
 
-    elif [ -n "$(uname -srv | grep -i microsoft)" ] && [ -n "$WSL_DISTRO_NAME" ]; then
+    elif [ -n "$(uname -srv | grep -i microsoft)" ]; then
         echo " + os: windows ($WSL_DISTRO_NAME): `uname -srv`"
         export JOSH_OS="WSL"
 
