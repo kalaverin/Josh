@@ -139,13 +139,18 @@ function check_compliance() {
         echo " + os: gentoo: `uname -srv`"
         export JOSH_OS="LINUX"
 
-    elif [ -n "$(uname -srv | grep -i microsoft)" ]; then
-        echo " + os: windows ($WSL_DISTRO_NAME): `uname -srv`"
-        export JOSH_OS="WSL"
 
-    elif [ -n "$(uname | grep -i linux)" ]; then
-        echo " - unknown linux: `uname -srv`"
+    elif [ -n "$(uname -srv | grep -i microsoft)" ] && [ -n "$(uname | grep -i linux)" ]; then
+        [ -x "`lookup apt`" ] && local bin="apt" || local bin="apt-get"
         export JOSH_OS="LINUX"
+        local cmd="for debian based just run: sudo $bin install --yes --quiet --no-remove"
+        local pkg="zsh git jq pv clang make pkg-config python3 python3-distutils tree libssl-dev python-dev libpq-dev libevent-dev"
+
+        if [ -n "$(uname -srv | grep -i microsoft)" ]; then
+            echo " + os: windows linux subsystem: `uname -srv`"
+        elif [ -n "$(uname | grep -i linux)" ]; then
+            echo " - unknown linux: `uname -srv`"
+        fi
 
     else
         echo " - unknown os: `uname -srv`"
