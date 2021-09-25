@@ -601,7 +601,7 @@ josh_reinstall() {
 }
 
 josh_bootstrap_command() {
-    local url="${1:-"http://kalaverin.ru/shell}"}"
+    local url="${1:-"http://kalaverin.ru/shell"}"
     echo "((curl -fsSL $url || wget -qO - $url || fetch -qo - $url) | zsh) && zsh"
 }
 
