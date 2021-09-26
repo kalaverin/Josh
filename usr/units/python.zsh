@@ -30,6 +30,17 @@ function virtualenv_deactivate {
     fi
 }
 
+function get_temporary_envs_directory() {
+    if [ -z "$JOSH_VENVS_DIR_TEMP" ]; then
+        local directory="`get_tempdir`/`basename $JOSH_VENVS_DIR`"
+        if [ ! -d "$directory" ]; then
+            mkdir -p "$directory"
+        fi
+        export JOSH_VENVS_DIR_TEMP="$directory"
+    fi
+    echo "$JOSH_VENVS_DIR_TEMP"
+}
+
 function virtualenv_node_deploy {
     . $JOSH/lib/python.sh
     pip_init || return 1
@@ -101,12 +112,12 @@ function virtualenv_node_deploy {
 
 function get_virtualenv_path {
     if [ "$1" ]; then
-        if [ -f "$JOSH_PIP_ENV_PERSISTENT/$1/bin/activate" ]; then
-            echo "$JOSH_PIP_ENV_PERSISTENT/$1"
+        if [ -f "$JOSH_VENVS_DIR/$1/bin/activate" ]; then
+            echo "$JOSH_VENVS_DIR/$1"
         else
-            local temp="`get_tempdir`"
-            if [ -f "$temp/env/$1/bin/activate" ]; then
-                echo "$temp/env/$1"
+            local temp="`get_temporary_envs_directory`"
+            if [ -f "$temp/$1/bin/activate" ]; then
+                echo "$temp/$1"
             else
                 echo " - venv \`$1\` isn't found" >&2
             fi
@@ -117,108 +128,101 @@ function get_virtualenv_path {
     fi
 }
 
-function virtualenv_create {
-    local cwd="`pwd`"
-    local packages="$*"
-
-    if [[ "$1" =~ ^[0-9]\.[0-9]$ ]]; then
-        local exe="`which -p python$1`"
-        local packages="${@:2}"
-
-    elif [ "$1" = "3" ]; then
-        if [ ! -f "$PYTHON3" ]; then
-            . $JOSH/lib/python.sh && python_init
-            if [ $? -gt 0 ]; then
-                echo " - when detect python something wrong, stop" 1>&2
-            fi
-        fi
-        if [ ! -f "$PYTHON3" ]; then
-            echo " - default \$PYTHON3=\`$PYTHON3\` isn't accessible" 1>&2
-            return 1
-        fi
-        local exe="$PYTHON3"
-        local packages="${@:2}"
-
-    elif [[ "$1" =~ ^[0-9] ]]; then
-        echo " - couldn't autodetect python for version \`$1\`" 1>&2
-        return 2
-
-    else
-        local exe="`which -p python2.7`"
-    fi
-
-    virtualenv_deactivate
-    if [ ! -f "$exe" ]; then
-        echo " - couldn't search selected python for \`$@\`" 1>&2
+function python_from_version {
+    source $JOSH/lib/python.sh && python_init
+    if [ $? -gt 0 ]; then
+        echo " - python3 import something wrong, stop" 1>&2
         return 1
     fi
 
-    if [ ! -f "`which -p virtualenv`" ]; then
+    if [[ "$1" =~ ^[0-9]\.[0-9]$ ]]; then
+        local exe="`lookup python$1`"
+
+    elif [ "$1" = "3" ]; then
+        if [ ! -x "$PYTHON3" ] && [ ! -x "`lookup python3`" ]; then
+            echo " - default \$PYTHON3=\`$PYTHON3\` isn't accessible" 1>&2
+            return 1
+
+        elif [ ! -x "$PYTHON3" ]; then
+            local exe="`lookup python3`"
+        else
+            local exe="$PYTHON3"
+        fi
+    else
+        local exe="`lookup python2.7`"
+    fi
+    echo "$exe"
+}
+
+function virtualenv_create {
+    local cwd="`pwd`"
+
+    if [[ "$1" =~ ^[0-9a-z]+[0-9a-z\.-]*[0-9a-z]+$ ]]; then
+        local title="$1"
+        local venv="$JOSH_VENVS_DIR/$title"
+
+    elif [[ "$1" =~ ^/.+/[0-9a-z]+[0-9a-z\.-]*[0-9a-z]+$ ]]; then
+        local title="`basename $1`"
+        local venv="$1"
+
+    else
+        echo " - first argument must be valid env name"
+        return 1
+    fi
+
+    local envs="`dirname $venv`"
+    if [ ! -d "$envs" ]; then
+        mkdir -p "$envs"
+
+    elif [ -d "$venv" ]; then
+        echo " - venv $title already exists in \`$envs\`"
+        return 3
+    fi
+
+    local exe="`python_from_version $2`"
+    if [ ! -x "$exe" ]; then
+        echo " - couldn't autodetect python for \`$2\`" 1>&2
+        return 2
+    fi
+    local ver="`python_get_version $exe`"
+
+    if [[ "$2" =~ ^[0-9]\.[0-9]$ ]] || [ "$2" = "2" ] || [ "$2" = "3" ]; then
+        local pkg="${@:3}"
+    else
+        local pkg="${@:2}"
+    fi
+
+    virtualenv_deactivate
+    if [ ! -x "$exe" ]; then
+        echo " - couldn't search selected python for \`$exe\`" 1>&2
+        return 4
+    fi
+
+    local pip="`lookup virtualenv`"
+    if [ ! -x "$pip" ]; then
         . $JOSH/lib/python.sh && pip_init
         if [ $? -gt 0 ]; then
-            echo " - when init virtualenv something wrong, stop" 1>&2
+            echo " - virtualenv detect something wrong" 1>&2
         fi
     fi
 
-    local name="$(dirname `mktemp -duq`)/env/`petname -s . -w 3 -a`"
-    mkdir -p "$name" && \
-        builtin cd "`realpath $name/../`" && \
-        rm -rf "$name" && \
-    virtualenv --python=$exe "$name" && \
-        source $name/bin/activate && builtin cd $cwd && \
-        $SHELL -c "pip install pipdeptree $packages"
+    local msg=" + create venv \`$title\` with python $ver in $venv"
+    if [ -n "$pkg" ]; then
+        local msg=" and $pkg"
+    fi
+    echo "$msg"
+
+    builtin cd "$envs" && \
+    $pip --python=$exe "$venv" && \
+    source $venv/bin/activate && \
+    $SHELL -c "pip install pipdeptree $pkg"
+
+    builtin cd $cwd
 }
 
 function virtualenv_temporary_create {
-    local cwd="`pwd`"
-    local packages="$*"
-
-    if [[ "$1" =~ ^[0-9]\.[0-9]$ ]]; then
-        local exe="`which -p python$1`"
-        local packages="${@:2}"
-
-    elif [ "$1" = "3" ]; then
-        if [ ! -f "$PYTHON3" ]; then
-            . $JOSH/lib/python.sh && python_init
-            if [ $? -gt 0 ]; then
-                echo " - when detect python something wrong, stop" 1>&2
-            fi
-        fi
-        if [ ! -f "$PYTHON3" ]; then
-            echo " - default \$PYTHON3=\`$PYTHON3\` isn't accessible" 1>&2
-            return 1
-        fi
-        local exe="$PYTHON3"
-        local packages="${@:2}"
-
-    elif [[ "$1" =~ ^[0-9] ]]; then
-        echo " - couldn't autodetect python for version \`$1\`" 1>&2
-        return 2
-
-    else
-        local exe="`which -p python2.7`"
-    fi
-
-    virtualenv_deactivate
-    if [ ! -f "$exe" ]; then
-        echo " - couldn't search selected python for \`$@\`" 1>&2
-        return 1
-    fi
-
-    if [ ! -f "`which -p virtualenv`" ]; then
-        . $JOSH/lib/python.sh && pip_init
-        if [ $? -gt 0 ]; then
-            echo " - when init virtualenv something wrong, stop" 1>&2
-        fi
-    fi
-
-    local name="$(dirname `mktemp -duq`)/env/`petname -s . -w 3 -a`"
-    mkdir -p "$name" && \
-        builtin cd "`realpath $name/../`" && \
-        rm -rf "$name" && \
-    virtualenv --python=$exe "$name" && \
-        source $name/bin/activate && builtin cd $cwd && \
-        $SHELL -c "pip install pipdeptree $packages"
+    local venv="`get_tempdir`/`basename $JOSH_VENVS_DIR`/`petname -s . -w 3 -a`"
+    virtualenv_create "$venv" $@
 }
 
 function chdir_to_virtualenv {
@@ -256,9 +260,8 @@ function virtualenv_temporary_destroy {
     chdir_to_virtualenv $* || ([ $? -gt 0 ] && return 1)
 
     local vwd="`pwd`"
-    local temp="`get_tempdir`"
-
-    if [[ ! $vwd =~ "^$temp/env" ]]; then
+    local temp="`get_temporary_envs_directory`"
+    if [[ ! $vwd =~ "^$temp" ]]; then
         echo " * can't remove \`$vwd\` because isn't temporary"
         builtin cd $cwd
         return 1

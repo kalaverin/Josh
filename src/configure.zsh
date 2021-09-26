@@ -92,4 +92,4 @@ else
     LISTER_FILE="$PAGER_BIN --color always --tabs 4 --paging never" # for bat
 fi
 
-export JOSH_PIP_ENV_PERSISTENT="${JOSH_PIP_ENV_PERSISTENT:-"$HOME/.env"}"
+export JOSH_VENVS_DIR="${JOSH_VENVS_DIR:-"$HOME/envs"}"
