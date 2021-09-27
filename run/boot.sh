@@ -2,26 +2,49 @@
 
 JOSH_SUBDIR=".josh"
 
-function lookup() {
-    if [ ! "$which" ]; then
-        which="`which -p which 2>/dev/null`"
-        if [ "$?" -eq 0 ] && [ -x "$which" ]; then
-            # zsh internal which, we needs to
-            which="builtin which -p"
 
-        elif [ ! -x "$which" ]; then
-            which="`which which 2>/dev/null`"
+function lookup_in_hier() {
+    local order=(/bin /usr/bin /sbin /usr/sbin /usr/local/bin /usr/local/sbin)
+    for sub in $order; do
+        if [ -x "$sub/$1" ]; then
+            echo "$sub/$1"
+            break
+        fi
+    done
+}
+
+function lookup() {
+    echo "call which $1" >&2
+    echo "0 `builtin export | grep JOSH_WHICH | wc -l`" 1>&2
+    if [ ! "$JOSH_WHICH" ]; then
+        local result="`builtin which -p sh 2>/dev/null`"
+        if [ "$?" -eq 0 ] && [ -x "$result" ]; then
+            # zsh internal which, we needs to
+            export JOSH_WHICH="builtin which -p"
+            echo "1 `builtin export | grep JOSH_WHICH | wc -l`" 1>&2
+
+        elif [ ! -x "$result" ]; then
+            # builtin which don't works now
+            export JOSH_WHICH="`lookup_in_hier which`"
             if [ ! -x "$which" ]; then
-                echo " - warning: \`which\` required" 1>&2
-                which="which"
+                echo " - fatal: \`which\` required" >&2
+                export=JOSH_WHICH="which"
             fi
         fi
     fi
 
-    if [ "$which" ]; then
-        local cmd="$which $1"
+    echo "3 `builtin export | grep JOSH_WHICH | wc -l`" 1>&2
+    if [ "$JOSH_WHICH" ]; then
+        echo "4 `builtin export | grep JOSH_WHICH | wc -l`" 1>&2
+        local cmd="$JOSH_WHICH $1"
         local result="`eval ${cmd}`"
-        [ $? -eq 0 ] && [ -x "$result" ] && echo "$result"
+        if [ $? -eq 0 ] && [ -x "$result" ]; then
+            echo "$result"
+        else
+            echo " - fatal: \`which\` failed" >&2
+        fi
+    else
+        echo " - fatal: \`which\` not declared" >&2
     fi
 }
 
