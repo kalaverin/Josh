@@ -207,9 +207,9 @@ function pip_deploy() {
         }
     fi
 
-    local pip="PIP_REQUIRE_VIRTUALENV=false $JOSH_PIP install --disable-pip-version-check --no-input --no-python-version-warning --no-warn-conflicts --no-warn-script-location --user"
+    local pip="PIP_REQUIRE_VIRTUALENV=false $JOSH_PIP install --disable-pip-version-check --no-input --no-python-version-warning --no-warn-conflicts --no-warn-script-location --compile --user"
 
-    run_show "$pip --upgrade --upgrade-strategy=eager $@"
+    run_show "$pip --quiet --upgrade --upgrade-strategy=eager $@"
     local retval="$?"
     if [ "$retval" -gt 0 ]; then
         run_show "$pip --upgrade $@"
