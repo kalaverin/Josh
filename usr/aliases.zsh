@@ -85,7 +85,7 @@ if [ -f "`which -p wget`" ]; then
         wget --no-check-certificate -O/dev/null $*
     }
 fi
-if [ -f "`which -p ssg-agent`" ]; then
+if [ -f "`which -p ssh-agent`" ]; then
     function agent {
         eval `ssh-agent` && ssh-add
     }
