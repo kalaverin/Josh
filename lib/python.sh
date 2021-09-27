@@ -207,11 +207,14 @@ function pip_deploy() {
         }
     fi
 
-    local retval=0
-    for line in $@; do
-        $SHELL -c "PIP_REQUIRE_VIRTUALENV=false $JOSH_PIP install --disable-pip-version-check --no-input --no-python-version-warning --no-warn-conflicts --no-warn-script-location --user --upgrade --upgrade-strategy=eager $line"
-        [ "$?" -gt 0 ] && local retval=1
-    done
+    local pip="PIP_REQUIRE_VIRTUALENV=false $JOSH_PIP install --disable-pip-version-check --no-input --no-python-version-warning --no-warn-conflicts --no-warn-script-location --user"
+
+    run_show "$pip --upgrade --upgrade-strategy=eager $@"
+    local retval="$?"
+    if [ "$retval" -gt 0 ]; then
+        run_show "$pip --upgrade $@"
+        local retval="$?"
+    fi
 
     reactivate; return $retval
 }
