@@ -14,37 +14,12 @@ function lookup_in_hier() {
 }
 
 function lookup() {
-    echo "call which $1" >&2
-    echo "0 `builtin export | grep JOSH_WHICH | wc -l`" 1>&2
-    if [ ! "$JOSH_WHICH" ]; then
-        local result="`builtin which -p sh 2>/dev/null`"
-        if [ "$?" -eq 0 ] && [ -x "$result" ]; then
-            # zsh internal which, we needs to
-            export JOSH_WHICH="builtin which -p"
-            echo "1 `builtin export | grep JOSH_WHICH | wc -l`" 1>&2
-
-        elif [ ! -x "$result" ]; then
-            # builtin which don't works now
-            export JOSH_WHICH="`lookup_in_hier which`"
-            if [ ! -x "$which" ]; then
-                echo " - fatal: \`which\` required" >&2
-                export=JOSH_WHICH="which"
-            fi
-        fi
-    fi
-
-    echo "3 `builtin export | grep JOSH_WHICH | wc -l`" 1>&2
-    if [ "$JOSH_WHICH" ]; then
-        echo "4 `builtin export | grep JOSH_WHICH | wc -l`" 1>&2
-        local cmd="$JOSH_WHICH $1"
-        local result="`eval ${cmd}`"
-        if [ $? -eq 0 ] && [ -x "$result" ]; then
-            echo "$result"
-        else
-            echo " - fatal: \`which\` failed" >&2
-        fi
+    local result="`builtin which -p "$1" 2>/dev/null`"
+    if [ "$?" -eq 0 ] && [ -x "$result" ]; then
+        echo "$result"
     else
-        echo " - fatal: \`which\` not declared" >&2
+        echo " - fatal: failed: \"builtin which -p $1\"" >&2
+        return 1
     fi
 }
 
