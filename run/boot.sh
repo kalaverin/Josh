@@ -18,7 +18,10 @@ function lookup() {
     if [ "$?" -eq 0 ] && [ -x "$result" ]; then
         echo "$result"
     else
-        echo " - fatal: failed: \"builtin which -p $1\"" >&2
+        local result="`builtin which -p sh 2>/dev/null`"
+        if [ "$?" -gt 0 ] || [ ! -x "$result" ]; then
+            echo " - fatal: failed: \"builtin which -p $1\"" >&2
+        fi
         return 1
     fi
 }
