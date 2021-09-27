@@ -20,9 +20,18 @@ function lookup() {
     else
         local result="`builtin which -p sh 2>/dev/null`"
         if [ "$?" -gt 0 ] || [ ! -x "$result" ]; then
-            echo " - fatal: failed: \"builtin which -p $1\"" >&2
+            # builtin which fails - extraordinary
+            echo " - fatal: failed: \"builtin which -p sh\"" >&2
+            return 2
+        else
+            # fallback - just scan hardcoded PATH
+            local result="`lookup_in_hier "$1"`"
+            if [ "$?" -eq 0 ] && [ -x "$result" ]; then
+                echo "$result"
+            else
+                return 1
+            fi
         fi
-        return 1
     fi
 }
 
