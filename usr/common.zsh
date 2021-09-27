@@ -16,12 +16,12 @@ zle -N commit_text
 insert_directory() {
     # анализировать запрос и если есть слеш и такой каталог — то есть уже в нём
     if [ "$LBUFFER" ]; then
-        local pre=`echo "$LBUFFER" | grep -Po '([^\s]+)$'`
+        local pre=`echo "$LBUFFER" | ${JOSH_GREP:-'grep'} -Po '([^\s]+)$'`
     else
         local pre=""
     fi
     if [ "$RBUFFER" ]; then
-        local post=`echo "$RBUFFER" | grep -Po '^([^\s]+)'`
+        local post=`echo "$RBUFFER" | ${JOSH_GREP:-'grep'} -Po '^([^\s]+)'`
     else
         local post=""
     fi
@@ -87,12 +87,12 @@ zle -N insert_directory
 
 insert_endpoint() {
     if [ "$LBUFFER" ]; then
-        local pre=`echo "$LBUFFER" | grep -Po '([^\s]+)$'`
+        local pre=`echo "$LBUFFER" | ${JOSH_GREP:-'grep'} -Po '([^\s]+)$'`
     else
         local pre=""
     fi
     if [ "$RBUFFER" ]; then
-        local post=`echo "$RBUFFER" | grep -Po '^([^\s]+)'`
+        local post=`echo "$RBUFFER" | ${JOSH_GREP:-'grep'} -Po '^([^\s]+)'`
     else
         local post=""
     fi

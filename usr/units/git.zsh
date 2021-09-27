@@ -137,7 +137,7 @@ function sck() {
         echo " - task name needed" 1>&2
         return 1
     fi
-    local match=`echo "$1" | grep -Po '^([0-9])'`
+    local match=`echo "$1" | ${JOSH_GREP:-'grep'} -Po '^([0-9])'`
     if [ "$match" = "" ]; then
         local branch="$1"
     else
@@ -274,7 +274,7 @@ local GET_BRANCH='git rev-parse --quiet --abbrev-ref HEAD 2>/dev/null'
 git_current_branch() {
     local result="`$SHELL -c "$GET_BRANCH"`"
     if [ "$result" = "HEAD" ]; then
-        if [ ! "`git name-rev --name-only HEAD 2>&1 | grep -Pv '^(Could not get sha1)'`" ]; then
+        if [ ! "`git name-rev --name-only HEAD 2>&1 | ${JOSH_GREP:-'grep'} -Pv '^(Could not get sha1)'`" ]; then
             echo " - empty repository `git_root` without any commits?" >&2
             local result="`git symbolic-ref --short HEAD`"
         fi
@@ -423,7 +423,8 @@ git_auto_skip_or_continue() {
         fi
 
         # all files resolved and no more changes, then — continue
-        local files=$($SHELL -c "$LIST_TO_ADD | grep -Pv '^([AMD] )' | wc -l")
+        local ggrep="${JOSH_GREP:-'grep'}"
+        local files=$($SHELL -c "$LIST_TO_ADD | $ggrep -Pv '^([AMD] )' | wc -l")
         if [ "$files" -eq 0 ]; then
             run_show " git $state --continue"
             return 2
@@ -686,7 +687,7 @@ git_show_branch_file_commits() {
         local file="$2"
         local branch="$1"
 
-        local ext="$(echo "$file" | xargs -I% basename % | grep --color=never -Po '(?<=.\.)([^\.]+)$')"
+        local ext="$(echo "$file" | xargs -I% basename % | ${JOSH_GREP:-'grep'} --color=never -Po '(?<=.\.)([^\.]+)$')"
 
         local diff_view="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -l $SHELL -c $diff_file $file' | $DELTA --width $COLUMNS"
 
