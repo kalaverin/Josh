@@ -27,38 +27,38 @@ alias -g uri="$HTTP_GET"
 
 # ———
 
-[ -f "`which -p $JOSH_DELTA`" ] && alias delta="$JOSH_DELTA"
-[ -f "`which -p $JOSH_GREP`" ] && alias grep="$JOSH_GREP --line-buffered"
-[ -f "`which -p $JOSH_HTTP`" ] && alias http="$JOSH_HTTP --verify no --default-scheme http --follow --all --format-options json.indent:2 --compress --style ${THEME_HTTPIE:-gruvbox-dark}"
-[ -f "`which -p $JOSH_REALPATH`" ] && alias realpath="$JOSH_REALPATH"
-[ -f "`which -p $JOSH_SED`" ] && alias sed="$JOSH_SED"
+[ -x "`lookup $JOSH_DELTA`" ] && alias delta="$JOSH_DELTA"
+[ -x "`lookup $JOSH_GREP`" ] && alias grep="$JOSH_GREP --line-buffered"
+[ -x "`lookup $JOSH_HTTP`" ] && alias http="$JOSH_HTTP --verify no --default-scheme http --follow --all --format-options json.indent:2 --compress --style ${THEME_HTTPIE:-gruvbox-dark}"
+[ -x "`lookup $JOSH_REALPATH`" ] && alias realpath="$JOSH_REALPATH"
+[ -x "`lookup $JOSH_SED`" ] && alias sed="$JOSH_SED"
 
-[ -f "`which -p ag`" ] && alias ag='ag -C1 --noaffinity --path-to-ignore ~/.ignore --stats --smart-case --width 140'
-[ -f "`which -p bat`" ] && alias aa='bat'
-[ -f "`which -p git-hist`" ] && alias ghist='git-hist --beyond-last-line --emphasize-diff --full-hash'
-[ -f "`which -p lolcate`" ] && alias lc='lolcate'
-[ -f "`which -p lsd`" ] && alias ll='lsd -laAF --icon-theme unicode'
-[ -f "`which -p micro`" ] && alias mi='micro'
-[ -f "`which -p rsync`" ] && alias cpdir='rsync --archive --links --times'
+[ -x "`lookup ag`" ] && alias ag='ag -C1 --noaffinity --path-to-ignore ~/.ignore --stats --smart-case --width 140'
+[ -x "`lookup bat`" ] && alias aa='bat'
+[ -x "`lookup git-hist`" ] && alias ghist='git-hist --beyond-last-line --emphasize-diff --full-hash'
+[ -x "`lookup lolcate`" ] && alias lc='lolcate'
+[ -x "`lookup lsd`" ] && alias ll='lsd -laAF --icon-theme unicode'
+[ -x "`lookup micro`" ] && alias mi='micro'
+[ -x "`lookup rsync`" ] && alias cpdir='rsync --archive --links --times'
 
 # ———
 
-if [ -f "`which -p csview`" ]; then
+if [ -x "`lookup csview`" ]; then
     alias csv="csview --style Rounded"
     alias tsv="csv --tsv"
     alias ssv="csv --delimiter ';'"
 fi
-if [ -f "`which -p exa`" ]; then
+if [ -x "`lookup exa`" ]; then
     # --git-ignore is bugged
     alias l="exa -lFag --color=always --git --octal-permissions --group-directories-first"
     alias lt="l --sort time"
 fi
-if [ -f "`which -p rg`" ]; then
+if [ -x "`lookup rg`" ]; then
     local ripgrep_fast='--max-columns $COLUMNS --smart-case'
     local ripgrep_fine='--max-columns $COLUMNS --case-sensitive --fixed-strings --word-regexp'
     local ripgrep_interactive="--no-stats --text --context 1 --colors 'match:fg:yellow' --colors 'path:fg:red' --context-separator ''"
 
-    export JOSH_RIPGREP="`which -p rg`"
+    export JOSH_RIPGREP="`lookup rg`"
     export JOSH_RIPGREP_OPTS="--require-git --hidden --max-columns-preview --max-filesize=50K --ignore-file=`$JOSH_REALPATH --quiet ~/.gitignore`"
 
     alias rf="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS $ripgrep_interactive $ripgrep_fast"
@@ -67,17 +67,17 @@ if [ -f "`which -p rg`" ]; then
     alias rrs="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS $ripgrep_interactive $ripgrep_fine --sort path"
 fi
 
-if [ -f "`which -p tree`" ]; then
+if [ -x "`lookup tree`" ]; then
     lst() {
         tree -F -f -i | grep -v '[/]$' I $*
     }
 fi
-if [ -f "`which -p gpg`" ]; then
+if [ -x "`lookup gpg`" ]; then
     kimport() {
         gpg --recv-key $1 && gpg --export $1 | apt-key add -
     }
 fi
-if [ -f "`which -p wget`" ]; then
+if [ -x "`lookup wget`" ]; then
     function sget {
         wget --no-check-certificate -O- $* &> /dev/null
     }
@@ -85,12 +85,12 @@ if [ -f "`which -p wget`" ]; then
         wget --no-check-certificate -O/dev/null $*
     }
 fi
-if [ -f "`which -p ssh-agent`" ]; then
+if [ -x "`lookup ssh-agent`" ]; then
     function agent {
         eval `ssh-agent` && ssh-add
     }
 fi
-if [ -f "`which -p petname`" ]; then
+if [ -x "`lookup petname`" ]; then
     function mktp {
         local tempdir="$(dirname `mktemp -duq`)/pet/`petname -s . -w 3 -a`"
         mkdir -p "$tempdir" && cd "$tempdir"

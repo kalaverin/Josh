@@ -27,22 +27,22 @@ compinit -u # -u insecure!
 
 # ———
 
-if [ -f "`which -p broot`" ]; then
+if [ -x "`lookup broot`" ]; then
     eval "$(broot --print-shell-function zsh)"
 fi
 
-if [ -f "`which -p pip`" ]; then
+if [ -x "`lookup pip`" ]; then
     eval "$(pip completion --zsh)"
 fi
 
-if [ -f "`which -p starship`" ]; then
+if [ -x "`lookup starship`" ]; then
     eval "$(starship init zsh)"
 fi
 
-if [ -f "`which -p scotty`" ]; then
+if [ -x "`lookup scotty`" ]; then
     eval "$(scotty init zsh)"
 fi
 
-if [ -f "`which -p fuck`" ]; then
+if [ -x "`lookup fuck`" ]; then
     eval $(thefuck --alias)
 fi

@@ -16,27 +16,27 @@ local unified_path="$(echo "$PATH" | sd ':' '\n' | runiq - | xargs -n 1 realpath
 [ -x "`lookup http`" ] && export JOSH_HTTP="`lookup http`" || true
 [ -x "`lookup viu`" ] && export JOSH_VIU="`lookup viu`" || true
 
-if [ -f "$JOSH_BAT" ]; then
+if [ -x "$JOSH_BAT" ]; then
     export PAGER="$JOSH_BAT"
     export BAT_STYLE="numbers,changes"
     export BAT_THEME="${THEME_BAT:-gruvbox-dark}" # select: bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/any/file"
     unset THEME_BAT
 fi
 
-if [ -f "$JOSH_DELTA" ]; then
+if [ -x "$JOSH_DELTA" ]; then
     export DELTA="$JOSH_DELTA --commit-style='yellow ul' --commit-decoration-style='' --file-style='cyan ul' --file-decoration-style='' --hunk-style normal --zero-style='dim syntax' --24-bit-color='always' --minus-style='syntax #330000' --plus-style='syntax #002200' --file-modified-label='M' --file-removed-label='D' --file-added-label='A' --file-renamed-label='R' --line-numbers-left-format='{nm:^4}' --line-numbers-minus-style='#aa2222' --line-numbers-zero-style='#505055' --line-numbers-plus-style='#229922' --line-numbers --navigate --relative-paths"
     if [ "$JOSH_BAT" ]; then
         export DELTA="$DELTA --pager $JOSH_BAT"
     fi
 fi
 
-if [ -f "`which -p docker`" ]; then
+if [ -x "`lookup docker`" ]; then
     export DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1}
     export BUILDKIT_INLINE_CACHE=${BUILDKIT_INLINE_CACHE:-1}
     export COMPOSE_DOCKER_CLI_BUILD=${COMPOSE_DOCKER_CLI_BUILD:-1}
 fi
 
-if [ -f "`which -p fzf`" ]; then
+if [ -x "`lookup fzf`" ]; then
     export FZF_DEFAULT_OPTS="--ansi --extended"
     export FZF_DEFAULT_COMMAND='fd --type file --follow --hidden --color=always --exclude .git/ --exclude "*.pyc" --exclude node_modules/'
     export FZF_THEME="fg:#ebdbb2,hl:#fabd2f,fg+:#ebdbb2,bg+:#3c3836,hl+:#fabd2f,info:#83a598,prompt:#bdae93,spinner:#fabd2f,pointer:#83a598,marker:#fe8019,header:#665c54"
@@ -44,10 +44,10 @@ if [ -f "`which -p fzf`" ]; then
     unset THEME_FZF
 fi
 
-[ -f "`which -p micro`" ] && export EDITOR="`which -p micro`"
-[ -f "`which -p rip`" ] && export GRAVEYARD=${GRAVEYARD:-"$HOME/.trash"}
-[ -f "`which -p sccache`" ] && export RUSTC_WRAPPER="`which -p sccache`"
-[ -f "`which -p vivid`" ] && export LS_COLORS="`vivid generate ${THEME_LS:-solarized-dark}`"
+[ -x "`lookup micro`" ] && export EDITOR="`lookup micro`"
+[ -x "`lookup rip`" ] && export GRAVEYARD=${GRAVEYARD:-"$HOME/.trash"}
+[ -x "`lookup sccache`" ] && export RUSTC_WRAPPER="`lookup sccache`"
+[ -x "`lookup vivid`" ] && export LS_COLORS="`vivid generate ${THEME_LS:-solarized-dark}`"
 
 export THEFUCK_EXCLUDE_RULES="fix_file"
 
@@ -84,9 +84,12 @@ FORGIT_FZF_DEFAULT_OPTS="
     --height '80%'
 "
 
-PAGER_BIN=`which -p $PAGER`
-LISTER_LESS="`which -p less` -M"
-if [ ! -f $PAGER_BIN ]; then
+if [ -n "$PAGER" ] && [ -x "`lookup $PAGER`" ]; then
+    PAGER_BIN=`lookup $PAGER`
+fi
+
+LISTER_LESS="`lookup less` -M"
+if [ ! -x "$PAGER_BIN" ]; then
     LISTER_FILE="$LISTER_LESS -Nu"
 else
     LISTER_FILE="$PAGER_BIN --color always --tabs 4 --paging never" # for bat

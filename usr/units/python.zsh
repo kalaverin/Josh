@@ -55,8 +55,8 @@ function virtualenv_node_deploy {
     echo " + using venv: $venvname ($venv)"
     virtualenv_path_activate "$venv"
 
-    local pip="`which -p pip`"
-    if [ ! -f "$pip" ]; then
+    local pip="`lookup pip`"
+    if [ ! -x "$pip" ]; then
         echo " - fatal: pip in venv \`$VIRTUAL_ENV\` isn't found"
         return 2
     fi
@@ -67,8 +67,8 @@ function virtualenv_node_deploy {
         run_show "$pip install nodeenv" && virtualenv_path_activate "$venv"
     fi
 
-    local nodeenv="`which -p nodeenv`"
-    if [ ! -f "$nodeenv" ]; then
+    local nodeenv="`lookup nodeenv`"
+    if [ ! -x "$nodeenv" ]; then
         echo " - fatal: nodeenv in venv \`$VIRTUAL_ENV\` isn't found"
         return 3
     fi

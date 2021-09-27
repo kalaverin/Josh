@@ -43,7 +43,7 @@ function pull_update() {
                 if [ "$?" -gt 0 ] || [ "`git status --porcelain=v1 &>>/dev/null | wc -l`" -gt 0 ]; then
                     echo " - fatal: \`$cwd\` is dirty, couldn't automatic fast forward"
                     local retval=2
-                elif [ -x "`which -p git-warp-time`" ]; then
+                elif [ -x "`lookup git-warp-time`" ]; then
                     git-warp-time --quiet
                 fi
             else
