@@ -34,7 +34,7 @@ function pull_update() {
         fi
 
         if [ $retval -eq 0 ]; then
-            echo " + pull last changes from \`$branch\` to \`$cwd\`" && \
+            echo " + pull last changes from \`$branch\` to \``pwd`\`" && \
             git pull --ff-only --no-edit --no-commit origin "$branch"
             local retval="$?"
 
