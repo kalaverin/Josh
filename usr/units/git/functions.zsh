@@ -133,7 +133,10 @@ function git_branch_rename() {
 }
 
 function git_checkout_from_actual() {
-    git_pull_reset $@ || return 1
+    local branch="`git_current_branch`"
+    [ -z "$branch" ] && return 1
+
+    git_pull_reset "$branch" || return 1
     git_checkout_from_current $*
 }
 
