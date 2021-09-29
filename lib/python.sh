@@ -209,10 +209,10 @@ function pip_deploy() {
 
     local pip="PIP_REQUIRE_VIRTUALENV=false $JOSH_PIP install --disable-pip-version-check --no-input --no-python-version-warning --no-warn-conflicts --no-warn-script-location --compile --user"
 
-    zsh -c "$pip --upgrade --upgrade-strategy=eager $@"
+    $SHELL -c "$pip --upgrade --upgrade-strategy=eager $@"
     local retval="$?"
     if [ "$retval" -gt 0 ]; then
-        zsh -c "$pip --upgrade $@"
+        $SHELL -c "$pip --upgrade $@"
         local retval="$?"
     fi
 
