@@ -25,7 +25,7 @@ function lookup() {
             return 2
         else
             # fallback - just scan hardcoded PATH
-            local result="`lookup_in_hier "$1"`"
+            local result="`lookup_in_hier "$1" 2>/dev/null`"
             if [ "$?" -eq 0 ] && [ -x "$result" ]; then
                 echo "$result"
             else
