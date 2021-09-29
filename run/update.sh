@@ -41,16 +41,16 @@ function pull_update() {
             if [ $retval -eq 0 ]; then
                 git update-index --refresh &>>/dev/null
                 if [ "$?" -gt 0 ] || [ "`git status --porcelain=v1 &>>/dev/null | wc -l`" -gt 0 ]; then
-                    echo " - fatal: \`$cwd\` is dirty, couldn't automatic fast forward"
+                    echo " - fatal: \``pwd`\` is dirty, couldn't automatic fast forward"
                     local retval=2
                 elif [ -x "`lookup git-warp-time`" ]; then
                     git-warp-time --quiet
                 fi
             else
-                echo " - fatal: \`$cwd\` is dirty, pull failed"
+                echo " - fatal: \``pwd`\` is dirty, pull failed"
             fi
         else
-            echo " - fatal: \`$cwd\` checkout failed"
+            echo " - fatal: \``pwd`\` checkout failed"
         fi
     else
         local retval=1
