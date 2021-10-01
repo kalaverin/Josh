@@ -27,12 +27,12 @@ JOSH_WORKHOUR_END=${JOSH_WORKHOUR_END:-18}     # till 18, <- 17:59
 # for develop — autopull every N days
 # for stable — delay after last commit with N days to display message about commits count
 #
-JOSH_CHECK_UPDATES_DAYS=${JOSH_CHECK_UPDATES_DAYS:-1}
+JOSH_CHECK_UPDATES_DAYS=${JOSH_CHECK_UPDATES_DAYS:-7}
 
 # JOSH_FETCH_UPDATES_HOUR
 # fetch commits from remote every hour (except work hours)
 #
-JOSH_FETCH_UPDATES_HOUR=${JOSH_FETCH_UPDATES_HOUR:-12}
+JOSH_FETCH_UPDATES_HOUR=${JOSH_FETCH_UPDATES_HOUR:-6}
 JOSH_DEFAULT_LOCALE="{DEFAULT_LOCALE:-"en_US.UTF-8"}"
 
 
