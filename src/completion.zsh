@@ -20,6 +20,8 @@ zstyle :compinstall filename '~/.zshrc'
 zstyle ':completion:*' menu select
 zstyle ':completion:*' matcher-list '' 'm:{a-z\-}={A-Z\_}' 'r:[^[:alpha:]]||[[:alpha:]]=** r:|=* m:{a-z\-}={A-Z\_}' 'r:|?=** m:{a-z\-}={A-Z\_}'
 
+zstyle :plugin:history-search-multi-word reset-prompt-protect 1
+
 _comp_options+=(globdots)
 
 autoload -Uz compinit
