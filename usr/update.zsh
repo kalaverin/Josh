@@ -73,7 +73,7 @@ function check_updates() {
     local data="`cat $file 2>/dev/null`"
     let check_every="${JOSH_CHECK_UPDATES_DAYS:-1} * 86400"
 
-    if [ -z "$data" ] || [ "$(( $EPOCHSECONDS - $data ))" -gt "$check_every" ]; then
+    if [ -z "$data" ] || [ "$branch" = "develop" ] || [ "$(( $EPOCHSECONDS - $data ))" -gt "$check_every" ]; then
         [ ! -d "$JOSH_CACHE_DIR" ] && mkdir -p "$JOSH_CACHE_DIR"
         echo "$EPOCHSECONDS" > "$file"
 
