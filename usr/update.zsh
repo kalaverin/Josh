@@ -13,6 +13,8 @@ function is_workhours() {
 }
 
 
+
+
 function fetch_updates() {
     if [ -z "$JOSH" ]; then
         echo " - $0 warning: JOSH:\`$JOSH\`" >&2
@@ -31,13 +33,6 @@ function fetch_updates() {
         return 1
     fi
 
-    local hash="`git_current_hash`"
-    if [ -z "$hash" ]; then
-        builtin cd "$cwd"
-        echo " - $0 warning: JOSH hash isn't retrieved" >&2
-        return 1
-    fi
-
     local file="$JOSH_CACHE_DIR/last-fetch"
     local data="`cat $file 2>/dev/null`"
     local fetch_every="$(( ${JOSH_FETCH_UPDATES_HOUR:-1} * 3600 ))"
@@ -45,12 +40,17 @@ function fetch_updates() {
     if [ -z "$data" ] || [ "$(( $EPOCHSECONDS - $data ))" -gt "$fetch_every" ]; then
         [ ! -d "$JOSH_CACHE_DIR" ] && mkdir -p "$JOSH_CACHE_DIR"
         echo "$EPOCHSECONDS" > "$file"
-        git fetch origin "$branch" 2>/dev/null
+
+        if [ -z "`git branch -r 2>/dev/null | grep -Po "origin/$branch$"`" ]; then
+            git remote set-branches --add origin "$branch" 2>/dev/null
+        fi
+
+        git fetch --auto-gc --jobs=4 --tags --prune-tags --set-upstream origin "$branch" 2>/dev/null
     fi
 
     local count="$(
         git --git-dir="$JOSH/.git" --work-tree="$JOSH/" \
-        rev-list --left-right --count $hash...$branch | tabulate -i 2
+        rev-list --count $branch...origin/$branch
     )"
 
     [ -z "$count" ] && echo 0 || echo "$count"
