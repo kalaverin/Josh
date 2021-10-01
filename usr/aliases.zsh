@@ -60,7 +60,7 @@ fi
 
 # vivid: ls color theme generator
 #
-if [ -x "`lookup vivid`" ] && [ -z "$LS_COLORS" ]; then
+if [ -x "`lookup vivid`" ]; then
     # just run: `vivid themes` or select another one from:
     # ayu jellybeans molokai one-dark one-light snazzy solarized-dark solarized-light
     export LS_COLORS="`vivid generate ${VIVID_THEME:-"solarized-dark"}`"
@@ -324,7 +324,10 @@ last_modified() {
 WORDCHARS='_'
 
 ZSH_HIGHLIGHT_MAXLENGTH=512
-ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern cursor line root regexp)
+ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern cursor regexp)
+
+typeset -A ZSH_HIGHLIGHT_PATTERNS
+ZSH_HIGHLIGHT_PATTERNS+=('rm -rf' 'fg=white,bold,bg=red')
 
 typeset -A ZSH_HIGHLIGHT_REGEXP
 ZSH_HIGHLIGHT_REGEXP+=('\bsu\b' fg=white,bg=red,bold)
