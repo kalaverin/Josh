@@ -45,9 +45,9 @@ function cmd_git_fetch() {
     unset git_fetch_make_cmd
 
     if [ -n "$cmd" ]; then
-        local cmd="$cmd && git fetch --verbose --all --tags"
+        local cmd="$cmd && git fetch --all --tags"
     else
-        local cmd="git fetch --verbose --all --tags"
+        local cmd="git fetch --all --tags"
     fi
     echo "$cmd"
 }
@@ -55,7 +55,13 @@ function cmd_git_fetch() {
 function cmd_git_pull() {
     local branch="${1:-`git_current_branch`}"
     [ -z "$branch" ] && return 1
-    echo "git pull --ff-only --no-edit --no-commit --verbose origin $branch"
+    echo "git pull --ff-only --no-edit --no-commit origin $branch"
+}
+
+function cmd_git_pull_merge() {
+    local branch="${1:-`git_current_branch`}"
+    [ -z "$branch" ] && return 1
+    echo "git pull --no-edit --no-commit origin $branch"
 }
 
 # core functions
@@ -179,21 +185,31 @@ function git_fetch_checkout_branch() {
     return $?
 }
 
-function git_master_set_tag() {
+function git_branch_set_tag() {
     if [ -z "$1" ]; then
         echo " - $0: tag required" >&2
         return 1
     fi
 
-    git_repository_clean; [ $? -gt 0 ] && return 1
-    git checkout "$1";    [ $? -gt 0 ] && return 1
-    git_pull "$1";        [ $? -gt 0 ] && return 1
+    local branch="${2:-master}"
+    echo " + $0: set tag \`$1\` to branch \`$1\`" >&2
+
+    git_repository_clean;   [ $? -gt 0 ] && return 1
+    git checkout "$branch"; [ $? -gt 0 ] && return 1
+    git_pull "$branch";     [ $? -gt 0 ] && return 1
     git_set_tag "$1"
     return $?
 }
 
 function git_pull() {
     local cmd="`cmd_git_pull $@`"
+    [ -z "$cmd" ] && return 1
+    run_show "$cmd" 2>&1 | grep -v 'up to date'
+    return $?
+}
+
+function git_pull_merge() {
+    local cmd="`cmd_git_pull_merge $@`"
     [ -z "$cmd" ] && return 1
     run_show "$cmd" 2>&1 | grep -v 'up to date'
     return $?
