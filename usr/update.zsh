@@ -35,20 +35,20 @@ function fetch_updates() {
     local data="`cat $file 2>/dev/null`"
     local fetch_every="$(( ${JOSH_FETCH_UPDATES_HOUR:-1} * 3600 ))"
 
+    if [ "`cat .git/config | grep -P "fetch.+remotes/origin/\*" | wc -l`" -eq 0 ]; then
+        git remote set-branches --add origin "*"
+    fi
+
     if [ -z "$data" ] || [ "$(( $EPOCHSECONDS - $data ))" -gt "$fetch_every" ]; then
         [ ! -d "$JOSH_CACHE_DIR" ] && mkdir -p "$JOSH_CACHE_DIR"
         echo "$EPOCHSECONDS" > "$file"
-
-        if [ -z "`git branch -r 2>/dev/null | grep -Po "origin/$branch$"`" ]; then
-            git remote set-branches --add origin "$branch" 2>/dev/null
-        fi
-
         git fetch --auto-gc --jobs=4 --tags --prune-tags --set-upstream origin "$branch" 2>/dev/null
     fi
 
     local count="$(
-        git --git-dir="$JOSH/.git" --work-tree="$JOSH/" \
-        rev-list --count $branch...origin/$branch
+        git rev-list --left-right --first-parent \
+        origin/$branch...$branch \
+        | grep -P '^<' | wc -l \
     )"
 
     [ -z "$count" ] && echo 0 || echo "$count"
