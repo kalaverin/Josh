@@ -55,7 +55,7 @@ function is_workhours() {
     local tail="${JOSH_WORKHOUR_END:-18}"
 
     local current_hour="`builtin strftime '%H' $EPOCHSECONDS`"
-    if [ "$current_hour" -ge "$head" ] && [ "$current_hour" -le "$tail" ]; then
+    if [ "$current_hour" -ge "$head" ] && [ "$current_hour" -lt "$tail" ]; then
         return 0
     fi
     return 1
