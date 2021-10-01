@@ -29,11 +29,6 @@ function fetch_updates() {
         builtin cd "$cwd"
         echo " - $0 warning: JOSH branch isn't retrieved" >&2
         return 1
-
-    elif [ "$branch" = "master" ]; then
-        builtin cd "$cwd"
-        echo "0"
-        return 0
     fi
 
     local hash="`git_current_hash`"
