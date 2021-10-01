@@ -19,14 +19,25 @@ source "$JOSH/usr/units/python.zsh"
 source "$JOSH/usr/units/files.zsh"
 source "$JOSH/usr/update.zsh"
 
-local branch="`josh_branch`"
-if [ -z "$branch" ]; then
-    echo " - Josh branch couldn't detected, something wrong!"
 
-elif [ ! "$branch" = 'master' ]; then
-    local last_commit="$(
-        git --git-dir="$JOSH/.git" --work-tree="$JOSH/" \
-        log -1 --format="at %h updated %cr" 2>/dev/null
-    )"
-    echo " + Josh $branch $last_commit."
-fi
+function motd() {
+    local branch="`josh_branch`"
+    if [ -z "$branch" ]; then
+        echo " - Josh branch couldn't detected, something wrong!"
+
+    elif [ ! "$branch" = 'master' ]; then
+        local last_commit="$(
+            git --git-dir="$JOSH/.git" --work-tree="$JOSH/" \
+            log -1 --format="at %h updated %cr" 2>/dev/null
+        )"
+
+        if [ -z "$JOSH_UPDATES_FOUND" ]; then
+            echo " + Josh $branch $last_commit."
+        else
+            echo " + Josh $branch $last_commit, found $JOSH_UPDATES_FOUND updates, just run: josh_pull && exec zsh"
+        fi
+    fi
+}
+
+is_workhours || motd
+unset motd
