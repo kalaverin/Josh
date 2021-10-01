@@ -2,6 +2,7 @@
 
 JOSH_SUBDIR=".josh"
 
+typeset -A LOOKUP_CACHE
 
 function lookup_in_hier() {
     local order=(/bin /usr/bin /sbin /usr/sbin /usr/local/bin /usr/local/sbin)
@@ -14,22 +15,29 @@ function lookup_in_hier() {
 }
 
 function lookup() {
-    local result="`builtin which -p "$1" 2>/dev/null`"
-    if [ "$?" -eq 0 ] && [ -x "$result" ]; then
-        echo "$result"
+    if [ -x "$LOOKUP_CACHE[$1]" ]; then
+        echo "$LOOKUP_CACHE[$1]"
+
     else
-        local result="`builtin which -p sh 2>/dev/null`"
-        if [ "$?" -gt 0 ] || [ ! -x "$result" ]; then
-            # builtin which fails - extraordinary
-            echo " - fatal: failed: \"builtin which -p sh\"" >&2
-            return 2
+        local result="`builtin which -p "$1" 2>/dev/null`"
+        if [ "$?" -eq 0 ] && [ -x "$result" ]; then
+            LOOKUP_CACHE[$1]="$result"
+            echo "$result"
         else
-            # fallback - just scan hardcoded PATH
-            local result="`lookup_in_hier "$1" 2>/dev/null`"
-            if [ "$?" -eq 0 ] && [ -x "$result" ]; then
-                echo "$result"
+            local result="`builtin which -p sh 2>/dev/null`"
+            if [ "$?" -gt 0 ] || [ ! -x "$result" ]; then
+                # builtin which fails - extraordinary
+                echo " - fatal: failed: \"builtin which -p sh\"" >&2
+                return 2
             else
-                return 1
+                # fallback - just scan hardcoded PATH
+                local result="`lookup_in_hier "$1" 2>/dev/null`"
+                if [ "$?" -eq 0 ] && [ -x "$result" ]; then
+                    LOOKUP_CACHE[$1]="$result"
+                    echo "$result"
+                else
+                    return 1
+                fi
             fi
         fi
     fi
