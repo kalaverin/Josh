@@ -13,8 +13,6 @@ function is_workhours() {
 }
 
 
-
-
 function fetch_updates() {
     if [ -z "$JOSH" ]; then
         echo " - $0 warning: JOSH:\`$JOSH\`" >&2
@@ -97,4 +95,4 @@ function check_updates() {
     fi
 }
 
-is_workhours && true || check_updates
+is_workhours || check_updates
