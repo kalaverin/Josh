@@ -1,4 +1,4 @@
-if [ ! "$JOSH" ]; then
+if [ -z "$JOSH" ]; then
     source "$HOME/.josh/custom/plugins/josh/run/init.sh"
 fi
 
@@ -20,25 +20,10 @@ path=(
 SAVEHIST=20000
 HISTSIZE=25000
 
-# select: bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/any/file"
-# THEME_BAT="gruvbox-dark"
-
-# color theme for ls, just run: vivid themes
-# ayu jellybeans molokai one-dark one-light snazzy solarized-dark solarized-light
-# THEME_LS="solarized-dark"
-
-# http --help to select another ont
-# THEME_HTTPIE="paraiso-dark"
-
-# if `starship` disabled, use this theme:
-# af-magic blinks dpoggi fishy jreese michelebologna
-# ZSH_THEME="josh"
-
-export UPDATE_ZSH_DAYS=30
+export UPDATE_ZSH_DAYS=60
 
 HISTFILE="$HOME/.histfile"
 HIST_STAMPS="yyyy-mm-dd"
-
 
 plugins=(
     # autoupdate   # autoupdate Josh # TODO: temporary disable
@@ -70,12 +55,12 @@ autoload -Uz chpwd_recent_dirs cdr add-zsh-hook
 add-zsh-hook chpwd chpwd_recent_dirs
 zstyle ":anyframe:selector:" use fzf
 
-# user can configure some variables, e.g. THEME_BAT, THEME_FZF
+# user can configure some variables for configure Josh and other plugins
 [ -f ~/.zshrclocal ] && source ~/.zshrclocal
 
 source "$JOSH/src/configure.zsh"
 source "$ZSH/oh-my-zsh.sh"
 source "$JOSH/src/loader.zsh"
 
-# user can override anything after load all
+# user can override anything after load
 [ -f ~/.zshrcbinds ] && source ~/.zshrcbinds

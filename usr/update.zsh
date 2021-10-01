@@ -95,4 +95,28 @@ function check_updates() {
     fi
 }
 
-is_workhours || check_updates
+
+function motd() {
+    local branch="`josh_branch`"
+    if [ -z "$branch" ]; then
+        echo " - Josh branch couldn't detected, something wrong!"
+        return 1
+    else
+        check_updates
+        if [ ! "$branch" = 'master' ]; then
+            local last_commit="$(
+                git --git-dir="$JOSH/.git" --work-tree="$JOSH/" \
+                log -1 --format="at %h updated %cr" 2>/dev/null
+            )"
+
+            if [ -z "$JOSH_UPDATES_FOUND" ]; then
+                echo " + Josh $branch $last_commit."
+            else
+                echo " + Josh $branch $last_commit, found $JOSH_UPDATES_FOUND updates, just run: josh_pull && exec zsh"
+            fi
+        fi
+    fi
+}
+
+
+is_workhours || motd
