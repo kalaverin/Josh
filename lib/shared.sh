@@ -8,7 +8,7 @@ local LINES_TO_LINE="sd '\n' ' ' | awk '{\$1=\$1};1'"
 
 
 function cpu_count() {
-    local cores=$(cat /proc/cpuinfo | ${JOSH_GREP:-'grep'} -Po 'processor\s+:\s*\d+\s*$' | wc -l)
+    local cores=$(${JOSH_GREP:-'grep'} --count -Po 'processor\s+:\s*\d+\s*$' /proc/cpuinfo)
     [ ! "$cores" ] && local cores=0
     return "$cores"
 }
@@ -17,8 +17,8 @@ function get_preview_width() {
     let width="$COLUMNS - ($COLUMNS / 3 + 10)"
     [ $width -lt 84 ] && local width=84
 
-    echo $width
-    export JOSH_WIDTH=$width
+    echo "$width"
+    export JOSH_WIDTH="$width"
 }
 
 function get_tempdir() {

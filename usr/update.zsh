@@ -71,7 +71,7 @@ function check_updates() {
 
     local file="$JOSH_CACHE_DIR/last-update"
     local data="`cat $file 2>/dev/null`"
-    local check_every="$(( ${JOSH_CHECK_UPDATES_DAYS:-1} * 86400 ))"
+    let check_every="${JOSH_CHECK_UPDATES_DAYS:-1} * 86400"
 
     if [ -z "$data" ] || [ "$(( $EPOCHSECONDS - $data ))" -gt "$check_every" ]; then
         [ ! -d "$JOSH_CACHE_DIR" ] && mkdir -p "$JOSH_CACHE_DIR"

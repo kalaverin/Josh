@@ -1,4 +1,4 @@
-. $JOSH/lib/shared.sh
+source "$JOSH/lib/shared.sh"
 
 # ———
 
@@ -169,7 +169,8 @@ visual_chdir() {
         local temp="`get_tempdir`"
         local name="`basename $cwd`"
 
-        [ -f "/$temp/.lastdir.tmp" ] && unlink "$temp/.lastdir.tmp"
+        [ -f "$temp/.lastdir.tmp" ] && unlink "$temp/.lastdir.tmp"
+
           # TODO: if file preview content
         local directory=$(fd \
             --type directory \
@@ -187,7 +188,7 @@ visual_chdir() {
                 --preview-window="right:`get_preview_width`:noborder" \
                 --preview="$SHELL $JOSH/usr/src/viewer.sh {}" \
                 --filepath-word --tiebreak=begin,length,end,index \
-                --bind='alt-bs:execute(echo `realpath {}` > /tmp/.lastdir.tmp)+abort' \
+                --bind="alt-bs:execute(echo \`realpath {}\` > $temp/.lastdir.tmp)+abort" \
                 --ansi --extended --info='inline' \
                 --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
                 --jump-labels="$FZF_JUMPS" \
@@ -304,14 +305,21 @@ zle -N visual_warp_chdir
 
 
 insert_command() {
+    local file="`get_tempdir`/.insert.cmd.tmp"
+    [ -f "$file" ] && unlink "$file"
+
     local query="`echo "$BUFFER" | sd '(\s+)' ' ' | sd '(^\s+|\s+$)' ''`"
-    local result="$(cat $HISTFILE | grep -PIs '^(: \d+:\d+;)' | sd ': \d+:\d+;' '' | grep -Pv '^\s+' | runiq - | awk '{arr[i++]=$0} END {while (i>0) print arr[--i] }' | sed 1d | fzf \
+    local result="$(
+        grep -PIs '^(: \d+:\d+;)' "$HISTFILE" \
+        | sd ': \d+:\d+;' '' | grep -Pv '^\s+' | runiq - \
+        | awk '{arr[i++]=$0} END {while (i>0) print arr[--i] }' \
+        | sed 1d | fzf \
         --ansi --extended --info='inline' \
         --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
         --tiebreak=index --jump-labels="$FZF_JUMPS" \
         --bind='alt-w:toggle-preview-wrap' \
+        --bind="ctrl-q:execute(echo "{q}" > "$file")+abort" \
         --bind='ctrl-c:abort' \
-        --bind='ctrl-q:abort' \
         --bind='end:preview-down' \
         --bind='esc:abort' \
         --bind='home:preview-up' \
@@ -327,10 +335,18 @@ insert_command() {
         -i --select-1 --filepath-word \
     )"
 
-    if [ "$result" ]; then
+    [ -z "$result" ] && echo 1
+    [ -f "$file" ] && echo 2
+
+    if [ -z "$result" ] && [ -f "$file" ]; then
+        local result="`cat $file`"; unlink "$file"
+    fi
+
+    if [ -n "$result" ]; then
         LBUFFER="$result"
         RBUFFER=""
     fi
+
     zle redisplay
     return 0
 }
