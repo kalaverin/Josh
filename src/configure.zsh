@@ -57,7 +57,7 @@ ZSH_HIGHLIGHT_HIGHLIGHTERS+=brackets
 
 # zsh-autosuggestions
 
-WORDCHARS+='_'
+WORDCHARS='_'
 ZSH_AUTOSUGGEST_ACCEPT_WIDGETS=(
     end-of-line
     vi-end-of-line
