@@ -98,6 +98,3 @@ function check_updates() {
 }
 
 is_workhours && true || check_updates
-
-unset check_updates
-unset fetch_updates
