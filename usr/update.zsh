@@ -91,7 +91,7 @@ function check_updates() {
         [ "$?" -gt 0 ] && return 1
         [ "$updates" -eq 0 ] && return 0
 
-        local file="$JOSH_CACHE_DIR/last-fetch"
+        local file="$JOSH_CACHE_DIR/last-update"
         local data="`cat $file 2>/dev/null`"
 
         if [ -z "$data" ] || [ "$(( $EPOCHSECONDS - $data ))" -gt "$check_every" ]; then
