@@ -55,6 +55,9 @@ EMOJI_CLI_KEYBIND="\eo"
 
 ZSH_HIGHLIGHT_HIGHLIGHTERS+=brackets
 
+# zsh-autosuggestions
+
+WORDCHARS+='_'
 ZSH_AUTOSUGGEST_ACCEPT_WIDGETS=(
     end-of-line
     vi-end-of-line
@@ -72,9 +75,11 @@ ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS=(
     vi-find-next-char
     vi-find-next-char-skip
 )
-
 ZSH_AUTOSUGGEST_USE_ASYNC=1
-ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+ZSH_AUTOSUGGEST_STRATEGY=(completion match_prev_cmd history)
+ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=10
+# ZSH_AUTOSUGGEST_HISTORY_IGNORE="?(#c80,)"
+
 
 FORGIT_FZF_DEFAULT_OPTS="
     --exact
