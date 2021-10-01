@@ -512,6 +512,8 @@ zle -N git_widget_checkout_tag
 
 
 git_widget_checkout_branch() {
+    # нужен нормальный просмотровщик диффа между хешами
+    # git rev-list --first-parent develop...master --pretty=oneline | sd "(.{8})(.{32}) (.+)" "\$1 \$3" | pipe_numerate | sort -hr
     local branch="`git_current_branch`"
     [ ! "$branch" ] && return 1
 
