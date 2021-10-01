@@ -37,8 +37,8 @@ function fetch_updates() {
 
     if [ -z "$data" ] || [ "$(( $EPOCHSECONDS - $data ))" -gt "$fetch_every" ]; then
         [ ! -d "$JOSH_CACHE_DIR" ] && mkdir -p "$JOSH_CACHE_DIR"
-        git fetch origin "$branch" 2>/dev/null
         echo "$EPOCHSECONDS" > "$file"
+        git fetch origin "$branch" 2>/dev/null
     fi
 
     local count="$(
