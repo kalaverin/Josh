@@ -88,9 +88,7 @@ function check_updates() {
 
     if [ "$(( $day_current - $day_commit ))" -gt "$check_every" ]; then
         local updates="`fetch_updates`"
-        if [ "$?" -gt ]; then
-            return 1
-        fi
+        [ "$?" -gt 0 ] && return 1
 
         local file="$JOSH_CACHE_DIR/last-fetch"
         local data="`cat $file 2>/dev/null`"
@@ -110,4 +108,4 @@ function check_updates() {
     fi
 }
 
-is_workhours || check_updates
+is_workhours && true || check_updates
