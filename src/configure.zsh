@@ -44,7 +44,7 @@ if [ -x "`lookup fzf`" ]; then
     unset THEME_FZF
 fi
 
-[ -x "`lookup micro`" ] && export EDITOR="`lookup micro`"
+[ -x "`lookup nano`" ] && export EDITOR="`lookup nano`"
 [ -x "`lookup rip`" ] && export GRAVEYARD=${GRAVEYARD:-"$HOME/.trash"}
 [ -x "`lookup sccache`" ] && export RUSTC_WRAPPER="`lookup sccache`"
 [ -x "`lookup vivid`" ] && export LS_COLORS="`vivid generate ${THEME_LS:-solarized-dark}`"
