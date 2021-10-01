@@ -37,7 +37,7 @@ function fetch_updates() {
 
     if [ -z "$data" ] || [ "$(( $EPOCHSECONDS - $data ))" -gt "$fetch_every" ]; then
         [ ! -d "$JOSH_CACHE_DIR" ] && mkdir -p "$JOSH_CACHE_DIR"
-        git fetch origin stable 2>/dev/null
+        git fetch origin "$branch" 2>/dev/null
         echo "$EPOCHSECONDS" > "$file"
     fi
 
