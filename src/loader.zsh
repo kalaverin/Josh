@@ -17,6 +17,7 @@ source "$JOSH/usr/common.zsh"
 source "$JOSH/usr/units/git.zsh"
 source "$JOSH/usr/units/python.zsh"
 source "$JOSH/usr/units/files.zsh"
+source "$JOSH/usr/update.zsh"
 
 local branch="`josh_branch`"
 if [ -z "$branch" ]; then
