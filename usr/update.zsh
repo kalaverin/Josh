@@ -98,7 +98,7 @@ function check_updates() {
             if [ "$(( $EPOCHSECONDS - $last_commit ))" -gt "$check_every" ]; then
                 JOSH_UPDATES_FOUND="$updates"
             fi
-        else
+        fi
     fi
 }
 
