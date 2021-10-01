@@ -1,11 +1,10 @@
-alias cp='cp -iR'
-alias ln='ln'
-alias mv='mv'
-alias ps='ps'
-alias rm='rm'
+ZSH_HIGHLIGHT_HIGHLIGHTERS+=brackets
+
+alias cp='cp -iR'  # prompt on overwrite and use recurse for directories
+alias mv='mv -i'
 alias tt='tail -f -n 100'
 alias svc='service'
-alias sudo='sudo -H'
+alias sudo='sudo -H'  # this is Ubuntu behavior: never do not translate user env to sudo context!
 
 # ———
 
@@ -217,17 +216,30 @@ fi
 
 # ———
 
-if [ -x "`lookup tree`" ]; then
+
+local temp="`lookup tree`"
+if [ -x "$temp" ]; then
+    alias tree="$temp"
+
     lst() {
         tree -F -f -i | grep -v '[/]$' I $*
     }
 fi
-if [ -x "`lookup gpg`" ]; then
+
+local temp="`lookup gpg`"
+if [ -x "$temp" ]; then
+    alias gpg="$temp"
+
     kimport() {
+        [ -z "$1" ] && return 1
         gpg --recv-key $1 && gpg --export $1 | apt-key add -
     }
 fi
-if [ -x "`lookup wget`" ]; then
+
+local temp="`lookup wget`"
+if [ -x "$temp" ]; then
+    alias wget="$temp"
+
     function sget {
         wget --no-check-certificate -O- $* &> /dev/null
     }
@@ -235,71 +247,77 @@ if [ -x "`lookup wget`" ]; then
         wget --no-check-certificate -O/dev/null $*
     }
 fi
-if [ -x "`lookup ssh-agent`" ]; then
-    function agent {
+
+local temp="`lookup ssh-agent`"
+if [ -x "$temp" ]; then
+    alias ssh-agent="$temp"
+
+    function initalize_agent {
         eval `ssh-agent` && ssh-add
     }
 fi
-if [ -x "`lookup petname`" ]; then
+
+local temp="`lookup petname`"
+if [ -x "$temp" ]; then
+    alias petname="$temp"
+
+    function generate_three_words() {
+        echo "`petname -s . -w 3 -a`"
+    }
+
     function mktp {
-        local tempdir="$(dirname `mktemp -duq`)/pet/`petname -s . -w 3 -a`"
-        mkdir -p "$tempdir" && cd "$tempdir"
+        mkcd "$(dirname `mktemp -duq`)/pet/`generate_three_words`"
     }
 fi
 
 # ———
 
 function mkcd {
+    [ -z "$1" ] && return 1
     mkdir "$*" && cd "$*"
 }
 
 function run_show() {
     local cmd="$*"
+    [ -z "$cmd" ] && return 1
     echo " -> $cmd" 1>&2
     eval ${cmd} 1>&2
 }
 
 function run_silent() {
     local cmd="$*"
+    [ -z "$cmd" ] && return 1
     echo " -> $cmd" 1>&2
     eval ${cmd} 1>/dev/null 2>/dev/null
 }
 
 function run_hide() {
     local cmd="$*"
+    [ -z "$cmd" ] && return 1
     eval ${cmd} 1>/dev/null 2>/dev/null
 }
 
 # ———
 
 fchmod() {
+    [ -z "$1" ] && [ -z "$2" ] && return 1
     find $2 -type f -not -perm $1 -exec chmod $1 {} \;
 }
 
 dchmod() {
+    [ -z "$1" ] && [ -z "$2" ] && return 1
     find $2 -type d -not -perm $1 -exec chmod $1 {} \;
 }
 
 rchgrp() {
+    [ -z "$1" ] && [ -z "$2" ] && return 1
     find $2 ( -not -group $1 ) -print -exec chgrp $1 {} ;
 }
 
 last_modified() {
     local args="$*"
-    if [ ! "$args" ]; then
+    if [ -z "$args" ]; then
         local args="."
     fi
     find $args -printf "%T@ %p\n" | sort -n | cut -d' ' -f 2- | tail -n 1
 }
-
-alias cds='chdir_to_virtualenv_stdlib'
-alias cdv='chdir_to_virtualenv'
-alias dact='virtualenv_deactivate'
-alias ten-='virtualenv_temporary_destroy'
-alias ten='virtualenv_temporary_create'
-alias vact='virtualenv_path_activate'
-alias ven='virtualenv_activate'
-
-
-
-

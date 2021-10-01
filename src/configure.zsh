@@ -6,7 +6,11 @@ source "$JOSH/lib/rust.sh" && rust_env
 export LANG="${LANG:-"$JOSH_DEFAULT_LOCALE"}"
 export LANGUAGE="${LANGUAGE:-"$JOSH_DEFAULT_LOCALE"}"
 export LC_ALL="${LC_ALL:-"$JOSH_DEFAULT_LOCALE"}"
-[ "$JOSH_OS" = "BSD" ] && export MM_CHARSET="${MM_CHARSET:-"$JOSH_DEFAULT_LOCALE"}"
+
+if [ "$JOSH_OS" = "BSD" ]; then
+    export MM_CHARSET="${MM_CHARSET:-"$JOSH_DEFAULT_LOCALE"}"
+fi
+
 
 # JOSH_VENVS_DIR
 # directory for permanent virtualenvs maded by virtualenv_create
@@ -31,9 +35,6 @@ JOSH_CHECK_UPDATES_DAYS=${JOSH_CHECK_UPDATES_DAYS:-1}
 JOSH_FETCH_UPDATES_HOUR=${JOSH_FETCH_UPDATES_HOUR:-12}
 JOSH_DEFAULT_LOCALE="{DEFAULT_LOCALE:-"en_US.UTF-8"}"
 
-[ -x "$JOSH_SED" ] && alias sed="$JOSH_SED"
-[ -x "$JOSH_REALPATH" ] && alias realpath="$JOSH_REALPATH"
-
 
 # remove duplicates from PATH
 #
@@ -47,8 +48,6 @@ local unified_path="$(
 THEFUCK_EXCLUDE_RULES="fix_file"
 
 EMOJI_CLI_KEYBIND="\eo"
-
-ZSH_HIGHLIGHT_HIGHLIGHTERS+=brackets
 
 # zsh-autosuggestions
 

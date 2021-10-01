@@ -70,3 +70,9 @@ else
         export JOSH_OS="UNKNOWN"
     fi
 fi
+
+[ -x "$JOSH_LS" ] && alias ls="$JOSH_LS"
+[ -x "$JOSH_SED" ] && alias sed="$JOSH_SED"
+[ -x "$JOSH_GREP" ] && alias grep="$JOSH_GREP"
+[ -x "$JOSH_READLINK" ] && alias readlink="$JOSH_READLINK"
+[ -x "$JOSH_REALPATH" ] && alias realpath="$JOSH_REALPATH"
