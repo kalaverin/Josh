@@ -47,8 +47,6 @@ local unified_path="$(
 
 THEFUCK_EXCLUDE_RULES="fix_file"
 
-EMOJI_CLI_KEYBIND="\eo"
-
 # zsh-autosuggestions
 
 ZSH_AUTOSUGGEST_ACCEPT_WIDGETS=(
