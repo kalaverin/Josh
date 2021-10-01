@@ -35,7 +35,7 @@ function fetch_updates() {
     local data="`cat $file 2>/dev/null`"
     local fetch_every="$(( ${JOSH_FETCH_UPDATES_HOUR:-1} * 3600 ))"
 
-    if [ "`cat .git/config | grep -P "fetch.+remotes/origin/\*" | wc -l`" -eq 0 ]; then
+    if [ "`grep --count -P "fetch.+remotes/origin/\*" .git/config`" -eq 0 ]; then
         git remote set-branches --add origin "*"
     fi
 
@@ -47,7 +47,7 @@ function fetch_updates() {
 
     local count="$(
         git rev-list --left-right --first-parent \
-        origin/$branch...$branch \
+        origin/$branch...$branch 2>/dev/null \
         | grep -P '^<' | wc -l \
     )"
 
