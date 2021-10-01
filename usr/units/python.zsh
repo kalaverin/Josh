@@ -1,4 +1,4 @@
-. $JOSH/lib/shared.sh
+source "$JOSH/lib/shared.sh"
 
 # ———
 
