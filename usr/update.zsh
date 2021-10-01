@@ -89,6 +89,7 @@ function check_updates() {
     if [ "$(( $day_current - $day_commit ))" -gt "$check_every" ]; then
         local updates="`fetch_updates`"
         [ "$?" -gt 0 ] && return 1
+        [ "$updates" -eq 0 ] && return 0
 
         local file="$JOSH_CACHE_DIR/last-fetch"
         local data="`cat $file 2>/dev/null`"
@@ -97,8 +98,9 @@ function check_updates() {
             [ ! -d "$JOSH_CACHE_DIR" ] && mkdir -p "$JOSH_CACHE_DIR"
             echo "$EPOCHSECONDS" > "$file"
 
-            if  [ "$branch" = "develop" ]; then
-                josh_pull
+            if [ "$branch" = "develop" ]; then
+                echo " + $0 for \`$branch\` autoupdates enabled, $updates updates ready"
+                josh_pull "$branch"
 
             elif  [ "$branch" = "stable" ]; then
 
