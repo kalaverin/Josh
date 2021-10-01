@@ -63,7 +63,7 @@ fi
 if [ -x "`lookup vivid`" ]; then
     # just run: `vivid themes` or select another one from:
     # ayu jellybeans molokai one-dark one-light snazzy solarized-dark solarized-light
-    export LS_COLORS="`vivid generate ${VIVID_THEME:-"solarized-dark"}`"
+    export LS_COLORS="`vivid generate ${VIVID_THEME:-"molokai"}`"
 fi
 
 
@@ -132,9 +132,10 @@ fi
 #
 local temp="`lookup lsd`"
 if [ -x "$temp" ]; then
-    LSD_OPTIONS=${LSD_OPTIONS:-"-laAF --icon-theme unicode"}
-    alias lsd="$temp"
-    alias ll="$temp $LSD_OPTIONS"
+    LSD_OPTIONS=${LSD_OPTIONS:-"--dereference --extensionsort --classify --long --oneline --versionsort --color always --blocks permission,user,group,date,size,name --date +\"%Y-%m-%d %H:%M:%S\" --group-dirs first --icon never --ignore-glob \"*.pyc\""}
+
+    alias la="$temp --almost-all $LSD_OPTIONS"
+    alias lal="$temp $LSD_OPTIONS"
 fi
 
 
@@ -196,7 +197,7 @@ if [ -x "$temp" ]; then
     # --git-ignore is bugged
     export EXA_OPTIONS="${EXA_OPTIONS:-"-lFg --color=always --git --octal-permissions --group-directories-first"}"
     alias l="$temp $EXA_OPTIONS --ignore-glob '*.py?'"
-    alias la="$temp -a $EXA_OPTIONS"
+    alias ll="$temp -a $EXA_OPTIONS"
     alias lt="l --sort time"
 fi
 
