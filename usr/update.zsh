@@ -110,8 +110,15 @@ function motd() {
 
         if [ "$JOSH_UPDATES_FOUND" -eq 0 ] && [ ! "$branch" = 'master' ]; then
             echo " + Josh $branch $last_commit."
+
         elif [ "$JOSH_UPDATES_FOUND" -gt 0 ]; then
-            echo " + Josh $branch $last_commit, found $JOSH_UPDATES_FOUND updates, just run: josh_pull && exec zsh"
+            if [ "$branch" = 'master' ]; then
+                local cmd="josh_update && exec zsh"
+            else
+                local cmd="josh_pull && exec zsh"
+            fi
+            echo " + Josh $branch $last_commit, found $JOSH_UPDATES_FOUND updates, just run: $cmd"
+
         fi
     fi
 }
