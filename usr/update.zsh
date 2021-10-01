@@ -1,6 +1,18 @@
 zmodload zsh/datetime
 
 
+function is_workhours() {
+    local head="${JOSH_WORKHOUR_START:-10}"
+    local tail="${JOSH_WORKHOUR_END:-18}"
+
+    local current_hour="`builtin strftime '%H' $EPOCHSECONDS`"
+    if [ "$current_hour" -ge "$head" ] && [ "$current_hour" -lt "$tail" ]; then
+        return 0
+    fi
+    return 1
+}
+
+
 function fetch_updates() {
     if [ -z "$JOSH" ]; then
         echo " - $0 warning: JOSH:\`$JOSH\`" >&2
@@ -50,16 +62,6 @@ function fetch_updates() {
     builtin cd "$cwd"
 }
 
-function is_workhours() {
-    local head="${JOSH_WORKHOUR_START:-10}"
-    local tail="${JOSH_WORKHOUR_END:-18}"
-
-    local current_hour="`builtin strftime '%H' $EPOCHSECONDS`"
-    if [ "$current_hour" -ge "$head" ] && [ "$current_hour" -lt "$tail" ]; then
-        return 0
-    fi
-    return 1
-}
 
 function check_updates() {
     if [ -z "$JOSH" ]; then
@@ -70,44 +72,37 @@ function check_updates() {
         echo " - $0 warning: JOSH_CACHE_DIR:\`$JOSH_CACHE_DIR\`"
         return 1
     fi
+    local updates="`fetch_updates`"
+    [ "$?" -gt 0 ] && return 1
+    [ "$updates" -eq 0 ] && return 0
 
-    local last_commit="`git --git-dir="$JOSH/.git" --work-tree="$JOSH/" log -1 --format="%ct"`"
-    local day_commit="$(( $last_commit ))"
-    local day_current="$(( $EPOCHSECONDS ))"
-
+    local file="$JOSH_CACHE_DIR/last-update"
+    local data="`cat $file 2>/dev/null`"
     local check_every="$(( ${JOSH_CHECK_UPDATES_DAYS:-1} * 86400 ))"
 
-    local cwd="$PWD" && builtin cd "$JOSH"
-    local branch="`git_current_branch`"
-    if [ -z "$branch" ]; then
+    if [ -z "$data" ] || [ "$(( $EPOCHSECONDS - $data ))" -gt "$check_every" ]; then
+        [ ! -d "$JOSH_CACHE_DIR" ] && mkdir -p "$JOSH_CACHE_DIR"
+        echo "$EPOCHSECONDS" > "$file"
+
+        local cwd="$PWD" && builtin cd "$JOSH"
+        local branch="`git_current_branch`"
         builtin cd "$cwd"
-        echo " - $0 warning: JOSH branch isn't retrieved" >&2
-        return 1
-    fi
-    builtin cd "$cwd"
 
-    if [ "$(( $day_current - $day_commit ))" -gt "$check_every" ]; then
-        local updates="`fetch_updates`"
-        [ "$?" -gt 0 ] && return 1
-        [ "$updates" -eq 0 ] && return 0
+        if [ "$branch" = "develop" ]; then
+            echo " + $0: $updates updates ready to install, let's go"
+            josh_pull "$branch"
 
-        local file="$JOSH_CACHE_DIR/last-update"
-        local data="`cat $file 2>/dev/null`"
+        elif [ "$branch" = "stable" ]; then
+            local last_commit="`git --git-dir="$JOSH/.git" --work-tree="$JOSH/" log -1 --format="%ct"`"
 
-        if [ -z "$data" ] || [ "$(( $EPOCHSECONDS - $data ))" -gt "$check_every" ]; then
-            [ ! -d "$JOSH_CACHE_DIR" ] && mkdir -p "$JOSH_CACHE_DIR"
-            echo "$EPOCHSECONDS" > "$file"
-
-            if [ "$branch" = "develop" ]; then
-                echo " + $0 for \`$branch\` autoupdates enabled, $updates updates ready"
-                josh_pull "$branch"
-
-            elif  [ "$branch" = "stable" ]; then
-
+            if [ "$(( $EPOCHSECONDS - $last_commit ))" -gt "$check_every" ]; then
                 JOSH_UPDATES_FOUND="$updates"
-            elif
-        fi
+            fi
+        else
     fi
 }
 
 is_workhours && true || check_updates
+
+unset check_updates
+unset fetch_updates
