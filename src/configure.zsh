@@ -51,7 +51,6 @@ EMOJI_CLI_KEYBIND="\eo"
 
 # zsh-autosuggestions
 
-WORDCHARS='_'
 ZSH_AUTOSUGGEST_ACCEPT_WIDGETS=(
     end-of-line
     vi-end-of-line

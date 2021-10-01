@@ -1,5 +1,3 @@
-ZSH_HIGHLIGHT_HIGHLIGHTERS+=brackets
-
 alias cp='cp -iR'  # prompt on overwrite and use recurse for directories
 alias mv='mv -i'
 alias tt='tail -f -n 100'
@@ -321,3 +319,22 @@ last_modified() {
     fi
     find $args -printf "%T@ %p\n" | sort -n | cut -d' ' -f 2- | tail -n 1
 }
+
+
+WORDCHARS='_'
+
+ZSH_HIGHLIGHT_MAXLENGTH=512
+ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern cursor line root regexp)
+
+typeset -A ZSH_HIGHLIGHT_REGEXP
+ZSH_HIGHLIGHT_REGEXP+=('\bsu\b' fg=white,bg=red,bold)
+ZSH_HIGHLIGHT_REGEXP+=('\bsudo\b' fg=white,bg=red,bold)
+
+typeset -A ZSH_HIGHLIGHT_STYLES
+ZSH_HIGHLIGHT_STYLES[path]="fg=yellow"
+ZSH_HIGHLIGHT_STYLES[path_pathseparator]="fg=white"
+ZSH_HIGHLIGHT_STYLES[alias]='fg=magenta,bold'
+ZSH_HIGHLIGHT_STYLES[back-quoted-argument-unclosed]="fg=red"
+ZSH_HIGHLIGHT_STYLES[single-quoted-argument-unclosed]="fg=red"
+ZSH_HIGHLIGHT_STYLES[double-quoted-argument-unclosed]="fg=red"
+ZSH_HIGHLIGHT_STYLES[dollar-quoted-argument-unclosed]="fg=red"
