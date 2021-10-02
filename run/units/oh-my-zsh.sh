@@ -135,7 +135,9 @@ function rename_and_link() {
     echo " + finally, rename $JOSH_DEST -> $ZSH"
     mv "$JOSH_DEST" "$ZSH" && ln -s ../plugins/josh/themes/josh.zsh-theme $ZSH/custom/themes/josh.zsh-theme
 
-    rm "$HOME/.zshrc" 2>/dev/null
+    dst="`date "+%Y.%m%d.%H%M"`-backup"
+    mv "$HOME/.zshrc" "$HOME/.zshrc-$dst" 2>/dev/null
+
     ln -s $ZSH/custom/plugins/josh/.zshrc $HOME/.zshrc
     if [ $? -gt 0 ]; then
         echo " - fatal: can't create symlink $ZSH/custom/plugins/josh/.zshrc -> $HOME/.zshrc"
