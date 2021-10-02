@@ -106,8 +106,9 @@ function save_previous_installation() {
             echo " - warning: backup $ZSH failed"
             return 4
         fi
+    fi
 
-    elif [ -f "$HOME/.zshrc" ]; then
+    if [ -f "$HOME/.zshrc" ]; then
         # .zshrc exists from non-josh installation
 
         dst="$HOME/.zshrc-`date "+%Y.%m%d.%H%M"`-backup"
@@ -134,12 +135,11 @@ function rename_and_link() {
     echo " + finally, rename $JOSH_DEST -> $ZSH"
     mv "$JOSH_DEST" "$ZSH" && ln -s ../plugins/josh/themes/josh.zsh-theme $ZSH/custom/themes/josh.zsh-theme
 
-    if [ ! -e "$HOME/.zshrc" ]; then
-        ln -s $ZSH/custom/plugins/josh/.zshrc $HOME/.zshrc
-        if [ $? -gt 0 ]; then
-            echo " - fatal: can't create symlink $ZSH/custom/plugins/josh/.zshrc -> $HOME/.zshrc"
-            return 1
-        fi
+    rm "$HOME/.zshrc" 2>/dev/null
+    ln -s $ZSH/custom/plugins/josh/.zshrc $HOME/.zshrc
+    if [ $? -gt 0 ]; then
+        echo " - fatal: can't create symlink $ZSH/custom/plugins/josh/.zshrc -> $HOME/.zshrc"
+        return 1
     fi
     return 0
 }
