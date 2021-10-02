@@ -135,7 +135,7 @@ function rename_and_link() {
     echo " + finally, rename $JOSH_DEST -> $ZSH"
     mv "$JOSH_DEST" "$ZSH" && ln -s ../plugins/josh/themes/josh.zsh-theme $ZSH/custom/themes/josh.zsh-theme
 
-    dst="`date "+%Y.%m%d.%H%M"`-backup"
+    dst="`date "+%Y.%m%d.%H%M"`.bak"
     mv "$HOME/.zshrc" "$HOME/.zshrc-$dst" 2>/dev/null
 
     ln -s $ZSH/custom/plugins/josh/.zshrc $HOME/.zshrc
