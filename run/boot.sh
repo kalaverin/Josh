@@ -119,11 +119,11 @@ else
         else
             cwd="`pwd`"
 
-            JOSH_DEST="$HOME/.josh.omz"  && [ -d "$JOSH_DEST" ] && rm -rf "$JOSH_DEST"
-            JOSH_BASE="$HOME/.josh.self" && [ -d "$JOSH_BASE" ] && rm -rf "$JOSH_BASE"
+            JOSH_DEST="$HOME/$JOSH_SUBDIR.engine"  && [ -d "$JOSH_DEST" ] && rm -rf "$JOSH_DEST"
+            JOSH_BASE="$HOME/$JOSH_SUBDIR.wrapper" && [ -d "$JOSH_BASE" ] && rm -rf "$JOSH_BASE"
 
             echo " + initial deploy to $JOSH_DEST, Josh to $JOSH_BASE"
-            git clone --depth 1 https://github.com/YaakovTooth/Josh.git $JOSH_BASE
+            git clone https://github.com/YaakovTooth/Josh.git $JOSH_BASE
             [ $? -gt 0 ] && return 2
 
             if [ "$JOSH_BRANCH" ]; then
