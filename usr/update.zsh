@@ -108,16 +108,22 @@ function motd() {
             log -1 --format="at %h updated %cr" 2>/dev/null
         )"
 
+        local cwd="$PWD" && builtin cd "$JOSH"
+        local ctag="`git describe --tags --abbrev=0`"
+        local ftag="`git --no-pager log --oneline --no-walk --tags="?.?.?" --format="%d" | grep -Po '\d+\.\d+\.\d+' | proximity-sort - | tail -n 1`"
+        builtin cd "$cwd"
+
         if [ "$JOSH_UPDATES_FOUND" -eq 0 ] && [ ! "$branch" = 'master' ]; then
-            echo " + Josh $branch $last_commit."
+            echo " + Josh v$ctag $branch $last_commit."
 
         elif [ "$JOSH_UPDATES_FOUND" -gt 0 ]; then
             if [ "$branch" = 'master' ]; then
-                local cmd="josh_update && exec zsh"
+                if [ "$ctag" ] && [ ! "$ctag" = "$ftag" ]; then
+                    echo " + Josh v$ctag, but actual version is v$ftag, updates downloaded, just run: josh_update && exec zsh"
+                fi
             else
-                local cmd="josh_pull && exec zsh"
+                echo " + Josh v$ctag $branch $last_commit, found $JOSH_UPDATES_FOUND updates, just run: josh_update && exec zsh"
             fi
-            echo " + Josh $branch $last_commit, found $JOSH_UPDATES_FOUND updates, just run: $cmd"
 
         fi
     fi
