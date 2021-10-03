@@ -109,7 +109,7 @@ function motd() {
         )"
 
         local cwd="$PWD" && builtin cd "$JOSH"
-        local ctag="`git describe --tags --abbrev=0`"
+        local ctag="`git describe --tags --abbrev=0 2>/dev/null`"
         local ftag="`git --no-pager log --oneline --no-walk --tags="?.?.?" --format="%d" | grep -Po '\d+\.\d+\.\d+' | proximity-sort - | tail -n 1`"
         builtin cd "$cwd"
 
