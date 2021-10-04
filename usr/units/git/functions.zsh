@@ -45,9 +45,9 @@ function cmd_git_fetch() {
     unset git_fetch_make_cmd
 
     if [ -n "$cmd" ]; then
-        local cmd="$cmd && git fetch --all --tags"
+        local cmd="$cmd && git fetch --tags"
     else
-        local cmd="git fetch --all --tags"
+        local cmd="git fetch --tags"
     fi
     echo "$cmd"
 }
@@ -331,7 +331,7 @@ function git_update_nested_repositories() {
 
         echo ""
         echo "    `pwd` <- $branch"
-        run_silent "git fetch origin master && git fetch --tags --all"
+        run_silent "git fetch origin master && git fetch --tags"
 
         git_repository_clean
         if [ $? -gt 0 ]; then
