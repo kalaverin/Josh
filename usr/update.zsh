@@ -2,8 +2,8 @@ zmodload zsh/datetime
 
 
 function is_workhours() {
-    local head="${JOSH_WORKHOUR_START:-10}"
-    local tail="${JOSH_WORKHOUR_END:-18}"
+    local head="${JOSH_WORKHOUR_START:-6}"
+    local tail="${JOSH_WORKHOUR_END:-16}"
 
     local current_hour="`builtin strftime '%H' $EPOCHSECONDS`"
     if [ "$current_hour" -ge "$head" ] && [ "$current_hour" -lt "$tail" ]; then
