@@ -307,7 +307,8 @@ function DROP_THIS_BRANCH_RIGHT_NOW() {
         return 1
     fi
 
-    run_show "git reset --hard && (git checkout develop 2>/dev/null 1>/dev/null 2> /dev/null || git checkout master 2>/dev/null 1>/dev/null) && git branch -D $branch && git push origin --delete $branch; git remote prune origin"
+    run_show "git reset --hard && (git checkout develop 2>/dev/null 1>/dev/null 2> /dev/null || git checkout master 2>/dev/null 1>/dev/null) && git branch -D $branch && git push origin --delete $branch"
+    run_show "git remote prune origin"
     return $?
 }
 
