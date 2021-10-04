@@ -42,7 +42,7 @@ function fetch_updates() {
     if [ -z "$data" ] || [ "$(( $EPOCHSECONDS - $data ))" -gt "$fetch_every" ]; then
         [ ! -d "$JOSH_CACHE_DIR" ] && mkdir -p "$JOSH_CACHE_DIR"
         echo "$EPOCHSECONDS" > "$file"
-        git fetch --auto-gc --jobs=4 --tags --prune-tags --set-upstream origin "$branch" 2>/dev/null
+        git fetch --auto-gc --jobs=4 --tags --prune-tags --set-upstream origin "$branch" 2>/dev/null && git fetch --tags 2>/dev/null
     fi
 
     local count="$(
