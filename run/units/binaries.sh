@@ -103,6 +103,10 @@ function deploy_tmux_plugins() {
     local tmux_dest="$HOME/.tmux/plugins"
     [ ! -d "$tmux_dest" ] && mkdir -p "$tmux_dest"
 
+    if [ -x "$HOME/.tmux/plugins/tpm/tpm" ]; then
+        export TMUX_PLUGIN_MANAGER_PATH="$HOME/.tmux/plugins"
+    fi
+
     if [ ! -x "$tmux_dest/tpm" ]; then
         git clone --depth 1 "https://github.com/tmux-plugins/tpm" "$tmux_dest/tpm"
         [ "$?" -gt 0 ] && return 1
