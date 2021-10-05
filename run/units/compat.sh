@@ -2,12 +2,13 @@
 
 REQUIRED_BINARIES=(
     cc
-    make
-    pkg-config
     git
     jq
+    make
+    pkg-config
     pv
     python3
+    tmux
     tree
     zsh
 )

@@ -35,6 +35,7 @@ PIP_OPT_PACKAGES=(
     mycli      # python-driver MySQL client
     pgcli      # python-driver PostgreSQL client
     nodeenv    # virtual environments for node packaging
+    tmuxp      # tmux session manager
 )
 
 function python_distutils() {

@@ -97,10 +97,58 @@ function deploy_micro() {
     return 0
 }
 
+# ——— tmux plugin manager
+
+function deploy_tmux_plugins() {
+    local tmux_dest="$HOME/.tmux/plugins"
+    [ ! -d "$tmux_dest" ] && mkdir -p "$tmux_dest"
+
+    if [ ! -x "$tmux_dest/tpm" ]; then
+        git clone --depth 1 "https://github.com/tmux-plugins/tpm" "$tmux_dest/tpm"
+        [ "$?" -gt 0 ] && return 1
+    fi
+
+    if [ -x "`lookup bash`" ]; then
+        bash "$HOME/.tmux/plugins/tpm/scripts/install_plugins.sh"
+    else
+        echo " - It's funny, but tmux plugin manager requires bash for installation bootstrap."
+    fi
+
+    return 0
+}
+
+
+function deploy_fpp() {
+    [ ! -d "$BINARY_DEST" ] && mkdir -p "$BINARY_DEST"
+
+    if [ -x "$BINARY_DEST/fpp" ]; then
+        return 0
+    fi
+
+    if [ -z "$OMZ_PLUGIN_DIR" ]; then
+        echo " - warning by fpp: plugins dir isn't detected, BINARY_DEST:\`$BINARY_DEST\`"
+        return 1
+
+    elif [ ! -d "$OMZ_PLUGIN_DIR/fpp" ]; then
+        echo " + deploy fpp in \`$OMZ_PLUGIN_DIR\` and link to \`$BINARY_DEST\`"
+        git clone --depth 1 "https://github.com/facebook/PathPicker.git" "$OMZ_PLUGIN_DIR/fpp"
+    fi
+
+    if [ -x "$OMZ_PLUGIN_DIR/fpp/fpp" ] && [ ! -x "$BINARY_DEST/fpp" ]; then
+        ln -s "$OMZ_PLUGIN_DIR/fpp/fpp" "$BINARY_DEST/fpp"
+    fi
+    local retval="$?"
+
+    [ "$retval" -gt 0 ] && echo " - warning: failed fpp $BINARY_DEST/fpp"
+    return "$retval"
+}
+
 
 function deploy_binaries() {
     compile_fzf && \
     deploy_micro && \
+    deploy_tmux_plugins && \
+    deploy_fpp && \
     compile_ondir
     return "$?"
 }

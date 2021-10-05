@@ -16,6 +16,7 @@ fi
 OMZ_PLUGIN_DIR="$DEST/custom/plugins"
 PACKAGES=(
     "https://github.com/alecthomas/ondir.git $OMZ_PLUGIN_DIR/ondir"
+    "https://github.com/facebook/PathPicker.git $OMZ_PLUGIN_DIR/fpp"
     "https://github.com/chrissicool/zsh-256color $OMZ_PLUGIN_DIR/zsh-256color"
     "https://github.com/hlissner/zsh-autopair.git $OMZ_PLUGIN_DIR/zsh-autopair"
     "https://github.com/leophys/zsh-plugin-fzf-finder.git $OMZ_PLUGIN_DIR/zsh-plugin-fzf-finder"
