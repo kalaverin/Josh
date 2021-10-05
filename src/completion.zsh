@@ -48,7 +48,3 @@ fi
 if [ -x "`lookup fuck`" ]; then
     eval $(thefuck --alias)
 fi
-
-if [[ -n "$PS1" ]] && [[ -z "$TMUX" ]] && [[ -n "$SSH_CONNECTION" ]] && [ -z "$JOSH_DISABLE_TMUX" ] && [ -x "`lookup tmux`" ]; then
-    tmux attach-session -t remote || tmux new-session -s remote
-fi
