@@ -640,8 +640,16 @@ josh_bootstrap_command_branched() {
     echo "export JOSH_RENEW_CONFIGS=1 && export JOSH_BRANCH="$branch" && ((curl -fsSL $url || wget -qO - $url || fetch -qo - $url) | zsh); unset JOSH_RENEW_CONFIGS && unset JOSH_BRANCH"
 }
 
+josh_source() {
+    if [ ! -f "$JOSH/$1" ]; then
+        echo " - $0 fatal: \`$JOSH/$1\` isn't accessible"
+        return 1
+    fi
+    source "$JOSH/$1"
+}
+
 josh_extras() {
-    source "$JOSH/run/update.sh"
+    josh_source "run/update.sh"
     deploy_extras
 }
 
