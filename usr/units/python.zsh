@@ -216,7 +216,7 @@ function virtualenv_create {
 }
 
 function virtualenv_temporary_create {
-    local venv="`get_tempdir`/`basename $JOSH_VENVS_DIR`/`petname -s . -w 3 -a`"
+    local venv="`get_tempdir`/`basename $JOSH_VENVS_DIR`/`make_human_name`"
     virtualenv_create "$venv" $@
 }
 

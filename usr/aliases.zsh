@@ -256,24 +256,56 @@ if [ -x "$temp" ]; then
     }
 fi
 
-local temp="`lookup petname`"
-if [ -x "$temp" ]; then
-    alias petname="$temp"
 
-    function generate_three_words() {
-        echo "`petname -s . -w 3 -a`"
+naming_functions=()
+if [ -x "`lookup xkpwgen`" ]; then
+    function make_xkpwgen_name() {
+        local count=${1:-2}
+        local sep=${2:-'.'}
+        echo "`xkpwgen -l $count -n 1 -s "$sep"`"
     }
-
-    function mktp {
-        mkcd "$(dirname `mktemp -duq`)/pet/`generate_three_words`"
-    }
+    naming_functions+=(make_xkpwgen_name)
 fi
+
+if  [ -x "`lookup pgen`" ]; then
+    function make_pgen_name() {
+        local count=${1:-2}
+        local sep=${2:-'.'}
+        echo "`pgen -n $count -k 1 | sd '( +)' "$sep"`"
+    }
+    naming_functions+=(make_pgen_name)
+fi
+
+if [ -x "`lookup petname`" ]; then
+    function make_petname_name() {
+        local count=${1:-2}
+        local sep=${2:-'.'}
+        echo "`petname -s "$sep" -w $count -a`"
+    }
+    naming_functions+=(make_petname_name)
+fi
+
+local count=${#naming_functions[@]}
+if [ "$count" -gt 0 ]; then
+    local select=$(printf "%d" $[RANDOM%$count+1])
+    if [ "$select" -gt 0 ]; then
+        make_human_name="${naming_functions[$select]}"
+        function make_human_name() {
+            echo "`$make_human_name $*`"
+        }
+    fi
+fi
+
+
+function mktp {
+    mkcd "$(dirname `mktemp -duq`)/pets/`make_human_name`"
+}
 
 # ———
 
 function mkcd {
     [ -z "$1" ] && return 1
-    mkdir "$*" && cd "$*"
+    mkdir -p "$*" && cd "$*"
 }
 
 function run_show() {
