@@ -2,12 +2,12 @@ source "$JOSH/lib/shared.sh"
 
 # ———
 
-local THIS_DIR=`dirname "$($JOSH_READLINK -f "$0")"`
+local THIS_DIR="`dirname "$($JOSH_READLINK -f "$0")"`"
 local INCLUDE_DIR="`realpath $THIS_DIR/src`"
 
 
 commit_text () {
-    local text=`sh -c "$HTTP_GET http://whatthecommit.com/index.txt"`
+    local text="`sh -c "$HTTP_GET http://whatthecommit.com/index.txt"`"
     echo "$text" | anyframe-action-insert
     zle end-of-line
 }
@@ -16,12 +16,12 @@ zle -N commit_text
 insert_directory() {
     # анализировать запрос и если есть слеш и такой каталог — то есть уже в нём
     if [ "$LBUFFER" ]; then
-        local pre=`echo "$LBUFFER" | ${JOSH_GREP:-'grep'} -Po '([^\s]+)$'`
+        local pre="`echo "$LBUFFER" | ${JOSH_GREP:-'grep'} -Po '([^\s]+)$'`"
     else
         local pre=""
     fi
     if [ "$RBUFFER" ]; then
-        local post=`echo "$RBUFFER" | ${JOSH_GREP:-'grep'} -Po '^([^\s]+)'`
+        local post="`echo "$RBUFFER" | ${JOSH_GREP:-'grep'} -Po '^([^\s]+)'`"
     else
         local post=""
     fi
@@ -87,12 +87,12 @@ zle -N insert_directory
 
 insert_endpoint() {
     if [ "$LBUFFER" ]; then
-        local pre=`echo "$LBUFFER" | ${JOSH_GREP:-'grep'} -Po '([^\s]+)$'`
+        local pre="`echo "$LBUFFER" | ${JOSH_GREP:-'grep'} -Po '([^\s]+)$'`"
     else
         local pre=""
     fi
     if [ "$RBUFFER" ]; then
-        local post=`echo "$RBUFFER" | ${JOSH_GREP:-'grep'} -Po '^([^\s]+)'`
+        local post="`echo "$RBUFFER" | ${JOSH_GREP:-'grep'} -Po '^([^\s]+)'`"
     else
         local post=""
     fi
