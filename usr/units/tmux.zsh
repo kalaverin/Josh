@@ -33,6 +33,7 @@ function tmux_go_any() {
 function tmux_any_session() {
     local result=$(
         tmux list-sessions 2>/dev/null \
+        | timeout -s 2 0.33 cat \
         | tabulate -d ':' -i 1 \
         | head -n 1 \
     )
@@ -43,6 +44,7 @@ function tmux_any_session() {
 function tmux_detached_session() {
     local result=$(
         tmux list-sessions 2>/dev/null \
+        | timeout -s 2 0.33 cat \
         | grep -v "(attached)" \
         | tabulate -d ':' -i 1 \
         | head -n 1 \
@@ -56,6 +58,7 @@ function tmux_matched_detached_session() {
     local screen_size="[${COLUMNS}x${lines}]"
     local result=$(
         tmux list-sessions 2>/dev/null \
+        | timeout -s 2 0.33 cat \
         | grep -F "$screen_size" \
         | grep -v "(attached)" \
         | tabulate -d ':' -i 1 \
