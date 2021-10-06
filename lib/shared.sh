@@ -22,7 +22,7 @@ function get_preview_width() {
 }
 
 function get_tempdir() {
-    local path="$(dirname `mktemp -duq`)"
-    [ ! -d "$path" ] && mkdir -p "$path"
-    echo "$path"
+    local result="$(dirname `mktemp -duq`)"
+    [ ! -x "$result" ] && mkdir -p "$result"
+    echo "$result"
 }
