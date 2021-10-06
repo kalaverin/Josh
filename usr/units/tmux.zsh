@@ -68,3 +68,5 @@ function tmux_matched_detached_session() {
 if [ -n "$PS1" ] && [ -z "$TMUX" ] && [ -n "$SSH_CONNECTION" ] && [ -z "$JOSH_TMUX_DISABLE_AUTOREATTACH" ]; then
     tmux_go_match
 fi
+
+alias tmx='tmux_go_match || tmux_go'
