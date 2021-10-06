@@ -42,6 +42,8 @@ if [ -n "$(uname | grep -i freebsd)" ]; then
     export JOSH_OS="BSD"
     export JOSH_CUT='/usr/local/bin/gcut'
     export JOSH_GREP='/usr/local/bin/grep'
+    export JOSH_HEAD='/usr/local/bin/ghead'
+    export JOSH_TAIL='/usr/local/bin/gtail'
     export JOSH_LS='/usr/local/bin/gnuls'
     export JOSH_READLINK='/usr/local/bin/greadlink'
     export JOSH_REALPATH='/usr/local/bin/grealpath'
@@ -52,6 +54,8 @@ elif [ -n "$(uname | grep -i darwin)" ]; then
     export JOSH_OS="MAC"
     export JOSH_CUT='/usr/local/bin/gcut'
     export JOSH_GREP='/usr/local/bin/ggrep'
+    export JOSH_HEAD='/usr/local/bin/ghead'
+    export JOSH_TAIL='/usr/local/bin/gtail'
     export JOSH_LS='/usr/local/bin/gls'
     export JOSH_READLINK='/usr/local/bin/greadlink'
     export JOSH_REALPATH='/usr/local/bin/grealpath'
@@ -61,6 +65,8 @@ elif [ -n "$(uname | grep -i darwin)" ]; then
 else
     export JOSH_CUT="`lookup cut`"
     export JOSH_GREP="`lookup grep`"
+    export JOSH_HEAD="`lookup head`"
+    export JOSH_TAIL="`lookup tail`"
     export JOSH_LS="`lookup ls`"
     export JOSH_READLINK="`lookup readlink`"
     export JOSH_REALPATH="`lookup realpath`"
@@ -78,5 +84,7 @@ fi
 [ -x "$JOSH_CUT" ] && alias cut="$JOSH_CUT"
 [ -x "$JOSH_SED" ] && alias sed="$JOSH_SED"
 [ -x "$JOSH_GREP" ] && alias grep="$JOSH_GREP"
+[ -x "$JOSH_HEAD" ] && alias head="$JOSH_HEAD"
+[ -x "$JOSH_TAIL" ] && alias tail="$JOSH_TAIL"
 [ -x "$JOSH_READLINK" ] && alias readlink="$JOSH_READLINK"
 [ -x "$JOSH_REALPATH" ] && alias realpath="$JOSH_REALPATH"
