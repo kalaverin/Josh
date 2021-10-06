@@ -99,6 +99,7 @@ function check_compliance() {
         local pkg="zsh git coreutils gnugrep gnuls gsed jq openssl pkgconf pv python39"
         REQURED_SYSTEM_BINARIES=(
             pkg
+            /usr/local/bin/gcut
             /usr/local/bin/gnuls
             /usr/local/bin/greadlink
             /usr/local/bin/grealpath
@@ -119,6 +120,7 @@ function check_compliance() {
         REQURED_SYSTEM_BINARIES=(
             brew
             /usr/local/bin/ggrep
+            /usr/local/bin/gcut
             /usr/local/bin/gls
             /usr/local/bin/greadlink
             /usr/local/bin/grealpath
