@@ -37,6 +37,7 @@ function pull_update() {
             echo " + pull last changes from \`$branch\` to \``pwd`\`" && \
             git pull --ff-only --no-edit --no-commit origin "$branch"
             local retval="$?"
+            git fetch --tags
 
             if [ $retval -eq 0 ]; then
                 git update-index --refresh &>>/dev/null
