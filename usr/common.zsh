@@ -266,7 +266,6 @@ visual_recent_chdir() {
 }
 zle -N visual_recent_chdir
 
-
 visual_warp_chdir() {
     local directory=$(wd list | sd '(.+?)\s+->\s+(.+)' '$1::$2' | sed '1d' | sort -k 1 | sd '::(~)' "::$HOME" | tabulate -d '::' | \
         fzf \
@@ -302,7 +301,6 @@ visual_warp_chdir() {
     return 0
 }
 zle -N visual_warp_chdir
-
 
 insert_command() {
     local file="`get_tempdir`/.insert.cmd.tmp"

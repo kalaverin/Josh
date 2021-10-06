@@ -79,15 +79,6 @@ FORGIT_FZF_DEFAULT_OPTS="
     --reverse
     --height '80%'
 "
-
-if [[ -n "$PS1" ]] && [[ -z "$TMUX" ]] && [[ -n "$SSH_CONNECTION" ]] && [ -z "$JOSH_DISABLE_TMUX" ] && [ -x "`lookup tmux`" ]; then
-    tmux attach-session -t remote || tmux new-session -s remote
-fi
-
-if [ -x "$HOME/.tmux/plugins/tpm/tpm" ]; then
-    export TMUX_PLUGIN_MANAGER_PATH="$HOME/.tmux/plugins"
-fi
-
 if [ -n "$PAGER" ] && [ -x "`lookup $PAGER`" ]; then
     PAGER_BIN=`lookup $PAGER`
 fi

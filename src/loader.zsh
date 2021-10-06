@@ -13,7 +13,9 @@ source "$JOSH/usr/aliases.zsh"
 source "$JOSH/usr/bindings.zsh"
 source "$JOSH/usr/common.zsh"
 
-source "$JOSH/usr/units/git.zsh"
-source "$JOSH/usr/units/python.zsh"
+[ -x "`lookup git`" ]    && source "$JOSH/usr/units/git.zsh"
+[ -x "`lookup python`" ] && source "$JOSH/usr/units/python.zsh"
+[ -x "`lookup tmux`" ]   && source "$JOSH/usr/units/tmux.zsh"
+
 source "$JOSH/usr/units/files.zsh"
 source "$JOSH/usr/update.zsh"

@@ -103,6 +103,8 @@ function motd() {
         return 1
     else
         check_updates
+        [ -n "$TMUX" ] && return 0
+
         local last_commit="$(
             git --git-dir="$JOSH/.git" --work-tree="$JOSH/" \
             log -1 --format="at %h updated %cr" 2>/dev/null
