@@ -1,5 +1,3 @@
-zmodload zsh/mathfunc
-
 if [ -x "$HOME/.tmux/plugins/tpm/tpm" ]; then
     export TMUX_PLUGIN_MANAGER_PATH="$HOME/.tmux/plugins"
 fi

@@ -131,5 +131,3 @@ function motd() {
     fi
 }
 
-
-is_workhours || motd
