@@ -347,7 +347,7 @@ function cargo_install() {
     fi
 
     if [ -n "$packages" ]; then
-        $SHELL -c "$CARGO_BIN install $packages"
+        run_show "$CARGO_BIN install $packages"
     fi
 }
 
@@ -391,7 +391,7 @@ function cargo_uninstall() {
     fi
 
     if [ -n "$packages" ]; then
-        $SHELL -c "$CARGO_BIN update $packages"
+        run_show "$CARGO_BIN delete $packages"
     fi
 }
 
