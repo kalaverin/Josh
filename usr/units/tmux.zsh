@@ -74,10 +74,10 @@ function tmx_get_matching_detached_session() {
     local query='zmodload zsh/mathfunc && echo "$((abs(#{window_width} - $COLUMNS) + abs(#{window_height} - $LINES))) #{session_name}"'
 
     local result="$(
-        tmux list-sessions -f "#{?session_attached,,1}" -F $query 2>/dev/null |
-        timeout -s 2 0.33 zsh | sort -Vk 1 | head -n 1 |
-        sd '(\d+) (.+)' "echo \"\$((\$1 <= $maxdiff)) \$2\"" | zsh |
-        grep -P '^1' | tabulate -i 2
+        tmux list-sessions -f "#{?session_attached,0,1}" -F $query 2>/dev/null |
+        timeout -s 2 0.33 $SHELL | sort -Vk 1 |
+        sd '(\d+) (.+)' "echo \"\$((\$1 <= $maxdiff)) \$2\"" | $SHELL |
+        grep -P '^1' | head -n 1 | tabulate -i 2
     )"
     [ -z "$result" ] && return 1 || echo "$result"
 }
