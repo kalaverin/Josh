@@ -37,7 +37,7 @@ function tmx() {
             fi
 
         else
-            tmux new-session -s "`tmx_get_matching_detached_session || make_human_name 1`"
+            tmx lost || tmux new-session -s "`make_human_name 1`"
         fi
     fi
 }
