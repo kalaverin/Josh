@@ -391,7 +391,7 @@ function cargo_uninstall() {
     fi
 
     if [ -n "$packages" ]; then
-        run_show "$CARGO_BIN delete $packages"
+        run_show "$CARGO_BIN uninstall $packages"
     fi
 }
 
