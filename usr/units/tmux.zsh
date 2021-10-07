@@ -2,6 +2,8 @@ if [ -x "$HOME/.tmux/plugins/tpm/tpm" ]; then
     export TMUX_PLUGIN_MANAGER_PATH="$HOME/.tmux/plugins"
 fi
 
+alias tml="tmux list-sessions -F ' #{?session_attached,+,-} #{window_width}x#{window_height} #{session_name}'"
+
 function tmx() {
     if [[ -n "$PS1" ]] && [[ -n "$SSH_CONNECTION" ]]; then
 
@@ -80,6 +82,6 @@ function tmx_get_matching_detached_session() {
     [ -z "$result" ] && return 1 || echo "$result"
 }
 
-if [ -n "$PS1" ] && [ -z "$TMUX" ] && [ -n "$SSH_CONNECTION" ] && [ -z "$JOSH_TMUX_DISABLE_AUTORETACH" ]; then
+if [ -z "$JOSH_TMUX_DISABLE_AUTORETACH" ] && [ -n "$PS1" ] && [ -z "$TMUX" ] && [ -n "$SSH_CONNECTION" ]; then
     tmx lost
 fi
