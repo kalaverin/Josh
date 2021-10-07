@@ -1,3 +1,5 @@
+zmodload zsh/mathfunc
+
 if [ -x "$HOME/.tmux/plugins/tpm/tpm" ]; then
     export TMUX_PLUGIN_MANAGER_PATH="$HOME/.tmux/plugins"
 fi
@@ -73,21 +75,20 @@ function tmux_detached_session() {
 }
 
 function tmux_matched_detached_session() {
-    let lines="$LINES -1"
-    local screen_size="[${COLUMNS}x${lines}]"
+    local maxdiff="${JOSH_TMUX_MAX_DIFF_AUTORETACH:-9}"
     local result=$(
-        tmux list-sessions 2>/dev/null \
-        | timeout -s 2 0.33 cat \
-        | grep -F "$screen_size" \
-        | grep -v "(attached)" \
-        | tabulate -d ':' -i 1 \
-        | head -n 1 \
+        tmux list-sessions 2>/dev/null | \
+        timeout -s 2 0.33 cat | \
+        grep -Fv '(attached)' | \
+        sd '^(.+?):.+\[(\d+)x(\d+)\](.*)' "zmodload zsh/mathfunc && echo \"\$(( abs(\$2 - $COLUMNS) + abs(\$3 - $LINES + 1) <= $maxdiff )):\$1:\$4\"" | \
+        zsh | sort -Vk 1 | \
+        grep -Pv '^0:' | tabulate -d ':' -i 2 \
     )
     [ -z "$result" ] && return 1
     echo "$result"
 }
 
-if [ -n "$PS1" ] && [ -z "$TMUX" ] && [ -n "$SSH_CONNECTION" ] && [ -z "$JOSH_TMUX_DISABLE_AUTOREATTACH" ]; then
+if [ -n "$PS1" ] && [ -z "$TMUX" ] && [ -n "$SSH_CONNECTION" ] && [ -z "$JOSH_TMUX_DISABLE_AUTORETACH" ]; then
     tmux_go_match
 fi
 
