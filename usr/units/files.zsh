@@ -27,7 +27,7 @@ function kab {
         return 1
     fi
 
-    is_repository_clean
+    git_repository_clean
     if [ $? -gt 0 ]; then
         return 1
     fi
