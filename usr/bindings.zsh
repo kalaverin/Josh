@@ -116,6 +116,6 @@ bindkey '\ec'  visual_recent_chdir
 bindkey '\eC'  visual_warp_chdir
 
 bindkey '\em'  pip_visual_freeze
-bindkey '\ed'  history-search-multi-word
+# bindkey '\ed'  history-search-multi-word
 
 fi
