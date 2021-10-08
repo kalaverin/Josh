@@ -321,24 +321,3 @@ rchgrp() {
     [ -z "$1" ] && [ -z "$2" ] && return 1
     find $2 ( -not -group $1 ) -print -exec chgrp $1 {} ;
 }
-
-WORDCHARS='_'
-
-ZSH_HIGHLIGHT_MAXLENGTH=512
-ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern cursor regexp)
-
-typeset -A ZSH_HIGHLIGHT_PATTERNS
-ZSH_HIGHLIGHT_PATTERNS+=('rm -rf' 'fg=white,bold,bg=red')
-
-typeset -A ZSH_HIGHLIGHT_REGEXP
-ZSH_HIGHLIGHT_REGEXP+=('\bsu\b' fg=white,bg=red,bold)
-ZSH_HIGHLIGHT_REGEXP+=('\bsudo\b' fg=white,bg=red,bold)
-
-typeset -A ZSH_HIGHLIGHT_STYLES
-ZSH_HIGHLIGHT_STYLES[path]="fg=yellow"
-ZSH_HIGHLIGHT_STYLES[path_pathseparator]="fg=white"
-ZSH_HIGHLIGHT_STYLES[alias]='fg=magenta,bold'
-ZSH_HIGHLIGHT_STYLES[back-quoted-argument-unclosed]="fg=red"
-ZSH_HIGHLIGHT_STYLES[single-quoted-argument-unclosed]="fg=red"
-ZSH_HIGHLIGHT_STYLES[double-quoted-argument-unclosed]="fg=red"
-ZSH_HIGHLIGHT_STYLES[dollar-quoted-argument-unclosed]="fg=red"

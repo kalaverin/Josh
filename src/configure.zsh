@@ -1,7 +1,7 @@
-# init python+pip and rust+cargo environment
+# first, set locale
 #
-source "$JOSH/lib/python.sh" && python_env
-source "$JOSH/lib/rust.sh" && rust_env
+
+JOSH_DEFAULT_LOCALE="${DEFAULT_LOCALE:-"en_US.UTF-8"}"
 
 export LANG="${LANG:-"$JOSH_DEFAULT_LOCALE"}"
 export LANGUAGE="${LANGUAGE:-"$JOSH_DEFAULT_LOCALE"}"
@@ -10,6 +10,12 @@ export LC_ALL="${LC_ALL:-"$JOSH_DEFAULT_LOCALE"}"
 if [ "$JOSH_OS" = "BSD" ]; then
     export MM_CHARSET="${MM_CHARSET:-"$JOSH_DEFAULT_LOCALE"}"
 fi
+
+# init python+pip and rust+cargo environment
+#
+
+source "$JOSH/lib/python.sh" && python_env
+source "$JOSH/lib/rust.sh" && rust_env
 
 
 # JOSH_PY_ENVS_ROOT
@@ -52,9 +58,6 @@ JOSH_TMUX_AUTORETACH_DISABLE=1
 JOSH_TMUX_AUTORETACH_MAX_DIFF=9
 
 
-JOSH_DEFAULT_LOCALE="{DEFAULT_LOCALE:-"en_US.UTF-8"}"
-
-
 # remove duplicates from PATH
 #
 local unified_path="$(
@@ -87,7 +90,7 @@ ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS=(
 )
 ZSH_AUTOSUGGEST_USE_ASYNC=1
 ZSH_AUTOSUGGEST_STRATEGY=(match_prev_cmd completion history)
-ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=10
+ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=25
 # ZSH_AUTOSUGGEST_HISTORY_IGNORE="?(#c80,)"
 
 
@@ -99,7 +102,7 @@ FORGIT_FZF_DEFAULT_OPTS="
     --height '80%'
 "
 if [ -n "$PAGER" ] && [ -x "`lookup $PAGER`" ]; then
-    PAGER_BIN=`lookup $PAGER`
+    PAGER_BIN="`lookup $PAGER`"
 fi
 
 LISTER_LESS="`lookup less` -M"
