@@ -95,7 +95,7 @@ function deploy_micro() {
     fi
     source "$BASE/run/units/configs.sh" && \
     copy_config "$CONFIG_ROOT/micro_config.json" "$CONFIG_DIR/micro/settings.json" && \
-    copy_config "$CONFIG_ROOT/micro_binds.json" "$CONFIG_DIR/micro/settings.json" && \
+    copy_config "$CONFIG_ROOT/micro_binds.json" "$CONFIG_DIR/micro/bindings.json" && \
     return 0
 }
 
