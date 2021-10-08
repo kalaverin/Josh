@@ -79,7 +79,7 @@ if [ -x "$JOSH_GREP" ]; then
 fi
 
 if [ "$JOSH_OS" = 'BSD' ]; then
-    alias fstam="`lookup stat` -qf '%m'"
+    alias fstatm="`lookup stat` -qf '%m'"
 elif [ "$JOSH_OS" = 'MAC' ]; then
     alias fstatm="`lookup stat` -f '%m'"
 else
