@@ -78,7 +78,7 @@ if [ -x "$JOSH_GREP" ]; then
     alias ri="$JOSH_GREP $GREP_RECURSIVE_OPTIONS"
 fi
 
-if [ "$JOSH_OS" = 'BAS' ]; then
+if [ "$JOSH_OS" = 'BSD' ]; then
     alias fstam="`lookup stat` -qf '%m'"
 elif [ "$JOSH_OS" = 'MAC' ]; then
     alias fstatm="`lookup stat` -f '%m'"
