@@ -93,7 +93,9 @@ function deploy_micro() {
         $SHELL -c "$BINARY_DEST/micro -plugin install fzf wc detectindent bounce editorconfig quickfix"
         builtin cd "$cwd"
     fi
-    source "$BASE/run/units/configs.sh" && copy_config "$CONFIG_ROOT/micro.json" "$CONFIG_DIR/micro/settings.json"
+    source "$BASE/run/units/configs.sh" && \
+    copy_config "$CONFIG_ROOT/micro_config.json" "$CONFIG_DIR/micro/settings.json" && \
+    copy_config "$CONFIG_ROOT/micro_binds.json" "$CONFIG_DIR/micro/settings.json" && \
     return 0
 }
 

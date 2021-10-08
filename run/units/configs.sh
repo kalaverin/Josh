@@ -115,4 +115,5 @@ function zero_configuration() {
     copy_config "$CONFIG_ROOT/pgcli.conf" "$CONFIG_DIR/pgcli/config"
     copy_config "$CONFIG_ROOT/ondir.rc" "$HOME/.ondirrc"
     copy_config "$CONFIG_ROOT/tmux.conf" "$HOME/.tmux.conf"
+    copy_config "$CONFIG_ROOT/lsd.yaml" "$CONFIG_DIR/lsd/config.yaml"
 }

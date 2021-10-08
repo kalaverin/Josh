@@ -1,0 +1,14 @@
+{
+    "Alt-/": "lua:comment.comment",
+    "Alt-p": "command-edit:",
+    "Alt-q": "lua:comment.comment",
+    "Alt-r": "Save,Quit",
+    "Alt-s": "CutLine",
+    "Alt-d": "DuplicateLine",
+    "Alt-b": "JumpToMatchingBrace",
+    "Ctrl-g": "command-edit:goto ",
+    "Alt-e": "CommandMode",
+    "Ctrl-c": "Quit",
+    "CtrlUnderscore": "lua:comment.comment",
+    "F5": "lua:wc.wordCount"
+}
