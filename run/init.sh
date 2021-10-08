@@ -9,25 +9,25 @@ if [[ -n ${(M)zsh_eval_context:#file} ]]; then
 fi
 
 
-if [ "$HTTP_GET" ]; then
+if [ -n "$HTTP_GET" ]; then
     echo
 
-elif [ "`lookup curl`" ]; then
+elif [ -x "`lookup curl`" ]; then
     export HTTP_GET="`lookup curl` -fsSL"
     [ "$VERBOSE" -eq 1 ] && \
     echo " * using curl `curl --version | head -n 1 | awk '{print $2}'`: $HTTP_GET" 1>&2
 
-elif [ "`lookup wget`" ]; then
+elif [ -x "`lookup wget`" ]; then
     export HTTP_GET="`lookup wget` -qO -"
     [ "$VERBOSE" -eq 1 ] && \
     echo " * using wget `wget --version | head -n 1 | awk '{print $3}'`: $HTTP_GET" 1>&2
 
-elif [ "`lookup fetch`" ]; then
+elif [ -x "`lookup fetch`" ]; then
     export HTTP_GET="`lookup fetch` -qo - "
     [ "$VERBOSE" -eq 1 ] && \
     echo " * using fetch: $HTTP_GET" 1>&2
 
-elif [ "`lookup http`" ]; then
+elif [ -x "`lookup http`" ]; then
     export HTTP_GET="`lookup http` -FISb"
     [ "$VERBOSE" -eq 1 ] && \
     echo " * using httpie `http --version`: $HTTP_GET" 1>&2

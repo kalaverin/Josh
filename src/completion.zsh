@@ -17,6 +17,7 @@ _comp_options+=(globdots)
 [ -x "`lookup fuck`" ] && eval $(thefuck --alias)
 [ -x "`lookup starship`" ] && eval "$(starship init zsh)"
 
+
 function completition_expired() {
     if [ "$SHLVL" -gt 1 ]; then
         echo 0
@@ -41,3 +42,17 @@ if [ "`completition_expired`" -gt 0 ]; then
     autoload -Uz compinit
     compinit -u # -u insecure!
 fi
+
+function path_last_modified() {
+    local unified_path="$(
+        echo "$PATH" | sd ':' '\n' \
+        | runiq - | xargs -n 1 realpath 2>/dev/null \
+        | sd '\n' ':' | sd '(^:|:$)' '' \
+    )"
+    [ "$?" = 0 ] && [ "$unified_path " ] && export PATH="$unified_path"
+
+    for subdir in $(echo "$PATH" | sd ':' '\n'); do
+        echo "`fstatm "$subdir" 2>/dev/null || echo 0` $subdir"
+    done
+    # path_last_modified | grep -Pv '^0' | sort -n | tail -n 1 | tabulate -i 1
+}
