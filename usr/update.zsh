@@ -98,7 +98,7 @@ function check_updates() {
     local last_check="`cat $file 2>/dev/null`"
     [ -z "$last_check" ] && local last_check="0"
 
-    let check_every=" ${JOSH_CHECK_UPDATES_DAYS:-1} * 86400"
+    let check_every=" ${JOSH_UPDATES_CHECK_EVERY_DAY:-1} * 86400"
     let need_check="$EPOCHSECONDS - $check_every > $last_check"
     [ "$need_check" -eq 0 ] && return 0
 

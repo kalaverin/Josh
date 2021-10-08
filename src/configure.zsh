@@ -23,16 +23,24 @@ JOSH_VENVS_DIR="${JOSH_VENVS_DIR:-"$HOME/envs"}"
 JOSH_WORKHOUR_START=${JOSH_WORKHOUR_START:-10} # from 10, -> 10:00
 JOSH_WORKHOUR_END=${JOSH_WORKHOUR_END:-18}     # till 18, <- 17:59
 
-# JOSH_CHECK_UPDATES_DAYS
-# for develop — autopull every N days
-# for stable — delay after last commit with N days to display message about commits count
-#
-JOSH_CHECK_UPDATES_DAYS=${JOSH_CHECK_UPDATES_DAYS:-7}
-
-# JOSH_FETCH_UPDATES_HOUR
+# JOSH_UPDATES_FETCH_EVERY_HOUR
 # fetch commits from remote every hour (except work hours)
+# it's background async task to except annoying
 #
-JOSH_FETCH_UPDATES_HOUR=${JOSH_FETCH_UPDATES_HOUR:-6}
+JOSH_UPDATES_FETCH_EVERY_HOUR=${JOSH_UPDATES_FETCH_EVERY_HOUR:-1}
+
+# JOSH_UPDATES_CHECK_EVERY_DAY
+# how frequenlty report and suggest install updates
+# but for develop — this is autopull period
+#
+JOSH_UPDATES_CHECK_EVERY_DAY=${JOSH_UPDATES_CHECK_EVERY_DAY:-3}
+
+# JOSH_UPDATES_STABLE_STAY_DAYS
+# just for stable, delay after last commit with N days
+# to display message about commits count
+#
+JOSH_UPDATES_STABLE_STAY_DAYS=${JOSH_UPDATES_STABLE_STAY_DAYS:-7}
+
 JOSH_DEFAULT_LOCALE="{DEFAULT_LOCALE:-"en_US.UTF-8"}"
 
 
