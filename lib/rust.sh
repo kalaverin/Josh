@@ -31,12 +31,11 @@ CARGO_REQ_PACKAGES=(
     cargo-update     # packages for auto-update installed crates
     chit             # crates info, just type: chit <any>
     csview           # for commas, tabs, etc
-    exa              # fast replace for ls
     fd-find          # fd, fast replace for find for humans
     git-delta        # fast replace for git delta with steroids
     git-interactive-rebase-tool
     # git-warp-time    # set mtime to last change time from git - unstable, temporary disable
-    lsd              # another ls replacement tool
+    lsd              # fast ls replacement
     mdcat            # Markdown files rendered viewer
     petname          # generate human readable strings
     proximity-sort   # path sorter

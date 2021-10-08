@@ -150,10 +150,9 @@ fi
 #
 local temp="`lookup lsd`"
 if [ -x "$temp" ]; then
-    LSD_OPTIONS=${LSD_OPTIONS:-"--dereference --extensionsort --classify --long --oneline --versionsort --color always --blocks permission,user,group,date,size,name --date +\"%Y-%m-%d %H:%M:%S\" --group-dirs first --icon never --ignore-glob \"*.pyc\""}
-
-    alias la="$temp --almost-all $LSD_OPTIONS"
-    alias lal="$temp $LSD_OPTIONS"
+    LSD_OPTIONS=${LSD_OPTIONS:-'--extensionsort --classify --long --versionsort'}
+    alias ll="$temp --almost-all $LSD_OPTIONS"
+    alias l="$temp --ignore-glob '*.pyc' $LSD_OPTIONS"
 fi
 
 
@@ -204,19 +203,6 @@ if [ -x "$temp" ]; then
     alias csv="$temp --style Rounded"
     alias tsv="csv --tsv"
     alias ssv="csv --delimiter ';'"
-fi
-
-
-# exa: my ls replacement
-#
-local temp="`lookup exa`"
-if [ -x "$temp" ]; then
-    alias exa="$temp"
-    # --git-ignore is bugged
-    export EXA_OPTIONS="${EXA_OPTIONS:-"-lFg --color=always --git --octal-permissions --group-directories-first"}"
-    alias l="$temp $EXA_OPTIONS --ignore-glob '*.py?'"
-    alias ll="$temp -a $EXA_OPTIONS"
-    alias lt="l --sort time"
 fi
 
 
