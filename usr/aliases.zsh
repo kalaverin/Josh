@@ -72,10 +72,26 @@ fi
 if [ -z "$GREP_RECURSIVE_OPTIONS" ]; then
     GREP_RECURSIVE_OPTIONS="-rnH --exclude '*.js' --exclude '*.min.css' --exclude '.git/' --exclude 'node_modules/' --exclude 'lib/python*/site-packages/' --exclude '__snapshots__/' --exclude '.eggs/' --exclude '*.pyc' --exclude '*.po' --exclude '*.svg' --color=auto"
 fi
+
 if [ -x "$JOSH_GREP" ]; then
     alias grep="$JOSH_GREP --line-buffered"
     alias ri="$JOSH_GREP $GREP_RECURSIVE_OPTIONS"
 fi
+
+if [ "$JOSH_OS" = 'MAC' ]; then
+    alias fstatm="`lookup stat` -f '%m'"
+else
+    alias fstatm="`lookup stat` -c %Y"
+fi
+
+[ -x "$JOSH_LS" ] && alias ls="$JOSH_LS"
+[ -x "$JOSH_CUT" ] && alias cut="$JOSH_CUT"
+[ -x "$JOSH_SED" ] && alias sed="$JOSH_SED"
+[ -x "$JOSH_HEAD" ] && alias head="$JOSH_HEAD"
+[ -x "$JOSH_TAIL" ] && alias tail="$JOSH_TAIL"
+[ -x "$JOSH_READLINK" ] && alias readlink="$JOSH_READLINK"
+[ -x "$JOSH_REALPATH" ] && alias realpath="$JOSH_REALPATH"
+
 
 
 # httpie: modern, fast and very usable HTTP client
@@ -208,10 +224,10 @@ if [ -x "`lookup docker`" ]; then
     export COMPOSE_DOCKER_CLI_BUILD=${COMPOSE_DOCKER_CLI_BUILD:-1}
 fi
 
-[ -x "`lookup lolcate`" ]  && alias lc="lolcate"
-[ -x "`lookup micro`" ] && alias mi="micro"
-[ -x "`lookup rsync`" ] && alias cpdir="rsync --archive --links --times"
-
+[ -x "`lookup lolcate`" ]  && alias lc="`lookup lolcate`"
+[ -x "`lookup micro`" ] && alias mi="`lookup micro`"
+[ -x "`lookup rsync`" ] && alias cpdir="`lookup rsync` --archive --links --times"
+[ -x "`lookup rcrawl`" ] && alias dtree="`lookup rcrawl` -Rs"
 
 # ———
 
@@ -303,33 +319,6 @@ function mktp {
 
 # ———
 
-function mkcd {
-    [ -z "$1" ] && return 1
-    mkdir -p "$*" && cd "$*"
-}
-
-function run_show() {
-    local cmd="$*"
-    [ -z "$cmd" ] && return 1
-    echo " -> $cmd" 1>&2
-    eval ${cmd} 1>&2
-}
-
-function run_silent() {
-    local cmd="$*"
-    [ -z "$cmd" ] && return 1
-    echo " -> $cmd" 1>&2
-    eval ${cmd} 1>/dev/null 2>/dev/null
-}
-
-function run_hide() {
-    local cmd="$*"
-    [ -z "$cmd" ] && return 1
-    eval ${cmd} 1>/dev/null 2>/dev/null
-}
-
-# ———
-
 fchmod() {
     [ -z "$1" ] && [ -z "$2" ] && return 1
     find $2 -type f -not -perm $1 -exec chmod $1 {} \;
@@ -344,15 +333,6 @@ rchgrp() {
     [ -z "$1" ] && [ -z "$2" ] && return 1
     find $2 ( -not -group $1 ) -print -exec chgrp $1 {} ;
 }
-
-last_modified() {
-    local args="$*"
-    if [ -z "$args" ]; then
-        local args="."
-    fi
-    find $args -printf "%T@ %p\n" | sort -n | cut -d' ' -f 2- | tail -n 1
-}
-
 
 WORDCHARS='_'
 

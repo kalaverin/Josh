@@ -40,26 +40,14 @@ fi
 
 if [ -n "$(uname | grep -i freebsd)" ]; then
     export JOSH_OS="BSD"
-    export JOSH_CUT='/usr/local/bin/gcut'
-    export JOSH_GREP='/usr/local/bin/grep'
-    export JOSH_HEAD='/usr/local/bin/ghead'
-    export JOSH_TAIL='/usr/local/bin/gtail'
     export JOSH_LS='/usr/local/bin/gnuls'
-    export JOSH_READLINK='/usr/local/bin/greadlink'
-    export JOSH_REALPATH='/usr/local/bin/grealpath'
-    export JOSH_SED='/usr/local/bin/gsed'
+    export JOSH_GREP='/usr/local/bin/grep'
 
 
 elif [ -n "$(uname | grep -i darwin)" ]; then
     export JOSH_OS="MAC"
-    export JOSH_CUT='/usr/local/bin/gcut'
-    export JOSH_GREP='/usr/local/bin/ggrep'
-    export JOSH_HEAD='/usr/local/bin/ghead'
-    export JOSH_TAIL='/usr/local/bin/gtail'
     export JOSH_LS='/usr/local/bin/gls'
-    export JOSH_READLINK='/usr/local/bin/greadlink'
-    export JOSH_REALPATH='/usr/local/bin/grealpath'
-    export JOSH_SED='/usr/local/bin/gsed'
+    export JOSH_GREP='/usr/local/bin/ggrep'
     export PATH="$PATH:/Library/Apple/usr/bin"
 
 else
@@ -80,11 +68,11 @@ else
     fi
 fi
 
-[ -x "$JOSH_LS" ] && alias ls="$JOSH_LS"
-[ -x "$JOSH_CUT" ] && alias cut="$JOSH_CUT"
-[ -x "$JOSH_SED" ] && alias sed="$JOSH_SED"
-[ -x "$JOSH_GREP" ] && alias grep="$JOSH_GREP"
-[ -x "$JOSH_HEAD" ] && alias head="$JOSH_HEAD"
-[ -x "$JOSH_TAIL" ] && alias tail="$JOSH_TAIL"
-[ -x "$JOSH_READLINK" ] && alias readlink="$JOSH_READLINK"
-[ -x "$JOSH_REALPATH" ] && alias realpath="$JOSH_REALPATH"
+if [ "$JOSH_OS" = 'BSD' ] || [ "$JOSH_OS" = 'MAC' ]; then
+    export JOSH_CUT='/usr/local/bin/gcut'
+    export JOSH_HEAD='/usr/local/bin/ghead'
+    export JOSH_READLINK='/usr/local/bin/greadlink'
+    export JOSH_REALPATH='/usr/local/bin/grealpath'
+    export JOSH_SED='/usr/local/bin/gsed'
+    export JOSH_TAIL='/usr/local/bin/gtail'
+fi

@@ -5,7 +5,7 @@ JOSH_SUBDIR=".josh"
 typeset -A LOOKUP_CACHE
 
 function lookup_in_hier() {
-    local order=(/bin /usr/bin /sbin /usr/sbin /usr/local/bin /usr/local/sbin)
+    local order=(/usr/local/bin /usr/local/sbin /usr/bin /usr/sbin /bin /sbin)
     for sub in $order; do
         if [ -x "$sub/$1" ]; then
             echo "$sub/$1"
