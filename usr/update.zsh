@@ -15,15 +15,10 @@ function is_workhours() {
 
 
 function fetch_updates_background() {
-    [ -z "$1" ] && return 1
-    [ ! -d "`dirname "$1"`" ] && mkdir -p "`dirname "$1"`"
-
     if [ "`grep --count -P "fetch.+remotes/origin/\*" .git/config`" -eq 0 ]; then
         git remote set-branches --add origin "*"
     fi
-
     git fetch --jobs=4 --all --tags --prune --prune-tags --quiet 2>/dev/null
-    echo "$EPOCHSECONDS" > "$1"
     return "$?"
 }
 
@@ -37,7 +32,6 @@ function fetch_updates() {
         echo " - $0 warning: JOSH_CACHE_DIR:\`$JOSH_CACHE_DIR\`" >&2
         return 2
     fi
-
     local file="$JOSH_CACHE_DIR/last-fetch"
     local last_check="`cat $file 2>/dev/null`"
     [ -z "$last_check" ] && local last_check="0"
@@ -71,8 +65,11 @@ function fetch_updates() {
     if [ "$need_fetch" -gt 0 ]; then
         source "$ZSH/custom/plugins/zsh-async/async.zsh"
         async_start_worker updates_fetcher
-        async_job updates_fetcher fetch_updates_background "$file"
+        async_job updates_fetcher fetch_updates_background
     fi
+
+    [ ! -d "`dirname "$file"`" ] && mkdir -p "`dirname "$file"`"
+    echo "$EPOCHSECONDS" > "$file"
 
     [ -z "$count" ] && echo 0 || echo "$count"
     builtin cd "$cwd"
@@ -91,6 +88,7 @@ function check_updates() {
     unset JOSH_UPDATES_FOUND
 
     local updates="`fetch_updates`"
+    return 0
     [ "$?" -gt 0 ] && return 1
     [ "$updates" -eq 0 ] && return 0
 
