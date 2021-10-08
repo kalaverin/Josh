@@ -31,14 +31,14 @@ function virtualenv_deactivate {
 }
 
 function get_temporary_envs_directory() {
-    if [ -z "$JOSH_VENVS_DIR_TEMP" ]; then
-        local directory="`get_tempdir`/`basename $JOSH_VENVS_DIR`"
+    if [ -z "$JOSH_PY_TEMP_ENVS_ROOT" ]; then
+        local directory="`get_tempdir`/`basename $JOSH_PY_ENVS_ROOT`"
         if [ ! -d "$directory" ]; then
             mkdir -p "$directory"
         fi
-        export JOSH_VENVS_DIR_TEMP="$directory"
+        export JOSH_PY_TEMP_ENVS_ROOT="$directory"
     fi
-    echo "$JOSH_VENVS_DIR_TEMP"
+    echo "$JOSH_PY_TEMP_ENVS_ROOT"
 }
 
 function virtualenv_node_deploy {
@@ -112,8 +112,8 @@ function virtualenv_node_deploy {
 
 function get_virtualenv_path {
     if [ "$1" ]; then
-        if [ -f "$JOSH_VENVS_DIR/$1/bin/activate" ]; then
-            echo "$JOSH_VENVS_DIR/$1"
+        if [ -f "$JOSH_PY_ENVS_ROOT/$1/bin/activate" ]; then
+            echo "$JOSH_PY_ENVS_ROOT/$1"
         else
             local temp="`get_temporary_envs_directory`"
             if [ -f "$temp/$1/bin/activate" ]; then
@@ -159,7 +159,7 @@ function virtualenv_create {
 
     if [[ "$1" =~ ^[0-9a-z]+[0-9a-z\.-]*[0-9a-z]+$ ]]; then
         local title="$1"
-        local venv="$JOSH_VENVS_DIR/$title"
+        local venv="$JOSH_PY_ENVS_ROOT/$title"
 
     elif [[ "$1" =~ ^/.+/[0-9a-z]+[0-9a-z\.-]*[0-9a-z]+$ ]]; then
         local title="`basename $1`"
@@ -216,7 +216,7 @@ function virtualenv_create {
 }
 
 function virtualenv_temporary_create {
-    local venv="`get_tempdir`/`basename $JOSH_VENVS_DIR`/`make_human_name`"
+    local venv="`get_tempdir`/`basename $JOSH_PY_ENVS_ROOT`/`make_human_name`"
     virtualenv_create "$venv" $@
 }
 

@@ -12,10 +12,10 @@ if [ "$JOSH_OS" = "BSD" ]; then
 fi
 
 
-# JOSH_VENVS_DIR
+# JOSH_PY_ENVS_ROOT
 # directory for permanent virtualenvs maded by virtualenv_create
 #
-JOSH_VENVS_DIR="${JOSH_VENVS_DIR:-"$HOME/envs"}"
+JOSH_PY_ENVS_ROOT="${JOSH_PY_ENVS_ROOT:-"$HOME/envs"}"
 
 # JOSH_WORKHOUR_START, JOSH_WORKHOUR_END
 # work hours for ignore annoying nehavior
@@ -40,6 +40,17 @@ JOSH_UPDATES_CHECK_EVERY_DAY=${JOSH_UPDATES_CHECK_EVERY_DAY:-3}
 # to display message about commits count
 #
 JOSH_UPDATES_STABLE_STAY_DAYS=${JOSH_UPDATES_STABLE_STAY_DAYS:-7}
+
+# JOSH_TMUX_DISABLE_AUTORETACH
+# Josh scan sessions and connect to detached matching with current terminal size
+#
+JOSH_TMUX_AUTORETACH_DISABLE=1
+
+#JOSH_TMUX_AUTORETACH_MAX_DIFF
+# maximum summary diff with width and height
+#
+JOSH_TMUX_AUTORETACH_MAX_DIFF=9
+
 
 JOSH_DEFAULT_LOCALE="{DEFAULT_LOCALE:-"en_US.UTF-8"}"
 

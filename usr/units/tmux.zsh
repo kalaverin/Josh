@@ -70,7 +70,7 @@ function tmx_get_detached_session() {
 }
 
 function tmx_get_matching_detached_session() {
-    local maxdiff="${JOSH_TMUX_MAX_DIFF_AUTORETACH:-9}"
+    local maxdiff="${JOSH_TMUX_AUTORETACH_MAX_DIFF:-9}"
     local query='zmodload zsh/mathfunc && echo "$((abs(#{window_width} - $COLUMNS) + abs(#{window_height} - $LINES))) #{session_name}"'
 
     local result="$(
@@ -82,6 +82,6 @@ function tmx_get_matching_detached_session() {
     [ -z "$result" ] && return 1 || echo "$result"
 }
 
-if [ -z "$JOSH_TMUX_DISABLE_AUTORETACH" ] && [ -n "$PS1" ] && [ -z "$TMUX" ] && [ -n "$SSH_CONNECTION" ]; then
+if [ -z "$JOSH_TMUX_AUTORETACH_DISABLE" ] && [ -n "$PS1" ] && [ -z "$TMUX" ] && [ -n "$SSH_CONNECTION" ]; then
     tmx lost
 fi
