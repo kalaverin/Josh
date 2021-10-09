@@ -602,7 +602,7 @@ josh_pull() {
 
 josh_reinstall() {
     local cwd="`pwd`"
-    url='"https://kalaverin.ru/shell?$RANDOM"'
+    url='"https://kalaver.in/shell?$RANDOM"'
     run_show "$HTTP_GET $url | $SHELL"
     local retval="$?"
     if [ "$retval" -gt 0 ]; then
@@ -615,7 +615,7 @@ josh_reinstall() {
 }
 
 josh_bootstrap_command() {
-    local url="${1:-"http://kalaverin.ru/shell"}"
+    local url="${1:-"http://kalaver.in/shell"}"
     echo "((curl -fsSL $url || wget -qO - $url || fetch -qo - $url) | zsh) && zsh"
 }
 
