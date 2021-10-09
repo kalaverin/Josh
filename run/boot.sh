@@ -27,7 +27,7 @@ function lookup() {
             local result="`builtin which -p sh 2>/dev/null`"
             if [ "$?" -gt 0 ] || [ ! -x "$result" ]; then
                 # builtin which fails - extraordinary
-                echo " - fatal: failed: \"builtin which -p sh\"" >&2
+                echo " - $0 fatal: failed: \"builtin which -p sh\"" >&2
                 return 2
             else
                 # fallback - just scan hardcoded PATH
@@ -78,23 +78,27 @@ function get_home() {
 function get_realhome() {
     local home="`get_home`"
     if [ ! -x "$home" ]; then
-        echo " - fatal: HOME=\`$home\` isn't acessible"
+        echo " - $0 fatal: HOME:\`$home\` isn't acessible" >&2
         return 1
     fi
 
     if [ -x "`lookup realpath`" ]; then
         echo "`realpath -q $home`"
 
-    elif [ -x "`lookup readlink`" ]; then
-        if [ -n "$(uname | grep -i darwin)" ]; then
-            echo "`readlink -f $home`"
-        else
-            echo "`readlink -qf $home`"
-        fi
+    elif [ -x "`lookup readlink`" ] && [ -z "$(uname | grep -i darwin)" ]; then
+        echo "`readlink -qf $home`"
 
     else
-        echo "`dirname $home`/`basename $home`"
-
+        local sudbir="`dirname $home`"
+        if [ "$?" -eq 0 ] && [ -n "$subdir" ]; then
+            local homedir="`basename $home`"
+            if [ "$?" -eq 0 ] && [ -n "$homedir" ]; then
+                echo "$sudbir/$homedir"
+                return 0
+            fi
+        fi
+        echo " - $0 warning: can't make real home path for HOME:\`$home\` with REALPATH:\``lookup realpath`\`, READLINK:\``lookup readlink`\`, fallback:\``dirname $home`/`basename $home`\`" >&2
+        echo "$home"
     fi
 }
 
@@ -113,9 +117,9 @@ fi
 
 if [[ ! "$SHELL" =~ "/zsh$" ]]; then
     if [ -x "`lookup zsh`" ]; then
-        echo " - fatal: execute installer via zsh from `lookup zsh`"
+        echo " - $0 fatal: current shell must be zsh, but SHELL:\`$SHELL\` and zsh binary:\``lookup zsh`\`" >&2
     else
-        echo " - fatal: \`zsh\` required"
+        echo " - $0 fatal: current shell must be zsh, but SHELL:\`$SHELL\` and zsh not detected" >&2
     fi
 
 else
@@ -129,7 +133,7 @@ else
             JOSH_DEST="$HOME/$JOSH_SUBDIR.engine"  && [ -d "$JOSH_DEST" ] && rm -rf "$JOSH_DEST"
             JOSH_BASE="$HOME/$JOSH_SUBDIR.wrapper" && [ -d "$JOSH_BASE" ] && rm -rf "$JOSH_BASE"
 
-            echo " + initial deploy to $JOSH_DEST, Josh to $JOSH_BASE"
+            echo " + initial deploy to $JOSH_DEST, Josh to $JOSH_BASE" >&2
             git clone https://github.com/YaakovTooth/Josh.git $JOSH_BASE
             [ $? -gt 0 ] && return 2
 
@@ -137,11 +141,11 @@ else
                 builtin cd "$JOSH_BASE/run/"
                 [ $? -gt 0 ] && return 3
 
-                echo " + fetch Josh from \`$JOSH_BRANCH\`"
+                echo " + fetch Josh from \`$JOSH_BRANCH\`" >&2
 
                 cmd="git fetch origin "$JOSH_BRANCH":"$JOSH_BRANCH" && git checkout --force --quiet $JOSH_BRANCH && git reset --hard $JOSH_BRANCH && git pull --ff-only --no-edit --no-commit --verbose origin $JOSH_BRANCH"
 
-                echo " -> $cmd" && $SHELL -c "$cmd"
+                echo " -> $cmd" >&2 && $SHELL -c "$cmd"
                 [ $? -gt 0 ] && return 4
             fi
 
