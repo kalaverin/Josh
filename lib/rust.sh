@@ -227,8 +227,8 @@ function cargo_init() {
 
     if [ -x "$cache_exe" ]; then
         export RUSTC_WRAPPER="$cache_exe"
-    elif [ -x "`lookup sccache`" ]; then
-        export RUSTC_WRAPPER="`lookup sccache`"
+    elif [ -x "`which sccache`" ]; then
+        export RUSTC_WRAPPER="`which sccache`"
     else
         export RUSTC_WRAPPER=""
         unset RUSTC_WRAPPER
@@ -248,17 +248,17 @@ function cargo_init() {
 
 function chit_cached() {
     [ -z "$1" ] && return 0
-    if [ -x "`lookup md5`" ]; then
-        local bin="`lookup md5`"
-    elif [ -x "`lookup md5sum`" ]; then
-        local bin="`lookup md5sum`"
+    if [ -x "`which md5`" ]; then
+        local bin="`which md5`"
+    elif [ -x "`which md5sum`" ]; then
+        local bin="`which md5sum`"
     else
         echo " - $0 fatal: md5 sum binaries doesn't exists" >&2
         return 1
     fi
     local cache_file="$JOSH_CACHE_DIR/cargo/`echo "$1" | $bin | tabulate -i 1`"
 
-    if [ ! -x "`lookup chit`" ]; then
+    if [ ! -x "`which chit`" ]; then
         echo " - $0 fatal: chit must be installed" >&2
         return 1
     fi

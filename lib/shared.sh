@@ -8,7 +8,7 @@ local LINES_TO_LINE="sd '\n' ' ' | awk '{\$1=\$1};1'"
 
 
 function cpu_count() {
-    local cores=$(${JOSH_GREP:-'grep'} --count -Po 'processor\s+:\s*\d+\s*$' /proc/cpuinfo)
+    local cores=$(grep --count -Po 'processor\s+:\s*\d+\s*$' /proc/cpuinfo)
     [ ! "$cores" ] && local cores=0
     return "$cores"
 }

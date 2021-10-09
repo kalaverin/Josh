@@ -114,7 +114,7 @@ function deploy_tmux_plugins() {
         [ "$?" -gt 0 ] && return 1
     fi
 
-    if [ -x "`lookup bash`" ]; then
+    if [ -x "`which bash`" ]; then
         bash "$HOME/.tmux/plugins/tpm/scripts/install_plugins.sh"
     else
         echo " - It's funny, but tmux plugin manager requires bash for installation bootstrap."

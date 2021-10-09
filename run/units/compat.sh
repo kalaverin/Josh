@@ -20,7 +20,7 @@ REQUIRED_LIBRARIES=(
 function check_executables() {
     local missing=""
     for exe in $@; do
-        if [ ! -x "`lookup $exe`" ]; then
+        if [ ! -x "`which $exe`" ]; then
             local missing="$missing $exe"
         fi
     done
@@ -48,7 +48,7 @@ function check_libraries() {
                     local missing="$missing $lib"
                     continue
                 fi
-                echo " * warning: pkg-config $lib failed, we try to lookup openssl.pc in $lookup_path"
+                echo " * warning: pkg-config $lib failed, we try to which openssl.pc in $lookup_path"
 
                 local openssl_path="$(dirname `find $lookup_path -type f -name "openssl.pc" -follow 2>/dev/null | head -n 1`)"
                 if [ ! -d "$openssl_path" ]; then
@@ -81,10 +81,9 @@ function check_libraries() {
 
 
 function version_not_compatible() {
-    local grep=${JOSH_GREP:-"`lookup grep`"}
     if [ "$1" != "$2" ]; then
         local choice=$(sh -c "printf '%s\n%s\n' "$1" "$2" | sort --version-sort | tail -n 1")
-        [ $(sh -c "printf '%s' "$choice" | $grep -Pv '^($2)$'") ] && return 0
+        [ $(sh -c "printf '%s' "$choice" | grep -Pv '^($2)$'") ] && return 0
     fi
     return 1
 }
@@ -111,7 +110,7 @@ function check_compliance() {
         echo " + os: macos `uname -srv`"
         export JOSH_OS="MAC"
 
-        if [ ! -x "`lookup brew`" ]; then
+        if [ ! -x "`which brew`" ]; then
             echo ' - brew for MacOS strictly required, just run: curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | zsh"'
         fi
 
@@ -133,7 +132,7 @@ function check_compliance() {
 
         if [ -f "/etc/debian_version" ] || [ -n "$(uname -v | grep -Pi '(debian|ubuntu)')" ]; then
             echo " + os: debian-based `uname -srv`"
-            [ -x "`lookup apt`" ] && local bin="apt" || local bin="apt-get"
+            [ -x "`which apt`" ] && local bin="apt" || local bin="apt-get"
 
             local cmd="(sudo $bin update --yes --quiet || true) && sudo $bin install --yes --quiet --no-remove"
             local pkg="zsh git jq pv clang make build-essential pkg-config python3 python3-distutils tree libssl-dev python-dev libpq-dev libevent-dev"

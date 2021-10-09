@@ -101,8 +101,7 @@ git_auto_skip_or_continue() {
         fi
 
         # all files resolved and no more changes, then — continue
-        local ggrep="${JOSH_GREP:-'grep'}"
-        local files=$($SHELL -c "$LIST_TO_ADD | $ggrep -Pv '^([AMD] )' | wc -l")
+        local files=$($SHELL -c "$LIST_TO_ADD | grep -Pv '^([AMD] )' | wc -l")
         if [ "$files" -eq 0 ]; then
             run_show " git $state --continue"
             return 2
@@ -365,7 +364,7 @@ git_show_branch_file_commits() {
         local file="$2"
         local branch="$1"
 
-        local ext="$(echo "$file" | xargs -I% basename % | ${JOSH_GREP:-'grep'} --color=never -Po '(?<=.\.)([^\.]+)$')"
+        local ext="$(echo "$file" | xargs -I% basename % | grep --color=never -Po '(?<=.\.)([^\.]+)$')"
 
         local diff_view="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -l $SHELL -c $diff_file $file' | $DELTA --width $COLUMNS"
 

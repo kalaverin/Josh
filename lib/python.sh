@@ -47,7 +47,7 @@ function python_get_version() {
     if [ ! -x "$1" ]; then
         echo " - warning: isn't exists executable $1" >&2
     fi
-    echo "`$1 --version 2>&1 | ${JOSH_GREP:-'grep'} -Po '([\d\.]+)$'`"
+    echo "`$1 --version 2>&1 | grep -Po '([\d\.]+)$'`"
 }
 
 function python_exe() {

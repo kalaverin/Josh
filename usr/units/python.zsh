@@ -2,7 +2,7 @@ source "$JOSH/lib/shared.sh"
 
 # ———
 
-local THIS_DIR=`dirname "$($JOSH_READLINK -f "$0")"`
+local THIS_DIR=`dirname "$(readlink -f "$0")"`
 local INCLUDE_DIR="`realpath $THIS_DIR/pip`"
 
 local PIP_LIST_ALL="$INCLUDE_DIR/pip_list_all.sh"
@@ -55,7 +55,7 @@ function virtualenv_node_deploy {
     echo " + using venv: $venvname ($venv)"
     virtualenv_path_activate "$venv"
 
-    local pip="`lookup pip`"
+    local pip="`which pip`"
     if [ ! -x "$pip" ]; then
         echo " - fatal: pip in venv \`$VIRTUAL_ENV\` isn't found"
         return 2
@@ -67,7 +67,7 @@ function virtualenv_node_deploy {
         run_show "$pip install nodeenv" && virtualenv_path_activate "$venv"
     fi
 
-    local nodeenv="`lookup nodeenv`"
+    local nodeenv="`which nodeenv`"
     if [ ! -x "$nodeenv" ]; then
         echo " - fatal: nodeenv in venv \`$VIRTUAL_ENV\` isn't found"
         return 3
@@ -136,20 +136,20 @@ function python_from_version {
     fi
 
     if [[ "$1" =~ ^[0-9]\.[0-9]$ ]]; then
-        local exe="`lookup python$1`"
+        local exe="`which python$1`"
 
     elif [ "$1" = "3" ]; then
-        if [ ! -x "$PYTHON3" ] && [ ! -x "`lookup python3`" ]; then
+        if [ ! -x "$PYTHON3" ] && [ ! -x "`which python3`" ]; then
             echo " - default \$PYTHON3=\`$PYTHON3\` isn't accessible" 1>&2
             return 1
 
         elif [ ! -x "$PYTHON3" ]; then
-            local exe="`lookup python3`"
+            local exe="`which python3`"
         else
             local exe="$PYTHON3"
         fi
     else
-        local exe="`lookup python2.7`"
+        local exe="`which python2.7`"
     fi
     echo "$exe"
 }
@@ -198,7 +198,7 @@ function virtualenv_create {
         return 4
     fi
 
-    local pip="`lookup virtualenv`"
+    local pip="`which virtualenv`"
     if [ ! -x "$pip" ]; then
         . $JOSH/lib/python.sh && pip_init
         if [ $? -gt 0 ]; then

@@ -2,7 +2,7 @@ source "$JOSH/lib/shared.sh"
 
 # ———
 
-local THIS_DIR=`dirname "$($JOSH_READLINK -f "$0")"`
+local THIS_DIR=`dirname "$(readlink -f "$0")"`
 local INCLUDE_DIR="`realpath $THIS_DIR/git`"
 
 local DIFF_FROM_TAG="$INCLUDE_DIR/git_diff_from_tag.sh"

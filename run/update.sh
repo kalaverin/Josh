@@ -4,14 +4,6 @@ if [[ -n ${(M)zsh_eval_context:#file} ]]; then
     fi
 fi
 
-function update_packages() {
-    source "$JOSH/run/units/configs.sh" && zero_configuration
-    source "$JOSH/run/units/binaries.sh" && deploy_binaries
-    source "$JOSH/run/units/oh-my-zsh.sh" && deploy_extensions
-    source "$JOSH/lib/rust.sh" && cargo_deploy $CARGO_REQ_PACKAGES
-    source "$JOSH/lib/python.sh" && pip_deploy $PIP_REQ_PACKAGES
-}
-
 function pull_update() {
     local cwd="`pwd`" && builtin cd "$JOSH"
 
@@ -44,7 +36,7 @@ function pull_update() {
                 if [ "$?" -gt 0 ] || [ "`git status --porcelain=v1 &>>/dev/null | wc -l`" -gt 0 ]; then
                     echo " - fatal: \``pwd`\` is dirty, couldn't automatic fast forward"
                     local retval=2
-                elif [ -x "`lookup git-warp-time`" ]; then
+                elif [ -x "`which git-warp-time`" ]; then
                     git-warp-time --quiet
                 fi
             else
@@ -62,6 +54,14 @@ function pull_update() {
 function post_update() {
     update_packages
     source "$JOSH/run/units/compat.sh" && check_compliance
+}
+
+function update_packages() {
+    source "$JOSH/run/units/configs.sh" && zero_configuration
+    source "$JOSH/run/units/binaries.sh" && deploy_binaries
+    source "$JOSH/run/units/oh-my-zsh.sh" && deploy_extensions
+    source "$JOSH/lib/rust.sh" && cargo_deploy $CARGO_REQ_PACKAGES
+    source "$JOSH/lib/python.sh" && pip_deploy $PIP_REQ_PACKAGES
 }
 
 function deploy_extras() {

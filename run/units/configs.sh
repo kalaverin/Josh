@@ -77,7 +77,7 @@ function config_git() {
         git config --global core.pager "delta --commit-style='yellow ul' --commit-decoration-style='' --file-style='cyan ul' --file-decoration-style='' --hunk-style normal --zero-style='dim syntax' --24-bit-color='always' --minus-style='syntax #330000' --plus-style='syntax #002200' --file-modified-label='M' --file-removed-label='D' --file-added-label='A' --file-renamed-label='R' --line-numbers-left-format='{nm:^4}' --line-numbers-minus-style='#aa2222' --line-numbers-zero-style='#505055' --line-numbers-plus-style='#229922' --line-numbers --navigate"
     fi
 
-    if [ ! "`git config --global sequence.editor`" ] && [ -x "`lookup interactive-rebase-tool`" ]; then
+    if [ ! "`git config --global sequence.editor`" ] && [ -x "`which interactive-rebase-tool`" ]; then
         backup_file "$HOME/.gitconfig" && \
         git config --global sequence.editor interactive-rebase-tool
     fi

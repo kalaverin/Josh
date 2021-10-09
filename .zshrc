@@ -1,11 +1,7 @@
-if [ -z "$JOSH" ]; then
-    source "$HOME/.josh/custom/plugins/josh/run/init.sh"
-fi
-
 path=(
+    $HOME/.cargo/bin
     $HOME/.local/bin
     $HOME/bin
-    $ZSH/custom/bin
     /usr/local/bin
     /bin
     /sbin
@@ -16,6 +12,8 @@ path=(
     /etc/rc.d
     $path
 )
+
+[ -z "$JOSH" ] && source "$HOME/.josh/custom/plugins/josh/run/init.sh"
 
 SAVEHIST=20000
 HISTSIZE=25000

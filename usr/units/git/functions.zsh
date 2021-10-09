@@ -82,7 +82,7 @@ git_current_hash() {
 git_current_branch() {
     local result="`$SHELL -c "$GET_BRANCH"`"
     if [ "$result" = "HEAD" ]; then
-        if [ ! "`git name-rev --name-only HEAD 2>&1 | ${JOSH_GREP:-'grep'} -Pv '^(Could not get sha1)'`" ]; then
+        if [ ! "`git name-rev --name-only HEAD 2>&1 | grep -Pv '^(Could not get sha1)'`" ]; then
             echo " - empty repository `git_root` without any commits?" >&2
             local result="`git symbolic-ref --short HEAD`"
         fi

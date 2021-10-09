@@ -2,7 +2,7 @@ source "$JOSH/lib/shared.sh"
 
 # ———
 
-local THIS_DIR="`dirname "$($JOSH_READLINK -f "$0")"`"
+local THIS_DIR="`dirname "$(readlink -f "$0")"`"
 local INCLUDE_DIR="`realpath $THIS_DIR/src`"
 
 
@@ -16,12 +16,12 @@ zle -N commit_text
 insert_directory() {
     # анализировать запрос и если есть слеш и такой каталог — то есть уже в нём
     if [ "$LBUFFER" ]; then
-        local pre="`echo "$LBUFFER" | ${JOSH_GREP:-'grep'} -Po '([^\s]+)$'`"
+        local pre="`echo "$LBUFFER" | grep -Po '([^\s]+)$'`"
     else
         local pre=""
     fi
     if [ "$RBUFFER" ]; then
-        local post="`echo "$RBUFFER" | ${JOSH_GREP:-'grep'} -Po '^([^\s]+)'`"
+        local post="`echo "$RBUFFER" | grep -Po '^([^\s]+)'`"
     else
         local post=""
     fi
@@ -87,12 +87,12 @@ zle -N insert_directory
 
 insert_endpoint() {
     if [ "$LBUFFER" ]; then
-        local pre="`echo "$LBUFFER" | ${JOSH_GREP:-'grep'} -Po '([^\s]+)$'`"
+        local pre="`echo "$LBUFFER" | grep -Po '([^\s]+)$'`"
     else
         local pre=""
     fi
     if [ "$RBUFFER" ]; then
-        local post="`echo "$RBUFFER" | ${JOSH_GREP:-'grep'} -Po '^([^\s]+)'`"
+        local post="`echo "$RBUFFER" | grep -Po '^([^\s]+)'`"
     else
         local post=""
     fi
@@ -371,7 +371,7 @@ visual_grep() {
     local query=""
     while true; do
         local ripgrep="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS --smart-case"
-        local preview="echo {2} | $JOSH_GREP -Pv '^:' | sd '(^\d+|(?::)\d+)' ' -H\$1' | sd ':' '' | sd '(^\s+|\s+$)' '' | sd '^-H(\d+)' ' -r\$1: -H\$1 ' | sd '(.)$' '\$1 {1}' | xargs bat --terminal-width \$FZF_PREVIEW_COLUMNS --color=always"
+        local preview="echo {2} | grep -Pv '^:' | sd '(^\d+|(?::)\d+)' ' -H\$1' | sd ':' '' | sd '(^\s+|\s+$)' '' | sd '^-H(\d+)' ' -r\$1: -H\$1 ' | sd '(.)$' '\$1 {1}' | xargs bat --terminal-width \$FZF_PREVIEW_COLUMNS --color=always"
 
         local query=$(
             echo "$query" | $SHELL $search_one \
@@ -406,7 +406,7 @@ visual_grep() {
 
         while true; do
             local ripgrep="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS --smart-case --word-regexp"
-            local preview="echo {2}:$query | $JOSH_GREP -Pv '^:' | $JOSH_SED -r 's#(.+?):(.+?)#>>\2<<//\1#g' | sd '>>(\s*)(.*?)(\s*)<<//(.+)' '$ripgrep --vimgrep --context 0 \"\$2\" \$4' | $SHELL | tabulate -d ':' -i 2 | runiq - | sort -V | tr '\n' ' ' | sd '^([^\s]+)(.*)$' ' -r\$1: \$1\$2' | sd '(\s+)(\d+)' ' -H\$2' | xargs -I@ echo 'bat --terminal-width \$FZF_PREVIEW_COLUMNS --color=always @ {2}' | $SHELL"
+            local preview="echo {2}:$query | grep -Pv '^:' | sed -r 's#(.+?):(.+?)#>>\2<<//\1#g' | sd '>>(\s*)(.*?)(\s*)<<//(.+)' '$ripgrep --vimgrep --context 0 \"\$2\" \$4' | $SHELL | tabulate -d ':' -i 2 | runiq - | sort -V | tr '\n' ' ' | sd '^([^\s]+)(.*)$' ' -r\$1: \$1\$2' | sd '(\s+)(\d+)' ' -H\$2' | xargs -I@ echo 'bat --terminal-width \$FZF_PREVIEW_COLUMNS --color=always @ {2}' | $SHELL"
 
             # $SHELL -c "$ripgrep --color=always --count -- \"$query\" | sd '^(.+):(\d+)$' '\$2 \$1' | sort -grk 1" \
             local value=$(

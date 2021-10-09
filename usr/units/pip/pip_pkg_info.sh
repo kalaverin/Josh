@@ -1,20 +1,20 @@
 function pip_show() {
     local pip="`builtin which -p pip`"
     [ ! -x "$pip" ] && return 1
-    PIP_REQUIRE_VIRTUALENV=false python -m pip show $@ 2>&1 | grep -v 'DEPRECATION:' | ${JOSH_GREP:-'grep'} -Pv '^(Require:|License:)'
+    PIP_REQUIRE_VIRTUALENV=false python -m pip show $@ 2>&1 | grep -v 'DEPRECATION:' | grep -Pv '^(Require:|License:)'
     return 0
 }
 
 function pipdeptree_depends() {
     [ ! -x "`builtin which -p pipdeptree`" ] && return 1
-    local result="`pipdeptree -e pipdeptree,setuptools,pkg_resources,wheel -w silence -p $@ | ${JOSH_GREP:-'grep'} -Pv "^($@)" | sd '^(\s+)(-\s+)' '$1' | sd ' \[required: (.+), installed: (.+)\]' '==$2 ($1)' | sd '\(Any\)' '~'`"
+    local result="`pipdeptree -e pipdeptree,setuptools,pkg_resources,wheel -w silence -p $@ | grep -Pv "^($@)" | sd '^(\s+)(-\s+)' '$1' | sd ' \[required: (.+), installed: (.+)\]' '==$2 ($1)' | sd '\(Any\)' '~'`"
     [ "$result" ] && echo "Requires:\n$result"
     return 0
 }
 
 function pipdeptree_depends_reverse() {
     [ ! -x "`builtin which -p pipdeptree`" ] && return 1
-    local result="`pipdeptree -e pipdeptree,setuptools,pkg_resources,wheel -w silence -r -p $@ | ${JOSH_GREP:-'grep'} -Pv "^($@)" | sd '^(\s+)(-\s+)' '$1' | sd ' \[requires: (.+)\]' ' || $1' | tabulate -d '||'`"
+    local result="`pipdeptree -e pipdeptree,setuptools,pkg_resources,wheel -w silence -r -p $@ | grep -Pv "^($@)" | sd '^(\s+)(-\s+)' '$1' | sd ' \[requires: (.+)\]' ' || $1' | tabulate -d '||'`"
     [ "$result" ] && echo "Required by:\n$result"
     return 0
 }

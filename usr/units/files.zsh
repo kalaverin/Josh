@@ -58,8 +58,8 @@ function bakrm {
         return 1
     fi
 
-    if [ -x "`lookup rip`" ]; then
-        local exe="`lookup rip`"
+    if [ -x "`which rip`" ]; then
+        local exe="`which rip`"
         local cmd="$exe $backup && $exe `dirname $backup`"
     else
         local cmd="rm $backup && rm -r `dirname $backup`"
