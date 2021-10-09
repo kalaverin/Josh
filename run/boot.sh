@@ -130,7 +130,11 @@ function rehash() {
             unlink "$result[$name]"
             which "$short"
         fi
-        shortcut "$short" "`fs_realpath $commands[$short]`" 1>/dev/null
+
+        if [ ! "$short" = "`basename "$result[$link]"`" ]; then
+            # exclude manual remap, e.g. FreeBSD sed -> gsed, MacOS ls -> gls
+            shortcut "$short" "`fs_realpath $commands[$short]`" 1>/dev/null
+        fi
     done
     builtin rehash
 }
