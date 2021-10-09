@@ -103,7 +103,7 @@ function rehash() {
 
     reset_path
     builtin rehash
-    which zsh
+    which zsh 1>/dev/null
     typeset -Ag dirtimes
 
     builtin zstat -LnA result `find $JOSH/bin -type l | sed -z 's:\n: :g'`
