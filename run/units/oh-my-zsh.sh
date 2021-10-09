@@ -1,5 +1,7 @@
 #!/bin/zsh
 
+zmodload zsh/datetime
+
 if [[ -n ${(M)zsh_eval_context:#file} ]]; then
     [ -z "$HTTP_GET" ] && source "`dirname $0`/../boot.sh"
 
@@ -64,8 +66,15 @@ function deploy_extensions() {
             local verb='clone'
             $SHELL -c "git clone --depth 1 $pkg"
         else
-            local verb='pull'
-            $SHELL -c "git --git-dir=\"$dst/.git\" --work-tree=\"$dst/\" pull origin master"
+            let fetch_every="${UPDATE_ZSH_DAYS:-1} * 86400"
+            local last_fetch="`fstatm "$dst/.git/FETCH_HEAD" 2>/dev/null`"
+            let need_fetch="$EPOCHSECONDS - $fetch_every > $last_fetch"
+            if [ "$need_fetch" -gt 0 ]; then
+                local verb='pull'
+                $SHELL -c "git --git-dir=\"$dst/.git\" --work-tree=\"$dst/\" pull origin master"
+            else
+                local verb='skip fresh'
+            fi
         fi
 
         [ $? -gt 0 ] && local result="error" || local result="success"
