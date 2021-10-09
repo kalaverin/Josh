@@ -21,7 +21,6 @@ alias -g uri="$HTTP_GET"
 
 # ———
 
-
 # nano: default editor for newbies like me
 #
 if [ -x "`which nano`" ]; then
@@ -93,7 +92,8 @@ if [ -x "`which rg`" ]; then
     local ripgrep_interactive="--no-stats --text --context 1 --colors 'match:fg:yellow' --colors 'path:fg:red' --context-separator ''"
 
     export JOSH_RIPGREP="`which rg`"
-    export JOSH_RIPGREP_OPTS="--require-git --hidden --max-columns-preview --max-filesize=50K --ignore-file=`realpath --quiet ~/.gitignore`"
+    local realpath="`which "realpath"`"
+    export JOSH_RIPGREP_OPTS="--require-git --hidden --max-columns-preview --max-filesize=50K --ignore-file=`$realpath --quiet ~/.gitignore`"
 
     alias rf="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS $ripgrep_interactive $ripgrep_fast"
     alias rfs="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS $ripgrep_interactive $ripgrep_fast --sort path"
