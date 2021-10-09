@@ -307,10 +307,7 @@ else
         fi
 
     elif [ ! "$JOSH_INIT" -gt 0 ]; then
-        if [ -z "$HTTP_GET" ]; then
-            source "`dirname $0`/init.sh"
-        fi
+        source "`dirname $0`/init.sh"
         rehash
-        export JOSH_INIT=1
     fi
 fi

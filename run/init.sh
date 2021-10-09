@@ -68,3 +68,5 @@ if [ "$JOSH_OS" = 'BSD' ] || [ "$JOSH_OS" = 'MAC' ]; then
     shortcut 'sed' '/usr/local/bin/gsed'
     shortcut 'tail' '/usr/local/bin/gtail'
 fi
+
+export JOSH_INIT=1
