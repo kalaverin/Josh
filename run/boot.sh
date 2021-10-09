@@ -84,10 +84,17 @@ function get_realhome() {
 
     if [ -x "`lookup realpath`" ]; then
         echo "`realpath -q $home`"
+
     elif [ -x "`lookup readlink`" ]; then
-        echo "`readlink -qf $home`"
+        if [ -n "$(uname | grep -i darwin)" ]; then
+            echo "`readlink -f $home`"
+        else
+            echo "`readlink -qf $home`"
+        fi
+
     else
         echo "`dirname $home`/`basename $home`"
+
     fi
 }
 
