@@ -17,6 +17,8 @@ fi
 source "$JOSH/lib/python.sh" && python_env
 source "$JOSH/lib/rust.sh" && rust_env
 
+reset_path
+
 
 # JOSH_PY_ENVS_ROOT
 # directory for permanent virtualenvs maded by virtualenv_create
@@ -57,16 +59,6 @@ JOSH_UPDATES_STABLE_STAY_D=${JOSH_UPDATES_STABLE_STAY_D:-7}
 # maximum summary diff with width and height
 #
 JOSH_TMUX_AUTORETACH_MAX_DIFF=9
-
-
-# remove duplicates from PATH
-#
-local unified_path="$(
-    echo "$PATH" | sd ':' '\n' \
-    | runiq - | xargs -n 1 realpath 2>/dev/null \
-    | sd '\n' ':' | sd '(^:|:$)' '' \
-)"
-[ "$?" = 0 ] && [ "$unified_path " ] && export PATH="$unified_path"
 
 THEFUCK_EXCLUDE_RULES="fix_file"
 

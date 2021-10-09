@@ -101,6 +101,11 @@ function reset_path() {
 function rehash() {
     [ -z "$JOSH" ] && return 1
 
+    local venv="$VIRTUAL_ENV"
+    if [ -n "$venv" ]; then
+        source $venv/bin/activate && deactivate
+    fi
+
     reset_path
     builtin rehash
     which "zsh" 1>/dev/null
@@ -133,10 +138,13 @@ function rehash() {
         fi
 
         if [ ! "$short" = "`basename "$result[$link]"`" ]; then
-            # exclude manual remap, e.g. FreeBSD sed -> gsed, MacOS ls -> gls
             shortcut "$short" "`fs_realpath $commands[$short]`" 1>/dev/null
         fi
     done
+
+    if [ -n "$venv" ]; then
+        source $venv/bin/activate
+    fi
     builtin rehash
 }
 
@@ -151,20 +159,29 @@ function shortcut() {
     [ -z "$ZSH" ] || [ -z "$1" ] && return 0
     [[ "$1" =~ "/" ]] && return 1
 
-    local dir="$JOSH/bin"
-    local src="$dir/$1"
-
     if [ -z "$2" ]; then
-        if [ -L "$src" ]; then
+        local order=( "$JOSH/sbin" "$JOSH/bin" )
+        for dir in $order; do
+            local src="$dir/$1"
 
-            local dst="`fs_realpath "$src"`"
-            if [ -x "$dst" ]; then
-                echo "$dst"
+            if [ -L "$src" ]; then
+                local dst="`fs_realpath "$src"`"
+                if [ -x "$dst" ]; then
+                    echo "$dst"
+                    return 0
+                fi
             fi
-        fi
+        done
         return 1
 
     else
+        if [ -z "$3" ]; then
+            local dir="$JOSH/bin"
+        else
+            local dir="$JOSH/sbin"
+        fi
+
+        local src="$dir/$1"
         local dst="`fs_realpath $2`"
         if [ -z "$dst" ] || [ ! -x "$dst" ]; then
             return 2
@@ -178,7 +195,6 @@ function shortcut() {
         if [ ! -f "$src" ]; then
             [ ! -d "$dir" ] && mkdir -p "$dir"
             ln -s "$dst" "$src"
-            echo "$dst"
         fi
         echo "$dst"
     fi
@@ -188,11 +204,23 @@ function shortcut() {
 function which() {
     if [[ "$1" =~ "/" ]]; then
         if [ -x "$1" ] && [ ! -L "$1" ]; then
+            local short="`basename "$1"`"
+            if [ ! -L "$JOSH/bin/$short" ]; then
+                shortcut "$short" "$JOSH/bin/$short"
+            fi
             echo "$1"
             return 0
         else
-            echo "$(which `basename $1`)"
+            echo "`fs_realpath "$1"`"
             return "$?"
+        fi
+    fi
+
+    if [ -n "$VIRTUAL_ENV" ]; then
+        result="`builtin which "$1" 2>/dev/null`"
+        if [ -x "$result" ]; then
+            echo "$result"
+            return 0
         fi
     fi
 

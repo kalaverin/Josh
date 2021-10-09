@@ -40,14 +40,14 @@ fi
 
 if [ -n "$(uname | grep -i freebsd)" ]; then
     export JOSH_OS="BSD"
-    shortcut 'ls' '/usr/local/bin/gnuls'
-    shortcut 'grep' '/usr/local/bin/grep'
+    shortcut 'ls' '/usr/local/bin/gnuls' 1
+    shortcut 'grep' '/usr/local/bin/grep' 1
 
 
 elif [ -n "$(uname | grep -i darwin)" ]; then
     export JOSH_OS="MAC"
-    shortcut 'ls' '/usr/local/bin/gls'
-    shortcut 'grep' '/usr/local/bin/ggrep'
+    shortcut 'ls' '/usr/local/bin/gls' 1
+    shortcut 'grep' '/usr/local/bin/ggrep' 1
 
     export PATH="$PATH:/Library/Apple/usr/bin"
 
@@ -61,12 +61,12 @@ else
 fi
 
 if [ "$JOSH_OS" = 'BSD' ] || [ "$JOSH_OS" = 'MAC' ]; then
-    shortcut 'cut' '/usr/local/bin/gcut'
-    shortcut 'head' '/usr/local/bin/ghead'
-    shortcut 'readlink' '/usr/local/bin/greadlink'
-    shortcut 'realpath' '/usr/local/bin/grealpath'
-    shortcut 'sed' '/usr/local/bin/gsed'
-    shortcut 'tail' '/usr/local/bin/gtail'
+    shortcut 'cut' '/usr/local/bin/gcut' 1
+    shortcut 'head' '/usr/local/bin/ghead' 1
+    shortcut 'readlink' '/usr/local/bin/greadlink' 1
+    shortcut 'realpath' '/usr/local/bin/grealpath' 1
+    shortcut 'sed' '/usr/local/bin/gsed' 1
+    shortcut 'tail' '/usr/local/bin/gtail' 1
 fi
 
 export JOSH_INIT=1
