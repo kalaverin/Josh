@@ -16,8 +16,9 @@ fi
 OMZ_PLUGIN_DIR="$DEST/custom/plugins"
 PACKAGES=(
     "https://github.com/alecthomas/ondir.git $OMZ_PLUGIN_DIR/ondir"
-    "https://github.com/facebook/PathPicker.git $OMZ_PLUGIN_DIR/fpp"
     "https://github.com/chrissicool/zsh-256color $OMZ_PLUGIN_DIR/zsh-256color"
+    "https://github.com/facebook/PathPicker.git $OMZ_PLUGIN_DIR/fpp"
+    "https://github.com/felixgravila/zsh-abbr-path.git $OMZ_PLUGIN_DIR/zsh-abbr-path"
     "https://github.com/hlissner/zsh-autopair.git $OMZ_PLUGIN_DIR/zsh-autopair"
     "https://github.com/leophys/zsh-plugin-fzf-finder.git $OMZ_PLUGIN_DIR/zsh-plugin-fzf-finder"
     "https://github.com/mafredri/zsh-async.git $OMZ_PLUGIN_DIR/zsh-async"
@@ -54,23 +55,25 @@ function deploy_ohmyzsh() {
 # ——- then clone git-based extensions
 
 function deploy_extensions() {
-    clone="`lookup git` clone --depth 1"
-    if [ ! -d "$OMZ_PLUGIN_DIR" ]; then
-        mkdir -p "$OMZ_PLUGIN_DIR"
-    fi
-    if [ "`find $OMZ_PLUGIN_DIR -type d -maxdepth 1 | wc -l`" -gt "${#PACKAGES[@]}" ]; then
-        echo " * extensions already deployed to $OMZ_PLUGIN_DIR"
-    else
-        echo " + clone extensions to $OMZ_PLUGIN_DIR"
-        for pkg in "${PACKAGES[@]}"; do
-            $SHELL -c "$clone $pkg"
-            if [ $? -gt 0 ]; then
-                echo " - clone plugin failed: $clone $pkg"
-            else
-                echo " - clone plugin ok: $clone $pkg"
-            fi
-        done
-    fi
+    [ ! -d "$OMZ_PLUGIN_DIR" ] && mkdir -p "$OMZ_PLUGIN_DIR"
+
+    echo " + $0 to $OMZ_PLUGIN_DIR"
+
+    for pkg in "${PACKAGES[@]}"; do
+        local dst="$OMZ_PLUGIN_DIR/`basename $pkg`"
+        if [ ! -x "$dst/.git" ]; then
+            local verb='clone'
+            $SHELL -c "git clone --depth 1 $pkg"
+        else
+            local verb='pull'
+            $SHELL -c "git --git-dir=\"$dst/.git\" --work-tree=\"$dst/\" pull origin master"
+        fi
+
+        [ $? -gt 0 ] && local result="error" || local result="success"
+        echo " - $0 $verb success: $pkg"
+    done
+
+    echo " + $0: ${#PACKAGES[@]} complete"
     return 0
 }
 
