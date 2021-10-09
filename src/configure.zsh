@@ -29,27 +29,27 @@ JOSH_PY_ENVS_ROOT="${JOSH_PY_ENVS_ROOT:-"$HOME/envs"}"
 JOSH_WORKHOUR_START=${JOSH_WORKHOUR_START:-10} # from 10, -> 10:00
 JOSH_WORKHOUR_END=${JOSH_WORKHOUR_END:-18}     # till 18, <- 17:59
 
-# JOSH_UPDATES_FETCH_EVERY_HOUR
+# JOSH_UPDATES_FETCH_H
 # fetch commits from remote every hour (except work hours)
 # it's background async task to except annoying
 #
-JOSH_UPDATES_FETCH_EVERY_HOUR=${JOSH_UPDATES_FETCH_EVERY_HOUR:-1}
+JOSH_UPDATES_FETCH_H=${JOSH_UPDATES_FETCH_H:-2}
 
-# JOSH_UPDATES_CHECK_EVERY_DAY
+# JOSH_UPDATES_REPORT_D
 # how frequenlty report and suggest install updates
 # but for develop — this is autopull period
 #
-JOSH_UPDATES_CHECK_EVERY_DAY=${JOSH_UPDATES_CHECK_EVERY_DAY:-3}
+JOSH_UPDATES_REPORT_D=${JOSH_UPDATES_REPORT_D:-1}
 
-# JOSH_UPDATES_STABLE_STAY_DAYS
+# JOSH_UPDATES_STABLE_STAY_D
 # just for stable, delay after last commit with N days
 # to display message about commits count
 #
-JOSH_UPDATES_STABLE_STAY_DAYS=${JOSH_UPDATES_STABLE_STAY_DAYS:-7}
+JOSH_UPDATES_STABLE_STAY_D=${JOSH_UPDATES_STABLE_STAY_D:-7}
 
 # JOSH_TMUX_DISABLE_AUTORETACH
 # Josh scan sessions and connect to detached matching with current terminal size
-# this — disable default behavior
+# bu default - enabled
 #
 #JOSH_TMUX_AUTORETACH_DISABLE=1
 

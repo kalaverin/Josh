@@ -36,7 +36,7 @@ function fetch_updates() {
     local last_check="`cat $file 2>/dev/null`"
     [ -z "$last_check" ] && local last_check="0"
 
-    let fetch_every="${JOSH_UPDATES_FETCH_EVERY_HOUR:-1} * 3600"
+    let fetch_every="${JOSH_UPDATES_FETCH_H:-1} * 3600"
     let need_check="$EPOCHSECONDS - $fetch_every > $last_check"
 
     if [ "$need_check" -eq 0 ]; then
@@ -96,7 +96,7 @@ function check_updates() {
     local last_check="`cat $file 2>/dev/null`"
     [ -z "$last_check" ] && local last_check="0"
 
-    let check_every=" ${JOSH_UPDATES_CHECK_EVERY_DAY:-1} * 86400"
+    let check_every=" ${JOSH_UPDATES_REPORT_D:-1} * 86400"
     let need_check="$EPOCHSECONDS - $check_every > $last_check"
     [ "$need_check" -eq 0 ] && return 0
 
@@ -116,7 +116,7 @@ function check_updates() {
 
     elif [ "$branch" = "stable" ]; then
         local last_commit="`git --git-dir="$JOSH/.git" --work-tree="$JOSH/" log -1 --format="%ct"`"
-        let wait_stable=" ${JOSH_UPDATES_STABLE_STAY_DAYS:-7} * 86400"
+        let wait_stable=" ${JOSH_UPDATES_STABLE_STAY_D:-7} * 86400"
         let need_check="$EPOCHSECONDS - $wait_stable > $last_commit"
         [ "$need_check" -eq 0 ] && return 0
     fi
