@@ -73,7 +73,7 @@ function fs_realpath() {
         echo "`$SHELL -c "$resolver $link"`"
 
     else
-        echo " - $0 fatal: link: \`$link\` isn't executive" >&2
+        echo " - $0 fatal: link: \`$link\` invalid" >&2
         return 1
     fi
 }
@@ -206,7 +206,7 @@ function which() {
         if [ -x "$1" ] && [ ! -L "$1" ]; then
             local short="`basename "$1"`"
             if [ ! -L "$JOSH/bin/$short" ]; then
-                shortcut "$short" "$JOSH/bin/$short"
+                shortcut "$short" "$1"
             fi
             echo "$1"
             return 0
