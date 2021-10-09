@@ -49,8 +49,9 @@ JOSH_UPDATES_STABLE_STAY_DAYS=${JOSH_UPDATES_STABLE_STAY_DAYS:-7}
 
 # JOSH_TMUX_DISABLE_AUTORETACH
 # Josh scan sessions and connect to detached matching with current terminal size
+# this — disable default behavior
 #
-JOSH_TMUX_AUTORETACH_DISABLE=1
+#JOSH_TMUX_AUTORETACH_DISABLE=1
 
 #JOSH_TMUX_AUTORETACH_MAX_DIFF
 # maximum summary diff with width and height
