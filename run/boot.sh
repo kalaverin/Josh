@@ -342,8 +342,11 @@ else
             builtin cd "$HOME" && exec zsh
         fi
 
-    elif [ ! "$JOSH_INIT" -gt 0 ]; then
+    else
+        # if [ ! "$JOSH_INIT" -gt 0 ]; then
         source "`dirname $0`/init.sh"
-        rehash
+        if [ -z "$TMUX" ]; then
+            rehash
+        fi
     fi
 fi
