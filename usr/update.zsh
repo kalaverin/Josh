@@ -85,7 +85,7 @@ function check_updates() {
         echo " - $0 warning: JOSH_CACHE_DIR:\`$JOSH_CACHE_DIR\`" >&2
         return 1
     fi
-    unset JOSH_UPDATES_FOUND
+    unset JOSH_UPDATES_COUNT
 
     local updates="`fetch_updates`"
     return 0
@@ -121,7 +121,7 @@ function check_updates() {
         [ "$need_check" -eq 0 ] && return 0
     fi
 
-    JOSH_UPDATES_FOUND="$updates"
+    JOSH_UPDATES_COUNT="$updates"
     [ ! -d "$JOSH_CACHE_DIR" ] && mkdir -p "$JOSH_CACHE_DIR"
     echo "$EPOCHSECONDS" > "$file"
     echo "$branch"
@@ -137,10 +137,10 @@ function motd() {
     elif [ -z "$branch" ]; then
         return 0
 
-    elif [ -z "$JOSH_UPDATES_FOUND" ]; then
+    elif [ -z "$JOSH_UPDATES_COUNT" ]; then
         return 0
 
-    elif [ "$JOSH_UPDATES_FOUND" -eq 0 ]; then
+    elif [ "$JOSH_UPDATES_COUNT" -eq 0 ]; then
         return 0
 
     fi
@@ -160,7 +160,7 @@ function motd() {
         echo " + Josh v$ctag $branch $last_commit."
 
     else
-        echo " + Josh v$ctag $branch $last_commit, found $JOSH_UPDATES_FOUND updates, just run: josh_update && exec zsh"
+        echo " + Josh v$ctag $branch $last_commit, found $JOSH_UPDATES_COUNT updates, just run: josh_update && exec zsh"
 
     fi
 }
