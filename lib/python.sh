@@ -54,7 +54,7 @@ function python_exe() {
     source $BASE/run/units/compat.sh
     if [ $? -gt 0 ]; then
         echo " - fatal python: something wrong, source BASE:\`$BASE\`"
-        return 255
+        return 127
     fi
 
     if [ -x "$PYTHON3" ]; then
@@ -85,6 +85,7 @@ function python_exe() {
     if [ "$result" ]; then
         local python="`realpath $result`"
         if [ -x "$python" ]; then
+            shortcut 'python' "$python" 1 >/dev/null
             export PYTHON3="$python"
             local version="`python_get_version $python`"
             return 0
@@ -154,7 +155,7 @@ function pip_init() {
     export JOSH_PIP="$PIP_DIR/pip"
     export PATH="$PIP_DIR:$PATH"
 
-    if [ ! -f "$JOSH_PIP" ]; then
+    if [ ! -x "$JOSH_PIP" ]; then
         [ ! -d "$PIP_DIR" ] && mkdir -p "$PIP_DIR"
         url="https://bootstrap.pypa.io/get-pip.py"
         local pip_file="/tmp/get-pip.py"
@@ -177,9 +178,11 @@ function pip_init() {
             return 1
         fi
 
-        if [ ! -f "$JOSH_PIP" ]; then
+        if [ ! -x "$JOSH_PIP" ]; then
             echo " - fatal: pip isn't installed ($JOSH_PIP)"
-            return 255
+            return 127
+        else
+            shortcut 'pip' "$JOSH_PIP" 1 >/dev/null
         fi
     fi
     return 0

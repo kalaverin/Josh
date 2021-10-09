@@ -201,7 +201,6 @@ CARGO_BIN="$CARGO_BINARIES/cargo"
 function cargo_init() {
     local cache_exe="$CARGO_BINARIES/sccache"
 
-
     if [ ! -x "$CARGO_BIN" ]; then
         export RUSTC_WRAPPER=""
         unset RUSTC_WRAPPER
@@ -212,8 +211,9 @@ function cargo_init() {
 
         if [ $? -gt 0 ] || [ ! -x "$CARGO_BIN" ]; then
             echo " - fatal: cargo \`$CARGO_BIN\` isn't installed"
-            return 255
+            return 127
         fi
+        shortcut 'cargo' "$CARGO_BIN" 1 >/dev/null
     fi
 
     export PATH="$CARGO_BINARIES:$PATH"
@@ -223,6 +223,7 @@ function cargo_init() {
         if [ ! -x "$cache_exe" ]; then
             echo " - warning: sccache \`$cache_exe\` isn't compiled"
         fi
+        shortcut 'sccache' "$cache_exe" 1 >/dev/null
     fi
 
     if [ -x "$cache_exe" ]; then
