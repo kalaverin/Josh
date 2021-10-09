@@ -267,3 +267,4 @@ rchgrp() {
 }
 
 export PATH="$JOSH/sbin:$JOSH/bin:$PATH"
+reset_path
