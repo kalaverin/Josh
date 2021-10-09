@@ -103,7 +103,7 @@ function rehash() {
 
     reset_path
     builtin rehash
-    which zsh 1>/dev/null
+    which "zsh" 1>/dev/null
     typeset -Ag dirtimes
 
     builtin zstat -LnA result `find $JOSH/bin -type l | sed -z 's:\n: :g'`
@@ -129,7 +129,7 @@ function rehash() {
         let staled="$dtime > $result[$time]"
         if [ "$staled" -gt 0 ]; then
             unlink "$result[$name]"
-            which "$short"
+            which "$short" 1>/dev/null
         fi
 
         if [ ! "$short" = "`basename "$result[$link]"`" ]; then
