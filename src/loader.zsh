@@ -3,13 +3,13 @@ source "$JOSH/usr/common.zsh"
 
 [ -x "`lookup tmux`" ] && source "$JOSH/usr/units/tmux.zsh"
 
-source "$ZSH/custom/plugins/ondir/scripts.zsh"
 source "$ZSH/custom/plugins/forgit/forgit.plugin.zsh"
+source "$ZSH/custom/plugins/ondir/scripts.zsh"
 source "$ZSH/custom/plugins/zsh-async/async.zsh"
 source "$ZSH/custom/plugins/zsh-fuzzy-search-and-edit/plugin.zsh"
 source "$ZSH/custom/plugins/zsh-plugin-fzf-finder/fzf-finder.plugin.zsh"
-source "$ZSH/custom/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 source "$ZSH/custom/plugins/zsh-syntax-highlighting-filetypes/zsh-syntax-highlighting-filetypes.zsh"
+source "$ZSH/custom/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 
 source "$JOSH/src/options.zsh"
 source "$JOSH/src/completion.zsh"

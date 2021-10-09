@@ -18,7 +18,6 @@ PACKAGES=(
     "https://github.com/alecthomas/ondir.git $OMZ_PLUGIN_DIR/ondir"
     "https://github.com/chrissicool/zsh-256color $OMZ_PLUGIN_DIR/zsh-256color"
     "https://github.com/facebook/PathPicker.git $OMZ_PLUGIN_DIR/fpp"
-    "https://github.com/felixgravila/zsh-abbr-path.git $OMZ_PLUGIN_DIR/zsh-abbr-path"
     "https://github.com/hlissner/zsh-autopair.git $OMZ_PLUGIN_DIR/zsh-autopair"
     "https://github.com/leophys/zsh-plugin-fzf-finder.git $OMZ_PLUGIN_DIR/zsh-plugin-fzf-finder"
     "https://github.com/mafredri/zsh-async.git $OMZ_PLUGIN_DIR/zsh-async"

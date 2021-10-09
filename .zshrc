@@ -22,6 +22,7 @@ HISTSIZE=25000
 
 export UPDATE_ZSH_DAYS=60
 
+ZSH_THEME="fishy"
 HISTFILE="$HOME/.histfile"
 HIST_STAMPS="yyyy-mm-dd"
 
