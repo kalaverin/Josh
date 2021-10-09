@@ -111,6 +111,7 @@ function rehash() {
     which "zsh" 1>/dev/null
     typeset -Ag dirtimes
 
+    alias sed="`which sed`"
     builtin zstat -LnA result `find $JOSH/bin -type l | sed -z 's:\n: :g'`
     let record=0
     while true; do
@@ -132,13 +133,14 @@ function rehash() {
 
         local short="`basename $result[$name]`"
         let staled="$dtime > $result[$time]"
-        if [ "$staled" -gt 0 ]; then
-            unlink "$result[$name]"
-            which "$short" 1>/dev/null
-        fi
 
         if [ ! "$short" = "`basename "$result[$link]"`" ]; then
             shortcut "$short" "`fs_realpath $commands[$short]`" 1>/dev/null
+        fi
+
+        if [ "$staled" -gt 0 ]; then
+            unlink "$result[$name]"
+            which "$short" 1>/dev/null
         fi
     done
 
