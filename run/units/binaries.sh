@@ -93,9 +93,9 @@ function deploy_micro() {
         $SHELL -c "$BINARY_DEST/micro -plugin install fzf wc detectindent bounce editorconfig quickfix"
         builtin cd "$cwd"
     fi
-    source "$BASE/run/units/configs.sh" && \
-    copy_config "$CONFIG_ROOT/micro_config.json" "$CONFIG_DIR/micro/settings.json" && \
-    copy_config "$CONFIG_ROOT/micro_binds.json" "$CONFIG_DIR/micro/bindings.json" && \
+    source "$BASE/run/units/configs.sh"
+    copy_config "$CONFIG_ROOT/micro_config.json" "$CONFIG_DIR/micro/settings.json"
+    copy_config "$CONFIG_ROOT/micro_binds.json" "$CONFIG_DIR/micro/bindings.json"
     return 0
 }
 
@@ -105,19 +105,19 @@ function deploy_tmux_plugins() {
     local tmux_dest="$HOME/.tmux/plugins"
     [ ! -d "$tmux_dest" ] && mkdir -p "$tmux_dest"
 
-    if [ -x "$HOME/.tmux/plugins/tpm/tpm" ]; then
-        export TMUX_PLUGIN_MANAGER_PATH="$HOME/.tmux/plugins"
-    fi
-
     if [ ! -x "$tmux_dest/tpm" ]; then
         git clone --depth 1 "https://github.com/tmux-plugins/tpm" "$tmux_dest/tpm"
         [ "$?" -gt 0 ] && return 1
     fi
 
+    if [ -x "$HOME/.tmux/plugins/tpm/tpm" ]; then
+        export TMUX_PLUGIN_MANAGER_PATH="$HOME/.tmux/plugins"
+    fi
+
     if [ -x "`which bash`" ]; then
         bash "$HOME/.tmux/plugins/tpm/scripts/install_plugins.sh"
     else
-        echo " - It's funny, but tmux plugin manager requires bash for installation bootstrap."
+        echo " - It's funny, but tmux plugin manager required bash for installation bootstrap."
     fi
 
     return 0
