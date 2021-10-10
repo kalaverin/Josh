@@ -99,14 +99,19 @@ function path_last_modified() {
 
 
 function reset_path() {
+    local sd="`which sd`"
+    local grep="`which grep`"
+    local runiq="`which runiq`"
+
     local unified_path="$(
-        echo "$PATH" | sd ':' '\n' | grep -v "$JOSH" \
-        | runiq - | xargs -n 1 realpath 2>/dev/null \
-        | sd '\n' ':' | sd '(^:|:$)' '' \
+        echo "$PATH" | $sd ':' '\n' \
+        | $sd '^~/' "$HOME/" | $runiq - \
+        | xargs -n 1 realpath 2>/dev/null \
+        | grep -v "$JOSH" | $sd '\n' ':' | $sd '(^:|:$)' '' \
     )"
 
     local ret="$?"
-    if [ "$ret" -eq 0 ] && [ -n "$unified_path " ]; then
+    if [ "$ret" -eq 0 ] && [ -n "$unified_path" ]; then
         export PATH="$unified_path"
     fi
     return "$ret"
@@ -173,14 +178,14 @@ function rehash() {
 
         if [ "$expired" -gt 0 ]; then
             unlink "$link[$name]"
-            shortcut "$base" "$commands[$base]" 1>/dev/null
+            shortcut "$base" "`which $commands[$base]`" 1>/dev/null
 
         else
             [[ $link[$node] -regex-match "[^/]+$" ]] &&
             local node="$MATCH"
 
             if [ ! "$base" = "$node" ]; then
-                shortcut "$base" "$commands[$base]" 1>/dev/null
+                shortcut "$base" "`which $commands[$base]`" 1>/dev/null
             fi
         fi
 
