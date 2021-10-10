@@ -91,14 +91,15 @@ git_current_branch() {
 }
 
 get_repository_state() {
-    local root="`git_root`"
-    # local root="`git_root 2>/dev/null`"
+    local root="`git_root 2>/dev/null`"
     [ -z "$root" ] && return 1
 
     if [ -d "$root/.git/rebase-merge" ]; then
         local state="rebase"
+
     elif [ -f "$root/.git/CHERRY_PICK_HEAD" ]; then
         local state="cherry-pick"
+
     elif [ -f "$root/.git/MERGE_HEAD" ]; then
         local state="merge"
     fi
@@ -278,12 +279,12 @@ function drop_this_branch_right_now() {
     git_repository_clean; [ $? -gt 0 ] && return 1
 
     if [ "$branch" = "master" ]; then
-        echo " ! Cannot delete MASTER branch" 1>&2
+        echo " - $0 ATTENTION! Do not delete MASTER branch!" 1>&2
         return 1
     fi
 
     if [ "$branch" = "develop" ]; then
-        echo " ! Cannot delete DEVELOP branch" 1>&2
+        echo " - $0 ATTENTION! Do not delete DEVELOP branch!" 1>&2
         return 1
     fi
 
@@ -298,12 +299,12 @@ function DROP_THIS_BRANCH_RIGHT_NOW() {
     git_repository_clean; [ $? -gt 0 ] && return 1
 
     if [ "$branch" = "master" ]; then
-        echo " ! Cannot delete MASTER branch" 1>&2
+        echo " - $0 ATTENTION! Do not delete MASTER branch!" 1>&2
         return 1
     fi
 
     if [ "$branch" = "develop" ]; then
-        echo " ! Cannot delete DEVELOP branch" 1>&2
+        echo " - $0 ATTENTION! Do not delete DEVELOP branch!" 1>&2
         return 1
     fi
 
