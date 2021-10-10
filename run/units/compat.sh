@@ -20,7 +20,7 @@ REQUIRED_LIBRARIES=(
 function check_executables() {
     local missing=""
     for exe in $@; do
-        if [ ! -x "`which $exe`" ]; then
+        if [ ! -x "`builtin which -p $exe 2>/dev/null`" ]; then
             local missing="$missing $exe"
         fi
     done
@@ -110,7 +110,7 @@ function check_compliance() {
         echo " + os: macos `uname -srv`"
         export JOSH_OS="MAC"
 
-        if [ ! -x "`which brew`" ]; then
+        if [ ! -x "`builtin which -p brew 2>/dev/null`" ]; then
             echo ' - brew for MacOS strictly required, just run: curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | zsh"'
         fi
 
@@ -132,7 +132,7 @@ function check_compliance() {
 
         if [ -f "/etc/debian_version" ] || [ -n "$(uname -v | grep -Pi '(debian|ubuntu)')" ]; then
             echo " + os: debian-based `uname -srv`"
-            [ -x "`which apt`" ] && local bin="apt" || local bin="apt-get"
+            [ -x "`builtin which -p apt 2>/dev/null`" ] && local bin="apt" || local bin="apt-get"
 
             local cmd="(sudo $bin update --yes --quiet || true) && sudo $bin install --yes --quiet --no-remove"
             local pkg="zsh git jq pv clang make build-essential pkg-config python3 python3-distutils tree libssl-dev python-dev libpq-dev libevent-dev"

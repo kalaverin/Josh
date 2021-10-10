@@ -108,12 +108,12 @@ function zero_configuration() {
     nano_syntax_compile
 
     copy_config "$CONFIG_ROOT/cargo.toml" "$HOME/.cargo/config.toml"
+    copy_config "$CONFIG_ROOT/lsd.yaml" "$CONFIG_DIR/lsd/config.yaml"
+    copy_config "$CONFIG_ROOT/mycli.conf" "$HOME/.myclirc"
     copy_config "$CONFIG_ROOT/nodeenv.conf" "$HOME/.nodeenvrc"
+    copy_config "$CONFIG_ROOT/ondir.rc" "$HOME/.ondirrc"
+    copy_config "$CONFIG_ROOT/pgcli.conf" "$CONFIG_DIR/pgcli/config"
     copy_config "$CONFIG_ROOT/pip.conf" "$CONFIG_DIR/pip/pip.conf"
     copy_config "$CONFIG_ROOT/starship.toml" "$CONFIG_DIR/starship.toml"
-    copy_config "$CONFIG_ROOT/mycli.conf" "$HOME/.myclirc"
-    copy_config "$CONFIG_ROOT/pgcli.conf" "$CONFIG_DIR/pgcli/config"
-    copy_config "$CONFIG_ROOT/ondir.rc" "$HOME/.ondirrc"
     copy_config "$CONFIG_ROOT/tmux.conf" "$HOME/.tmux.conf"
-    copy_config "$CONFIG_ROOT/lsd.yaml" "$CONFIG_DIR/lsd/config.yaml"
 }
