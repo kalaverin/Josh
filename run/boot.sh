@@ -8,6 +8,15 @@ JOSH_PATH="custom/plugins/josh"
 JOSH_SUBDIR_NAME=".josh"
 
 
+function lookup() {
+    for sub in $path; do
+        if [ -x "$sub/$1" ]; then
+            echo "$sub/$1"
+        fi
+    done
+}
+
+
 function fs_readlink() {
     builtin zstat -LA result "$1" 2>/dev/null
     local retval="$?"
