@@ -5,42 +5,39 @@ fi
 alias tml="tmux list-sessions -F ' #{?session_attached,+,-} #{window_width}x#{window_height} #{session_name}'"
 
 function tmx() {
-    if [[ -n "$PS1" ]] && [[ -n "$SSH_CONNECTION" ]]; then
+    if [ -n "$1"  ]; then
+        if [ "$1" = 'any' ]; then
+            local session="$(
+                tmx_get_matching_detached_session ||
+                tmx_get_detached_session ||
+                tmx_get_any_session)"
 
-        if [ -n "$1"  ]; then
-            if [ "$1" = 'any' ]; then
-                local session="$(
-                    tmx_get_matching_detached_session ||
-                    tmx_get_detached_session ||
-                    tmx_get_any_session)"
+        elif [ "$1" = 'last' ]; then
+            local session="$(
+                tmx_get_matching_detached_session ||
+                tmx_get_detached_session)"
 
-            elif [ "$1" = 'last' ]; then
-                local session="$(
-                    tmx_get_matching_detached_session ||
-                    tmx_get_detached_session)"
+        elif [ "$1" = 'lost' ]; then
+            local session="$(
+                tmx_get_matching_detached_session)"
+        else
+            local session="$1"
+        fi
 
-            elif [ "$1" = 'lost' ]; then
-                local session="$(
-                    tmx_get_matching_detached_session)"
-            else
-                local session="$1"
-            fi
-
-            if [ -z "$session" ]; then
-                return 1
-
-            else
-                if [ -n "`tmx_is_session_exists "$session"`" ]; then
-                    tmux attach-session -t "$session"
-                else
-                    tmux new-session -s "$session"
-                fi
-                return "$?"
-            fi
+        if [ -z "$session" ]; then
+            return 1
 
         else
-            tmx lost || tmux new-session -s "`make_human_name 1`"
+            if [ -n "`tmx_is_session_exists "$session"`" ]; then
+                tmux attach-session -t "$session"
+            else
+                tmux new-session -s "$session"
+            fi
+            return "$?"
         fi
+
+    else
+        tmx lost || tmux new-session -s "`make_human_name 1`"
     fi
 }
 
