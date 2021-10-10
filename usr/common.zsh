@@ -209,7 +209,7 @@ visual_chdir() {
         if [ -f "$temp/.lastdir.tmp" ]; then
             builtin cd `cat $temp/.lastdir.tmp` &> /dev/null
             unlink "$temp/.lastdir.tmp"
-            pwd; l --git-ignore
+            pwd; l
             zle reset-prompt
             return 0
         fi
@@ -218,7 +218,7 @@ visual_chdir() {
             builtin cd "$directory" &> /dev/null
 
         else
-            pwd; l --git-ignore
+            pwd; l
             zle reset-prompt
             return 0
         fi
@@ -239,7 +239,7 @@ visual_recent_chdir() {
             --bind='enter:accept' \
             --reverse --min-height='11' --height='11' \
             --preview-window="right:`get_preview_width`:noborder" \
-            --preview='exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first '{}'' \
+            --preview="$SHELL $JOSH/usr/src/viewer.sh {}" \
             --filepath-word --tiebreak=index \
             --ansi --extended --info='inline' \
             --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
@@ -274,7 +274,7 @@ visual_warp_chdir() {
             --bind='enter:accept' \
             --reverse --min-height='11' --height='11' \
             --preview-window="right:`get_preview_width`:noborder" \
-            --preview='exa -lFag --color=always --git --git-ignore --octal-permissions --group-directories-first '{2}'' \
+            --preview="$SHELL $JOSH/usr/src/viewer.sh {2}" \
             --filepath-word --tiebreak=index \
             --ansi --extended --info='inline' \
             --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \

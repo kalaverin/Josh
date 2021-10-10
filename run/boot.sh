@@ -177,6 +177,10 @@ function shortcut() {
         return 1
 
     else
+        if [ ! -x "$2" ]; then
+            return 2
+        fi
+
         if [ -z "$3" ]; then
             local dir="$JOSH/bin"
         else
@@ -186,7 +190,7 @@ function shortcut() {
         local src="$dir/$1"
         local dst="`fs_realpath $2`"
         if [ -z "$dst" ] || [ ! -x "$dst" ]; then
-            return 2
+            return 3
         fi
 
         # if link already exists we need to check link destination

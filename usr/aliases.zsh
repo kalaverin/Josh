@@ -24,7 +24,7 @@ alias -g uri="$HTTP_GET"
 # nano: default editor for newbies like me
 #
 if [ -x "`which nano`" ]; then
-    export EDITOR="`which nano`"
+    export EDITOR="nano"
 fi
 
 
@@ -38,7 +38,7 @@ fi
 # sccache: very need runtime disk cache for cargo, from cold start have cachehit about 60%+
 #
 if [ -x "`which sccache`" ] && [ -z "$RUSTC_WRAPPER" ]; then
-    export RUSTC_WRAPPER="$temp"
+    export RUSTC_WRAPPER="sccache"
 fi
 
 
@@ -59,12 +59,7 @@ fi
 
 # just my settings for recursive grep
 #
-if [ -z "$GREP_RECURSIVE_OPTIONS" ]; then
-    GREP_RECURSIVE_OPTIONS="-rnH --exclude '*.js' --exclude '*.min.css' --exclude '.git/' --exclude 'node_modules/' --exclude 'lib/python*/site-packages/' --exclude '__snapshots__/' --exclude '.eggs/' --exclude '*.pyc' --exclude '*.po' --exclude '*.svg' --color=auto"
-fi
-
-alias grep="`which grep` --line-buffered"
-alias ri="grep --line-buffered $GREP_RECURSIVE_OPTIONS"
+alias ri="`which grep` --line-buffered -rnH --exclude '*.js' --exclude '*.min.css' --exclude '.git/' --exclude 'node_modules/' --exclude 'lib/python*/site-packages/' --exclude '__snapshots__/' --exclude '.eggs/' --exclude '*.pyc' --exclude '*.po' --exclude '*.svg' --color=auto"
 
 
 # httpie: modern, fast and very usable HTTP client
@@ -72,8 +67,7 @@ alias ri="grep --line-buffered $GREP_RECURSIVE_OPTIONS"
 if [ -x "`which http`" ]; then
     # run `http --help` to select theme to HTTPIE_THEME
     HTTPIE_OPTIONS=${HTTPIE_OPTIONS:-"--verify no --default-scheme http --follow --all --format-options json.indent:2 --compress --style ${HTTPIE_THEME:-"gruvbox-dark"}"}
-
-    alias http="`which http` $HTTPIE_OPTIONS"
+    alias http="http $HTTPIE_OPTIONS"
 fi
 
 
@@ -91,7 +85,7 @@ if [ -x "`which rg`" ]; then
     local ripgrep_fine='--max-columns $COLUMNS --case-sensitive --fixed-strings --word-regexp'
     local ripgrep_interactive="--no-stats --text --context 1 --colors 'match:fg:yellow' --colors 'path:fg:red' --context-separator ''"
 
-    export JOSH_RIPGREP="`which rg`"
+    export JOSH_RIPGREP="rg"
     local realpath="`which "realpath"`"
     export JOSH_RIPGREP_OPTS="--require-git --hidden --max-columns-preview --max-filesize=50K --ignore-file=`$realpath --quiet ~/.gitignore`"
 
@@ -134,8 +128,8 @@ fi
 # git-delta: beatiful git differ with many settings, fast and cool
 #
 if [ -x "`which delta`" ]; then
-    export DELTA="delta --commit-style='yellow ul' --commit-decoration-style='' --file-style='cyan ul' --file-decoration-style='' --hunk-style normal --zero-style='dim syntax' --24-bit-color='always' --minus-style='syntax #330000' --plus-style='syntax #002200' --file-modified-label='M' --file-removed-label='D' --file-added-label='A' --file-renamed-label='R' --line-numbers-left-format='{nm:^4}' --line-numbers-minus-style='#aa2222' --line-numbers-zero-style='#505055' --line-numbers-plus-style='#229922' --line-numbers --navigate --relative-paths"
-
+    DELTA_OPTIONS=${DELTA_OPTIONS:-"--commit-style='yellow ul' --commit-decoration-style='' --file-style='cyan ul' --file-decoration-style='' --hunk-style normal --zero-style='dim syntax' --24-bit-color='always' --minus-style='syntax #330000' --plus-style='syntax #002200' --file-modified-label='M' --file-removed-label='D' --file-added-label='A' --file-renamed-label='R' --line-numbers-left-format='{nm:^4}' --line-numbers-minus-style='#aa2222' --line-numbers-zero-style='#505055' --line-numbers-plus-style='#229922' --line-numbers --navigate --relative-paths"}
+    export DELTA="delta $DELTA_OPTIONS"
     if [ -x "`which bat`" ]; then
         export DELTA="$DELTA --pager bat"
     fi
@@ -146,7 +140,7 @@ fi
 #
 if [ -x "`which fzf`" ]; then
     export FZF_DEFAULT_OPTS="--ansi --extended"
-    export FZF_DEFAULT_COMMAND='fd --type file --follow --hidden --color=always --exclude .git/ --exclude "*.pyc" --exclude node_modules/'
+    export FZF_DEFAULT_COMMAND="fd --type file --follow --hidden --color=always --exclude .git/ --exclude \"*.pyc\" --exclude node_modules/"
     export FZF_THEME=${FZF_THEME:-"fg:#ebdbb2,hl:#fabd2f,fg+:#ebdbb2,bg+:#3c3836,hl+:#fabd2f,info:#83a598,prompt:#bdae93,spinner:#fabd2f,pointer:#83a598,marker:#fe8019,header:#665c54"}
 fi
 
@@ -166,10 +160,10 @@ if [ -x "`which docker`" ]; then
     export COMPOSE_DOCKER_CLI_BUILD=${COMPOSE_DOCKER_CLI_BUILD:-1}
 fi
 
-[ -x "`which lolcate`" ]  && alias lc="`which lolcate`"
-[ -x "`which micro`" ] && alias mi="`which micro`"
-[ -x "`which rsync`" ] && alias cpdir="`which rsync` --archive --links --times"
-[ -x "`which rcrawl`" ] && alias dtree="`which rcrawl` -Rs"
+[ -x "`which lolcate`" ]  && alias lc="lolcate"
+[ -x "`which micro`" ] && alias mi="micro"
+[ -x "`which rsync`" ] && alias cpdir="rsync --archive --links --times"
+[ -x "`which rcrawl`" ] && alias dtree="rcrawl -Rs"
 
 # ———
 

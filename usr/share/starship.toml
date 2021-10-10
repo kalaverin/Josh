@@ -1,4 +1,6 @@
 add_newline = false
+scan_timeout = 50
+command_timeout = 3000
 
 [aws]
 format = ' @[$symbol($profile )(\($region\) )(\[$duration\])]($style)'
@@ -271,4 +273,3 @@ format = ' [$symbol($version)]($style)'
 format = ' [$symbol($version)]($style)'
 
 [custom]
-
