@@ -24,7 +24,7 @@ function completition_expired() {
     else
         local file="$HOME/.zcompdump"
         if [ -f "$file" ]; then
-            let need_check="$EPOCHSECONDS - 7200 > `fstatm $file 2>/dev/null`"
+            let need_check="$EPOCHSECONDS - 7200 > `fs_mtime $file 2>/dev/null`"
             if [ "$need_check" -eq 0 ]; then
                 echo 0
                 return

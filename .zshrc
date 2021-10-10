@@ -1,19 +1,10 @@
-path=(
-    $HOME/.cargo/bin
-    $HOME/.local/bin
-    $HOME/bin
-    /usr/local/bin
-    /bin
-    /sbin
-    /usr/bin
-    /usr/sbin
-    /usr/local/sbin
-    /usr/local/etc/rc.d
-    /etc/rc.d
-    $path
-)
+source "$HOME/.josh/custom/plugins/josh/run/boot.sh"
 
-[ -z "$JOSH" ] && source "$HOME/.josh/custom/plugins/josh/run/init.sh"
+path=(
+    $path
+    /etc/rc.d
+    /usr/local/etc/rc.d
+)
 
 SAVEHIST=20000
 HISTSIZE=25000

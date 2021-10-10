@@ -67,7 +67,7 @@ function deploy_extensions() {
             $SHELL -c "git clone --depth 1 $pkg"
         else
             let fetch_every="${UPDATE_ZSH_DAYS:-1} * 86400"
-            local last_fetch="`fstatm "$dst/.git/FETCH_HEAD" 2>/dev/null`"
+            local last_fetch="`fs_mtime "$dst/.git/FETCH_HEAD" 2>/dev/null`"
             let need_fetch="$EPOCHSECONDS - $fetch_every > $last_fetch"
             if [ "$need_fetch" -gt 0 ]; then
                 local verb='pull'

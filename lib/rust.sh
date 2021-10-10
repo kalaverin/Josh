@@ -1,7 +1,7 @@
 #!/bin/zsh
 
 if [[ -n ${(M)zsh_eval_context:#file} ]]; then
-    if [ -z "$HTTP_GET" ] || [ -z "$JOSH" ] || [ -z "$JOSH_BASE" ]; then
+    if [ -z "$HTTP_GET" ]; then
         source "`dirname $0`/../run/boot.sh"
     fi
 
@@ -213,7 +213,7 @@ function cargo_init() {
             echo " - fatal: cargo \`$CARGO_BIN\` isn't installed"
             return 127
         fi
-        shortcut 'cargo' "$CARGO_BIN" 1 >/dev/null
+        shortcut 'cargo' "$CARGO_BIN" permanent >/dev/null
     fi
 
     export PATH="$CARGO_BINARIES:$PATH"
@@ -223,7 +223,7 @@ function cargo_init() {
         if [ ! -x "$cache_exe" ]; then
             echo " - warning: sccache \`$cache_exe\` isn't compiled"
         fi
-        shortcut 'sccache' "$cache_exe" 1 >/dev/null
+        shortcut 'sccache' "$cache_exe" permanent >/dev/null
     fi
 
     if [ -x "$cache_exe" ]; then

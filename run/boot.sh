@@ -1,27 +1,107 @@
+echo "read $0"
 #!/bin/zsh
+
+if [[ ! "$SHELL" =~ "/zsh$" ]]; then
+    if [ -x "`which zsh`" ]; then
+        echo " - $0 fatal: current shell must be zsh, but SHELL \`$SHELL\` and zsh binary \``which zsh`\`" >&2
+    else
+        echo " - $0 fatal: current shell must be zsh, but SHELL \`$SHELL\` and zsh not detected" >&2
+    fi
+fi
+
+
+[ -z "$sourced" ] && declare -aUg sourced=() && sourced+=($0)
+
 
 zmodload zsh/stat
 zmodload zsh/datetime
 zmodload zsh/parameter
 
+
+JOSH_URL="https://github.com/YaakovTooth/Josh.git"
 JOSH_PATH="custom/plugins/josh"
 JOSH_SUBDIR_NAME=".josh"
 
 
-function lookup() {
-    for sub in $path; do
-        if [ -x "$sub/$1" ]; then
-            echo "$sub/$1"
-        fi
-    done
+perm_path=(
+    $HOME/.local/bin
+    $HOME/.cargo/bin
+    $HOME/bin
+    /usr/local/bin
+    /bin
+    /sbin
+    /usr/bin
+    /usr/sbin
+    /usr/local/sbin
+)
+
+
+path=(
+    $perm_path
+    $path
+)
+
+
+function fs_mtime() {
+    builtin zstat -LA result "$1" 2>/dev/null
+    [ "$?" -eq 0 ] && echo "$result[10]"
 }
+
 
 function fs_readlink() {
     builtin zstat -LA result "$1" 2>/dev/null
     local retval="$?"
     local result="$result[14]"
+
     [ "$retval" -gt 0 ] && return "$retval"
     echo "$result"
+}
+
+
+function fs_basename() {
+    [ -z "$1" ] && return 1
+    [[ "$1" -regex-match '[^/]+$' ]] && echo "$MATCH"
+}
+
+
+function fs_dirname() {
+    [ -z "$1" ] && return 1
+
+    local result=`fs_basename $1`
+    [ -z "$result" ] && return 2
+
+    let offset="${#1} - ${#result} -1"
+    echo "${1[0,$offset]}"
+}
+
+
+function fs_realdir() {
+    [ -z "$1" ] && return 1
+
+    local result="`fs_realpath "$1"`"
+    [ -z "$result" ] && return 2
+
+    local result="`fs_dirname "$result"`"
+    [ -z "$result" ] && return 3
+
+    echo "$result"
+}
+
+
+function fs_joshpath() {
+    if [ -z "$1" ] || [ -z "$JOSH" ]; then
+        echo "$1 >empty!<" >&2
+        return 1
+    fi
+
+    local result=`fs_realpath $1`
+    if [ -z "$result" ]; then
+        echo "$1 >noreal!<" >&2
+        return 2
+    fi
+
+    let length="${#result} - ${#JOSH} - 2"
+    echo "${result[${#result} - $length,${#result}]}"
 }
 
 
@@ -30,8 +110,12 @@ function fs_realpath() {
         if [ -x "$commands[realpath]" ]; then
             echo "$commands[realpath] -q"
 
-        elif [ -x "$commands[readlink]" ] && [ -z "$(uname | grep -i darwin)" ]; then
-            echo "$commands[readlink] -qf"
+        elif [ -x "$commands[readlink]" ]; then
+            if [ -z "$(uname | grep -i darwin)" ]; then
+                echo "$commands[readlink] -n"
+            else
+                echo "$commands[readlink] -qf"
+            fi
         fi
     }
 
@@ -40,7 +124,7 @@ function fs_realpath() {
         return 1
 
     elif [ -e "$link" ]; then
-        if [[ "$link" =~ "^/" ]] && [ ! -L "$link" ]; then
+        if [[ "$link" =~ "^/" ]] && [[ ! "$link" =~ "/../" ]] && [ ! -L "$link" ]; then
             # it's not link, it is full file path
             echo "$link"
             return 0
@@ -76,243 +160,19 @@ function fs_realpath() {
         local resolver="`get_resolver`"
         if [ -z "$resolver" ]; then
             echo " - $0 fatal: resolver: \`$resolver\` isn't configured" >&2
-            return link
+            echo "$link"
+            return 3
         fi
         echo "`$SHELL -c "$resolver $link"`"
 
     else
-        echo " - $0 fatal: link: \`$link\` invalid" >&2
-        return 1
+        echo " - $0 fatal: \`$link\` invalid" >&2
+        return 2
     fi
 }
 
 
-function path_last_modified() {
-   local result="$(
-        builtin zstat -L `echo "$PATH" | tr ':' ' ' ` 2>/dev/null | \
-        grep mtime | awk -F ' ' '{print $2}' | sort -n | tail -n 1 \
-    )"
-    echo "$result"
-}
-
-
-
-function reset_path() {
-    local sd="`which sd`"
-    local grep="`which grep`"
-    local runiq="`which runiq`"
-
-    local unified_path="$(
-        echo "$PATH" | $sd ':' '\n' \
-        | $sd '^~/' "$HOME/" | $runiq - \
-        | xargs -n 1 realpath 2>/dev/null \
-        | grep -v "$JOSH" | $sd '\n' ':' | $sd '(^:|:$)' '' \
-    )"
-
-    local ret="$?"
-    if [ "$ret" -eq 0 ] && [ -n "$unified_path" ]; then
-        export PATH="$unified_path"
-    fi
-    return "$ret"
-}
-
-
-function setup_path() {
-    reset_path && export PATH="$JOSH/sbin:$JOSH/bin:$PATH"
-}
-
-
-function fs_basename() {
-    [ -z "$1" ] && return 1
-    [[ "$1" -regex-match '[^/]+$' ]] && echo "$MATCH"
-}
-
-
-function fs_dirname() {
-    [ -z "$1" ] && return 1
-
-    local result=`fs_basename $1`
-    [ -z "$result" ] && return 2
-
-    let offset="${#1} - ${#result} -1"
-    echo "${1[0,$offset]}"
-}
-
-
-function fs_realdir() {
-    [ -z "$1" ] && return 1
-
-    local result="`fs_realpath "$1"`"
-    [ -z "$result" ] && return 2
-
-    local result="`fs_dirname "$result"`"
-    [ -z "$result" ] && return 3
-
-    echo "$result"
-}
-
-
-
-function rehash() {
-    [ -z "$JOSH" ] && return 1
-
-    local venv="$VIRTUAL_ENV"
-    if [ -n "$venv" ]; then
-        source $venv/bin/activate && deactivate
-    fi
-
-    which "zsh" 1>/dev/null
-    alias sed="`which sed`"
-
-    reset_path
-    builtin rehash
-
-    let record=0
-    typeset -Ag dirtimes
-
-    if [ "$1" = 'force' ]; then
-        local since=''
-    else
-        local since="`path_last_modified`"
-    fi
-
-    builtin zstat -LnA link `find $JOSH/bin -type l | sed -z 's:\n: :g'`
-
-    while true; do
-        let name="$record * 15 + 1"
-        [ -z "$link[$name]" ] && break
-
-        let time="$record * 15 + 11"
-        let node="$record * 15 + 15"
-        let record="$record + 1"
-
-        if [ "$1" = 'force' ]; then
-            local expired=1
-
-        else
-            if [ "$since" -gt 0 ]; then
-                local dtime="$since"
-            else
-                local key="`fs_dirname "$link[$node]"`"
-                local dtime="$dirtimes[$key]"
-                if [ -z "$dtime" ]; then
-                    local dtime="`fstatm $key`"
-                    dirtimes[$key]="$dtime"
-                fi
-            fi
-            let expired="$dtime > $link[$time]"
-        fi
-
-        local base="`fs_basename $link[$name]`"
-        if [ "$expired" -gt 0 ]; then
-            unlink "$link[$name]"
-            shortcut "$base" "`which $commands[$base]`" 1>/dev/null
-
-        else
-            local node="`fs_basename $link[$node]`"
-
-            if [ ! "$base" = "$node" ]; then
-                shortcut "$base" "`which $commands[$base]`" 1>/dev/null
-            fi
-        fi
-
-    done
-
-    setup_path
-    [ -n "$venv" ] && source "$venv/bin/activate"
-    builtin rehash
-}
-
-
-function fstatm() {
-    builtin zstat -LA result "$1" 2>/dev/null
-    [ "$?" -eq 0 ] && echo "$result[10]"
-}
-
-
-function shortcut() {
-    [ -z "$ZSH" ] || [ -z "$1" ] && return 0
-    [[ "$1" =~ "/" ]] && return 1
-
-    if [ -z "$2" ]; then
-        local order=( "$JOSH/sbin" "$JOSH/bin" )
-        for dir in $order; do
-            local src="$dir/$1"
-
-            if [ -L "$src" ]; then
-                local dst="`fs_realpath "$src"`"
-                if [ -x "$dst" ]; then
-                    echo "$dst"
-                    return 0
-                fi
-            fi
-        done
-        return 1
-
-    else
-        if [ ! -x "$2" ]; then
-            return 2
-        fi
-
-        if [ -z "$3" ]; then
-            local dir="$JOSH/bin"
-        else
-            local dir="$JOSH/sbin"
-        fi
-
-        local src="$dir/$1"
-        local dst="`fs_realpath $2`"
-        if [ -z "$dst" ] || [ ! -x "$dst" ]; then
-            return 3
-        fi
-
-        # if link already exists we need to check link destination
-        if [ -L "$src" ] && [ ! "$dst" = "`fs_realpath "$src"`" ]; then
-            unlink "$src"
-        fi
-
-        if [ ! -f "$src" ]; then
-            [ ! -d "$dir" ] && mkdir -p "$dir"
-            ln -s "$dst" "$src"
-        fi
-        echo "$dst"
-    fi
-}
-
-
-function which() {
-    if [[ "$1" =~ "/" ]]; then
-        if [ -x "$1" ] && [ ! -L "$1" ]; then
-            local short="`fs_basename "$1"`"
-            if [ ! -L "$JOSH/bin/$short" ]; then
-                shortcut "$short" "$1"
-            fi
-            echo "$1"
-            return 0
-        else
-            echo "`fs_realpath "$1"`"
-            return "$?"
-        fi
-    fi
-
-    if [ -n "$VIRTUAL_ENV" ]; then
-        result="`builtin which "$1" 2>/dev/null`"
-        if [ -x "$result" ]; then
-            echo "$result"
-            return 0
-        fi
-    fi
-
-    local node="`shortcut "$1"`"
-    if [ -x "$node" ]; then
-        echo "$node"
-    else
-        local node="`fs_realpath $commands[$1]`"
-        echo "`shortcut "$1" "$node"`"
-    fi
-}
-
-function get_home() {
+function fs_retrieve_userhome() {
     if [ "`export | grep SUDO_ | wc -l`" -gt 0 ]; then
         # try to subshell expand
         local home="`$SHELL -c 'echo ~$USER' 2>/dev/null`"
@@ -321,7 +181,7 @@ function get_home() {
             return 0
         fi
 
-        if [ -x "`which getent`" ];  then
+        if [ -x "`builtin which getent`" ];  then
             # passwd with getent
             local home="`getent passwd $USER | cut -f6 -d: 2>/dev/null`"
             if [ "$?" -eq 0 ] && [ -x "$home" ]; then
@@ -330,7 +190,7 @@ function get_home() {
             fi
         fi
 
-        if [ -x "`which awk`" ];  then
+        if [ -x "`builtin which awk`" ];  then
             # passwd with awk
             local home="`awk -v u="$USER" -v FS=':' '$1==u {print $6}' /etc/passwd 2>/dev/null`"
             if [ "$?" -eq 0 ] && [ -x "$home" ]; then
@@ -346,7 +206,7 @@ function get_home() {
 
 
 function fs_userhome() {
-    local home="`get_home`"
+    local home="`fs_retrieve_userhome`"
     local real="$(fs_realpath $home)"
 
     if [ -x "$real" ]; then
@@ -364,7 +224,7 @@ function fs_userhome() {
 if [ -z "$JOSH" ]; then
     local home="`fs_userhome`"
     if [ -x "$home" ] && [ ! "$home" = "$HOME" ]; then
-        if [ ! "`realpath $home`" = "`realpath $HOME`" ]; then
+        if [ ! "`fs_realpath $home`" = "`fs_realpath $HOME`" ]; then
             echo " * set HOME:\`$HOME\` -> \`$home\`" >&2
         fi
         export HOME="$home"
@@ -376,53 +236,45 @@ if [ -z "$JOSH" ]; then
 fi
 
 
+if [[ -z ${(M)zsh_eval_context:#file} ]]; then
+    if [ ! -x "`builtin which git`" ]; then
+        echo " - fatal: \`git\` required"
 
-if [[ ! "$SHELL" =~ "/zsh$" ]]; then
-    if [ -x "`which zsh`" ]; then
-        echo " - $0 fatal: current shell must be zsh, but SHELL:\`$SHELL\` and zsh binary:\``which zsh`\`" >&2
     else
-        echo " - $0 fatal: current shell must be zsh, but SHELL:\`$SHELL\` and zsh not detected" >&2
+        cwd="`pwd`"
+
+        JOSH_DEST="$HOME/$JOSH_SUBDIR_NAME.engine"  && [ -d "$JOSH_DEST" ] && rm -rf "$JOSH_DEST"
+        JOSH_BASE="$HOME/$JOSH_SUBDIR_NAME.wrapper" && [ -d "$JOSH_BASE" ] && rm -rf "$JOSH_BASE"
+
+        echo " + initial deploy to $JOSH_DEST, Josh to $JOSH_BASE" >&2
+        git clone "$JOSH_URL" "$JOSH_BASE"
+        [ $? -gt 0 ] && return 2
+
+        if [ "$JOSH_BRANCH" ]; then
+            builtin cd "$JOSH_BASE/run/"
+            [ $? -gt 0 ] && return 3
+
+            echo " + fetch Josh from \`$JOSH_BRANCH\`" >&2
+
+            cmd="git fetch origin "$JOSH_BRANCH":"$JOSH_BRANCH" && git checkout --force --quiet $JOSH_BRANCH && git reset --hard $JOSH_BRANCH && git pull --ff-only --no-edit --no-commit --verbose origin $JOSH_BRANCH"
+
+            echo " -> $cmd" >&2 && $SHELL -c "$cmd"
+            [ $? -gt 0 ] && return 4
+        fi
+
+        source $JOSH_BASE/run/strap.sh && \
+        check_requirements && \
+        prepare_and_deploy && \
+        replace_existing_installation
+
+        builtin cd "$HOME" && exec zsh
     fi
 
+
 else
-    if [[ -z ${(M)zsh_eval_context:#file} ]]; then
-
-        if [ ! -x "`which git`" ]; then
-            echo " - fatal: \`git\` required"
-        else
-            cwd="`pwd`"
-
-            JOSH_DEST="$HOME/$JOSH_SUBDIR_NAME.engine"  && [ -d "$JOSH_DEST" ] && rm -rf "$JOSH_DEST"
-            JOSH_BASE="$HOME/$JOSH_SUBDIR_NAME.wrapper" && [ -d "$JOSH_BASE" ] && rm -rf "$JOSH_BASE"
-
-            echo " + initial deploy to $JOSH_DEST, Josh to $JOSH_BASE" >&2
-            git clone https://github.com/YaakovTooth/Josh.git $JOSH_BASE
-            [ $? -gt 0 ] && return 2
-
-            if [ "$JOSH_BRANCH" ]; then
-                builtin cd "$JOSH_BASE/run/"
-                [ $? -gt 0 ] && return 3
-
-                echo " + fetch Josh from \`$JOSH_BRANCH\`" >&2
-
-                cmd="git fetch origin "$JOSH_BRANCH":"$JOSH_BRANCH" && git checkout --force --quiet $JOSH_BRANCH && git reset --hard $JOSH_BRANCH && git pull --ff-only --no-edit --no-commit --verbose origin $JOSH_BRANCH"
-
-                echo " -> $cmd" >&2 && $SHELL -c "$cmd"
-                [ $? -gt 0 ] && return 4
-            fi
-
-            source $JOSH_BASE/run/strap.sh && \
-            check_requirements && \
-            prepare_and_deploy && \
-            replace_existing_installation
-
-            builtin cd "$HOME" && exec zsh
-        fi
-
-    elif [ -z "$JOSH_INIT" ]; then
+    source_file="`fs_joshpath "$0"`"
+    if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
+        sourced+=("$source_file")
         source "`fs_dirname $0`/init.sh"
-        if [ -z "$TMUX" ]; then
-            rehash
-        fi
     fi
 fi

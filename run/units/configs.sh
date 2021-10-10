@@ -1,7 +1,7 @@
 #!/bin/zsh
 
 if [[ -n ${(M)zsh_eval_context:#file} ]]; then
-    if [ -z "$JOSH" ] || [ -z "$JOSH_BASE" ]; then
+    if [ -z "$JOSH" ] && [ -z "$JOSH_BASE" ]; then
         source "`dirname $0`/../boot.sh"
     fi
 

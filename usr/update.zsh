@@ -44,7 +44,7 @@ function fetch_updates() {
         return 0
     fi
 
-    local last_fetch="`fstatm "$JOSH/.git/FETCH_HEAD" 2>/dev/null`"
+    local last_fetch="`fs_mtime "$JOSH/.git/FETCH_HEAD" 2>/dev/null`"
     let need_fetch="$EPOCHSECONDS - $fetch_every > $last_fetch"
 
     local cwd="$PWD" && builtin cd "$JOSH"

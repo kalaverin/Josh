@@ -1,7 +1,7 @@
 #!/bin/sh
 
 if [[ -n ${(M)zsh_eval_context:#file} ]]; then
-    if [ -z "$HTTP_GET" ] || [ -z "$JOSH" ] || [ -z "$JOSH_BASE" ]; then
+    if [ -z "$HTTP_GET" ]; then
         source "`dirname $0`/../run/boot.sh"
     fi
 
@@ -85,7 +85,7 @@ function python_exe() {
     if [ "$result" ]; then
         local python="`fs_realpath $result`"
         if [ -x "$python" ]; then
-            shortcut 'python' "$python" 1 >/dev/null
+            shortcut 'python' "$python" permanent >/dev/null
             export PYTHON3="$python"
             local version="`python_get_version $python`"
             return 0
@@ -182,7 +182,7 @@ function pip_init() {
             echo " - fatal: pip isn't installed ($JOSH_PIP)"
             return 127
         else
-            shortcut 'pip' "$JOSH_PIP" 1 >/dev/null
+            shortcut 'pip' "$JOSH_PIP" permanent >/dev/null
         fi
     fi
     return 0
