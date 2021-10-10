@@ -1,5 +1,3 @@
-echo "read $0"
-
 [ -z "$sourced" ] && declare -aUg sourced=() && sourced+=($0)
 
 local source_file="`fs_joshpath "$0"`"
@@ -45,6 +43,7 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
 
     function rehash() {
         [ -z "$JOSH" ] && return 1
+        [ ! -d "$JOSH/bin" ] && return 0
 
         local venv="$VIRTUAL_ENV"
         if [ -n "$venv" ]; then
@@ -53,7 +52,6 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
 
         pathprune links
         builtin rehash
-
 
         let record=0
         typeset -Ag dirtimes
@@ -114,28 +112,22 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
 
     function shortcut() {
         [ -z "$ZSH" ] || [ -z "$1" ] && return 0
-        [[ "$1" =~ "/" ]] && return 1
 
         if [ -z "$2" ]; then
-            local order=( "$JOSH/sbin" "$JOSH/bin" )
-            for dir in $order; do
-                if [ ! -d "$dir" ]; then
-                    mkdir -p "$dir"
-                    continue
-                fi
 
-                local src="$dir/$1"
-                if [ -L "$src" ]; then
-                    local dst="`fs_realpath "$src"`"
-                    if [ -x "$dst" ]; then
-                        echo "$1 $dst"
-                        return 0
-                    fi
-                fi
-            done
+            if [ -x "$JOSH/sbin/$1" ]; then
+                echo "`fs_readlink "$JOSH/sbin/$1"`"
+                return 0
+
+            elif [ -x "$JOSH/bin/$1" ]; then
+                echo "`fs_readlink "$JOSH/bin/$1"`"
+                return 0
+            fi
             return 1
 
         else
+            [[ "$1" =~ "/" ]] && return 1
+
             if [ ! -x "$2" ]; then
                 return 2
             fi
@@ -172,17 +164,15 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
 
     function which() {
         if [[ "$1" =~ "/" ]]; then
-            if [ -x "$1" ] && [ ! -L "$1" ]; then
-                local short="`fs_basename "$1"`"
-                if [ ! -L "$JOSH/bin/$short" ]; then
-                    shortcut "$short" "$1"
-                fi
-                echo "$1"
-                return 0
+            if [ -x "$1" ]; then
+                if [ ! -L "$1" ]; then
+                    echo "$1"
+                    return 0
 
-            else
-                echo "`fs_realpath "$1"`"
-                return "$?"
+                else
+                    echo "`fs_readlink "$1"`"
+                    return "$?"
+                fi
             fi
         fi
 
@@ -199,7 +189,7 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
             echo "$node"
             return 0
 
-        else
+        elif [ -x "$commands[$1]" ]; then
             local node="`shortcut "$1" "$commands[$1]"`"
             if [ -n "$node" ]; then
                 echo "$node"

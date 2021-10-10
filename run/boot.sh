@@ -1,4 +1,3 @@
-echo "read $0"
 #!/bin/zsh
 
 if [[ ! "$SHELL" =~ "/zsh$" ]]; then
@@ -90,13 +89,11 @@ function fs_realdir() {
 
 function fs_joshpath() {
     if [ -z "$1" ] || [ -z "$JOSH" ]; then
-        echo "$1 >empty!<" >&2
         return 1
     fi
 
     local result=`fs_realpath $1`
     if [ -z "$result" ]; then
-        echo "$1 >noreal!<" >&2
         return 2
     fi
 

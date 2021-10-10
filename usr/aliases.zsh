@@ -19,6 +19,7 @@ alias -g E_DEBUG="| grep -v '\[DEBUG\]'"
 alias -g E_WARNING="| grep -v '\[WARNING\]'"
 alias -g uri="$HTTP_GET"
 
+
 # ———
 
 # nano: default editor for newbies like me
@@ -86,7 +87,7 @@ if [ -x "`which rg`" ]; then
     local ripgrep_interactive="--no-stats --text --context 1 --colors 'match:fg:yellow' --colors 'path:fg:red' --context-separator ''"
 
     export JOSH_RIPGREP="rg"
-    local realpath="`which "realpath"`"
+    local realpath="`which realpath`"
     export JOSH_RIPGREP_OPTS="--require-git --hidden --max-columns-preview --max-filesize=50K --ignore-file=`$realpath --quiet ~/.gitignore`"
 
     alias rf="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS $ripgrep_interactive $ripgrep_fast"

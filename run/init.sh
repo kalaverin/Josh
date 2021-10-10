@@ -1,5 +1,3 @@
-echo "read $0"
-
 [ -z "$sourced" ] && declare -aUg sourced=() && sourced+=($0)
 
 if [[ -n ${(M)zsh_eval_context:#file} ]]; then
