@@ -97,13 +97,24 @@ function path_last_modified() {
 }
 
 
+
 function reset_path() {
     local unified_path="$(
-        echo "$PATH" | sd ':' '\n' \
+        echo "$PATH" | sd ':' '\n' | grep -v "$JOSH" \
         | runiq - | xargs -n 1 realpath 2>/dev/null \
         | sd '\n' ':' | sd '(^:|:$)' '' \
     )"
-    [ "$?" = 0 ] && [ "$unified_path " ] && export PATH="$unified_path"
+
+    local ret="$?"
+    if [ "$ret" -eq 0 ] && [ -n "$unified_path " ]; then
+        export PATH="$unified_path"
+    fi
+    return "$ret"
+}
+
+
+function setup_path() {
+    reset_path && export PATH="$JOSH/sbin:$JOSH/bin:$PATH"
 }
 
 
@@ -115,47 +126,68 @@ function rehash() {
         source $venv/bin/activate && deactivate
     fi
 
+    which "zsh" 1>/dev/null
+    alias sed="`which sed`"
+
     reset_path
     builtin rehash
-    which "zsh" 1>/dev/null
+
+    let record=0
     typeset -Ag dirtimes
 
-    alias sed="`which sed`"
-    builtin zstat -LnA result `find $JOSH/bin -type l | sed -z 's:\n: :g'`
-    let record=0
+    if [ "$1" = 'force' ]; then
+        local since=''
+    else
+        local since="`path_last_modified`"
+    fi
+
+    builtin zstat -LnA link `find $JOSH/bin -type l | sed -z 's:\n: :g'`
+
     while true; do
         let name="$record * 15 + 1"
+        [ -z "$link[$name]" ] && break
+
         let time="$record * 15 + 11"
-        let link="$record * 15 + 15"
+        let node="$record * 15 + 15"
         let record="$record + 1"
 
-        if [ -z "$result[$name]" ]; then
-            break
+        if [ "$1" = 'force' ]; then
+            local expired=1
+
+        else
+            if [ "$since" -gt 0 ]; then
+                local dtime="$since"
+            else
+                local key="`dirname "$link[$node]"`"
+                local dtime="$dirtimes[$key]"
+                if [ -z "$dtime" ]; then
+                    local dtime="`fstatm $key`"
+                    dirtimes[$key]="$dtime"
+                fi
+            fi
+            let expired="$dtime > $link[$time]"
         fi
 
-        local key="`dirname "$result[$link]"`"
-        local dtime="$dirtimes[$key]"
-        if [ -z "$dtime" ]; then
-            local dtime="`fstatm $key`"
-            dirtimes[$key]="$dtime"
+        [[ $link[$name] -regex-match "[^/]+$" ]] &&
+        local base="$MATCH"
+
+        if [ "$expired" -gt 0 ]; then
+            unlink "$link[$name]"
+            shortcut "$base" "$commands[$base]" 1>/dev/null
+
+        else
+            [[ $link[$node] -regex-match "[^/]+$" ]] &&
+            local node="$MATCH"
+
+            if [ ! "$base" = "$node" ]; then
+                shortcut "$base" "$commands[$base]" 1>/dev/null
+            fi
         fi
 
-        local short="`basename $result[$name]`"
-        let staled="$dtime > $result[$time]"
-
-        if [ ! "$short" = "`basename "$result[$link]"`" ]; then
-            shortcut "$short" "`fs_realpath $commands[$short]`" 1>/dev/null
-        fi
-
-        if [ "$staled" -gt 0 ]; then
-            unlink "$result[$name]"
-            which "$short" 1>/dev/null
-        fi
     done
 
-    if [ -n "$venv" ]; then
-        source $venv/bin/activate
-    fi
+    setup_path
+    [ -n "$venv" ] && source "$venv/bin/activate"
     builtin rehash
 }
 

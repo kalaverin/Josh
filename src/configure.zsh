@@ -17,8 +17,7 @@ fi
 source "$JOSH/lib/python.sh" && python_env
 source "$JOSH/lib/rust.sh" && rust_env
 
-reset_path
-
+setup_path
 
 # JOSH_PY_ENVS_ROOT
 # directory for permanent virtualenvs maded by virtualenv_create
