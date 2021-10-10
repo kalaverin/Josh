@@ -61,7 +61,7 @@ function deploy_extensions() {
     echo " + $0 to $OMZ_PLUGIN_DIR"
 
     for pkg in "${PACKAGES[@]}"; do
-        local dst="$OMZ_PLUGIN_DIR/`basename $pkg`"
+        local dst="$OMZ_PLUGIN_DIR/`fs_basename $pkg`"
         if [ ! -x "$dst/.git" ]; then
             local verb='clone'
             $SHELL -c "git clone --depth 1 $pkg"

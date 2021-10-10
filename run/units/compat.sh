@@ -50,7 +50,7 @@ function check_libraries() {
                 fi
                 echo " * warning: pkg-config $lib failed, we try to which openssl.pc in $lookup_path"
 
-                local openssl_path="$(dirname `find $lookup_path -type f -name "openssl.pc" -follow 2>/dev/null | head -n 1`)"
+                local openssl_path="$(fs_dirname `find $lookup_path -type f -name "openssl.pc" -follow 2>/dev/null | head -n 1`)"
                 if [ ! -d "$openssl_path" ]; then
                     echo " * warning: pkg-config $lib: nothing about openssl.pc in $lookup_path"
                     local missing="$missing $lib"

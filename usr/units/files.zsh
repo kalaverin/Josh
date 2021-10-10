@@ -11,7 +11,7 @@ function bak {
     local temp_path="`pwd`"
     builtin cd $last_path
 
-    local dir_name=`basename "$last_path"`
+    local dir_name=`fs_basename "$last_path"`
     local backup="$temp_path/$dir_name.tar.xz"
 
     cpu_count
@@ -60,9 +60,9 @@ function bakrm {
 
     if [ -x "`which rip`" ]; then
         local exe="`which rip`"
-        local cmd="$exe $backup && $exe `dirname $backup`"
+        local cmd="$exe $backup && $exe `fs_dirname $backup`"
     else
-        local cmd="rm $backup && rm -r `dirname $backup`"
+        local cmd="rm $backup && rm -r `fs_dirname $backup`"
     fi
 
     run_show "$cmd"

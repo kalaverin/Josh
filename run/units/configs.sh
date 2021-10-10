@@ -50,7 +50,7 @@ function copy_config() {
     fi
 
     [ -f "$dst" ] && backup_file "$dst" && unlink "$dst"
-    [ ! -d "`dirname $dst`" ] && mkdir -p "`dirname $dst`";
+    [ ! -d "`fs_dirname $dst`" ] && mkdir -p "`fs_dirname $dst`";
 
     if [ "$JOSH_RENEW_CONFIGS" ] && [ ! "$JOSH_OS" = "BSD" ]; then
         echo " + ${3:-"renew: $src -> $dst"}" && cp -nu "$src" "$dst"

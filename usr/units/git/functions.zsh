@@ -327,7 +327,7 @@ function git_update_nested_repositories() {
     cwd=`pwd`
     find . -maxdepth 3 -type d -name .git | while read git_directory
     do
-        current_path=$(dirname "$git_directory")
+        current_path=$(fs_dirname "$git_directory")
         builtin cd "${current_path}"
         local branch="`$SHELL -c "$GET_BRANCH"`"
 

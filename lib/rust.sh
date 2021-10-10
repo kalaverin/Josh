@@ -207,7 +207,7 @@ function cargo_init() {
 
         url='https://sh.rustup.rs'
 
-        $SHELL -c "$HTTP_GET $url" | RUSTUP_HOME="$HOME/.rustup" CARGO_HOME="`dirname $CARGO_BINARIES`" RUSTUP_INIT_SKIP_PATH_CHECK=yes $SHELL -s - --profile minimal --no-modify-path --quiet -y
+        $SHELL -c "$HTTP_GET $url" | RUSTUP_HOME="$HOME/.rustup" CARGO_HOME="`fs_dirname $CARGO_BINARIES`" RUSTUP_INIT_SKIP_PATH_CHECK=yes $SHELL -s - --profile minimal --no-modify-path --quiet -y
 
         if [ $? -gt 0 ] || [ ! -x "$CARGO_BIN" ]; then
             echo " - fatal: cargo \`$CARGO_BIN\` isn't installed"
@@ -266,7 +266,7 @@ function chit_cached() {
 
     local result="`cat $cache_file 2>/dev/null`"
     if [ ! "$result" ] || [ ! -f "$cache_file" ] || [ "`find $cache_file -mmin +1 2>/dev/null | grep $cache_file`" ]; then
-        [ ! -d "`dirname $cache_file`" ] && mkdir -p "`dirname $cache_file`"
+        [ ! -d "`fs_dirname $cache_file`" ] && mkdir -p "`fs_dirname $cache_file`"
 
         local result="`chit $1 | tail -n+3 | head -n -1`"
         [ $? -eq 0 ] && echo "$result" > "$cache_file"
@@ -281,7 +281,7 @@ function cargo_deploy() {
         return 1
     fi
 
-    $SHELL -c "`realpath $CARGO_BINARIES/rustup` update"
+    $SHELL -c "`fs_realpath $CARGO_BINARIES/rustup` update"
 
     local retval=0
     for pkg in $@; do

@@ -68,7 +68,7 @@ function fetch_updates() {
         async_job updates_fetcher fetch_updates_background
     fi
 
-    [ ! -d "`dirname "$file"`" ] && mkdir -p "`dirname "$file"`"
+    [ ! -d "`fs_dirname "$file"`" ] && mkdir -p "`fs_dirname "$file"`"
     echo "$EPOCHSECONDS" > "$file"
 
     [ -z "$count" ] && echo 0 || echo "$count"

@@ -2,8 +2,8 @@ source "$JOSH/lib/shared.sh"
 
 # ———
 
-local THIS_DIR="`dirname "$(readlink -f "$0")"`"
-local INCLUDE_DIR="`realpath $THIS_DIR/src`"
+local THIS_DIR="`fs_realdir "$0"`"
+local INCLUDE_DIR="`fs_realpath $THIS_DIR/src`"
 
 
 commit_text () {
@@ -167,7 +167,7 @@ visual_chdir() {
     while true; do
         local cwd="`pwd`"
         local temp="`get_tempdir`"
-        local name="`basename $cwd`"
+        local name="`fs_basename $cwd`"
 
         [ -f "$temp/.lastdir.tmp" ] && unlink "$temp/.lastdir.tmp"
 
@@ -351,14 +351,14 @@ insert_command() {
 zle -N insert_command
 
 chdir_up() {
-    builtin cd "`realpath ..`"
+    builtin cd "`fs_realpath ..`"
     zle reset-prompt
     return 0
 }
 zle -N chdir_up
 
 chdir_home() {
-    builtin cd "`realpath ~`"
+    builtin cd "`fs_realpath ~`"
     zle reset-prompt
     return 0
 }
@@ -539,7 +539,7 @@ share_file() {
     fi
     tmpfile=$(mktemp -t transferXXX)
     if tty -s
-        then basefile=$(basename "$1" | sed -e 's/[^a-zA-Z0-9._-]/-/g')
+        then basefile=$(fs_basename "$1" | sed -e 's/[^a-zA-Z0-9._-]/-/g')
         curl --progress-bar --upload-file "$1" "https://transfer.sh/$basefile" >> $tmpfile
     else
         curl --progress-bar --upload-file "-" "https://transfer.sh/$1" >> $tmpfile

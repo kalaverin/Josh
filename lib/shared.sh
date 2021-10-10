@@ -22,7 +22,7 @@ function get_preview_width() {
 }
 
 function get_tempdir() {
-    local result="$(dirname `mktemp -duq`)"
+    local result="$(fs_dirname `mktemp -duq`)"
     [ ! -x "$result" ] && mkdir -p "$result"
     echo "$result"
 }
@@ -59,7 +59,7 @@ function run_hide() {
 
 last_modified() {
     local args="$*"
-    [ -x "$1" ] && local args="`realpath $1` ${@:2}"
+    [ -x "$1" ] && local args="`fs_realpath $1` ${@:2}"
     local cmd="find $args -printf \"%T@ %p\n\" | sort -n | tail -n 1"
     eval ${cmd}
 }

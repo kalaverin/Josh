@@ -83,7 +83,7 @@ function python_exe() {
     done
 
     if [ "$result" ]; then
-        local python="`realpath $result`"
+        local python="`fs_realpath $result`"
         if [ -x "$python" ]; then
             shortcut 'python' "$python" 1 >/dev/null
             export PYTHON3="$python"
@@ -127,7 +127,7 @@ function pip_dir() {
         [ ! -d "$local_bin" ] && mkdir -p "$local_bin"
 
         local result="$local_bin"
-        local result="`realpath $local_bin`"
+        local result="`fs_realpath $local_bin`"
         [ $? -eq 0 ] && echo "$result" > "$cache_file"
     fi
 

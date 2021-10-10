@@ -16,7 +16,6 @@ function lookup() {
     done
 }
 
-
 function fs_readlink() {
     builtin zstat -LA result "$1" 2>/dev/null
     local retval="$?"
@@ -40,7 +39,7 @@ function fs_realpath() {
     if [ -z "$link" ]; then
         return 1
 
-    elif [ -x "$link" ]; then
+    elif [ -e "$link" ]; then
         if [[ "$link" =~ "^/" ]] && [ ! -L "$link" ]; then
             # it's not link, it is full file path
             echo "$link"
@@ -57,7 +56,7 @@ function fs_realpath() {
 
                 elif [[ "$link" =~ "^/" ]] && [[ ! "$node" =~ "/" ]]; then
                     # target it's relative path from source location
-                    local node="`dirname $link`/$node"
+                    local node="`fs_dirname $link`/$node"
                     if [ -x "$node" ]; then
                         if [ ! -L "$node" ]; then
                             # target it's regular executable node
@@ -123,6 +122,37 @@ function setup_path() {
 }
 
 
+function fs_basename() {
+    [ -z "$1" ] && return 1
+    [[ "$1" -regex-match '[^/]+$' ]] && echo "$MATCH"
+}
+
+
+function fs_dirname() {
+    [ -z "$1" ] && return 1
+
+    local result=`fs_basename $1`
+    [ -z "$result" ] && return 2
+
+    let offset="${#1} - ${#result} -1"
+    echo "${1[0,$offset]}"
+}
+
+
+function fs_realdir() {
+    [ -z "$1" ] && return 1
+
+    local result="`fs_realpath "$1"`"
+    [ -z "$result" ] && return 2
+
+    local result="`fs_dirname "$result"`"
+    [ -z "$result" ] && return 3
+
+    echo "$result"
+}
+
+
+
 function rehash() {
     [ -z "$JOSH" ] && return 1
 
@@ -163,7 +193,7 @@ function rehash() {
             if [ "$since" -gt 0 ]; then
                 local dtime="$since"
             else
-                local key="`dirname "$link[$node]"`"
+                local key="`fs_dirname "$link[$node]"`"
                 local dtime="$dirtimes[$key]"
                 if [ -z "$dtime" ]; then
                     local dtime="`fstatm $key`"
@@ -173,16 +203,13 @@ function rehash() {
             let expired="$dtime > $link[$time]"
         fi
 
-        [[ $link[$name] -regex-match "[^/]+$" ]] &&
-        local base="$MATCH"
-
+        local base="`fs_basename $link[$name]`"
         if [ "$expired" -gt 0 ]; then
             unlink "$link[$name]"
             shortcut "$base" "`which $commands[$base]`" 1>/dev/null
 
         else
-            [[ $link[$node] -regex-match "[^/]+$" ]] &&
-            local node="$MATCH"
+            local node="`fs_basename $link[$node]`"
 
             if [ ! "$base" = "$node" ]; then
                 shortcut "$base" "`which $commands[$base]`" 1>/dev/null
@@ -256,7 +283,7 @@ function shortcut() {
 function which() {
     if [[ "$1" =~ "/" ]]; then
         if [ -x "$1" ] && [ ! -L "$1" ]; then
-            local short="`basename "$1"`"
+            local short="`fs_basename "$1"`"
             if [ ! -L "$JOSH/bin/$short" ]; then
                 shortcut "$short" "$1"
             fi
@@ -328,7 +355,7 @@ function fs_userhome() {
         fi
         echo "$real"
     else
-        echo " - $0 warning: can't make real home path for HOME:\`$home\` with REALPATH:\``which realpath`\`, READLINK:\``which readlink`\`, fallback:\``dirname $home`/`basename $home`\`" >&2
+        echo " - $0 warning: can't make real home path for HOME:\`$home\` with REALPATH:\``which realpath`\`, READLINK:\``which readlink`\`, fallback:\``fs_dirname $home`/`fs_basename $home`\`" >&2
         echo "$home"
     fi
 }
@@ -393,7 +420,7 @@ else
         fi
 
     elif [ -z "$JOSH_INIT" ]; then
-        source "`dirname $0`/init.sh"
+        source "`fs_dirname $0`/init.sh"
         if [ -z "$TMUX" ]; then
             rehash
         fi

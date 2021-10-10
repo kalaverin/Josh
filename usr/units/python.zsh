@@ -2,8 +2,8 @@ source "$JOSH/lib/shared.sh"
 
 # ———
 
-local THIS_DIR=`dirname "$(readlink -f "$0")"`
-local INCLUDE_DIR="`realpath $THIS_DIR/pip`"
+local THIS_DIR="`fs_realdir "$0"`"
+local INCLUDE_DIR="`fs_realpath $THIS_DIR/pip`"
 
 local PIP_LIST_ALL="$INCLUDE_DIR/pip_list_all.sh"
 local PIP_LIST_TOP="$INCLUDE_DIR/pip_list_top_level.sh"
@@ -12,7 +12,7 @@ local PIP_PKG_INFO="$INCLUDE_DIR/pip_pkg_info.sh"
 # ———
 
 function virtualenv_path_activate() {
-    local venv="`realpath ${VIRTUAL_ENV:-$1}`"
+    local venv="`fs_realpath ${VIRTUAL_ENV:-$1}`"
     if [ ! -d "$venv" ]; then
         return 1
     elif [ "$VIRTUAL_ENV" = "$venv" ]; then
@@ -32,7 +32,7 @@ function virtualenv_deactivate {
 
 function get_temporary_envs_directory() {
     if [ -z "$JOSH_PY_TEMP_ENVS_ROOT" ]; then
-        local directory="`get_tempdir`/`basename $JOSH_PY_ENVS_ROOT`"
+        local directory="`get_tempdir`/`fs_basename $JOSH_PY_ENVS_ROOT`"
         if [ ! -d "$directory" ]; then
             mkdir -p "$directory"
         fi
@@ -50,7 +50,7 @@ function virtualenv_node_deploy {
         echo " - fatal: venv must be activated"
         return 1
     fi
-    local venvname=`basename "$venv"`
+    local venvname=`fs_basename "$venv"`
 
     echo " + using venv: $venvname ($venv)"
     virtualenv_path_activate "$venv"
@@ -162,7 +162,7 @@ function virtualenv_create {
         local venv="$JOSH_PY_ENVS_ROOT/$title"
 
     elif [[ "$1" =~ ^/.+/[0-9a-z]+[0-9a-z\.-]*[0-9a-z]+$ ]]; then
-        local title="`basename $1`"
+        local title="`fs_basename $1`"
         local venv="$1"
 
     else
@@ -170,7 +170,7 @@ function virtualenv_create {
         return 1
     fi
 
-    local envs="`dirname $venv`"
+    local envs="`fs_dirname $venv`"
     if [ ! -d "$envs" ]; then
         mkdir -p "$envs"
 
@@ -216,7 +216,7 @@ function virtualenv_create {
 }
 
 function virtualenv_temporary_create {
-    local venv="`get_tempdir`/`basename $JOSH_PY_ENVS_ROOT`/`make_human_name`"
+    local venv="`get_tempdir`/`fs_basename $JOSH_PY_ENVS_ROOT`/`make_human_name`"
     virtualenv_create "$venv" $@
 }
 
@@ -274,7 +274,7 @@ pip_visual_freeze() {
     . $JOSH/lib/python.sh
     pip_init || return 1
 
-    local venv="`basename ${VIRTUAL_ENV:-''}`"
+    local venv="`fs_basename ${VIRTUAL_ENV:-''}`"
     local preview="echo {2} | xargs -n 1 $SHELL $PIP_PKG_INFO"
     local value="$($SHELL -c "
         $SHELL $PIP_LIST_TOP \

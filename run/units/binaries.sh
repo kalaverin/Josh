@@ -2,7 +2,7 @@
 
 if [[ -n ${(M)zsh_eval_context:#file} ]]; then
     [ -z "$HTTP_GET" ] && source "`dirname $0`/../boot.sh"
-    [ -z "$OMZ_PLUGIN_DIR" ] && source "`dirname $0`/oh-my-zsh.sh"
+    [ -z "$OMZ_PLUGIN_DIR" ] && source "`fs_dirname $0`/oh-my-zsh.sh"
 
     BINARY_DEST="$HOME/.local/bin"
     [ ! -d "$BINARY_DEST" ] && mkdir -p "$BINARY_DEST"
@@ -59,7 +59,7 @@ function compile_fzf() {
     if [ ! -f "$BINARY_DEST/fzf" ]; then
         echo " + deploy fzf to $BINARY_DEST/fzf"
 
-        local tempdir="$(dirname `mktemp -duq`)/fzf"
+        local tempdir="$(fs_dirname `mktemp -duq`)/fzf"
         [ -d "$tempdir" ] && rm -rf "$tempdir"
 
         $SHELL -c "$clone $url $tempdir && $tempdir/install --completion --key-bindings --update-rc --bin && cp -f $tempdir/bin/fzf $BINARY_DEST/fzf && rm -rf $tempdir"
