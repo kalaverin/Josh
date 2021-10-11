@@ -46,14 +46,14 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
 
     if [ -n "$(uname | grep -i freebsd)" ]; then
         export JOSH_OS="BSD"
-        shortcut 'ls'    '/usr/local/bin/gnuls'  permanent >/dev/null
-        shortcut 'grep'  '/usr/local/bin/grep'   permanent >/dev/null
+        shortcut 'ls'    '/usr/local/bin/gnuls' >/dev/null
+        shortcut 'grep'  '/usr/local/bin/grep'  >/dev/null
 
 
     elif [ -n "$(uname | grep -i darwin)" ]; then
         export JOSH_OS="MAC"
-        shortcut 'ls'    '/usr/local/bin/gls'    permanent >/dev/null
-        shortcut 'grep'  '/usr/local/bin/ggrep'  permanent >/dev/null
+        shortcut 'ls'    '/usr/local/bin/gls'   >/dev/null
+        shortcut 'grep'  '/usr/local/bin/ggrep' >/dev/null
 
         export PATH="$PATH:/Library/Apple/usr/bin"
 
@@ -67,11 +67,11 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
     fi
 
     if [ "$JOSH_OS" = 'BSD' ] || [ "$JOSH_OS" = 'MAC' ]; then
-        shortcut 'cut'       '/usr/local/bin/gcut'       permanent >/dev/null
-        shortcut 'head'      '/usr/local/bin/ghead'      permanent >/dev/null
-        shortcut 'readlink'  '/usr/local/bin/greadlink'  permanent >/dev/null
-        shortcut 'realpath'  '/usr/local/bin/grealpath'  permanent >/dev/null
-        shortcut 'sed'       '/usr/local/bin/gsed'       permanent >/dev/null
-        shortcut 'tail'      '/usr/local/bin/gtail'      permanent >/dev/null
+        shortcut 'cut'       '/usr/local/bin/gcut'      >/dev/null
+        shortcut 'head'      '/usr/local/bin/ghead'     >/dev/null
+        shortcut 'readlink'  '/usr/local/bin/greadlink' >/dev/null
+        shortcut 'realpath'  '/usr/local/bin/grealpath' >/dev/null
+        shortcut 'sed'       '/usr/local/bin/gsed'      >/dev/null
+        shortcut 'tail'      '/usr/local/bin/gtail'     >/dev/null
     fi
 fi

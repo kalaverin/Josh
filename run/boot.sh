@@ -229,7 +229,7 @@ if [ -z "$JOSH" ]; then
 
     export ZSH="$HOME/$JOSH_SUBDIR_NAME"
     export JOSH="$ZSH/$JOSH_PATH"
-    export PATH="$JOSH/sbin:$PATH"
+    export PATH="$JOSH/bin:$PATH"
 fi
 
 

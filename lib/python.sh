@@ -85,7 +85,6 @@ function python_exe() {
     if [ "$result" ]; then
         local python="`fs_realpath $result`"
         if [ -x "$python" ]; then
-            shortcut 'python' "$python" permanent >/dev/null
             export PYTHON3="$python"
             local version="`python_get_version $python`"
             return 0
@@ -181,8 +180,6 @@ function pip_init() {
         if [ ! -x "$JOSH_PIP" ]; then
             echo " - fatal: pip isn't installed ($JOSH_PIP)"
             return 127
-        else
-            shortcut 'pip' "$JOSH_PIP" permanent >/dev/null
         fi
     fi
     return 0

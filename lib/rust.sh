@@ -213,7 +213,7 @@ function cargo_init() {
             echo " - fatal: cargo \`$CARGO_BIN\` isn't installed"
             return 127
         fi
-        shortcut 'cargo' "$CARGO_BIN" permanent >/dev/null
+        shortcut 'cargo' "$CARGO_BIN" >/dev/null
     fi
 
     export PATH="$CARGO_BINARIES:$PATH"
@@ -223,7 +223,7 @@ function cargo_init() {
         if [ ! -x "$cache_exe" ]; then
             echo " - warning: sccache \`$cache_exe\` isn't compiled"
         fi
-        shortcut 'sccache' "$cache_exe" permanent >/dev/null
+        shortcut 'sccache' "$cache_exe" >/dev/null
     fi
 
     if [ -x "$cache_exe" ]; then
