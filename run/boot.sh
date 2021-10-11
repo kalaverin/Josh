@@ -2,7 +2,7 @@
 
 if [[ ! "$SHELL" =~ "/zsh$" ]]; then
     if [ -x "`which zsh`" ]; then
-        echo " - $0 fatal: current shell must be zsh, but SHELL \`$SHELL\` and zsh binary \``which zsh`\`" >&2
+        echo " - $0 fatal: current shell must be zsh, but SHELL \`$SHELL\` execute: \``which zsh`\` and repeat" >&2
     else
         echo " - $0 fatal: current shell must be zsh, but SHELL \`$SHELL\` and zsh not detected" >&2
     fi
@@ -260,9 +260,13 @@ function shortcut() {
 
 function which() {
     if [[ "$1" =~ "/" ]]; then
-        if [ -x "$1" ]; then
+        if [ ! -x "$1" ]; then
+            local dst="`builtin which "$1"`"
+
+        else
             if [ ! -L "$1" ]; then
                 local dst="$1"
+
             else
                 local dst="`fs_readlink "$1"`"
             fi
@@ -271,6 +275,7 @@ function which() {
     else
         if [ -L "$JOSH/bin/$1" ]; then
             local dst="`fs_readlink "$JOSH/bin/$1"`"
+
         elif [ -x "$commands[$1]" ]; then
             local dst="$commands[$1]"
         fi
@@ -280,6 +285,7 @@ function which() {
         echo "$dst"
         return 0
     fi
+    return 1
 }
 
 
