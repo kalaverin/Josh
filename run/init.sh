@@ -41,8 +41,6 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
         fi
     fi
 
-    source "`fs_dirname $0`/hier.sh"
-
     if [ -n "$(uname | grep -i freebsd)" ]; then
         export JOSH_OS="BSD"
         shortcut 'ls'    '/usr/local/bin/gnuls' >/dev/null
@@ -73,4 +71,6 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
         shortcut 'sed'       '/usr/local/bin/gsed'      >/dev/null
         shortcut 'tail'      '/usr/local/bin/gtail'     >/dev/null
     fi
+
+    source "`fs_dirname $0`/hier.sh"
 fi
