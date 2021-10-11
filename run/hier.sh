@@ -42,70 +42,60 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
     }
 
     function shortcut() {
-        [ -z "$ZSH" ] || [ -z "$1" ] && return 0
+        [ -z "$ZSH" ] || [ -z "$1" ] && return 1
+
+        local dir="$JOSH/bin"
 
         if [ -z "$2" ]; then
-            if [ -x "$JOSH/bin/$1" ]; then
-                local dst="`fs_readlink "$JOSH/bin/$1"`"
-                if [ -x "$dst" ]; then
-                    echo "$dst"
-                    return 0
-                fi
+            local src="$dir/`fs_basename $1`"
+            local dst="`fs_realpath $1`"
+
+            if [ ! -x "$dst" ]; then
+                echo " - $0 fatal: link source \`$1\` -> \`$dst\` isn't executable (exists?)" >&2
                 return 2
             fi
-            return 1
 
         else
-            if [ ! -x "$2" ]; then
+            if [[ "$1" =~ "/" ]]; then
+                echo " - $0 fatal: link source \`$1\` couldn't contains slashes" >&2
                 return 1
-            elif [[ "$1" =~ "/" ]]; then
+            fi
+            local src="$dir/$1"
+            local dst="`fs_realpath $2`"
+
+            if [ ! -x "$dst" ]; then
+                echo " - $0 fatal: link source \`$2\` -> \`$dst\` isn't executable (exists?)" >&2
                 return 2
             fi
-
-            local dir="$JOSH/bin"
-            local src="$dir/$1"
-
-            local dst="`fs_realpath $2`"
-            if [ -z "$dst" ] || [ ! -x "$dst" ]; then
-                return 3
-            fi
-
-            # if link already exists we need to check link destination
-            if [ -L "$src" ] && [ ! "$dst" = "`fs_realpath "$src"`" ]; then
-                unlink "$src"
-            fi
-
-            if [ ! -f "$src" ]; then
-                [ ! -d "$dir" ] && mkdir -p "$dir"
-                ln -s "$dst" "$src"
-            fi
-            echo "$dst"
         fi
+
+        if [ -L "$src" ] && [ ! "$dst" = "`fs_realpath "$src"`" ]; then
+            unlink "$src"
+        fi
+
+        if [ ! -L "$src" ]; then
+            [ ! -d "$dir" ] && mkdir -p "$dir"
+            ln -s "$dst" "$src"
+        fi
+        echo "$dst"
     }
 
     function which() {
         if [[ "$1" =~ "/" ]]; then
             if [ -x "$1" ]; then
-                if [ -L "$1" ]; then
-                    local dst="`fs_readlink "$1"`"
-                    if [ -x "$dst" ]; then
-                        echo "$dst"
-                        return 0
-                    fi
-                    return 1
-
+                if [ ! -L "$1" ]; then
+                    local dst="$1"
                 else
-                    echo "$1"
-                    return 0
-
+                    local dst="`fs_readlink "$1"`"
                 fi
             fi
-        fi
 
-        if [ -L "$JOSH/bin/$1" ]; then
-            local dst="`fs_readlink "$JOSH/bin/$1"`"
-        elif [ -x "$commands[$1]" ]; then
-            local dst="$commands[$1]"
+        else
+            if [ -L "$JOSH/bin/$1" ]; then
+                local dst="`fs_readlink "$JOSH/bin/$1"`"
+            elif [ -x "$commands[$1]" ]; then
+                local dst="$commands[$1]"
+            fi
         fi
 
         if [ -x "$dst" ]; then

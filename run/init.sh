@@ -14,8 +14,6 @@ local source_file="`fs_joshpath "$0"`"
 if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
     sourced+=("$source_file")
 
-    source "`fs_dirname $0`/hier.sh"
-
     if [ -z "$HTTP_GET" ]; then
         if [ -x "`which curl`" ]; then
             export HTTP_GET="`which curl` -fsSL"
@@ -43,6 +41,7 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
         fi
     fi
 
+    source "`fs_dirname $0`/hier.sh"
 
     if [ -n "$(uname | grep -i freebsd)" ]; then
         export JOSH_OS="BSD"
@@ -61,7 +60,7 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
         if [ -n "$(uname | grep -i linux)" ]; then
             export JOSH_OS="LINUX"
         else
-            echo " - ERROR: unsupported OS!"
+            echo " - ERROR: unsupported OS!" >&2
             export JOSH_OS="UNKNOWN"
         fi
     fi
