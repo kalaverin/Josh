@@ -4,6 +4,8 @@ local source_file="`fs_joshpath "$0"`"
 if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
     sourced+=("$source_file")
 
+    alias sed="`which sed`"
+
     local perm_path_regex="`echo "$perm_path" | sed 's:^:^:' | sed 's: *$:/:' | sed 's: :/|^:g'`"
 
     function lookup() {
