@@ -268,7 +268,7 @@ function which() {
                 local dst="$1"
 
             else
-                local dst="`fs_readlink "$1"`"
+                local dst="`fs_realpath "$1"`"
             fi
         fi
 
