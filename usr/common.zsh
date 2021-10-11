@@ -659,5 +659,3 @@ zle -N znt-kill-widget
 
 autoload -U edit-command-line
 zle -N edit-command-line
-
-find /tmp -maxdepth 1 -name "fuzzy-search-and-edit.*" -user $USER -type d -mmin +30 -exec rm -rf {} \;
