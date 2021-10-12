@@ -220,6 +220,43 @@ function pip_deploy() {
     reactivate; return $retval
 }
 
+function pip_update() {
+    python_init
+    if [ ! -x "$PYTHON3" ]; then
+        echo " - fatal: python>=$MIN_PYTHON_VERSION required!"
+        return 1
+    fi
+
+    pip_init
+    if [ ! -x "$JOSH_PIP" ]; then
+        echo " - fatal: pip executive $JOSH_PIP isn't found!"
+        return 2
+    fi
+
+    if [ ! "$VIRTUAL_ENV" ] || [ ! -f "$VIRTUAL_ENV/bin/activate" ]; then
+        function reactivate() {}
+    else
+        local venv="$VIRTUAL_ENV"
+        source $venv/bin/activate && deactivate
+        function reactivate() {
+            source $venv/bin/activate
+        }
+    fi
+
+
+    local josh_regex="$(
+        echo "$PIP_REQ_PACKAGES $PIP_OPT_PACKAGES" | \
+        sed 's:^:^:' | sed 's: *$:$:' | sed 's: :$|^:g')"
+
+    local result="$(
+        pipdeptree --all --warn silence --reverse | \
+        grep -Pv '\s+' | sd '^(.+)==(.+)$' '$1' | grep -Po "$josh_regex" | sed -z 's:\n\b: :g'
+    )"
+    pip_deploy "$result"
+    local retval="$?"
+    reactivate; return $retval
+}
+
 function pip_extras() {
     pip_deploy "$PIP_REQ_PACKAGES $PIP_OPT_PACKAGES"
     return 0

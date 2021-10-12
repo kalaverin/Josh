@@ -288,7 +288,6 @@ function cargo_deploy() {
             local retval=1
         fi
     done
-    cargo_update
     return "$retval"
 }
 

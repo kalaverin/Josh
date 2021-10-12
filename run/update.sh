@@ -57,11 +57,22 @@ function post_update() {
 }
 
 function update_packages() {
-    source "$JOSH/run/units/configs.sh" && zero_configuration
-    source "$JOSH/run/units/binaries.sh" && deploy_binaries
-    source "$JOSH/run/units/oh-my-zsh.sh" && deploy_extensions
-    source "$JOSH/lib/rust.sh" && cargo_deploy $CARGO_REQ_PACKAGES
-    source "$JOSH/lib/python.sh" && pip_deploy $PIP_REQ_PACKAGES
+    source "$JOSH/run/units/configs.sh" && \
+    zero_configuration
+
+    source "$JOSH/run/units/binaries.sh" && \
+    deploy_binaries
+
+    source "$JOSH/run/units/oh-my-zsh.sh" &&
+    deploy_extensions
+
+    source "$JOSH/lib/rust.sh" && \
+    cargo_deploy "$CARGO_REQ_PACKAGES"
+    cargo_update
+
+    source "$JOSH/lib/python.sh" && \
+    pip_deploy "$PIP_REQ_PACKAGES"
+    pip_update
 }
 
 function deploy_extras() {
