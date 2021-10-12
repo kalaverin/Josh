@@ -79,8 +79,11 @@ function deploy_extensions() {
             fi
         fi
 
-        [ $? -gt 0 ] && local result="error" || local result="success"
-        echo " - $0 $verb success: $pkg"
+        if [ $? -gt 0 ]; then
+            echo " - $0 $verb error: $pkg"
+        else
+            echo " + $0 $verb success: $pkg"
+        fi
     done
 
     echo " + $0: ${#PACKAGES[@]} complete"
