@@ -54,3 +54,4 @@ source "$JOSH/src/loader.zsh"
 
 # user can override anything after load
 [ -f ~/.zshrcbinds ] && source ~/.zshrcbinds
+printf '\033[5 q'
