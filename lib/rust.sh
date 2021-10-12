@@ -224,14 +224,18 @@ function cargo_init() {
         fi
     fi
 
-    if [ -x "$cache_exe" ]; then
-        export RUSTC_WRAPPER="$cache_exe"
-    elif [ -x "`which sccache`" ]; then
-        export RUSTC_WRAPPER="`which sccache`"
-    else
-        export RUSTC_WRAPPER=""
-        unset RUSTC_WRAPPER
-        echo " - warning: sccache doesn't exists"
+    if [ -z "$RUSTC_WRAPPER" ] || [ ! -x "$RUSTC_WRAPPER" ]; then
+        if [ -x "$cache_exe" ]; then
+            export RUSTC_WRAPPER="$cache_exe"
+
+        elif [ -x "`which sccache`" ]; then
+            export RUSTC_WRAPPER="`which sccache`"
+
+        else
+            export RUSTC_WRAPPER=""
+            unset RUSTC_WRAPPER
+            echo " - warning: sccache doesn't exists"
+        fi
     fi
 
     local update_exe="$CARGO_BINARIES/cargo-install-update"
@@ -292,8 +296,7 @@ function cargo_deploy() {
 }
 
 function cargo_extras() {
-    # cargo_deploy $CARGO_REQ_PACKAGES $CARGO_REC_PACKAGES
-    cargo_install $CARGO_REQ_PACKAGES $CARGO_REC_PACKAGES $CARGO_OPT_PACKAGES
+    cargo_install "$CARGO_REQ_PACKAGES $CARGO_REC_PACKAGES"
     return 0
 }
 
@@ -307,6 +310,7 @@ function cargo_list_installed() {
 }
 
 function cargo_install() {
+    echo 1>&2
     cargo_init || return $?
     if [ ! -x "$CARGO_BIN" ]; then
         echo " - fatal: cargo exe $CARGO_BIN isn't found!"

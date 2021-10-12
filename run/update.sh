@@ -67,11 +67,11 @@ function update_packages() {
     deploy_extensions
 
     source "$JOSH/lib/rust.sh" && \
-    cargo_deploy "$CARGO_REQ_PACKAGES"
+    cargo_install "$CARGO_REQ_PACKAGES"
     cargo_update
 
     source "$JOSH/lib/python.sh" && \
-    pip_deploy "$PIP_REQ_PACKAGES"
+    pip_install "$PIP_REQ_PACKAGES"
     pip_update
 }
 

@@ -209,7 +209,7 @@ function python_check() {
     fi
 }
 
-function pip_deploy() {
+function pip_install() {
     python_check || return "$?"
 
     local venv="`venv_deactivate`"
@@ -238,7 +238,7 @@ function pip_update() {
         pipdeptree --all --warn silence --reverse | \
         grep -Pv '\s+' | sd '^(.+)==(.+)$' '$1' | grep -Po "$josh_regex" | sed -z 's:\n\b: :g'
     )"
-    pip_deploy "$result"
+    pip_install "$result"
     local retval="$?"
 
     [ -n "$venv" ] && source $venv/bin/activate
@@ -246,7 +246,7 @@ function pip_update() {
 }
 
 function pip_extras() {
-    pip_deploy "$PIP_REQ_PACKAGES $PIP_OPT_PACKAGES"
+    pip_install "$PIP_REQ_PACKAGES $PIP_OPT_PACKAGES"
     return 0
 }
 
