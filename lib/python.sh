@@ -185,7 +185,17 @@ function pip_init() {
     return 0
 }
 
-function pip_deploy() {
+function venv_deactivate() {
+    if [ -z "$VIRTUAL_ENV" ] || [ ! -f "$VIRTUAL_ENV/bin/activate" ]; then
+        unset venv
+    else
+        local venv="$VIRTUAL_ENV"
+        source $venv/bin/activate && deactivate
+        echo "$venv"
+    fi
+}
+
+function python_check() {
     python_init
     if [ ! -x "$PYTHON3" ]; then
         echo " - fatal: python>=$MIN_PYTHON_VERSION required!"
@@ -197,17 +207,12 @@ function pip_deploy() {
         echo " - fatal: pip executive $JOSH_PIP isn't found!"
         return 2
     fi
+}
 
-    if [ ! "$VIRTUAL_ENV" ] || [ ! -f "$VIRTUAL_ENV/bin/activate" ]; then
-        function reactivate() {}
-    else
-        local venv="$VIRTUAL_ENV"
-        source $venv/bin/activate && deactivate
-        function reactivate() {
-            source $venv/bin/activate
-        }
-    fi
+function pip_deploy() {
+    python_check || return "$?"
 
+    local venv="`venv_deactivate`"
     local pip="PIP_REQUIRE_VIRTUALENV=false $JOSH_PIP install --disable-pip-version-check --no-input --no-python-version-warning --no-warn-conflicts --no-warn-script-location --compile --user"
 
     $SHELL -c "$pip --upgrade --upgrade-strategy=eager $@"
@@ -217,33 +222,14 @@ function pip_deploy() {
         local retval="$?"
     fi
 
-    reactivate; return $retval
+    [ -n "$venv" ] && source $venv/bin/activate
+    return $retval
 }
 
 function pip_update() {
-    python_init
-    if [ ! -x "$PYTHON3" ]; then
-        echo " - fatal: python>=$MIN_PYTHON_VERSION required!"
-        return 1
-    fi
+    python_check || return "$?"
 
-    pip_init
-    if [ ! -x "$JOSH_PIP" ]; then
-        echo " - fatal: pip executive $JOSH_PIP isn't found!"
-        return 2
-    fi
-
-    if [ ! "$VIRTUAL_ENV" ] || [ ! -f "$VIRTUAL_ENV/bin/activate" ]; then
-        function reactivate() {}
-    else
-        local venv="$VIRTUAL_ENV"
-        source $venv/bin/activate && deactivate
-        function reactivate() {
-            source $venv/bin/activate
-        }
-    fi
-
-
+    local venv="`venv_deactivate`"
     local josh_regex="$(
         echo "$PIP_REQ_PACKAGES $PIP_OPT_PACKAGES" | \
         sed 's:^:^:' | sed 's: *$:$:' | sed 's: :$|^:g')"
@@ -254,7 +240,9 @@ function pip_update() {
     )"
     pip_deploy "$result"
     local retval="$?"
-    reactivate; return $retval
+
+    [ -n "$venv" ] && source $venv/bin/activate
+    return $retval
 }
 
 function pip_extras() {
