@@ -310,7 +310,6 @@ function cargo_list_installed() {
 }
 
 function cargo_install() {
-    echo 1>&2
     cargo_init || return $?
     if [ ! -x "$CARGO_BIN" ]; then
         echo " - fatal: cargo exe $CARGO_BIN isn't found!"
