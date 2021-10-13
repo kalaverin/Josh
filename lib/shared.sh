@@ -7,15 +7,18 @@ local UNIQUE_SORT="runiq - | proximity-sort ."
 local LINES_TO_LINE="sd '\n' ' ' | awk '{\$1=\$1};1'"
 
 
-function cpu_count() {
+function cpu_cores_count() {
     if [ "$JOSH_OS" = 'BSD' ]; then
         local cores="`sysctl kern.smp.cores | grep -Po '\d$'`"
     else
         local cores="`grep --count -Po 'processor\s+:\s*\d+\s*$' /proc/cpuinfo`"
     fi
 
-    [ ! "$cores" ] && local cores=1
-    return "$cores"
+    if [ ! "$cores" -gt 0 ]; then
+        echo "1"
+    else
+        echo "$cores"
+    fi
 }
 
 function get_preview_width() {

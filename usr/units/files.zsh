@@ -5,17 +5,22 @@ function bak {
         echo " * backup already found: $BAK_RESTORE"
         return 1
     fi
-
     local last_path="`pwd`"
+
     mktp
+    [ "$?" -gt 0 ] && return 1
+
     local temp_path="`pwd`"
     builtin cd $last_path
 
     local dir_name=`fs_basename "$last_path"`
-    local backup="$temp_path/$dir_name.tar.xz"
+    [ "$?" -gt 0 ] && return 2
 
-    cpu_count
-    run_show "tar -cO --exclude-vcs . | xz -1 -T$? > $backup"
+    local threads_count="`cpu_cores_count`"
+    [ "$?" -gt 0 ] && return 3
+
+    local backup="$temp_path/$dir_name.tar.xz"
+    run_show "tar -cO --exclude-vcs . | xz -1 -T$threads_count > $backup"
     echo " => xzcat $backup | tar -x"
     export BAK_RESTORE="$backup"
 }
