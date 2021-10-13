@@ -8,8 +8,13 @@ local LINES_TO_LINE="sd '\n' ' ' | awk '{\$1=\$1};1'"
 
 
 function cpu_count() {
-    local cores=$(grep --count -Po 'processor\s+:\s*\d+\s*$' /proc/cpuinfo)
-    [ ! "$cores" ] && local cores=0
+    if [ "$JOSH_OS" = 'BSD' ]; then
+        local cores="`sysctl kern.smp.cores | grep -Po '\d$'`"
+    else
+        local cores="`grep --count -Po 'processor\s+:\s*\d+\s*$' /proc/cpuinfo`"
+    fi
+
+    [ ! "$cores" ] && local cores=1
     return "$cores"
 }
 
