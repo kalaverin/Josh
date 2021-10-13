@@ -186,19 +186,30 @@ function git_fetch_checkout_branch() {
     return $?
 }
 
-function git_branch_set_tag() {
+function git_set_branch_tag() {
     if [ -z "$1" ]; then
         echo " - $0: tag required" >&2
         return 1
+
+    elif [ -n "$2" ]; then
+        local tag="$2"
+        local branch="$1"
+
+    else
+        local tag="$1"
+        local branch="`git_current_branch`"
+        if [ -z "$branch" ]; then
+            echo " - $0: branch couldn't detected" >&2
+            return 1
+        fi
     fi
 
-    local branch="${2:-master}"
-    echo " + $0: set tag \`$1\` to branch \`$1\`" >&2
+    echo " + $0: set tag \`$tag\` to branch \`$branch\`" >&2
 
     git_repository_clean;   [ $? -gt 0 ] && return 1
     git checkout "$branch"; [ $? -gt 0 ] && return 1
     git_pull "$branch";     [ $? -gt 0 ] && return 1
-    git_set_tag "$1"
+    git_set_tag "$tag"
     return $?
 }
 
