@@ -3,13 +3,9 @@
 REQUIRED_BINARIES=(
     cc
     git
-    jq
     make
     pkg-config
-    pv
     python3
-    tmux
-    tree
     zsh
 )
 REQUIRED_LIBRARIES=(
@@ -139,6 +135,9 @@ function check_compliance() {
             REQURED_SYSTEM_BINARIES=(
                 apt
             )
+
+        elif [ -f "/etc/arch-release" ]; then
+            echo " + os: arch: `uname -srv`"
 
         elif [ -n "$(uname -srv | grep -i gentoo)" ]; then
             echo " + os: gentoo: `uname -srv`"
