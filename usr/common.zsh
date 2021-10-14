@@ -666,8 +666,24 @@ function brew_init() {
         HOMEBREW_REPOSITORY="$root"
         HOMEBREW_SHELLENV_PREFIX="$root"
         rehash
+    else
+        echo " - $0 fatal: homebrew don't supported for $JOSH_OS: `uname -srv`"
+        return 1
     fi
 }
+
+
+function brew_install() {
+    brew_init && brew install $@
+    for exe in $@; do
+        local bin="$HOMEBREW_PREFIX/bin/$exe"
+        if [ -x "$bin" ]; then
+            shortcut "$bin" >/dev/null
+            echo " + $exe -> `which $exe`"
+        fi
+    done
+}
+
 
 autoload znt-history-widget
 zle -N znt-history-widget

@@ -175,13 +175,16 @@ function check_compliance() {
     if [ $? -gt 0 ]; then
         local msg=" - please, install required packages and try again"
         [ "$cmd" ] && local msg="$msg: $cmd $pkg"
+
         if [ ! "$JOSH_SKIP_REQUIREMENTS_CHECK" ]; then
             echo "$msg" && return 1
         else
             echo "$msg"
         fi
     else
-        echo " + all requirements exists: executives ($REQ_BINS $REQ_SYS_BINS), libraries ($REQ_LIBS $REQ_SYS_LIBS)"
+
+        echo " + all requirements resolved: executives ($REQ_BINS $REQ_SYS_BINS), libraries ($REQ_LIBS $REQ_SYS_LIBS)"
+        echo " + please, use last versions of required tools from brew, just run: brew_install jq pv tmux tree"
     fi
     return 0
 }
