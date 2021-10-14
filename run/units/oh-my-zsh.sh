@@ -3,7 +3,14 @@
 zmodload zsh/datetime
 
 if [[ -n ${(M)zsh_eval_context:#file} ]]; then
-    [ -z "$HTTP_GET" ] && source "`dirname $0`/../boot.sh"
+    if [ -z "$HTTP_GET" ]; then
+        echo " - $0 warning: HTTP_GET isn't fount, try to eval from `dirname $0`/../boot.sh"
+        source "`dirname $0`/../boot.sh"
+        if [ -z "$HTTP_GET" ]; then
+            echo " - $0 fatal: HTTP_GET isn't fount"
+            return 1
+        fi
+    fi
 
     if [ -n "$JOSH_DEST" ]; then
         DEST="$JOSH_DEST"
@@ -39,6 +46,10 @@ PACKAGES=(
 # ——- first, clone oh-my-zsh as core
 
 function deploy_ohmyzsh() {
+    if [ -z "$HTTP_GET" ]; then
+        echo " - $0 fatal: HTTP_GET isn't fount"
+        return 1
+    fi
     local cwd="`pwd`"
     url='https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh'
     if [ -d "$JOSH_DEST" ]; then
