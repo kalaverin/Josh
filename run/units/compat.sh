@@ -183,7 +183,7 @@ function check_compliance() {
     else
 
         echo " + all requirements resolved: executives ($REQ_BINS $REQ_SYS_BINS), libraries ($REQ_LIBS $REQ_SYS_LIBS)"
-        echo " + please, use last versions of required tools from brew, just run: brew_install jq pv tmux tree"
+        echo " + please, use last versions of required tools from brew, just run: brew_install ag jq pv tmux tree"
     fi
     return 0
 }
