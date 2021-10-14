@@ -141,7 +141,7 @@ function deploy_fpp() {
     fi
 
     if [ -x "$OMZ_PLUGIN_DIR/fpp/fpp" ] && [ ! -x "$BINARY_DEST/fpp" ]; then
-        ln -s "$OMZ_PLUGIN_DIR/fpp/fpp" "$BINARY_DEST/fpp"
+        cp "$OMZ_PLUGIN_DIR/fpp/fpp" "$BINARY_DEST/fpp"
     fi
     local retval="$?"
 
