@@ -146,7 +146,7 @@ function check_compliance() {
             local pkg="zsh git clang make build-essential pkg-config python3 python3-distutils libssl-dev python-dev libpq-dev libevent-dev"
 
 
-        elif [ -f "/etc/arch-release" ]; then
+        elif [ -f "/etc/arch-release" ] || [ -n "$(uname -v | grep -Pi '(arch|manjaro)')" ; then
             REQ_SYS_BINS=( pacman )
             echo " + os: arch: `uname -srv`"
 
