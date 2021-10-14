@@ -2,7 +2,7 @@
 
 if [[ ! "$SHELL" =~ "/zsh$" ]]; then
     if [ -x "`which zsh`" ]; then
-        echo " - $0 fatal: current shell must be zsh, but SHELL \`$SHELL\` execute: \``which zsh`\` and repeat" >&2
+        echo " - $0 fatal: current shell must be zsh, but SHELL \`$SHELL\`, zsh found \``which zsh`\`, change shell to zsh and repeat: sudo chsh -s /usr/bin/zsh $USER" >&2
     else
         echo " - $0 fatal: current shell must be zsh, but SHELL \`$SHELL\` and zsh not detected" >&2
     fi
