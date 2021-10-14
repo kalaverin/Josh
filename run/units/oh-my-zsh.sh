@@ -4,8 +4,11 @@ zmodload zsh/datetime
 
 if [[ -n ${(M)zsh_eval_context:#file} ]]; then
     if [ -z "$HTTP_GET" ]; then
-        echo " - $0 warning: HTTP_GET isn't declared, cwd \`$PWD\` try to eval from `dirname $0`/../boot.sh"
-        source "`dirname $0`/../boot.sh"
+        echo " - $0 warning: HTTP_GET isn't declared, cwd \`$PWD\`, eval `dirname $0`/../init.sh"
+
+        [ -z "$HTTP_GET" ] && source "`dirname $0`/../init.sh"
+        [ -z "$HTTP_GET" ] && source "run/init.sh"
+
         if [ -z "$HTTP_GET" ]; then
             echo " - $0 fatal: HTTP_GET isn't declared"
             return 1
