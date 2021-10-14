@@ -143,7 +143,7 @@ function check_compliance() {
             [ -x "`builtin which -p apt 2>/dev/null`" ] && local bin="apt" || local bin="apt-get"
 
             local cmd="(sudo $bin update --yes --quiet || true) && sudo $bin install --yes --quiet --no-remove"
-            local pkg="zsh git clang make build-essential pkg-config python3 python3-distutils tree libssl-dev python-dev libpq-dev libevent-dev"
+            local pkg="zsh git clang make build-essential pkg-config python3 python3-distutils libssl-dev python-dev libpq-dev libevent-dev"
 
 
         elif [ -f "/etc/arch-release" ]; then
