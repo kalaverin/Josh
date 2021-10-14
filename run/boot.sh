@@ -6,6 +6,7 @@ if [[ ! "$SHELL" =~ "/zsh$" ]]; then
     else
         echo " - $0 fatal: current shell must be zsh, but SHELL \`$SHELL\` and zsh not detected" >&2
     fi
+    return 1
 fi
 
 
