@@ -151,8 +151,7 @@ function check_compliance() {
             echo " + os: arch: `uname -srv`"
 
             local cmd="sudo pacman --sync --noconfirm"
-            local pkg="clang gcc git pkg-config tmux openssl zsh postgresql-libs libevent"
-
+            local pkg="clang gcc base-devel git pkg-config tmux openssl zsh postgresql-libs libevent"
 
         elif [ -n "$(uname -srv | grep -i gentoo)" ]; then
             echo " + os: gentoo: `uname -srv`"
