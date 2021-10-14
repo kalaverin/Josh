@@ -1,17 +1,21 @@
 #!/bin/zsh
 
-REQUIRED_BINARIES=(
+REQ_BINS=(
     cc
     git
     make
     pkg-config
     python3
+    tmux
     zsh
 )
-REQUIRED_LIBRARIES=(
+
+REQ_LIBS=(
     openssl
+    libpq
+    libevent
 )
-# python-dev libpq-dev libevent-dev for pgcli
+
 
 function check_executables() {
     local missing=""
@@ -34,12 +38,16 @@ function check_libraries() {
         $SHELL -c "pkg-config --libs --cflags $lib" 1&>/dev/null 2&>/dev/null
         if [ "$?" -gt 0 ]; then
             if [ "$lib" = "openssl" ]; then
+
                 if [ "$JOSH_OS" = "MAC" ]; then
                     local lookup_path="/usr/local/opt/"
+
                 elif [ "$JOSH_OS" = "LINUX" ]; then
                     local lookup_path="/usr/lib/"
+
                 elif [ "$JOSH_OS" = "BSD" ]; then
                     local lookup_path="/usr/local/"
+
                 else
                     local missing="$missing $lib"
                     continue
@@ -91,8 +99,8 @@ function check_compliance() {
         export JOSH_OS="BSD"
 
         local cmd="sudo pkg install -y"
-        local pkg="zsh git coreutils gnugrep gnuls gsed jq openssl pkgconf pv python39"
-        REQURED_SYSTEM_BINARIES=(
+        local pkg="zsh git coreutils gnugrep gnuls gsed openssl pkgconf python39"
+        REQ_SYS_BINS=(
             pkg
             /usr/local/bin/gcut
             /usr/local/bin/gnuls
@@ -111,8 +119,8 @@ function check_compliance() {
         fi
 
         local cmd="brew update && brew install"
-        local pkg="zsh git coreutils grep gsed jq openssl pkg-config pv python@3 tree"
-        REQURED_SYSTEM_BINARIES=(
+        local pkg="zsh git coreutils grep gsed openssl pkg-config python@3"
+        REQ_SYS_BINS=(
             brew
             /usr/local/bin/ggrep
             /usr/local/bin/gcut
@@ -125,19 +133,26 @@ function check_compliance() {
 
     elif [ -n "$(uname -srv | grep -i linux)" ]; then
         export JOSH_OS="LINUX"
+        REQ_SYS_LIBS=(
+            python
+        )
 
         if [ -f "/etc/debian_version" ] || [ -n "$(uname -v | grep -Pi '(debian|ubuntu)')" ]; then
+            REQ_SYS_BINS=( apt )
             echo " + os: debian-based `uname -srv`"
             [ -x "`builtin which -p apt 2>/dev/null`" ] && local bin="apt" || local bin="apt-get"
 
             local cmd="(sudo $bin update --yes --quiet || true) && sudo $bin install --yes --quiet --no-remove"
-            local pkg="zsh git jq pv clang make build-essential pkg-config python3 python3-distutils tree libssl-dev python-dev libpq-dev libevent-dev"
-            REQURED_SYSTEM_BINARIES=(
-                apt
-            )
+            local pkg="zsh git clang make build-essential pkg-config python3 python3-distutils tree libssl-dev python-dev libpq-dev libevent-dev"
+
 
         elif [ -f "/etc/arch-release" ]; then
+            REQ_SYS_BINS=( pacman )
             echo " + os: arch: `uname -srv`"
+
+            local cmd="sudo pacman --sync --noconfirm"
+            local pkg="clang gcc git pkg-config tmux zsh libssl-dev python-dev libpq-dev libevent-dev"
+
 
         elif [ -n "$(uname -srv | grep -i gentoo)" ]; then
             echo " + os: gentoo: `uname -srv`"
@@ -154,8 +169,8 @@ function check_compliance() {
         export JOSH_OS="UNKNOWN"
     fi
 
-    check_executables $REQUIRED_BINARIES $REQURED_SYSTEM_BINARIES && \
-        check_libraries $REQUIRED_LIBRARIES
+    check_libraries $REQ_LIBS $REQ_SYS_LIBS && \
+    check_executables $REQ_BINS $REQ_SYS_BINS
 
     if [ $? -gt 0 ]; then
         local msg=" - please, install required packages and try again"
@@ -166,7 +181,7 @@ function check_compliance() {
             echo "$msg"
         fi
     else
-        echo " + all requirements exists: $REQUIRED_BINARIES $REQUIRED_LIBRARIES $REQURED_SYSTEM_BINARIES"
+        echo " + all requirements exists: executives ($REQ_BINS $REQ_SYS_BINS), libraries ($REQ_LIBS $REQ_SYS_LIBS)"
     fi
     return 0
 }
