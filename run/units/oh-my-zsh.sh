@@ -4,10 +4,10 @@ zmodload zsh/datetime
 
 if [[ -n ${(M)zsh_eval_context:#file} ]]; then
     if [ -z "$HTTP_GET" ]; then
-        echo " - $0 warning: HTTP_GET isn't fount, try to eval from `dirname $0`/../boot.sh"
+        echo " - $0 warning: HTTP_GET isn't declared, cwd $PWD try to eval from `dirname $0`/../boot.sh"
         source "`dirname $0`/../boot.sh"
         if [ -z "$HTTP_GET" ]; then
-            echo " - $0 fatal: HTTP_GET isn't fount"
+            echo " - $0 fatal: HTTP_GET isn't declared"
             return 1
         fi
     fi
@@ -47,7 +47,7 @@ PACKAGES=(
 
 function deploy_ohmyzsh() {
     if [ -z "$HTTP_GET" ]; then
-        echo " - $0 fatal: HTTP_GET isn't fount"
+        echo " - $0 fatal: HTTP_GET isn't declared"
         return 1
     fi
     local cwd="`pwd`"
@@ -58,7 +58,10 @@ function deploy_ohmyzsh() {
     else
         echo " + deploy oh-my-zsh to $JOSH_DEST"
         $SHELL -c "$HTTP_GET $url | CHSH=no RUNZSH=no KEEP_ZSHRC=yes ZSH=$JOSH_DEST $SHELL -s - --unattended --keep-zshrc"
-        [ $? -gt 0 ] && return 1
+        if [ $? -gt 0 ] || [ ! -f "$JOSH_DEST/oh-my-zsh.sh" ]; then
+            echo " - $0 fatal: oh-my-zsh isn't deployed"
+            return 1
+        fi
     fi
     return 0
 }
