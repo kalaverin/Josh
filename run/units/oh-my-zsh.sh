@@ -94,7 +94,13 @@ function deploy_extensions() {
             let need_fetch="$EPOCHSECONDS - $fetch_every > $last_fetch"
             if [ "$need_fetch" -gt 0 ]; then
                 local verb='pull'
-                $SHELL -c "git --git-dir=\"$dst/.git\" --work-tree=\"$dst/\" pull origin master"
+                local branch="`git --git-dir="$dst/.git" --work-tree="$dst/" rev-parse --quiet --abbrev-ref HEAD`"
+                if [ -z "$branch" ]; then
+                    echo " - $0 fail: get branch for $pkg in \`$dst\`"
+                    continue
+                else
+                    git --git-dir="$dst/.git" --work-tree="$dst/" pull origin "$branch"
+                fi
             else
                 local verb='skip fresh'
             fi
