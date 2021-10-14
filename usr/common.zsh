@@ -634,7 +634,7 @@ function josh_bootstrap_command_branched() {
         local branch="`josh_branch`"
     fi
 
-    local url="https://raw.githubusercontent.com/YaakovTooth/Josh/$branch/run/boot.sh"
+    local url="https://raw.githubusercontent.com/kalaverin/Josh/$branch/run/boot.sh"
     echo "export JOSH_RENEW_CONFIGS=1 && export JOSH_BRANCH="$branch" && ((curl -fsSL $url || wget -qO - $url || fetch -qo - $url) | zsh); unset JOSH_RENEW_CONFIGS && unset JOSH_BRANCH"
 }
 
