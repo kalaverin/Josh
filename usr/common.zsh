@@ -660,12 +660,14 @@ function brew_init() {
         else
             eval $($root/bin/brew shellenv)
         fi
+        local ret="$?"
 
         HOMEBREW_CELLAR="$root/Cellar"
         HOMEBREW_PREFIX="$root"
         HOMEBREW_REPOSITORY="$root"
         HOMEBREW_SHELLENV_PREFIX="$root"
         rehash
+        return "$ret"
     else
         echo " - $0 fatal: homebrew don't supported for $JOSH_OS: `uname -srv`"
         return 1
@@ -682,6 +684,11 @@ function brew_install() {
             echo " + $exe -> `which $exe`"
         fi
     done
+}
+
+
+function brew_extras() {
+    brew_install ag jq pv tmux tree
 }
 
 
