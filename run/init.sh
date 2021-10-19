@@ -72,6 +72,7 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
         shortcut 'realpath'  '/usr/local/bin/grealpath' >/dev/null
         shortcut 'sed'       '/usr/local/bin/gsed'      >/dev/null
         shortcut 'tail'      '/usr/local/bin/gtail'     >/dev/null
+        shortcut 'tar'       '/usr/local/bin/gtar'      >/dev/null
     fi
 
     source "`fs_dirname $0`/hier.sh"

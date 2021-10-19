@@ -108,6 +108,7 @@ function check_compliance() {
             /usr/local/bin/grealpath
             /usr/local/bin/grep
             /usr/local/bin/gsed
+            /usr/local/bin/gtar
         )
 
     elif [ -n "$(uname | grep -i darwin)" ]; then
