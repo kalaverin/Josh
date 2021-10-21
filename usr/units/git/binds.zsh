@@ -28,9 +28,11 @@ bindkey "\e^s" git_widget_checkout_tag
 #              alt-f, fetch remote branch and, if possible, checkout to + pull
 bindkey "\ef"  git_widget_fetch_branch
 #              shift-alt-f, delete local branch
-bindkey "^[F"  git_widget_delete_branch
-#              ctrl-alt-a, permanently delete REMOTE branch
-bindkey "\e^f" git_widget_delete_remote_branch  # PUSH TO origin, caution!
+bindkey "^[F"  git_widget_delete_remote_branch
+#              ctrl-f, delete local branch
+bindkey "^f"   git_widget_delete_local_branch
+#              ctrl-alt-f, permanently delete REMOTE branch
+bindkey "\e^f" git_widget_delete_branch  # PUSH TO origin, caution!
 
 #              alt-p, experimental conflict solver
 bindkey "\ep"  git_widget_conflict_solver

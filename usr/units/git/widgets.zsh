@@ -549,43 +549,6 @@ git_widget_checkout_branch() {
 zle -N git_widget_checkout_branch
 
 
-git_widget_delete_branch() {
-    local branch="`git_current_branch`"
-    [ ! "$branch" ] && return 1
-
-    local differ="echo {} | tabulate -i 1 | xargs -n 1 $GIT_DIFF"
-    local select='git for-each-ref \
-                    --sort=-committerdate refs/heads/ \
-                    --color=always \
-                    --format="%(HEAD) %(color:yellow bold)%(refname:short)%(color:reset) %(contents:subject) %(color:black bold)%(authoremail) %(committerdate:relative)" \
-                    | awk "{\$1=\$1};1" | grep -Pv "^(\*\s+)"'
-    while true; do
-        local value="$(
-            $SHELL -c "$select \
-            | $FZF \
-            --multi \
-            --preview=\"$differ $branch | $DELTA \" \
-            --preview-window=\"left:`get_preview_width`:noborder\" \
-            --prompt=\"delete branch >  \" \
-            | cut -d ' ' -f 1 | $UNIQUE_SORT | $LINES_TO_LINE
-        ")"
-
-        if [ "$value" ]; then
-            local cmd="git branch -D $value"
-            if [ "$BUFFER" ]; then
-                LBUFFER="$BUFFER && $cmd "
-            else
-                LBUFFER=" $cmd"
-            fi
-        fi
-        break
-    done
-    zle reset-prompt
-    return 0
-}
-zle -N git_widget_delete_branch
-
-
 git_widget_fetch_branch() {
     local root="`git_root`"
     [ ! "$root" ] && return 1
@@ -633,6 +596,81 @@ git_widget_fetch_branch() {
 zle -N git_widget_fetch_branch
 
 
+git_widget_delete_branch() {
+    local root="`git_root`"
+    [ ! "$root" ] && return 1
+    local branch="`git_current_branch`"
+
+    local select='git ls-remote --heads --quiet origin | \
+                  sd "^([0-9a-f]+)\srefs/heads/(.+)" "\$1 \$2"'
+
+    local filter="sort -Vk 2 | awk '{a[i++]=\$0} END {for (j=i-1; j>=0;) print a[j--] }'"
+
+    local differ="echo {} | tabulate -i 1 | xargs -i$ echo 'git diff $ 1&>/dev/null 2&>/dev/null || git fetch origin --depth=1 $ && git diff --color=always --shortstat --patch --diff-algorithm=histogram $ $branch' | $SHELL | $DELTA"
+
+    local value="$(
+        $SHELL -c "$select | $filter \
+        | $FZF \
+        --multi \
+        --prompt='DELETE REMOTE & LOCAL BRANCH >  ' \
+        --preview=\"$differ\" \
+        --preview-window=\"left:`get_preview_width`:noborder\" \
+        | cut -d ' ' -f 2 \
+    ")"
+
+    [ "$value" = "" ] && return 0
+
+    local value=$(echo "$value" | sed -e ':a' -e 'N' -e '$!ba' -e 's:\n: :g')
+    local cmd="git branch -D $value; git push origin --delete $value; git remote prune origin"
+
+    if [[ "$BUFFER" != "" ]]; then
+        LBUFFER="$BUFFER && $cmd"
+    else
+        LBUFFER=" $cmd"
+    fi
+    zle reset-prompt
+    return 0
+}
+zle -N git_widget_delete_branch
+
+
+git_widget_delete_local_branch() {
+    local branch="`git_current_branch`"
+    [ ! "$branch" ] && return 1
+
+    local differ="echo {} | tabulate -i 1 | xargs -n 1 $GIT_DIFF"
+    local select='git for-each-ref \
+                    --sort=-committerdate refs/heads/ \
+                    --color=always \
+                    --format="%(HEAD) %(color:yellow bold)%(refname:short)%(color:reset) %(contents:subject) %(color:black bold)%(authoremail) %(committerdate:relative)" \
+                    | awk "{\$1=\$1};1" | grep -Pv "^(\*\s+)"'
+    while true; do
+        local value="$(
+            $SHELL -c "$select \
+            | $FZF \
+            --multi \
+            --preview=\"$differ $branch | $DELTA \" \
+            --preview-window=\"left:`get_preview_width`:noborder\" \
+            --prompt=\"DELETE LOCAL BRANCH >  \" \
+            | cut -d ' ' -f 1 | $UNIQUE_SORT | $LINES_TO_LINE
+        ")"
+
+        if [ "$value" ]; then
+            local cmd="git branch -D $value; git remote prune origin"
+            if [ "$BUFFER" ]; then
+                LBUFFER="$BUFFER && $cmd "
+            else
+                LBUFFER=" $cmd"
+            fi
+        fi
+        break
+    done
+    zle reset-prompt
+    return 0
+}
+zle -N git_widget_delete_local_branch
+
+
 git_widget_delete_remote_branch() {
     local root="`git_root`"
     [ ! "$root" ] && return 1
@@ -658,7 +696,7 @@ git_widget_delete_remote_branch() {
     [ "$value" = "" ] && return 0
 
     local value=$(echo "$value" | sed -e ':a' -e 'N' -e '$!ba' -e 's:\n: :g')
-    local cmd="git branch -D $value; git push origin --delete $value"
+    local cmd="git push origin --delete $value"
 
     if [[ "$BUFFER" != "" ]]; then
         LBUFFER="$BUFFER && $cmd"
