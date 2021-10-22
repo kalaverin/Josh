@@ -112,7 +112,10 @@ function virtualenv_node_deploy {
 
 function get_virtualenv_path {
     if [ "$1" ]; then
-        if [ -f "$JOSH_PY_ENVS_ROOT/$1/bin/activate" ]; then
+        if [ -d "$1" ] && [ -f "$1/bin/activate" ]; then
+            echo "$1"
+
+        elif [ -f "$JOSH_PY_ENVS_ROOT/$1/bin/activate" ]; then
             echo "$JOSH_PY_ENVS_ROOT/$1"
         else
             local temp="`get_temporary_envs_directory`"
