@@ -415,7 +415,7 @@ function cargo_update() {
         return 1
     fi
 
-    $CARGO_BIN install-update -a
+    rustup update && $CARGO_BIN install-update --all
     return "$?"
 }
 
