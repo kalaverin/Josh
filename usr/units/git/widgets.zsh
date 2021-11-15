@@ -810,7 +810,7 @@ git_widget_rebase_branch() {
                     --format="%(HEAD) %(color:yellow bold)%(refname:short)%(color:reset) %(contents:subject) %(color:black bold)%(authoremail) %(committerdate:relative)" \
                     | awk "{\$1=\$1};1" | grep -Pv "^(\*\s+)"'
 
-    local git="git rebase --stat --no-autosquash --autostash --strategy=recursive --strategy-option=diff-algorithm=histogram"
+    local git="git rebase --stat --no-autosquash --autostash"
     while true; do
         local value="$(
             $SHELL -c "$select \
