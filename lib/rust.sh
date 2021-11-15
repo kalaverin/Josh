@@ -415,7 +415,8 @@ function cargo_update() {
         return 1
     fi
 
-    rustup update && $CARGO_BIN install-update --all
+    $SHELL -c "`fs_realpath $CARGO_BINARIES/rustup` update"
+    $CARGO_BIN install-update --all
     return "$?"
 }
 
