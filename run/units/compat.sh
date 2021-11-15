@@ -12,7 +12,6 @@ REQ_BINS=(
 
 REQ_LIBS=(
     openssl
-    libpq
     libevent
 )
 
@@ -120,7 +119,7 @@ function check_compliance() {
         fi
 
         local cmd="brew update && brew install"
-        local pkg="zsh git coreutils grep gsed openssl pkg-config python@3"
+        local pkg="zsh git coreutils grep gsed gtar openssl pkg-config python@3"
         REQ_SYS_BINS=(
             brew
             /usr/local/bin/ggrep
@@ -129,6 +128,7 @@ function check_compliance() {
             /usr/local/bin/greadlink
             /usr/local/bin/grealpath
             /usr/local/bin/gsed
+            /usr/local/bin/gtar
         )
 
 
@@ -187,4 +187,3 @@ function check_compliance() {
     fi
     return 0
 }
-
