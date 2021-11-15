@@ -36,7 +36,7 @@ function get_tempdir() {
 }
 
 
-function mkcd {
+function mkcd() {
     [ -z "$1" ] && return 1
     mkdir -p "$*" && cd "$*"
 }
@@ -57,6 +57,11 @@ function run_silent() {
     eval ${cmd} 1>/dev/null 2>/dev/null
 }
 
+function run_to_stdout() {
+    local cmd="$*"
+    [ -z "$cmd" ] && return 1
+    eval ${cmd} 2>&1
+}
 
 function run_hide() {
     local cmd="$*"
