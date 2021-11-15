@@ -29,7 +29,7 @@ source "$INCLUDE_DIR/binds.zsh"
 
 # ——— simple helpers
 
-function git_abort() {
+function git_abort {
     local state="`get_repository_state`"  # merge, rebase or cherry-pick
     [ "$?" -gt 0 ] && return 0
     [ "$state" ] && $SHELL -c "git $state --abort"
@@ -37,7 +37,7 @@ function git_abort() {
 }
 zle -N git_abort
 
-function open_editor_on_conflict() {
+function open_editor_on_conflict {
     local line="$($SHELL -c "
         grep -P --line-number --max-count=1 '^=======' $1 | tabulate -d ':' -i 1
     ")"
@@ -57,4 +57,18 @@ function chdir_to_setupcfg {
         builtin cd $root
     fi
     return 0
+}
+
+
+function git_autoaccept {
+    if [ "$1" = 'theirs' ] || [ "$1" = 'ours' ]; then
+        local state="`get_repository_state`"  # merge, rebase or cherry-pick
+        [ "$?" -gt 0 ] && return 0
+        run_show "git checkout --$1 . && git $state --skip"
+        if [ "$?" -eq 128 ]; then
+            git_autoaccept "$1"
+        else
+            return 0
+        fi
+    fi
 }
