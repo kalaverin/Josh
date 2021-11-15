@@ -94,7 +94,7 @@ get_repository_state() {
     local root="`git_root 2>/dev/null`"
     [ -z "$root" ] && return 1
 
-    if [ -d "$root/.git/rebase-merge" ]; then
+    if [ -d "$root/.git/rebase-merge" ] || [ -d "$root/.git/rebase-apply" ]; then
         local state="rebase"
 
     elif [ -f "$root/.git/CHERRY_PICK_HEAD" ]; then
