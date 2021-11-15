@@ -99,7 +99,7 @@ function check_compliance() {
         export JOSH_OS="BSD"
 
         local cmd="sudo pkg install -y"
-        local pkg="zsh git coreutils gnugrep gnuls gsed openssl pkgconf python39"
+        local pkg="zsh git coreutils gnugrep gnuls gsed gtar openssl pkgconf python39"
         REQ_SYS_BINS=(
             pkg
             /usr/local/bin/gcut
