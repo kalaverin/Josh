@@ -90,6 +90,7 @@ CARGO_REC_PACKAGES=(
     jex              # interactive explorer
     jfmt             # minifier
     jsonfmt          # another json minifier
+    ry               # jq for yamls
     yj               # yaml to json converter
     # scan and security tools
     binary-security-check
