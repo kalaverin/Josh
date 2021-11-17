@@ -677,7 +677,12 @@ function brew_init() {
 
 function brew_install() {
     brew_init && brew install $@
-    for exe in $@; do
+    for row in $@; do
+        local exe="`fs_basename $row`"
+        if [ -z "$exe" ]; then
+            echo " - basename $row is empty"
+            continue
+        fi
         local bin="$HOMEBREW_PREFIX/bin/$exe"
         if [ -x "$bin" ]; then
             shortcut "$bin" >/dev/null
@@ -690,7 +695,6 @@ function brew_install() {
 function brew_extras() {
     brew_install ag jq pv tmux tree
 }
-
 
 autoload znt-history-widget
 zle -N znt-history-widget
