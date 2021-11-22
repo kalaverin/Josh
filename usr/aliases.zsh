@@ -75,7 +75,7 @@ fi
 # ag: silver searcher, ripgrep like golang tools with many settings
 #
 if [ -x "`which ag`" ]; then
-    AG_OPTIONS=${AG_OPTIONS:-"-C1 --noaffinity --path-to-ignore ~/.ignore --path-to-ignore ~/.gitignore --stats --smart-case --width 140"}
+    AG_OPTIONS=${AG_OPTIONS:-"-C1 --noaffinity --path-to-ignore ~/.ignore --path-to-ignore ~/.gitignore --smart-case --width 140"}
     alias ag="ag $AG_OPTIONS"
 fi
 
