@@ -63,6 +63,14 @@ function copy_config() {
 function config_git() {
     copy_config "$BASE/usr/share/.gitignore" "$HOME/.gitignore"
 
+    if [ -f "$HOME/.gitignore" ] && [ ! -l "$HOME/.agignore" ]; then
+        ln -s "$HOME/.gitignore" "$HOME/.agignore"
+    fi
+
+    if [ -f "$HOME/.gitignore" ] && [ ! -l "$HOME/.ignore" ]; then
+        ln -s "$HOME/.gitignore" "$HOME/.ignore"
+    fi
+
     if [ ! "`git config --global core.pager | grep -P '^(delta)'`" ]; then
         backup_file "$HOME/.gitconfig" && \
         git config --global color.branch auto && \
