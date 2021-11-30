@@ -63,11 +63,11 @@ function copy_config() {
 function config_git() {
     copy_config "$BASE/usr/share/.gitignore" "$HOME/.gitignore"
 
-    if [ -f "$HOME/.gitignore" ] && [ ! -l "$HOME/.agignore" ]; then
+    if [ -f "$HOME/.gitignore" ] && [ ! -L "$HOME/.agignore" ]; then
         ln -s "$HOME/.gitignore" "$HOME/.agignore"
     fi
 
-    if [ -f "$HOME/.gitignore" ] && [ ! -l "$HOME/.ignore" ]; then
+    if [ -f "$HOME/.gitignore" ] && [ ! -L "$HOME/.ignore" ]; then
         ln -s "$HOME/.gitignore" "$HOME/.ignore"
     fi
 
