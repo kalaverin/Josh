@@ -242,7 +242,7 @@ fi
 
 
 function mktp {
-    mkcd "$(fs_dirname `mktemp -duq`)/pet/`make_human_name`"
+    mkcd "`get_tempdir`/pets/`make_human_name`"
 }
 
 # ———

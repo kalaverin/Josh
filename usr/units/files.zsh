@@ -5,22 +5,23 @@ function bak {
         echo " * backup already found: $BAK_RESTORE"
         return 1
     fi
-    local last_path="`pwd`"
 
-    mktp
+    local source="`fs_basename "$PWD"`"
     [ "$?" -gt 0 ] && return 1
 
-    local temp_path="`pwd`"
-    builtin cd $last_path
-
-    local dir_name=`fs_basename "$last_path"`
+    local timemark="`date "+%Y.%m.%d"`"
     [ "$?" -gt 0 ] && return 2
 
-    local threads_count="`cpu_cores_count`"
+    local target="`get_tempdir`/baks/$source"
     [ "$?" -gt 0 ] && return 3
 
-    local backup="$temp_path/$dir_name.tar.xz"
-    run_show "tar -cO --exclude-vcs . | xz -1 -T$threads_count > $backup"
+    local backup="$target/$timemark-`make_human_name`.tar"
+    [ "$?" -gt 0 ] && return 4
+
+    local threads_count="`cpu_cores_count`"
+    [ "$?" -gt 0 ] && local threads_count="0"
+
+    run_show "mkdir -p \"$target\" && tar -cO --exclude-vcs . | xz -1 -T$threads_count > $backup"
     echo " => xzcat $backup | tar -x"
     export BAK_RESTORE="$backup"
 }
