@@ -21,7 +21,7 @@ function bak {
     local threads_count="`cpu_cores_count`"
     [ "$?" -gt 0 ] && local threads_count="0"
 
-    run_show "mkdir -p \"$target\" && tar -cO --exclude-vcs . | xz -1 -T$threads_count > $backup"
+    run_show "mkdir -p \"$target\" 2>/dev/null; tar -cO --exclude-vcs . | xz -1 -T$threads_count > $backup"
     echo " => xzcat $backup | tar -x"
     export BAK_RESTORE="$backup"
 }
@@ -66,9 +66,9 @@ function bakrm {
 
     if [ -x "`which rip`" ]; then
         local exe="`which rip`"
-        local cmd="$exe $backup && $exe `fs_dirname $backup`"
+        local cmd="$exe $backup"
     else
-        local cmd="rm $backup && rm -r `fs_dirname $backup`"
+        local cmd="rm $backup"
     fi
 
     run_show "$cmd"
