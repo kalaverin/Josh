@@ -810,30 +810,26 @@ git_widget_rebase_branch() {
                     --format="%(HEAD) %(color:yellow bold)%(refname:short)%(color:reset) %(contents:subject) %(color:black bold)%(authoremail) %(committerdate:relative)" \
                     | awk "{\$1=\$1};1" | grep -Pv "^(\*\s+)"'
 
-    local git="git rebase --stat --no-autosquash --autostash"
-    while true; do
-        local value="$(
-            $SHELL -c "$select \
-            | $FZF \
-            --preview=\"$differ $branch | $DELTA \" \
-            --preview-window=\"left:`get_preview_width`:noborder\" \
-            --prompt=\"rebase $branch $state>  \" \
-            | cut -d ' ' -f 1
-        ")"
-        if [ ! "$value" ]; then
-            break
-
-        elif [ ! "$BUFFER" ]; then
-            run_show "git_fetch \"$value\" && $git \"$value\""
-            local retval=$?
-            git_widget_conflict_solver
-
-        elif [ "$value" ]; then
-            LBUFFER="$BUFFER && git fetch origin \"$value\":\"$value\" && $git \"$value\""
-        fi
-
+    local value="$(
+        $SHELL -c "$select \
+        | $FZF \
+        --preview=\"$differ $branch | $DELTA \" \
+        --preview-window=\"left:`get_preview_width`:noborder\" \
+        --prompt=\"rebase $branch $state>  \" \
+        | cut -d ' ' -f 1
+    ")"
+    if [ ! "$value" ]; then
         break
-    done
+    fi
+
+    local fetch_command="`cmd_git_fetch "$value"` && git rebase --stat --interactive --no-autosquash --autostash \"$value\""
+
+    if [ ! "$BUFFER" ]; then
+        LBUFFER=" $fetch_command"
+    else
+        LBUFFER="$BUFFER && $fetch_command"
+    fi
+
     zle reset-prompt
     return 0
 }
