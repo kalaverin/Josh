@@ -1,6 +1,7 @@
-add_newline = false
+right_format = ''
 scan_timeout = 50
 command_timeout = 3000
+add_newline = false
 
 [aws]
 format = ' @[$symbol($profile )(\($region\) )(\[$duration\])]($style)'
@@ -37,17 +38,14 @@ format = ' [$symbol($version)]($style)'
 format = ' [$symbol($version)]($style)'
 
 [directory]
-truncation_length = 3
-truncate_to_repo = true
-fish_style_pwd_dir_length = 2
+truncation_length = 4
+truncate_to_repo = false
+fish_style_pwd_dir_length = 0
 use_logical_path = true
-format = '[$path]($style)[$read_only]($read_only_style)[/](black bold)'
+format = '[$path]($style)[/](black bold)[$read_only]($read_only_style)'
 style = 'white bold'
 disabled = false
-read_only = '🔒'
 read_only_style = 'fg:black bg:red'
-truncation_symbol = ''
-home_symbol = '~'
 
 [directory.substitutions]
 
@@ -91,8 +89,8 @@ tag_disabled = false
 [git_metrics]
 added_style = 'bold green'
 deleted_style = 'bold red'
-format = '[+$added]($added_style)[-$deleted]($deleted_style)'
-# format = '[+$added]($added_style)[-$deleted]($deleted_style)'
+only_nonzero_diffs = true
+format = '[$added]($added_style)[$deleted]($deleted_style)'
 disabled = false
 
 [git_state]
