@@ -38,14 +38,15 @@ format = ' [$symbol($version)]($style)'
 format = ' [$symbol($version)]($style)'
 
 [directory]
-truncation_length = 4
 truncate_to_repo = false
-fish_style_pwd_dir_length = 0
-use_logical_path = true
+fish_style_pwd_dir_length = 2
 format = '[$path]($style)[/](black bold)[$read_only]($read_only_style)'
-style = 'white bold'
+style = 'white'
 disabled = false
-read_only_style = 'fg:black bg:red'
+read_only = 'RO'
+read_only_style = 'fg:white bold bg:red'
+repo_root_style = 'yellow'
+repo_root_format = '[$before_root_path]($style)[$repo_root]($repo_root_style)[$path]($style)[$read_only]($read_only_style)[/](black bold)'
 
 [directory.substitutions]
 
@@ -79,11 +80,11 @@ disabled = false
 
 [git_commit]
 commit_hash_length = 7
-format = '[$hash/$tag]($style)[/](black bold)'
+format = '[$hash$tag]($style)[/](black bold)'
 style = 'green bold'
 only_detached = true
 disabled = false
-tag_symbol = '+'
+tag_symbol = '/'
 tag_disabled = false
 
 [git_metrics]
@@ -94,11 +95,11 @@ format = '[$added]($added_style)[$deleted]($deleted_style)'
 disabled = false
 
 [git_state]
-rebase = 'REBASING'
-merge = 'MERGING'
-revert = 'REVERTING'
-cherry_pick = 'CHERRY-PICKING'
-bisect = 'BISECTING'
+rebase = 'REBASE'
+merge = 'MERGE'
+revert = 'REVERT'
+cherry_pick = 'PICK'
+bisect = 'BISECT'
 am = 'AM'
 am_or_rebase = 'AM/REBASE'
 style = 'bold yellow'
@@ -106,7 +107,7 @@ format = '\([$state( $progress_current/$progress_total)]($style)\)'
 disabled = false
 
 [git_status]
-format = '( [$all_status$ahead_behind]($style))'
+format = '([$all_status$ahead_behind]($style))'
 style = 'fg:white bold'
 stashed = ''
 ahead = '⇡'
@@ -238,6 +239,12 @@ signal_symbol = '⚡'
 style = 'bold red'
 map_symbol = false
 recognize_signal_code = true
+disabled = false
+
+[sudo]
+format = ' [$symbol]($style)'
+style = 'fg:white bold bg:red'
+symbol = 'SUDO'
 disabled = false
 
 [swift]
