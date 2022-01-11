@@ -244,7 +244,7 @@ disabled = false
 [sudo]
 format = ' [$symbol]($style)'
 style = 'fg:white bold bg:red'
-symbol = 'SUDO'
+symbol = 'SU'
 disabled = false
 
 [swift]
