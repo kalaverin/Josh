@@ -215,7 +215,7 @@ function virtualenv_create {
     fi
     echo "$msg"
 
-    run_show "builtin cd "$envs" && $pip --python=$exe "$venv" && source $venv/bin/activate && pip install pipdeptree $pkg && builtin cd $cwd"
+    run_show "builtin cd "$envs" && $pip --python=$exe "$venv" && source $venv/bin/activate && pip install --quiet pipdeptree $pkg && builtin cd $cwd"
 }
 
 function virtualenv_temporary_create {
