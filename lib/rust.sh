@@ -214,6 +214,8 @@ function cargo_init() {
             echo " - fatal: cargo \`$CARGO_BIN\` isn't installed"
             return 127
         fi
+    else
+        echo " + info: `$CARGO_BIN --version` in \`$CARGO_BIN\` detected"
     fi
 
     export PATH="$CARGO_BINARIES:$PATH"
