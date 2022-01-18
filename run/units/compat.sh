@@ -98,8 +98,9 @@ function check_compliance() {
         export JOSH_OS="BSD"
 
         local cmd="sudo pkg install -y"
-        local pkg="zsh git coreutils gnugrep gnuls gsed gtar openssl pkgconf python39"
+        local pkg="zsh git bash coreutils gnugrep gnuls gsed gtar openssl pkgconf python39"
         REQ_SYS_BINS=(
+            bash
             pkg
             /usr/local/bin/gcut
             /usr/local/bin/gnuls
@@ -119,8 +120,9 @@ function check_compliance() {
         fi
 
         local cmd="brew update && brew install"
-        local pkg="zsh git coreutils grep gsed gtar openssl pkg-config python@3"
+        local pkg="zsh git bash coreutils grep gsed gtar openssl pkg-config python@3"
         REQ_SYS_BINS=(
+            bash
             brew
             /usr/local/bin/ggrep
             /usr/local/bin/gcut
