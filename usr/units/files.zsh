@@ -6,7 +6,10 @@ function bak {
         return 1
     fi
 
-    local source="`fs_basename "$PWD"`"
+    local root="`git_root`"
+    [ -z "$root" ] && local root="$PWD"
+
+    local source="`fs_basename "$root"`"
     [ "$?" -gt 0 ] && return 1
 
     local timemark="`date "+%Y.%m.%d"`"
