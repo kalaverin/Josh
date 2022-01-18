@@ -34,6 +34,7 @@ PIP_REQ_PACKAGES=(
 PIP_OPT_PACKAGES=(
     mycli      # python-driver MySQL client
     pgcli      # python-driver PostgreSQL client
+    paramiko   # for ssh tunnels with mycli & pgcli
     nodeenv    # virtual environments for node packaging
     tmuxp      # tmux session manager
 )
