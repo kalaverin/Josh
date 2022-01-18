@@ -201,11 +201,13 @@ function virtualenv_create {
         return 4
     fi
 
-    local pip="`which virtualenv`"
-    if [ ! -x "$pip" ]; then
+    local venv_exe="`which virtualenv`"
+    if [ ! -x "$venv_exe" ]; then
         . $JOSH/lib/python.sh && pip_init
-        if [ $? -gt 0 ]; then
+        local venv_exe="`which virtualenv`"
+        if [ $? -gt 0 ] || [ ! -x "$venv_exe" ]; then
             echo " - virtualenv detect something wrong" 1>&2
+            return 5
         fi
     fi
 
@@ -215,7 +217,7 @@ function virtualenv_create {
     fi
     echo "$msg"
 
-    run_show "builtin cd "$envs" && $pip --python=$exe "$venv" && source $venv/bin/activate && pip install --quiet pipdeptree $pkg && builtin cd $cwd"
+    run_show "builtin cd "$envs" && $venv_exe --python=$exe "$venv" && source $venv/bin/activate && pip install --quiet pipdeptree $pkg && builtin cd $cwd"
 }
 
 function virtualenv_temporary_create {
