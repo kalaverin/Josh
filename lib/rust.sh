@@ -210,12 +210,12 @@ function cargo_init() {
 
         $SHELL -c "$HTTP_GET $url" | RUSTUP_HOME="$HOME/.rustup" CARGO_HOME="`fs_dirname $CARGO_BINARIES`" RUSTUP_INIT_SKIP_PATH_CHECK=yes $SHELL -s - --profile minimal --no-modify-path --quiet -y
 
-        if [ $? -gt 0 ] || [ ! -x "$CARGO_BIN" ]; then
+        if [ ! -x "$CARGO_BIN" ] || [ $? -gt 0 ]; then
             echo " - fatal: cargo \`$CARGO_BIN\` isn't installed"
             return 127
+        else
+            echo " + info: `$CARGO_BIN --version` in \`$CARGO_BIN\` installed"
         fi
-    else
-        echo " + info: `$CARGO_BIN --version` in \`$CARGO_BIN\` detected"
     fi
 
     export PATH="$CARGO_BINARIES:$PATH"
