@@ -245,6 +245,37 @@ function mktp {
     mkcd "`get_tempdir`/pets/`make_human_name`"
 }
 
+function shortcut- {
+    [ -z "$ZSH" ] || [ -z "$1" ] && return 1
+
+    local dir="$JOSH/bin"
+
+    if [[ "$1" =~ "/" ]]; then
+        echo " - $0 fatal: shortcut \`$1\` couldn't contains slashes" >&2
+        return 1
+    fi
+
+    local src="$dir/$1"
+
+    if [ ! -h "$src" ]; then
+        echo " - $0 fatal: shortcut \`$src\` isn't symbolic link" >&2
+        return 2
+    else
+
+        local dst="`fs_readlink $src`"
+        unlink "$src"
+        local ret="$?"
+
+        if [ "$ret" -eq 0 ]; then
+            echo " + $0 info: unlink shortcut \`$src\` -> \`$dst\`" >&2
+        else
+            echo " - $0 fatal: unlink shortcut \`$src\` -> \`$dst\` failed: $ret" >&2
+            return "$ret"
+        fi
+    fi
+}
+
+
 # ———
 
 fchmod() {
