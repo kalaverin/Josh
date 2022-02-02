@@ -66,7 +66,7 @@ function cmd_git_pull_merge() {
 
 # core functions
 
-git_root() {
+function git_root() {
     local result="`$SHELL -c "$GET_ROOT" 2>/dev/null`"
     if [ "$result" ]; then
         local result=$(realpath --quiet `$SHELL -c "$GET_ROOT" 2>/dev/null`)
@@ -74,12 +74,12 @@ git_root() {
     fi
 }
 
-git_current_hash() {
+function git_current_hash() {
     local result="`$SHELL -c "$GET_HASH"`"
     [ "$result" ] && echo "$result"
 }
 
-git_current_branch() {
+function git_current_branch() {
     local result="`$SHELL -c "$GET_BRANCH"`"
     if [ "$result" = "HEAD" ]; then
         if [ ! "`git name-rev --name-only HEAD 2>&1 | grep -Pv '^(Could not get sha1)'`" ]; then
@@ -90,7 +90,7 @@ git_current_branch() {
     [ -n "$result" ] && echo "$result"
 }
 
-get_repository_state() {
+function get_repository_state() {
     local root="`git_root 2>/dev/null`"
     [ -z "$root" ] && return 1
 
@@ -109,6 +109,20 @@ get_repository_state() {
 }
 
 # just functions
+
+function git_rewind_time() {
+    local root="`git_root 2>/dev/null`"
+    [ -z "$root" ] && return 1
+
+    local bin="`which git-warp-time`"
+    [ ! -x "$bin" ] && return 2
+
+    local cwd="$PWD"
+    builtin cd "$root" && $bin
+    local retval="$?"
+    builtin cd "$cwd"
+    return "$retval"
+}
 
 function git_branch_delete() {
     if [ -z "$1" ]; then
