@@ -822,12 +822,12 @@ git_widget_rebase_branch() {
         break
     fi
 
-    local fetch_command="`cmd_git_fetch "$value"` && git rebase --stat --interactive --no-autosquash --autostash \"$value\""
+    local command="`cmd_git_fetch "$value"` && git rebase --stat --interactive --no-autosquash --autostash --onto \"$value\" \"$value\""
 
     if [ ! "$BUFFER" ]; then
-        LBUFFER=" $fetch_command"
+        LBUFFER=" $command"
     else
-        LBUFFER="$BUFFER && $fetch_command"
+        LBUFFER="$BUFFER && $command"
     fi
 
     zle reset-prompt
