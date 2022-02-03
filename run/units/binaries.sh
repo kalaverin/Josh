@@ -139,7 +139,7 @@ function link_fpp() {
 
     if [ -x "$src/fpp" ]; then
         local dst="`shortcut "$src/fpp"`"
-        if [ -z "$dst" ] || [ "$?" -gt 0 ]; then
+        if [ -z "$dst" ]; then
             local retval="127"
         else
             echo " * $0 found: fpp -> $dst"
@@ -168,7 +168,7 @@ function link_git_tools() {
         do
             if [ -x "$exe" ]; then
                 local dst="`shortcut "$exe"`"
-                if [ -z "$dst" ] || [ "$?" -gt 0 ]; then
+                if [ -z "$dst" ]; then
                     local retval="127"
                 else
                     echo " * $0 found: exe -> $dst"
