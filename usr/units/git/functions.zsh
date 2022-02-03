@@ -231,14 +231,18 @@ function git_pull() {
     local cmd="`cmd_git_pull $@`"
     [ -z "$cmd" ] && return 1
     run_show "$cmd" 2>&1 | grep -v 'up to date'
-    return $?
+    local retval="$?"
+    git_root_rewind 2>&1
+    return "$retval"
 }
 
 function git_pull_merge() {
     local cmd="`cmd_git_pull_merge $@`"
     [ -z "$cmd" ] && return 1
     run_show "$cmd" 2>&1 | grep -v 'up to date'
-    return $?
+    local retval="$?"
+    git_root_rewind 2>&1
+    return "$retval"
 }
 
 function git_pull_reset() {
@@ -264,6 +268,15 @@ function git_push_force() {
     [ -z "$branch" ] && return 1
     run_show "git push --force origin $branch"
     return $?
+}
+
+function git_root_rewind() {
+    local root="`git_root 2>/dev/null`"
+    [ -z "$root" ] && return 1
+
+    if [ -x "`which git-restore-mtime`" ]; then
+        git-restore-mtime --skip-missing --quiet --work-tree "$root/" --git-dir "$root/.git/"
+    fi
 }
 
 function git_repository_clean() {
