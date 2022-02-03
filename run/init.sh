@@ -67,6 +67,7 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
 
     if [ "$JOSH_OS" = 'BSD' ] || [ "$JOSH_OS" = 'MAC' ]; then
         shortcut 'cut'       '/usr/local/bin/gcut'      >/dev/null
+        shortcut 'find'      '/usr/local/bin/gfind'     >/dev/null
         shortcut 'head'      '/usr/local/bin/ghead'     >/dev/null
         shortcut 'readlink'  '/usr/local/bin/greadlink' >/dev/null
         shortcut 'realpath'  '/usr/local/bin/grealpath' >/dev/null
