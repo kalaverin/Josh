@@ -30,7 +30,7 @@ function bak {
     local source="`fs_basename "$root"`"
     [ "$?" -gt 0 ] && return 1
 
-    local timemark="`date "+%Y.%m.%d"`"
+    local timemark="`date "+%Y.%m.%d-%H.%M.%S"`"
     [ "$?" -gt 0 ] && return 2
 
     local target="`get_tempdir`/baks/$source"
