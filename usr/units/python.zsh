@@ -217,7 +217,13 @@ function virtualenv_create {
     fi
     echo "$msg"
 
-    run_show "builtin cd "$envs" && $venv_exe --python=$exe "$venv" && source $venv/bin/activate && pip install --quiet pipdeptree $pkg && builtin cd $cwd"
+    if [[ "$ver" =~ "^2" ]]; then
+        local venv_arg='--pip="20.3.4"'
+    else
+        local pip_arg='pip setuptools wheel'
+    fi
+
+    run_show "builtin cd "$envs" && $venv_exe --python=$exe $venv_arg "$venv" && source $venv/bin/activate && pip install --upgrade --upgrade-strategy=eager pipdeptree $pip_arg $pkg && builtin cd $cwd"
 }
 
 function virtualenv_temporary_create {
