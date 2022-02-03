@@ -266,7 +266,7 @@ fi
 
 
 function mktp {
-    mkcd "`get_tempdir`/pets/`make_human_name`"
+    mkcd "`get_tempdir`/pet/`make_human_name`"
 }
 
 function shortcut- {
