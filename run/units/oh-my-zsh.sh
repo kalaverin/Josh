@@ -47,7 +47,7 @@ PACKAGES=(
     "https://github.com/zsh-users/zsh-autosuggestions $OMZ_PLUGIN_DIR/zsh-autosuggestions"
     "https://github.com/zsh-users/zsh-completions $OMZ_PLUGIN_DIR/zsh-completions"
     "https://github.com/zsh-users/zsh-syntax-highlighting.git $OMZ_PLUGIN_DIR/zsh-syntax-highlighting"
-    "https://github.com/MestreLion/git-tools.git" $OMZ_PLUGIN_DIR/git-tools
+    "https://github.com/MestreLion/git-tools.git $OMZ_PLUGIN_DIR/git-tools"
 )
 
 
