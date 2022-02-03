@@ -135,11 +135,16 @@ function link_fpp() {
         echo " + $0 deploy fpp to \`$OMZ_PLUGIN_DIR\` and make shortcut"
         git clone --depth 1 "https://github.com/facebook/PathPicker.git" "$src"
     fi
+    local retval="$?"
 
     if [ -x "$src/fpp" ]; then
-        shortcut "$src/fpp"
+        local dst="`shortcut "$src/fpp"`"
+        if [ -z "$dst" ] || [ "$?" -gt 0 ]; then
+            local retval="127"
+        else
+            echo " * $0 found: fpp -> $dst"
+        fi
     fi
-    local retval="$?"
 
     [ "$retval" -gt 0 ] && echo " - $0 fatal: fpp"
     return "$retval"
@@ -162,8 +167,12 @@ function link_git_tools() {
         find "$src" -maxdepth 1 -type f -executable | while read exe
         do
             if [ -x "$exe" ]; then
-                # shortcut "$exe"
-                echo "$0 >$exe<"
+                local dst="`shortcut "$exe"`"
+                if [ -z "$dst" ] || [ "$?" -gt 0 ]; then
+                    local retval="127"
+                else
+                    echo " * $0 found: exe -> $dst"
+                fi
             fi
         done
     fi
