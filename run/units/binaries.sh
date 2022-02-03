@@ -134,8 +134,8 @@ function link_fpp() {
     elif [ ! -d "$src" ]; then
         echo " + $0 deploy fpp to \`$OMZ_PLUGIN_DIR\` and make shortcut"
         git clone --depth 1 "https://github.com/facebook/PathPicker.git" "$src"
+        local retval="$?"
     fi
-    local retval="$?"
 
     if [ -x "$src/fpp" ]; then
         local dst="`shortcut "$src/fpp"`"
@@ -160,8 +160,8 @@ function link_git_tools() {
     elif [ ! -d "$src" ]; then
         echo " + $0 deploy git-tools to \`$OMZ_PLUGIN_DIR\` and make shortcut"
         git clone --depth 1 "https://github.com/MestreLion/git-tools.git" "$src"
+        local retval="$?"
     fi
-    local retval="$?"
 
     if [ -d "$src" ]; then
         find "$src" -maxdepth 1 -type f -executable | while read exe
@@ -187,6 +187,5 @@ function deploy_binaries() {
     deploy_tmux_plugins && \
     compile_ondir && \
     link_fpp && \
-    link_git_tools && \
-    return "$?"
+    link_git_tools || return "$?"
 }
