@@ -185,8 +185,8 @@ function deploy_binaries() {
     compile_fzf && \
     deploy_micro && \
     deploy_tmux_plugins && \
+    compile_ondir && \
     link_fpp && \
-    compile_ondir
-    link_git_tools
+    link_git_tools && \
     return "$?"
 }

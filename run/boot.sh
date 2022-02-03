@@ -256,6 +256,7 @@ function shortcut() {
         ln -s "$dst" "$src"
     fi
     echo "$dst"
+    return 0
 }
 
 
