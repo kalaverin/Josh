@@ -89,13 +89,17 @@ bindkey "\eO3B"   insert-cycledright
 # bindkey "\e\e" clear-screen  # esc-esc clears the screen
 # bindkey '\e '
 
-bindkey -s '\el' 'pwd; l\n'
 
 # process management
-bindkey '\e\'  ps_widget    # just select multuple pids and append to command line
-bindkey '^\'   term_widget  # terminate pids
-bindkey '\e^\' kill_widget  # kill pids
-bindkey "\ek"  term_last    # send SIGTERM to last pid
+
+#              alt-l, just select multuple pids and append to command line
+bindkey "\el"  ps_widget
+#              shift-alt-l, send SIGTERM to last PID
+bindkey "^[L"  term_last
+#              ctrl-l, select and terminate
+bindkey "^l"   term_widget
+#              ctrl-alt-l, select and kill
+bindkey "\e^l" kill_widget
 
 # misc
 bindkey "\e0"  commit_text          # generate and paste dumb commit message
@@ -117,5 +121,7 @@ bindkey '\eC'  visual_warp_chdir
 
 bindkey '\em'  pip_visual_freeze
 # bindkey '\ed'  history-search-multi-word
+
+bindkey -s '\e^\' 'pwd; l\n'
 
 fi

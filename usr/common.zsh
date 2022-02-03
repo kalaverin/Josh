@@ -496,8 +496,10 @@ function term_widget() {
     )"
     while true; do
         if [[ "$pids" != "" ]]; then
-            sh -c "kill -15 $pids"
-            return 0
+            run_show "kill -15 $pids"
+            echo ""
+            zle redisplay
+            return "$?"
         else
             zle reset-prompt
             return 0
@@ -521,8 +523,10 @@ function kill_widget() {
     )"
     while true; do
         if [[ "$pids" != "" ]]; then
-            sh -c "kill -9 $pids"
-            return 0
+            run_show "kill -9 $pids"
+            echo ""
+            zle redisplay
+            return "$?"
         else
             zle reset-prompt
             return 0
