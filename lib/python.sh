@@ -215,7 +215,7 @@ function pip_install() {
     python_check || return "$?"
 
     local venv="`venv_deactivate`"
-    local pip="PIP_REQUIRE_VIRTUALENV=false $JOSH_PIP install --disable-pip-version-check --no-input --no-python-version-warning --no-warn-conflicts --no-warn-script-location --compile --user"
+    local pip="PIP_REQUIRE_VIRTUALENV=false $JOSH_PIP install --progress-bar=pretty --disable-pip-version-check --no-input --no-python-version-warning --no-warn-conflicts --no-warn-script-location --compile --user"
 
     $SHELL -c "$pip --upgrade --upgrade-strategy=eager $@"
     local retval="$?"
