@@ -1,8 +1,26 @@
 source "$JOSH/lib/shared.sh"
 
+
+function backup_file_get {
+    local backup="$BAK_RESTORE"
+    if [ "$backup" = "" ]; then
+        echo " - $0 fatal: BAK_RESTORE isn't set" 1>&2
+        return 1
+
+    elif [ -z "$JOSH_PAQ" ] || [ -z "$JOSH_QAP" ]; then
+        echo " - $0 fatal: zstd, xz, lz4 and gzip doesn't exists" 1>&2
+        return 2
+    fi
+    echo "$backup"
+}
+
+
 function bak {
     if [ -f "$BAK_RESTORE" ]; then
         echo " * backup already found: $BAK_RESTORE"
+
+    elif [ -z "$JOSH_PAQ" ] || [ -z "$JOSH_QAP" ]; then
+        echo " - fatal: zstd, xz, lz4 and gzip doesn't exists" 1>&2
         return 1
     fi
 
@@ -21,51 +39,32 @@ function bak {
     local backup="$target/$timemark-`make_human_name`.tar"
     [ "$?" -gt 0 ] && return 4
 
-    local threads_count="`cpu_cores_count`"
-    [ "$?" -gt 0 ] && local threads_count="0"
-
-    run_show "mkdir -p \"$target\" 2>/dev/null; tar -cO --exclude-vcs . | xz -1 -T$threads_count > $backup"
-    echo " => xzcat $backup | tar -x"
+    run_show "mkdir -p \"$target\" 2>/dev/null; tar -cO --exclude-vcs . | $JOSH_PAQ > $backup"
+    echo " => cat $backup | $JOSH_QAP | tar -x"
     export BAK_RESTORE="$backup"
 }
 
 function kab {
-    local backup="$BAK_RESTORE"
-    if [ "$backup" = "" ]; then
-        echo " * backup path isn't set"
-        return 1
-    fi
+    local backup="`backup_file_get 2>/dev/null`"
+    [ -z "$backup" ] && return "$?"
 
-    git_repository_clean
-    if [ $? -gt 0 ]; then
-        return 1
-    fi
+    git_repository_clean || return "$?"
 
-    run_show "xzcat $backup | tar -x"
-    if [ $? -gt 0 ]; then
-        return 1
-    fi
+    run_show "cat $backup | $JOSH_QAP | tar -x" && return 0
+    return "$?"
 }
 
-function kabforce {
-    local backup="$BAK_RESTORE"
-    if [ "$backup" = "" ]; then
-        echo " * backup path isn't set"
-        return 1
-    fi
+function kabf {
+    local backup="`backup_file_get 2>/dev/null`"
+    [ -z "$backup" ] && return "$?"
 
-    run_show "xzcat $backup | tar -x"
-    if [ $? -gt 0 ]; then
-        return 1
-    fi
+    run_show "cat $backup | $JOSH_QAP | tar -x" && return 0
+    return "$?"
 }
 
 function bakrm {
-    local backup="$BAK_RESTORE"
-    if [ "$backup" = "" ]; then
-        echo " * backup path isn't set"
-        return 1
-    fi
+    local backup="`backup_file_get 2>/dev/null`"
+    [ -z "$backup" ] && return "$?"
 
     if [ -x "`which rip`" ]; then
         local exe="`which rip`"
@@ -75,5 +74,5 @@ function bakrm {
     fi
 
     run_show "$cmd"
-    export BAK_RESTORE=""
+    unset BAK_RESTORE
 }
