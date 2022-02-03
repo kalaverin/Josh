@@ -70,7 +70,7 @@ function run_hide() {
 }
 
 
-last_modified() {
+function last_modified() {
     local args="$*"
     [ -x "$1" ] && local args="`fs_realpath $1` ${@:2}"
     local cmd="find $args -printf \"%T@ %p\n\" | sort -n | tail -n 1"

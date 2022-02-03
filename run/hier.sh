@@ -24,7 +24,7 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
         echo "$result"
     }
 
-    function pathprune() {
+    function path_prune() {
         local unified_path="$(
             echo "$path" | sed 's#:#\n#' | sed "s:^~/:$HOME/:" | \
             xargs -n 1 realpath 2>/dev/null | awk '!x[$0]++' | \

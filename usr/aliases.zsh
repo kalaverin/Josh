@@ -2,7 +2,7 @@ alias cp='cp -iR'  # prompt on overwrite and use recurse for directories
 alias mv='mv -i'
 alias tt='tail -f -n 100'
 alias svc='service'
-alias sudo='sudo -H'  # this is Ubuntu behavior: never do not translate user env to sudo context!
+alias sudo='sudo -H'  # this is Ubuntu behavior: never send user env to sudo context!
 
 # ———
 
@@ -241,6 +241,28 @@ if [ "$count" -gt 0 ]; then
 fi
 
 
+if [ -x "`which zstd`" ]; then
+    export JOSH_PAQ="`which zstd` -0 -T0"
+    export JOSH_QAP="`which zstd` -d"
+
+elif [ -x "`which xz`" ] && [ -x "`which xzcat`" ]; then
+    export JOSH_PAQ="`which xz` -0 -T0"
+    export JOSH_QAP="`which xzcat`"
+
+elif [ -x "`which lz4`" ] && [ -x "`which lz4cat`" ]; then
+    export JOSH_PAQ="`which lz4` -1"
+    export JOSH_QAP="`which lz4cat`"
+
+elif [ -x "`which gzip`" ] && [ -x "`which zcat`" ]; then
+    export JOSH_PAQ="`which gzip` -1"
+    export JOSH_QAP="`which zcat`"
+
+else
+    echo " - fatal: zstd, xz, lz4 and gzip doesn't exists" 1>&2
+    return 127
+fi
+
+
 function mktp {
     mkcd "`get_tempdir`/pets/`make_human_name`"
 }
@@ -293,4 +315,4 @@ rchgrp() {
     find $2 ( -not -group $1 ) -print -exec chgrp $1 {} ;
 }
 
-pathprune
+path_prune

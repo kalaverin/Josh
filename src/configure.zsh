@@ -17,7 +17,7 @@ fi
 source "$JOSH/lib/python.sh" && python_env
 source "$JOSH/lib/rust.sh" && rust_env
 
-pathprune
+path_prune
 
 # JOSH_PY_ENVS_ROOT
 # directory for permanent virtualenvs maded by virtualenv_create
