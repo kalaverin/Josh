@@ -36,8 +36,9 @@ function pull_update() {
                 if [ "$?" -gt 0 ] || [ "`git status --porcelain=v1 &>>/dev/null | wc -l`" -gt 0 ]; then
                     echo " - fatal: \``pwd`\` is dirty, couldn't automatic fast forward"
                     local retval=2
-                elif [ -x "`which git-warp-time`" ]; then
-                    git-warp-time --quiet
+
+                elif [ -x "`which git-restore-mtime`" ]; then
+                    git-restore-mtime --skip-missing --quiet
                 fi
             else
                 echo " - fatal: \``pwd`\` is dirty, pull failed"

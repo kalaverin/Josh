@@ -374,8 +374,11 @@ function git_update_nested_repositories() {
                 echo "  + $branch reset and pull"
             fi
         fi
-        git restore-mtime --verbose
-        # git_rewind_time
+
+        if [ -x "`which git-restore-mtime`" ]; then
+            git-restore-mtime --skip-missing
+        fi
+
         builtin cd "${cwd}"
     done
 }

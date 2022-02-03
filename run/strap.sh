@@ -26,8 +26,9 @@ function prepare_and_deploy() {
     if [ "$?" -gt 0 ] || [ "`git status --porcelain=v1 &>>/dev/null | wc -l`" -gt 0 ]; then
         echo " - fatal: \`$BASE\` is dirty, couldn't automatic fast forward"
         return 3
-    elif [ -x "`which git-warp-time`" ]; then
-        git-warp-time --quiet
+
+    elif [ -x "`which git-restore-mtime`" ]; then
+        git-restore-mtime --skip-missing --quiet
     fi
 
     echo " + works in \``pwd`\`" && \
