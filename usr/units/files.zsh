@@ -33,7 +33,7 @@ function bak {
     local timemark="`date "+%Y.%m.%d-%H.%M.%S"`"
     [ "$?" -gt 0 ] && return 2
 
-    local target="`get_tempdir`/baks/$source"
+    local target="`get_tempdir`/bak/$source"
     [ "$?" -gt 0 ] && return 3
 
     local backup="$target/$timemark-`make_human_name`.tar"
