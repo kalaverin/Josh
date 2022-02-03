@@ -110,20 +110,6 @@ function get_repository_state() {
 
 # just functions
 
-function git_rewind_time() {
-    local root="`git_root 2>/dev/null`"
-    [ -z "$root" ] && return 1
-
-    local bin="`which git-warp-time`"
-    [ ! -x "$bin" ] && return 2
-
-    local cwd="$PWD"
-    builtin cd "$root" && $bin
-    local retval="$?"
-    builtin cd "$cwd"
-    return "$retval"
-}
-
 function git_branch_delete() {
     if [ -z "$1" ]; then
         echo " - $0: branch name required" 1>&2
