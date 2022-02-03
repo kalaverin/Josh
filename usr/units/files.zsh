@@ -39,7 +39,7 @@ function bak {
     local backup="$target/$timemark-`make_human_name`.tar"
     [ "$?" -gt 0 ] && return 4
 
-    run_show "mkdir -p \"$target\" 2>/dev/null; tar -cO --exclude-vcs . | $JOSH_PAQ > $backup"
+    run_show "mkdir -p \"$target\" 2>/dev/null; tar -cO --exclude-vcs --numeric-owner --sparse . | $JOSH_PAQ > $backup"
     echo " => cat $backup | $JOSH_QAP | tar -x"
     export BAK_RESTORE="$backup"
 }
@@ -50,7 +50,7 @@ function kab {
 
     git_repository_clean || return "$?"
 
-    run_show "cat $backup | $JOSH_QAP | tar -x" && return 0
+    run_show "cat $backup | $JOSH_QAP | tar -x --numeric-owner --preserve-permissions" && return 0
     return "$?"
 }
 
@@ -58,7 +58,7 @@ function kabf {
     local backup="`backup_file_get 2>/dev/null`"
     [ -z "$backup" ] && return "$?"
 
-    run_show "cat $backup | $JOSH_QAP | tar -x" && return 0
+    run_show "cat $backup | $JOSH_QAP | tar -x --numeric-owner --preserve-permissions" && return 0
     return "$?"
 }
 
