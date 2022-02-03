@@ -232,7 +232,7 @@ function git_pull() {
     [ -z "$cmd" ] && return 1
     run_show "$cmd" 2>&1 | grep -v 'up to date'
     local retval="$?"
-    git_root_rewind 2>&1
+    git_rewind_time 2>&1
     return "$retval"
 }
 
@@ -241,7 +241,7 @@ function git_pull_merge() {
     [ -z "$cmd" ] && return 1
     run_show "$cmd" 2>&1 | grep -v 'up to date'
     local retval="$?"
-    git_root_rewind 2>&1
+    git_rewind_time 2>&1
     return "$retval"
 }
 
@@ -270,7 +270,7 @@ function git_push_force() {
     return $?
 }
 
-function git_root_rewind() {
+function git_rewind_time() {
     local root="`git_root 2>/dev/null`"
     [ -z "$root" ] && return 1
 
