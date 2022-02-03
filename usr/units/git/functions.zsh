@@ -374,6 +374,7 @@ function git_update_nested_repositories() {
                 echo "  + $branch reset and pull"
             fi
         fi
+        git_rewind_time
         builtin cd "${cwd}"
     done
 }
