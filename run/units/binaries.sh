@@ -124,37 +124,60 @@ function deploy_tmux_plugins() {
 }
 
 
-function deploy_fpp() {
-    [ ! -d "$BINARY_DEST" ] && mkdir -p "$BINARY_DEST"
-
-    if [ -x "$BINARY_DEST/fpp" ]; then
-        return 0
-    fi
+function link_fpp() {
+    local src="$OMZ_PLUGIN_DIR/fpp"
 
     if [ -z "$OMZ_PLUGIN_DIR" ]; then
-        echo " - warning by fpp: plugins dir isn't detected, BINARY_DEST:\`$BINARY_DEST\`"
+        echo " - $0 warning by fpp: plugins dir isn't detected"
         return 1
 
-    elif [ ! -d "$OMZ_PLUGIN_DIR/fpp" ]; then
-        echo " + deploy fpp in \`$OMZ_PLUGIN_DIR\` and link to \`$BINARY_DEST\`"
-        git clone --depth 1 "https://github.com/facebook/PathPicker.git" "$OMZ_PLUGIN_DIR/fpp"
+    elif [ ! -d "$src" ]; then
+        echo " + $0 deploy fpp to \`$OMZ_PLUGIN_DIR\` and make shortcut"
+        git clone --depth 1 "https://github.com/facebook/PathPicker.git" "$src"
     fi
 
-    if [ -x "$OMZ_PLUGIN_DIR/fpp/fpp" ] && [ ! -x "$BINARY_DEST/fpp" ]; then
-        cp "$OMZ_PLUGIN_DIR/fpp/fpp" "$BINARY_DEST/fpp"
+    if [ -x "$src/fpp" ]; then
+        shortcut "$src/fpp"
     fi
     local retval="$?"
 
-    [ "$retval" -gt 0 ] && echo " - warning: failed fpp $BINARY_DEST/fpp"
+    [ "$retval" -gt 0 ] && echo " - $0 fatal: fpp"
     return "$retval"
 }
 
+function link_git_tools() {
+    local src="$OMZ_PLUGIN_DIR/git-tools"
+
+    if [ -z "$OMZ_PLUGIN_DIR" ]; then
+        echo " - $0 warning by git-tools: plugins dir isn't detected"
+        return 1
+
+    elif [ ! -d "$src" ]; then
+        echo " + $0 deploy git-tools to \`$OMZ_PLUGIN_DIR\` and make shortcut"
+        git clone --depth 1 "https://github.com/MestreLion/git-tools.git" "$src"
+    fi
+    local retval="$?"
+
+    if [ -d "$src" ]; then
+        find "$src" -maxdepth 1 -type f -executable | while read exe
+        do
+            if [ -x "$exe" ]; then
+                # shortcut "$exe"
+                echo "$0 >$exe<"
+            fi
+        done
+    fi
+
+    [ "$retval" -gt 0 ] && echo " - $0 fatal: git-tools"
+    return "$retval"
+}
 
 function deploy_binaries() {
     compile_fzf && \
     deploy_micro && \
     deploy_tmux_plugins && \
-    deploy_fpp && \
+    link_fpp && \
     compile_ondir
+    link_git_tools
     return "$?"
 }
