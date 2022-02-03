@@ -171,7 +171,7 @@ function link_git_tools() {
                 if [ -z "$dst" ]; then
                     local retval="127"
                 else
-                    echo " * $0 found: exe -> $dst"
+                    echo " * $0 found: `fs_basename "$dst"` -> $dst"
                 fi
             fi
         done
