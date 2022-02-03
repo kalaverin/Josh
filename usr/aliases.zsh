@@ -245,19 +245,21 @@ if [ -x "`which zstd`" ]; then
     export JOSH_PAQ="`which zstd` -0 -T0"
     export JOSH_QAP="`which zstd` -d"
 
+elif [ -x "`which lz4`" ] && [ -x "`which lz4cat`" ]; then
+    export JOSH_PAQ="`which lz4` -1 - -"
+    export JOSH_QAP="`which lz4` -d - -"
+
 elif [ -x "`which xz`" ] && [ -x "`which xzcat`" ]; then
     export JOSH_PAQ="`which xz` -0 -T0"
     export JOSH_QAP="`which xzcat`"
-
-elif [ -x "`which lz4`" ] && [ -x "`which lz4cat`" ]; then
-    export JOSH_PAQ="`which lz4` -1"
-    export JOSH_QAP="`which lz4cat`"
 
 elif [ -x "`which gzip`" ] && [ -x "`which zcat`" ]; then
     export JOSH_PAQ="`which gzip` -1"
     export JOSH_QAP="`which zcat`"
 
 else
+    unset JOSH_PAQ
+    unset JOSH_QAP
     echo " - fatal: zstd, xz, lz4 and gzip doesn't exists" 1>&2
     return 127
 fi
