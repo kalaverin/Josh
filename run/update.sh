@@ -69,13 +69,13 @@ function update_packages() {
     source "$JOSH/run/units/oh-my-zsh.sh" &&
     deploy_extensions
 
-    source "$JOSH/lib/rust.sh" && \
-    cargo_install "$CARGO_REQ_PACKAGES"
-    cargo_update
-
     source "$JOSH/lib/python.sh" && \
     pip_install "$PIP_REQ_PACKAGES"
     pip_update
+
+    source "$JOSH/lib/rust.sh" && \
+    cargo_install "$CARGO_REQ_PACKAGES"
+    cargo_update
 }
 
 function deploy_extras() {
