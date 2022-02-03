@@ -142,7 +142,7 @@ function link_fpp() {
         if [ -z "$dst" ]; then
             local retval="127"
         else
-            echo " * $0 found: fpp -> $dst"
+            echo " * $0: fpp -> $dst"
         fi
     fi
 
@@ -171,7 +171,7 @@ function link_git_tools() {
                 if [ -z "$dst" ]; then
                     local retval="127"
                 else
-                    echo " * $0 found: `fs_basename "$dst"` -> $dst"
+                    echo " * $0: `fs_basename "$dst"` -> $dst"
                 fi
             fi
         done
