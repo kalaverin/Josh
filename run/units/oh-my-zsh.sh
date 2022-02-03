@@ -42,7 +42,7 @@ PACKAGES=(
     "https://github.com/TamCore/autoupdate-oh-my-zsh-plugins $OMZ_PLUGIN_DIR/autoupdate"
     "https://github.com/trapd00r/zsh-syntax-highlighting-filetypes.git $OMZ_PLUGIN_DIR/zsh-syntax-highlighting-filetypes"
     "https://github.com/wfxr/forgit.git $OMZ_PLUGIN_DIR/forgit"
-    "https://github.com/matthewnessworthy/history-search-multi-word.git $OMZ_PLUGIN_DIR/history-search-multi-word"
+    "https://github.com/zdharma-continuum/history-search-multi-word.git $OMZ_PLUGIN_DIR/history-search-multi-word"
     "https://github.com/zlsun/solarized-man.git $OMZ_PLUGIN_DIR/solarized-man"
     "https://github.com/zsh-users/zsh-autosuggestions $OMZ_PLUGIN_DIR/zsh-autosuggestions"
     "https://github.com/zsh-users/zsh-completions $OMZ_PLUGIN_DIR/zsh-completions"
