@@ -107,10 +107,6 @@ function deploy_extensions() {
                     fi
                 fi
             else
-                if [ -x "`which git-restore-mtime`" ]; then
-                    git-restore-mtime --skip-missing --work-tree "$dst/" --git-dir "$dst/.git/"
-                fi
-
                 local verb='skip fresh'
             fi
         fi
