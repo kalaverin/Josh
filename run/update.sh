@@ -36,6 +36,7 @@ function pull_update() {
                 if [ "$?" -gt 0 ] || [ "`git status --porcelain=v1 &>>/dev/null | wc -l`" -gt 0 ]; then
                     echo " - fatal: \``pwd`\` is dirty, couldn't automatic fast forward"
                     local retval=2
+                fi
             else
                 echo " - fatal: \``pwd`\` is dirty, pull failed"
             fi
