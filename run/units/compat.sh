@@ -6,6 +6,7 @@ REQ_BINS=(
     make
     pkg-config
     python3
+    rsync
     tmux
     zsh
 )
