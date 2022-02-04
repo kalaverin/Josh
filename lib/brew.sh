@@ -127,8 +127,10 @@ function brew_install() {
 
         local bin="$HOMEBREW_PREFIX/bin/$exe"
         if [ -x "$bin" ]; then
-            shortcut "$bin" >/dev/null
-            echo " + $0 info: $exe -> `which $exe`" >&2
+            local dst="`shortcut "$bin"`"
+            if [ -n "$dst" ]; then
+                echo " + $0 info: $exe -> `which $exe` ($dst)" >&2
+            fi
         fi
     done
 }
