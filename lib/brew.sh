@@ -26,6 +26,7 @@ if [[ -n ${(M)zsh_eval_context:#file} ]]; then
     fi
 fi
 
+
 BREW_REС_PACKAGES=(
     ag    # silver searcher, another one fast source grep on golang
     jq    # JSON swiss-knife, format, highlight, traversal and query tool
@@ -34,8 +35,6 @@ BREW_REС_PACKAGES=(
     tree  # hierarchy explore tool
 )
 
-
-# CARGO_BIN="$CARGO_BINARIES/cargo"
 
 function brew_root() {
     if [ "$JOSH_OS" = "BSD" ]; then
