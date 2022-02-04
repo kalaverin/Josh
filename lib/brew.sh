@@ -27,7 +27,14 @@ BREW_REС_PACKAGES=(
     tmux  # terminal multiplexer
     tree  # hierarchy explore tool
     git   # always use last version
-    zsh   # same shit
+    coreutils
+    findutils
+    gnu-tar
+    grep
+    gsed
+    openssl
+    pkg-config
+    zsh
 )
 
 
