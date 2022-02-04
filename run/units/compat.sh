@@ -148,7 +148,7 @@ function check_compliance() {
             [ -x "`builtin which -p apt 2>/dev/null`" ] && local bin="apt" || local bin="apt-get"
 
             local cmd="(sudo $bin update --yes --quiet || true) && sudo $bin install --yes --quiet --no-remove"
-            local pkg="zsh git clang make build-essential pkg-config python3 python3-distutils libssl-dev python-dev libpq-dev libevent-dev"
+            local pkg="build-essential clang git libevent-dev libpq-dev libssl-dev make pkg-config python-dev python3 python3-distutils zsh"
 
 
         elif [ -f "/etc/arch-release" ] || [ -n "$(uname -v | grep -Pi '(arch|manjaro)')" ; then
@@ -156,7 +156,7 @@ function check_compliance() {
             echo " + os: arch: `uname -srv`"
 
             local cmd="sudo pacman --sync --noconfirm"
-            local pkg="clang gcc base-devel git pkg-config tmux openssl zsh postgresql-libs libevent python3"
+            local pkg="base-devel clang gcc git libevent openssl pkg-config postgresql-libs python3 tmux zsh"
 
         elif [ -n "$(uname -srv | grep -i gentoo)" ]; then
             echo " + os: gentoo: `uname -srv`"
