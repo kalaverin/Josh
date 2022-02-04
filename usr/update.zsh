@@ -88,7 +88,6 @@ function check_updates() {
     unset JOSH_UPDATES_COUNT
 
     local updates="`fetch_updates`"
-    return 0
     [ "$?" -gt 0 ] && return 1
     [ "$updates" -eq 0 ] && return 0
 
