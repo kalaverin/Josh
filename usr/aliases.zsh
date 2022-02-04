@@ -315,6 +315,7 @@ function brew() {
         run_show "$bin $*"
     elif [ "$1" = 'env' ]; then
         brew_env
+        export | grep -i BREW
     elif [ "$1" = 'extras' ]; then
         brew_extras
     else
