@@ -586,6 +586,15 @@ function sudoize() {
 }
 zle -N sudoize
 
+
+function josh_pull() {
+    local cwd="`pwd`"
+    source "$JOSH/run/update.sh" && pull_update $@
+    local retval="$?"
+    builtin cd "$cwd"
+    return $retval
+}
+
 function josh_update() {
     local cwd="`pwd`"
     josh_pull $@ && \
@@ -596,11 +605,13 @@ function josh_update() {
     return $retval
 }
 
-function josh_pull() {
+function josh_upgrade() {
     local cwd="`pwd`"
-    source "$JOSH/run/update.sh" && pull_update $@
+    josh_pull $@ && \
+    source "$JOSH/run/update.sh" && post_upgrade $@
     local retval="$?"
     builtin cd "$cwd"
+    exec zsh
     return $retval
 }
 

@@ -55,11 +55,17 @@ function pull_update() {
 }
 
 function post_update() {
+    update_internals
+    source "$JOSH/run/units/compat.sh" && check_compliance
+}
+
+function post_upgrade() {
+    update_internals
     update_packages
     source "$JOSH/run/units/compat.sh" && check_compliance
 }
 
-function update_packages() {
+function update_internals() {
     source "$JOSH/run/units/configs.sh" && \
     zero_configuration
 
@@ -72,7 +78,9 @@ function update_packages() {
     source "$JOSH/lib/python.sh" && \
     pip_install "$PIP_REQ_PACKAGES"
     pip_update
+}
 
+function update_packages() {
     source "$JOSH/lib/rust.sh" && \
     cargo_install "$CARGO_REQ_PACKAGES"
     cargo_update
@@ -85,5 +93,6 @@ function deploy_extras() {
     local cwd="`pwd`"
     (source "$JOSH/lib/python.sh" && pip_extras || echo " - warning (python): something went wrong") && \
     (source "$JOSH/lib/rust.sh" && cargo_extras || echo " - warning (rust): something went wrong")
+    (source "$JOSH/lib/brew.sh" && brew_env && (brew_extras || echo " - warning (brew): something went wrong"))
     builtin cd "$cwd"
 }
