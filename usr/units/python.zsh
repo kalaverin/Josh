@@ -223,7 +223,7 @@ function virtualenv_create {
         local pip_arg='pip setuptools wheel'
     fi
 
-    run_show "builtin cd "$envs" && $venv_exe --python=$exe $venv_arg "$venv" && source $venv/bin/activate && pip install --compile --no-input --prefer-binary --progress-bar=pretty --upgrade --upgrade-strategy=eager pipdeptree $pip_arg $pkg && builtin cd $cwd"
+    run_show "builtin cd "$envs" && $venv_exe --python=$exe $venv_arg "$venv" && source $venv/bin/activate && pip install --compile --no-input --prefer-binary --upgrade --upgrade-strategy=eager pipdeptree $pip_arg $pkg && builtin cd $cwd"
 }
 
 function virtualenv_temporary_create {
