@@ -7,7 +7,7 @@ local INCLUDE_DIR="`fs_realpath $THIS_DIR/src`"
 
 
 function commit_text () {
-    local text="`sh -c "$HTTP_GET http://whatthecommit.com/index.txt"`"
+    local text="`$SHELL -c "$HTTP_GET http://whatthecommit.com/index.txt"`"
     echo "$text" | anyframe-action-insert
     zle end-of-line
 }

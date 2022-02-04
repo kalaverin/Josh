@@ -103,7 +103,7 @@ function python_executable_scan() {
     source $BASE/run/units/compat.sh
     echo " * $0 runs" >&2
 
-    for dir in $(sh -c "echo "$*" | sed 's#:#\n#g'"); do
+    for dir in $($SHELL -c "echo "$*" | sed 's#:#\n#g'"); do
         if [ ! -d "$dir" ]; then
             continue
         fi
@@ -161,7 +161,7 @@ function python_executable() {
         fi
     fi
 
-    local dirs="$(sh -c "echo "$PATH" | sed 's#:#\n#g' | grep -v "$HOME" | sort -su | sed -z 's#\n#:#g' | awk '{\$1=\$1};1'")"
+    local dirs="$($SHELL -c "echo "$PATH" | sed 's#:#\n#g' | grep -v "$HOME" | sort -su | sed -z 's#\n#:#g' | awk '{\$1=\$1};1'")"
     local result="$(cached_execute "test" "`path_last_modified "$dirs" 2>/dev/null`" "$JOSH_CACHE_DIR" "python_executable_scan $dirs")"
 
     if [ "$result" ]; then

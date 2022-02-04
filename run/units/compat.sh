@@ -86,8 +86,8 @@ function check_libraries() {
 
 function version_not_compatible() {
     if [ "$1" != "$2" ]; then
-        local choice=$(sh -c "printf '%s\n%s\n' "$1" "$2" | sort --version-sort | tail -n 1")
-        [ $(sh -c "printf '%s' "$choice" | grep -Pv '^($2)$'") ] && return 0
+        local choice=$($SHELL -c "printf '%s\n%s\n' "$1" "$2" | sort --version-sort | tail -n 1")
+        [ $($SHELL -c "printf '%s' "$choice" | grep -Pv '^($2)$'") ] && return 0
     fi
     return 1
 }
