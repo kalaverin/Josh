@@ -39,6 +39,24 @@ if [ -z "$HTTP_GET" ]; then
 fi
 
 
+if [ -x "`which zstd`" ]; then
+    export JOSH_PAQ="`which zstd` -0 -T0"
+    export JOSH_QAP="`which zstd` -qd"
+
+elif [ -x "`which lz4`" ] && [ -x "`which lz4cat`" ]; then
+    export JOSH_PAQ="`which lz4` -1 - -"
+    export JOSH_QAP="`which lz4` -d - -"
+
+elif [ -x "`which xz`" ] && [ -x "`which xzcat`" ]; then
+    export JOSH_PAQ="`which xz` -0 -T0"
+    export JOSH_QAP="`which xzcat`"
+
+else
+    export JOSH_PAQ="`which gzip` -1"
+    export JOSH_QAP="`which zcat`"
+fi
+
+
 local source_file="`fs_joshpath "$0"`"
 if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
     sourced+=("$source_file")
@@ -74,6 +92,10 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
         shortcut 'sed'       '/usr/local/bin/gsed'      >/dev/null
         shortcut 'tail'      '/usr/local/bin/gtail'     >/dev/null
         shortcut 'tar'       '/usr/local/bin/gtar'      >/dev/null
+        shortcut 'xargs'     '/usr/local/bin/gxargs'    >/dev/null
+        export JOSH_MD5_PIPE="`which md5`"
+    else
+        export JOSH_MD5_PIPE="`which md5sum` | `which cut` -c -32"
     fi
 
     source "`fs_dirname $0`/hier.sh"

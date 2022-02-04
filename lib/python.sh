@@ -27,7 +27,6 @@ if [[ -n ${(M)zsh_eval_context:#file} ]]; then
 fi
 
 MIN_PYTHON_VERSION=3.6  # minimal version for modern pip
-# MAX_PYTHON_VERSION=3.9
 
 PIP_REQ_PACKAGES=(
     pip        # python package manager, first
@@ -46,7 +45,6 @@ PIP_OPT_PACKAGES=(
     clickhouse-cli
     paramiko   # for ssh tunnels with mycli & pgcli
     nodeenv    # virtual environments for node packaging
-    tmuxp      # tmux session manager
 )
 
 
@@ -101,36 +99,12 @@ function python_directory() {
     echo "$PYTHON_BINARIES/$version"
 }
 
-function python_executable() {
+function python_executable_scan() {
     source $BASE/run/units/compat.sh
-    if [ $? -gt 0 ]; then
-        echo " - $0 fatal: something wrong, source BASE:\`$BASE\`" >&2
-        return 127
-    fi
+    echo " * $0 runs" >&2
 
-    if [ -n "$PYTHONHOME" ]; then
-        local link="$PYTHONHOME/bin/python"
-        if [ -x "$link" ] && [ -x "`fs_realpath "$link" 2>/dev/null`" ]; then
-            echo "$link"
-            return 0
-        fi
-        unset PYTHONHOME
-    fi
-
-    local link="$PYTHON_BINARIES/default/bin/python"
-    if [ -L "$link" ] && [ -x "`fs_realpath "$link" 2>/dev/null`" ]; then
-        local version="`python_get_full_version $link`"
-        [ -z "$version" ] && continue
-
-        version_not_compatible "$MIN_PYTHON_VERSION" "$version"
-        if [ $? -gt 0 ] && [ "`python_distutils $link`" -gt 0 ]; then
-            echo "$link"
-            return 0
-        fi
-    fi
-
-    for dir in $(sh -c "echo "$PATH" | sed 's#:#\n#g' | sort -su"); do
-        if [ ! -d "$dir" ] || [[ "$dir" -regex-match "$HOME" ]]; then
+    for dir in $(sh -c "echo "$*" | sed 's#:#\n#g'"); do
+        if [ ! -d "$dir" ]; then
             continue
         fi
 
@@ -151,8 +125,44 @@ function python_executable() {
                 break
             fi
         done
-        [ -n "$result" ] && break
+        if [ -n "$result" ]; then
+            echo "$result"
+            return 0
+        fi
     done
+    return 1
+}
+
+function python_executable() {
+    source $BASE/run/units/compat.sh
+    if [ $? -gt 0 ]; then
+        echo " - $0 fatal: something wrong, source BASE:\`$BASE\`" >&2
+        return 127
+    fi
+
+    if [ -n "$PYTHONUSERBASE" ]; then
+        local link="$PYTHONUSERBASE/bin/python"
+        if [ -x "$link" ] && [ -x "`fs_realpath "$link" 2>/dev/null`" ]; then
+            echo "$link"
+            return 0
+        fi
+        unset PYTHONUSERBASE
+    fi
+
+    local link="$PYTHON_BINARIES/default/bin/python"
+    if [ -L "$link" ] && [ -x "`fs_realpath "$link" 2>/dev/null`" ]; then
+        local version="`python_get_full_version $link`"
+        [ -z "$version" ] && continue
+
+        version_not_compatible "$MIN_PYTHON_VERSION" "$version"
+        if [ $? -gt 0 ] && [ "`python_distutils $link`" -gt 0 ]; then
+            echo "$link"
+            return 0
+        fi
+    fi
+
+    local dirs="$(sh -c "echo "$PATH" | sed 's#:#\n#g' | grep -v "$HOME" | sort -su | sed -z 's#\n#:#g' | awk '{\$1=\$1};1'")"
+    local result="$(cached_execute "test" "`path_last_modified "$dirs" 2>/dev/null`" "$JOSH_CACHE_DIR" "python_executable_scan $dirs")"
 
     if [ "$result" ]; then
         local python="`fs_realpath $result`"
@@ -165,6 +175,11 @@ function python_executable() {
 }
 
 function python_init() {
+    if [ -x "$JOSH_PYTHON" ] && [ -d "$PYTHONUSERBASE" ]; then
+        echo "$JOSH_PYTHON"
+        return 0
+    fi
+
     local python="`python_executable`"
 
     if [ -x "$python" ]; then
@@ -187,28 +202,24 @@ function python_init() {
             fi
             ln -s "$python" "$target/bin/python3"
             ln -s "$python" "$target/bin/"  # finally /pythonX.Y.Z
-
-            mkdir -p "$target/lib/python$version" && \
-            rsync --archive --links --times --exclude '__pycache__/' "/usr/local/lib/python$version/" "$target/lib/python$version/"
-            if [ "$?" -gt 0 ]; then
-                echo " - $0 fatal: something wrong on copy stdlib /usr/local/lib/python$version/ -> $target/lib/python$version/" >&2
-                return 3
-            fi
             ln -s "$target" "`fs_dirname $target`/default"
-            echo " * $0 info: isolated environment $target/lib/python$version/ ok" >&2
-
         fi
     else
         return 1
     fi
 
-    export PATH="$target/bin:$PATH"
-    export PYTHONHOME="$target"
+    export JOSH_PYTHON="$target"
+    export PYTHONUSERBASE="$target"
     echo "$target"
     return 0
 }
 
 function pip_init() {
+    if [ -x "$JOSH_PIP" ] && [ -d "$PYTHONUSERBASE" ]; then
+        echo "$JOSH_PIP"
+        return 0
+    fi
+
     local target="`python_init`"
     if [ ! -d "$target" ]; then
         echo " - $0 fatal: target=\`$target\`" >&2
@@ -224,9 +235,11 @@ function pip_init() {
             echo " - $0 fatal: python=\`$python\`" >&2
             return 3
         fi
+        export JOSH_PIP="$target/bin/pip"
+        export PYTHONUSERBASE="$target"
+
         $SHELL -c "$HTTP_GET $url > $pip_file" && \
             PIP_REQUIRE_VIRTUALENV=false $python $pip_file \
-                --prefix="$target" \
                 --disable-pip-version-check \
                 --no-input \
                 --no-python-version-warning \
@@ -246,10 +259,10 @@ function pip_init() {
             echo " - $0 fatal: pip isn't exists in $target/bin/" >&2
             return 127
         fi
+        pip_install "$PIP_REQ_PACKAGES"
     fi
-
-    export PATH="$target/bin:$PATH"
-    export PYTHONHOME="$target"
+    export JOSH_PIP="$target/bin/pip"
+    export PYTHONUSERBASE="$target"
     echo "$target/bin/pip"
     return 0
 }
@@ -264,26 +277,11 @@ function venv_deactivate() {
     fi
 }
 
-function python_check() {
-    python_init
-    if [ ! -x "$JOSH_PYTHON" ]; then
-        echo " - fatal: python>=$MIN_PYTHON_VERSION required!"
-        return 1
-    fi
-
-    pip_init
-    if [ ! -x "$JOSH_PIP" ]; then
-        echo " - fatal: pip executive $JOSH_PIP isn't found!"
-        return 2
-    fi
-}
-
 function pip_install() {
     if [ -z "$*" ]; then
         echo " - $0 fatal: nothing to do" >&2
         return 1
     fi
-
 
     local venv="`venv_deactivate`"
 
@@ -298,20 +296,43 @@ function pip_install() {
 
     local cmd="PIP_REQUIRE_VIRTUALENV=false $pip install --prefix=\"$target\" $PIP_DEFAULT_KEYS --upgrade --upgrade-strategy=eager"
 
-    for row in $*; do
+    local done=''
+    local fail=''
+    for row in $@; do
         $SHELL -c "$cmd $row"
+        if [ "$?" -eq 0 ]; then
+            if [ -z "$done" ]; then
+                local done="$row"
+            else
+                local done="$done $row"
+            fi
+        else
+            echo " - $0 warning: $row fails" >&2
+            if [ -z "$fail" ]; then
+                local fail="$row"
+            else
+                local fail="$fail $row"
+            fi
+        fi
     done
 
-    # $SHELL -c "$pip  $*"
+    local result=''
+    if [ -n "$done" ]; then
+        local result="$done - success!"
+    fi
+    if [ -n "$fail" ]; then
+        if [ -z "$result" ]; then
+            local result="failed: $fail"
+        else
+            local result="$result $fail - failed!"
+        fi
+    fi
 
-    # local retval="$?"
-    # if [ "$retval" -gt 0 ]; then
-    #     $SHELL -c "$pip --upgrade $@"
-    #     local retval="$?"
-    # fi
+    if [ -n "$result" ]; then
+        echo " - $0 info: $result" >&2
+    fi
 
     [ -n "$venv" ] && source $venv/bin/activate
-    # return $retval
 }
 
 function pip_update() {
@@ -340,5 +361,5 @@ function pip_extras() {
 }
 
 function python_env() {
-    pip_init
+    pip_init >/dev/null
 }
