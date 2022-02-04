@@ -1,7 +1,7 @@
 source "$HOME/.josh/custom/plugins/josh/run/boot.sh"
 
 path=(
-    $PATH
+    $path
     /etc/rc.d
     /usr/local/etc/rc.d
 )

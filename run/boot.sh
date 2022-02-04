@@ -24,10 +24,10 @@ JOSH_SUBDIR_NAME=".josh"
 
 
 perm_path=(
-    $HOME/.local/bin
     $HOME/.cargo/bin
     $HOME/.python/default/bin
     $HOME/.brew/bin
+    $HOME/.local/bin
     $HOME/bin
     /usr/local/bin
     /bin

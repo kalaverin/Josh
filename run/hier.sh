@@ -46,19 +46,19 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
 
     function cached_execute() {
         if [ -z "$1" ]; then
-            echo " - fatal $0: \$1 key must be" >&2
+            echo " - fatal $0: \$1 key must be: \`$1\`, \`$2\`, \`$3\`, \`${@:4}\` " >&2
             return 1
 
         elif [ -z "$2" ]; then
-            echo " - fatal $0: \$2 expire must be" >&2
+            echo " - fatal $0: \$2 expire must be: \`$1\`, \`$2\`, \`$3\`, \`${@:4}\` " >&2
             return 2
 
         elif [ -z "$3" ]; then
-            echo " - fatal $0: \$3 cache dir must be" >&2
+            echo " - fatal $0: \$3 cache dir must be: \`$1\`, \`$2\`, \`$3\`, \`${@:4}\` " >&2
             return 3
 
         elif [ -z "$4" ]; then
-            echo " - fatal $0: args expire must be" >&2
+            echo " - fatal $0: args expire must be: \`$1\`, \`$2\`, \`$3\`, \`${@:4}\` " >&2
             return 4
         fi
 
@@ -81,8 +81,9 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
             let expires="$EPOCHSECONDS - $expires"
         fi
 
-        local folder="$3/`echo "$1" | $JOSH_MD5_PIPE`"
-        local file="$folder/`echo "${@:4}" | $JOSH_MD5_PIPE`"
+        local f1="`eval "echo "$1" | $JOSH_MD5_PIPE"`"
+        local f2="`eval "echo "${@:4}" | $JOSH_MD5_PIPE"`"
+        local file="$3/$f1/$f2"
 
         if [ ! -f "$file" ]; then
             let expired="1"
