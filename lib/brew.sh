@@ -43,7 +43,7 @@ function brew_root() {
         return 1
     fi
 
-    echo "$HOME/${JOSH_BREW_HOME:-".brew"}"
+    echo "$HOME/.brew"
     return 0
 }
 
@@ -147,5 +147,6 @@ function brew_env() {
     HOMEBREW_PREFIX="$root"
     HOMEBREW_REPOSITORY="$root"
     HOMEBREW_SHELLENV_PREFIX="$root"
+    path_prune
     rehash
 }

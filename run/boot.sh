@@ -26,6 +26,7 @@ JOSH_SUBDIR_NAME=".josh"
 perm_path=(
     $HOME/.local/bin
     $HOME/.cargo/bin
+    $HOME/.brew/bin
     $HOME/bin
     /usr/local/bin
     /bin

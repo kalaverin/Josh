@@ -34,9 +34,8 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
 
         local ret="$?"
         if [ "$ret" -eq 0 ] && [ -n "$unified_path" ]; then
-            if [ "$1" = 'links' ]; then
-                export PATH="$unified_path"
-            else
+            export PATH="$unified_path"
+            if [ ! "$1" = 'links' ]; then
                 export PATH="$JOSH/bin:$unified_path"
             fi
         fi
