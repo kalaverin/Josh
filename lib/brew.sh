@@ -11,14 +11,6 @@ if [[ -n ${(M)zsh_eval_context:#file} ]]; then
         echo " * make Josh cache directory \`$JOSH_CACHE_DIR\`"
     fi
 
-    CARGO_BINARIES="$HOME/.cargo/bin"
-    [ ! -d "$CARGO_BINARIES" ] && mkdir -p "$CARGO_BINARIES"
-
-    if [ ! -d "$CARGO_BINARIES" ]; then
-        mkdir -p "$CARGO_BINARIES"
-        echo " * make Cargo goods directory \`$CARGO_BINARIES\`"
-    fi
-
     if [ -n "$JOSH_DEST" ]; then
         BASE="$JOSH_BASE"
     else
