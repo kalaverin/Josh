@@ -11,11 +11,11 @@ if [ "$JOSH_OS" = "BSD" ]; then
     export MM_CHARSET="${MM_CHARSET:-"$JOSH_DEFAULT_LOCALE"}"
 fi
 
-# init python+pip and rust+cargo environment
-#
+# init optional environment
 
 source "$JOSH/lib/python.sh" && python_env
 source "$JOSH/lib/rust.sh" && rust_env
+source "$JOSH/lib/brew.sh" && brew_env
 
 path_prune
 
