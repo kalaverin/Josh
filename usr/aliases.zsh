@@ -310,8 +310,13 @@ function brew() {
     local bin="`brew_bin`"
     [ ! -x "$bin" ] && return 2
 
-    if [ ! "$1" = 'install' ]; then
+
+    if [ "$1" = 'install' ]; then
         run_show "$bin $*"
+    elif [ "$1" = 'env' ]; then
+        brew_env
+    elif [ "$1" = 'extras' ]; then
+        brew_extras
     else
         run_show "brew_install ${@:2}"
     fi
