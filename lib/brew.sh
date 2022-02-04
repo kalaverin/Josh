@@ -39,11 +39,11 @@ BREW_REС_PACKAGES=(
 
 function brew_root() {
     if [ "$JOSH_OS" = "BSD" ]; then
-        echo " - $0 fatal: homebrew isn't have support for $JOSH_OS: `uname -srv`" >&2
+        echo " - $0 fatal: brew not supported for detected \`$JOSH_OS\`: `uname -srv`" >&2
         return 1
 
     elif [ "$JOSH_OS" = "MAC" ]; then
-        echo " - $0 fatal: homebrew isn't have support for $JOSH_OS: `uname -srv`" >&2
+        echo " - $0 fatal: brew not supported for detected \`$JOSH_OS\`: `uname -srv`" >&2
         return 1
 
     else
@@ -120,7 +120,7 @@ function brew_update() {
 }
 
 function brew_env() {
-    local root="`brew_root`"
+    local root="`brew_root 2>/dev/null`"
     [ -z "$root" ] && return 1
     [ ! -x "$root/bin/brew" ] && return 2
 
