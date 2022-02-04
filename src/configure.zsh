@@ -15,7 +15,6 @@ fi
 
 source "$JOSH/lib/python.sh" && python_env
 source "$JOSH/lib/rust.sh" && rust_env
-source "$JOSH/lib/brew.sh" && brew_env
 
 path_prune
 

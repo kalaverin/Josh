@@ -299,20 +299,37 @@ function shortcut- {
     fi
 }
 
+function brew() {
+    source "$JOSH/lib/brew.sh" && brew_env
+
+    local bin="`brew_bin 2>/dev/null`"
+    if [ ! -x "$bin" ]; then
+        brew_init || return 1
+    fi
+
+    local bin="`brew_bin`"
+    [ ! -x "$bin" ] && return 2
+
+    if [ ! "$1" = 'install' ]; then
+        run_show "$bin $*"
+    else
+        run_show "brew_install ${@:2}"
+    fi
+}
 
 # ———
 
-fchmod() {
+function fchmod() {
     [ -z "$1" ] && [ -z "$2" ] && return 1
     find $2 -type f -not -perm $1 -exec chmod $1 {} \;
 }
 
-dchmod() {
+function dchmod() {
     [ -z "$1" ] && [ -z "$2" ] && return 1
     find $2 -type d -not -perm $1 -exec chmod $1 {} \;
 }
 
-rchgrp() {
+function rchgrp() {
     [ -z "$1" ] && [ -z "$2" ] && return 1
     find $2 ( -not -group $1 ) -print -exec chgrp $1 {} ;
 }

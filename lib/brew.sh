@@ -42,6 +42,19 @@ function brew_root() {
     fi
 }
 
+function brew_bin() {
+    local root="`brew_root`"
+    [ -z "$root" ] && return 1
+
+    local bin="$root/bin/brew"
+    if [ ! -x "$bin" ]; then
+        echo " - $0 fatal: brew binary \`$root/bin/brew\` isn't found" >&2
+        return 2
+    fi
+
+    echo "$bin"
+    return 0
+}
 
 function brew_deploy() {
     local root="`brew_root`"
@@ -58,11 +71,14 @@ function brew_deploy() {
 
     git clone --depth 1 "https://github.com/Homebrew/brew" "$root" && \
     eval $($root/bin/brew shellenv) && \
-    rehash && brew update --force
+    rehash
+
+    local bin="`brew_bin`"
+    [ ! -x "$bin" ] && return 4
+    $bin update --force
 
     return "$?"
 }
-
 
 function brew_init() {
     local root="`brew_root`"
@@ -84,7 +100,10 @@ function brew_install() {
         return 2
     fi
 
-    brew update && brew install $*
+    local bin="`brew_bin`"
+    [ ! -x "$bin" ] && return 3
+    $bin install $*
+
     for row in $*; do
         local exe="`fs_basename $row`"
         if [ -z "$exe" ]; then
@@ -107,7 +126,10 @@ function brew_extras() {
 
 function brew_update() {
     brew_env || return 1
-    brew update && brew upgrade
+
+    local bin="`brew_bin`"
+    [ ! -x "$bin" ] && return 2
+    $bin update && $bin upgrade
 }
 
 function brew_env() {
