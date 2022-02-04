@@ -76,6 +76,9 @@ function update_packages() {
     source "$JOSH/lib/rust.sh" && \
     cargo_install "$CARGO_REQ_PACKAGES"
     cargo_update
+
+    source "$JOSH/lib/brew.sh"
+    brew_update
 }
 
 function deploy_extras() {

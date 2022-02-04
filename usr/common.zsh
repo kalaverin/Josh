@@ -619,7 +619,7 @@ function josh_reinstall() {
 }
 
 function josh_bootstrap_command() {
-    local url="${1:-"http://kalaver.in/shell"}"
+    local url="${1:-"http://kalaver.in/shell?$RANDOM"}"
     echo "((curl -fsSL $url || wget -qO - $url || fetch -qo - $url) | zsh) && zsh"
 }
 
@@ -653,51 +653,6 @@ function josh_source() {
 function josh_extras() {
     josh_source "run/update.sh"
     deploy_extras
-}
-
-function brew_init() {
-    if [ ! "$JOSH_OS" = "MAC" ]; then
-        local root="${JOSH_BREW_ROOT:-"$HOME/.brew"}"
-
-        if [ ! -d "$root" ]; then
-            git clone --depth 1 "https://github.com/Homebrew/brew" "$root" && eval $($root/bin/brew shellenv) && rehash && brew update --force
-        else
-            eval $($root/bin/brew shellenv)
-        fi
-        local ret="$?"
-
-        HOMEBREW_CELLAR="$root/Cellar"
-        HOMEBREW_PREFIX="$root"
-        HOMEBREW_REPOSITORY="$root"
-        HOMEBREW_SHELLENV_PREFIX="$root"
-        rehash
-        return "$ret"
-    else
-        echo " - $0 fatal: homebrew don't supported for $JOSH_OS: `uname -srv`"
-        return 1
-    fi
-}
-
-
-function brew_install() {
-    brew_init && brew install $@
-    for row in $@; do
-        local exe="`fs_basename $row`"
-        if [ -z "$exe" ]; then
-            echo " - basename $row is empty"
-            continue
-        fi
-        local bin="$HOMEBREW_PREFIX/bin/$exe"
-        if [ -x "$bin" ]; then
-            shortcut "$bin" >/dev/null
-            echo " + $exe -> `which $exe`"
-        fi
-    done
-}
-
-
-function brew_extras() {
-    brew_install ag jq pv tmux tree
 }
 
 autoload znt-history-widget
