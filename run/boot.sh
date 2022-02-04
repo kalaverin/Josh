@@ -60,7 +60,7 @@ function fs_readlink() {
 
 function fs_basename() {
     [ -z "$1" ] && return 1
-    [[ "$1" -regex-match '[^/]+$' ]] && echo "$MATCH"
+    [[ "$1" -regex-match '[^/]+/?$' ]] && echo "$MATCH"
 }
 
 
