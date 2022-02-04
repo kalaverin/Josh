@@ -294,7 +294,7 @@ function pip_install() {
         return 3
     fi
 
-    local cmd="PIP_REQUIRE_VIRTUALENV=false $pip install --prefix=\"$target\" $PIP_DEFAULT_KEYS --upgrade --upgrade-strategy=eager"
+    local cmd="PIP_REQUIRE_VIRTUALENV=false $pip install $PIP_DEFAULT_KEYS --upgrade --upgrade-strategy=eager"
 
     local done=''
     local fail=''
