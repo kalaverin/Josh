@@ -26,14 +26,15 @@ BREW_REС_PACKAGES=(
     pv    # contatenate pipes with monitoring
     tmux  # terminal multiplexer
     tree  # hierarchy explore tool
-    git   # always use last version
+    git   # always use last version of all used tools:
     coreutils
     findutils
+    fzf
     gnu-tar
     grep
     gsed
-    openssl
-    pkg-config
+    micro
+    nano
     zsh
 )
 
@@ -112,11 +113,12 @@ function brew_install() {
         return 2
     fi
 
-    local bin="`brew_bin`"
-    [ ! -x "$bin" ] && return 3
-    $bin install $*
+    local brew="`brew_bin`"
+    [ ! -x "$brew" ] && return 3
 
     for row in $*; do
+        run_show "$brew install $row"
+
         local exe="`fs_basename $row`"
         if [ -z "$exe" ]; then
             echo " - $0 fatal: basename for \`$row\` empty" >&2
