@@ -21,10 +21,13 @@ fi
 
 BREW_REС_PACKAGES=(
     ag    # silver searcher, another one fast source grep on golang
+    htop  # instead system-wide htop
     jq    # JSON swiss-knife, format, highlight, traversal and query tool
     pv    # contatenate pipes with monitoring
     tmux  # terminal multiplexer
     tree  # hierarchy explore tool
+    git   # always use last version
+    zsh   # same shit
 )
 
 
