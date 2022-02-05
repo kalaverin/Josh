@@ -52,7 +52,7 @@ function fetch_updates() {
 
     if [ -z "$branch" ]; then
         builtin cd "$cwd"
-        echo " - $0 warning: JOSH branch isn't retrieved" >&2
+        echo " - $0 warning: JOSH branch \`$branch\` failed" >&2
         return 3
     fi
 
@@ -108,10 +108,12 @@ function check_updates() {
 
     local branch="`git_current_branch`"
     if [ "$branch" = "develop" ]; then
-        echo " + $0: $updates updates ready to install, let's go" >&2
+        echo " + $0: $updates new commits found, let's go!" >&2
         josh_pull "$branch"
         local ret="$?"
-        echo " + $0: if all ok - for restart Josh run: exec zsh" >&2
+        echo " + $0 commits applied, please run: exec zsh" >&2
+        echo " + $0 for partial (slow) upgrade run: josh_update" >&2
+        echo " + $0 for install (full) all updates: josh_upgrade" >&2
 
     elif [ "$branch" = "stable" ]; then
         local last_commit="`git --git-dir="$JOSH/.git" --work-tree="$JOSH/" log -1 --format="%ct"`"
@@ -152,14 +154,14 @@ function motd() {
 
     if [ "$branch" = 'master' ]; then
         if [ "$ctag" ] && [ ! "$ctag" = "$ftag" ]; then
-            echo " + Josh v$ctag (upgrade to v$ftag already fetched), just run: josh_update && exec zsh"
+            echo " + Josh v$ctag (upgrade to v$ftag downloaded), just run: run: josh_update, then: exec zsh"
         fi
 
     elif [ "$branch" = 'develop' ]; then
         echo " + Josh v$ctag $branch $last_commit."
 
     else
-        echo " + Josh v$ctag $branch $last_commit, found $JOSH_UPDATES_COUNT updates, just run: josh_update && exec zsh"
+        echo " + Josh v$ctag $branch $last_commit, found $JOSH_UPDATES_COUNT updates, run: josh_update, then: exec zsh"
 
     fi
 }

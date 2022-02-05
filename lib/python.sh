@@ -45,6 +45,7 @@ PIP_OPT_PACKAGES=(
     clickhouse-cli
     paramiko   # for ssh tunnels with mycli & pgcli
     nodeenv    # virtual environments for node packaging
+    tmuxp      # tmux session manager
 )
 
 
