@@ -287,14 +287,17 @@ function brew() {
 
 
     if [ "$1" = 'install' ]; then
-        run_show "$bin $*"
+        run_show "brew_install ${@:2}"
+
     elif [ "$1" = 'env' ]; then
         brew_env
         export | grep -i BREW
+
     elif [ "$1" = 'extras' ]; then
         brew_extras
+
     else
-        run_show "brew_install ${@:2}"
+        run_show "$bin $*"
     fi
 }
 
