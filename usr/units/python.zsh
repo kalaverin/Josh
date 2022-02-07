@@ -132,7 +132,7 @@ function get_virtualenv_path {
 }
 
 function python_from_version {
-    source $JOSH/lib/python.sh && python_init
+    source $JOSH/lib/python.sh && python_init >/dev/null
     if [ $? -gt 0 ]; then
         echo " - python3 import something wrong, stop" 1>&2
         return 1
@@ -142,17 +142,14 @@ function python_from_version {
         local exe="`which python$1`"
 
     elif [ "$1" = "3" ]; then
-        if [ ! -x "$PYTHON3" ] && [ ! -x "`which python3`" ]; then
-            echo " - default \$PYTHON3=\`$PYTHON3\` isn't accessible" 1>&2
-            return 1
-
-        elif [ ! -x "$PYTHON3" ]; then
-            local exe="`which python3`"
+        rehash
+        if [ -x "$commands[python]" ]; then
+            local exe="$commands[python]"
         else
-            local exe="$PYTHON3"
+            local exe="$(which python3)"
         fi
     else
-        local exe="`which python2.7`"
+        local exe="$(which python2.7)"
     fi
     echo "$exe"
 }
@@ -187,7 +184,7 @@ function virtualenv_create {
         echo " - couldn't autodetect python for \`$2\`" 1>&2
         return 2
     fi
-    local ver="`python_get_version $exe`"
+    local ver="`python_get_full_version $exe`"
 
     if [[ "$2" =~ ^[0-9]\.[0-9]$ ]] || [ "$2" = "2" ] || [ "$2" = "3" ]; then
         local pkg="${@:3}"
