@@ -245,7 +245,7 @@ disabled = false
 format = ' [$symbol]($style)'
 style = 'fg:white bold bg:red'
 symbol = 'SU'
-disabled = false
+disabled = true
 
 [swift]
 format = ' [$symbol($version)]($style)'
