@@ -2,7 +2,11 @@ if [ -x "$HOME/.tmux/plugins/tpm/tpm" ]; then
     export TMUX_PLUGIN_MANAGER_PATH="$HOME/.tmux/plugins"
 fi
 
-alias tml="tmux list-sessions -F ' #{?session_attached,+,-} #{window_width}x#{window_height} #{session_name}'"
+
+function tml {
+    echo "--- Current: ${COLUMNS}x${LINES}"
+    tmux list-sessions -F ' #{?session_attached,+,-} #{window_width}x#{window_height} #{session_name}'
+}
 
 function tmx() {
     if [ -n "$1"  ]; then
