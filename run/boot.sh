@@ -263,33 +263,42 @@ function shortcut() {
 
 
 function which() {
-    if [[ "$1" =~ "/" ]]; then
-        if [ ! -x "$1" ]; then
-            local dst="`builtin which "$1"`"
+    local src="$*"
 
-        else
-            if [ ! -L "$1" ]; then
-                local dst="$1"
+    if [ -z "$src" ]; then
+        printf " ** fail ($0): call without args, I need to do — what?\n" >&2
+        return 2
 
-            else
-                local dst="`fs_realpath "$1"`"
-            fi
-        fi
+    elif [[ "$src" =~ "/" ]]; then
+        printf " ** fail ($0): link name '$src' couldn't contains slashes\n" >&2
+        return 2
+
+    elif [ -z "$JOSH" ]; then
+        printf " ++ warn ($0): kalash root '$JOSH' isn't defined\n" >&2
+    fi
+
+    if [ -n "$JOSH" ] && [ -L "$JOSH/bin/$src" ]; then
+        local dst="$JOSH/bin/$src"
+
+    elif [ "$commands[$src]" ]; then
+        local dst="$commands[$src]"
 
     else
-        if [ -L "$JOSH/bin/$1" ]; then
-            local dst="`fs_readlink "$JOSH/bin/$1"`"
+        # printf " -- info ($0): query term '$src' isn't found, fallback to PATH scan\n" >&2
+        local dst="$(lookup "$src")"
+    fi
 
-        elif [ -x "$commands[$1]" ]; then
-            local dst="$commands[$1]"
+    if [ ! -n "$dst" ] || [ ! -x "$dst" ]; then
+        local dst="$(eval "builtin which $src")"
+        if [ ! -x "$dst" ]; then
+            if [ -n "$dst" ] && [ ! $dst = "$src not found" ]; then
+                printf " ++ fail ($0): '$src' isn't found, but $dst\n" >&2
+                return 0
+            fi
+            return 1
         fi
     fi
-
-    if [ -x "$dst" ]; then
-        echo "$dst"
-        return 0
-    fi
-    return 1
+    printf "$dst"
 }
 
 
