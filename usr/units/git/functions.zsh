@@ -67,20 +67,18 @@ function cmd_git_pull_merge() {
 # core functions
 
 function git_root() {
-    local result="`$SHELL -c "$GET_ROOT" 2>/dev/null`"
-    if [ "$result" ]; then
-        local result=$(realpath --quiet `$SHELL -c "$GET_ROOT" 2>/dev/null`)
-        [ "$result" ] && echo "$result"
-    fi
+    local cmd="$GET_ROOT 2>/dev/null"
+    local result="$(fs_realpath `eval $cmd`)"
+    [ -d "$result" ] && echo "$result"
 }
 
 function git_current_hash() {
-    local result="`$SHELL -c "$GET_HASH"`"
+    local result="`eval $GET_HASH`"
     [ "$result" ] && echo "$result"
 }
 
 function git_current_branch() {
-    local result="`$SHELL -c "$GET_BRANCH"`"
+    local result="`eval $GET_BRANCH`"
     if [ "$result" = "HEAD" ]; then
         if [ ! "`git name-rev --name-only HEAD 2>&1 | grep -Pv '^(Could not get sha1)'`" ]; then
             echo " - empty repository `git_root` without any commits?" >&2
