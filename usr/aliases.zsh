@@ -75,7 +75,7 @@ fi
 # ag: silver searcher, ripgrep like golang tools with many settings
 #
 if [ -x "`which ag`" ]; then
-    AG_OPTIONS=${AG_OPTIONS:-"-C1 --noaffinity --path-to-ignore ~/.ignore --path-to-ignore ~/.gitignore --smart-case --width 140"}
+    AG_OPTIONS=${AG_OPTIONS:-"--context 1 --noaffinity --path-to-ignore ~/.ignore --path-to-ignore ~/.gitignore --smart-case --width 140"}
     alias ag="ag $AG_OPTIONS"
 fi
 
@@ -89,12 +89,12 @@ if [ -x "`which rg`" ]; then
 
     export JOSH_RIPGREP="rg"
     local realpath="`which realpath`"
-    export JOSH_RIPGREP_OPTS="--require-git --hidden --max-columns-preview --max-filesize=50K --ignore-file=`$realpath --quiet ~/.gitignore`"
+    export JOSH_RIPGREP_OPTS="--require-git --hidden --max-columns-preview --max-filesize=1M --ignore-file=`$realpath --quiet ~/.gitignore`"
 
-    alias rf="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS $ripgrep_interactive $ripgrep_fast"
-    alias rft="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS $ripgrep_interactive $ripgrep_fast --sort path"
-    alias rr="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS $ripgrep_interactive $ripgrep_fine"
-    alias rrt="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS $ripgrep_interactive $ripgrep_fine --sort path"
+    alias rr="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS $ripgrep_interactive $ripgrep_fast"
+    alias rrs="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS $ripgrep_interactive $ripgrep_fast --sort path"
+    alias rf="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS $ripgrep_interactive $ripgrep_fine"
+    alias rfs="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS $ripgrep_interactive $ripgrep_fine --sort path"
 fi
 
 
