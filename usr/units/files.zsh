@@ -44,6 +44,37 @@ function bak {
     export BAK_RESTORE="$backup"
 }
 
+
+function bakf {
+    if [ -f "$BAK_RESTORE" ]; then
+        echo " * backup already found: $BAK_RESTORE"
+
+    elif [ -z "$JOSH_PAQ" ] || [ -z "$JOSH_QAP" ]; then
+        echo " - fatal: zstd, xz, lz4 and gzip doesn't exists" 1>&2
+        return 1
+    fi
+
+    local root="`git_root`"
+    [ -z "$root" ] && local root="$PWD"
+
+    local source="`fs_basename "$root"`"
+    [ "$?" -gt 0 ] && return 1
+
+    local timemark="`date "+%Y.%m.%d-%H.%M.%S"`"
+    [ "$?" -gt 0 ] && return 2
+
+    local target="`get_tempdir`/bak/$source"
+    [ "$?" -gt 0 ] && return 3
+
+    local backup="$target/$timemark-`make_human_name`.tar"
+    [ "$?" -gt 0 ] && return 4
+
+    run_show "mkdir -p \"$target\" 2>/dev/null; tar -cO --exclude-vcs-ignores --numeric-owner --sparse . | $JOSH_PAQ > $backup"
+    echo " => cat $backup | $JOSH_QAP | tar -x"
+    export BAK_RESTORE="$backup"
+}
+
+
 function kab {
     local backup="`backup_file_get 2>/dev/null`"
     [ -z "$backup" ] && return "$?"
