@@ -255,11 +255,10 @@ function git_push_force() {
 }
 
 function git_rewind_time() {
-    local root="`git_root 2>/dev/null`"
-    [ -z "$root" ] && return 1
-
     if [ -x "`which git-restore-mtime`" ]; then
-        git-restore-mtime --skip-missing --quiet --work-tree "$root/" --git-dir "$root/.git/"
+        local root="`git_root 2>/dev/null`"
+        [ -z "$root" ] && return 1
+        git-restore-mtime --skip-missing --work-tree "$root/" --git-dir "$root/.git/" "$root/"
     fi
 }
 
