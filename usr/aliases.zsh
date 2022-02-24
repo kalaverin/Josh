@@ -24,34 +24,34 @@ alias -g uri="$HTTP_GET"
 
 # nano: default editor for newbies like me
 #
-if [ -x "`which nano`" ]; then
+if [ -x "$commands[nano]" ]; then
     export EDITOR="nano"
 fi
 
 
 # rip: safely and usable rm -rf replace
 #
-if [ -x "`which rip`" ]; then
+if [ -x "$commands[rip]" ]; then
     export GRAVEYARD=${GRAVEYARD:-"$HOME/.trash"}
 fi
 
 
 # sccache: very need runtime disk cache for cargo, from cold start have cachehit about 60%+
 #
-if [ -x "`which sccache`" ] && [ -z "$RUSTC_WRAPPER" ]; then
+if [ -x "$commands[sccache]" ] && [ -z "$RUSTC_WRAPPER" ]; then
     export RUSTC_WRAPPER="sccache"
 fi
 
 
 # viu: terminal images previewer in ANSI graphics, used in file previews, etc
 #
-# if [ -x "`which viu`" ]; then
+# if [ -x "$commands[viu]" ]; then
 # fi
 
 
 # vivid: ls color theme generator
 #
-if [ -x "`which vivid`" ]; then
+if [ -x "$commands[vivid]" ]; then
     # just run: `vivid themes` or select another one from:
     # ayu jellybeans molokai one-dark one-light snazzy solarized-dark solarized-light
     export LS_COLORS="`vivid generate ${VIVID_THEME:-"molokai"}`"
@@ -60,12 +60,12 @@ fi
 
 # just my settings for recursive grep
 #
-alias ri="`which grep` --line-buffered -rnH --exclude '*.js' --exclude '*.min.css' --exclude '.git/' --exclude 'node_modules/' --exclude 'lib/python*/site-packages/' --exclude '__snapshots__/' --exclude '.eggs/' --exclude '*.pyc' --exclude '*.po' --exclude '*.svg' --color=auto"
+alias ri="$commands[grep] --line-buffered -rnH --exclude '*.js' --exclude '*.min.css' --exclude '.git/' --exclude 'node_modules/' --exclude 'lib/python*/site-packages/' --exclude '__snapshots__/' --exclude '.eggs/' --exclude '*.pyc' --exclude '*.po' --exclude '*.svg' --color=auto"
 
 
 # httpie: modern, fast and very usable HTTP client
 #
-if [ -x "`which http`" ]; then
+if [ -x "$commands[http]" ]; then
     # run `http --help` to select theme to HTTPIE_THEME
     HTTPIE_OPTIONS=${HTTPIE_OPTIONS:-"--verify no --default-scheme http --follow --all --format-options json.indent:2 --compress --style ${HTTPIE_THEME:-"gruvbox-dark"}"}
     alias http="http $HTTPIE_OPTIONS"
@@ -74,21 +74,20 @@ fi
 
 # ag: silver searcher, ripgrep like golang tools with many settings
 #
-if [ -x "`which ag`" ]; then
-    AG_OPTIONS=${AG_OPTIONS:-"--context 1 --noaffinity --path-to-ignore ~/.ignore --path-to-ignore ~/.gitignore --smart-case --width 140"}
-    alias ag="ag $AG_OPTIONS"
+if [ -x "$commands[ag]" ]; then
+    alias ag="$commands[ag] ${AG_OPTIONS:---context=1 --noaffinity --smart-case --width 140 --path-to-ignore ~/.ignore --path-to-ignore ~/.gitignore}"
 fi
 
 
 # ripgrep
 #
-if [ -x "`which rg`" ]; then
+if [ -x "$commands[rg]" ]; then
     local ripgrep_fast='--max-columns $COLUMNS --smart-case'
     local ripgrep_fine='--max-columns $COLUMNS --case-sensitive --fixed-strings --word-regexp'
     local ripgrep_interactive="--no-stats --text --context 1 --colors 'match:fg:yellow' --colors 'path:fg:red' --context-separator ''"
 
     export JOSH_RIPGREP="rg"
-    local realpath="`which realpath`"
+    local realpath="$commands[realpath]"
     export JOSH_RIPGREP_OPTS="--require-git --hidden --max-columns-preview --max-filesize=1M --ignore-file=`$realpath --quiet ~/.gitignore`"
 
     alias rr="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS $ripgrep_interactive $ripgrep_fast"
@@ -100,7 +99,7 @@ fi
 
 # git-hist: cool tool for fast check git file history, for lamers, of cource
 #
-if [ -x "`which git-hist`" ]; then
+if [ -x "$commands[git-hist]" ]; then
     GIT_HIST_OPTIONS=${GIT_HIST_OPTIONS:-"--beyond-last-line --emphasize-diff --full-hash"}
     alias ghist="git-hist $GIT_HIST_OPTIONS"
 fi
@@ -108,7 +107,7 @@ fi
 
 # lsd: modern ls for my catalog previews
 #
-if [ -x "`which lsd`" ]; then
+if [ -x "$commands[lsd]" ]; then
     LSD_OPTIONS=${LSD_OPTIONS:-'--extensionsort --classify --long --versionsort'}
     alias ll="lsd --almost-all $LSD_OPTIONS"
     alias l="lsd --ignore-glob '*.pyc' $LSD_OPTIONS"
@@ -117,7 +116,7 @@ fi
 
 # bat: is modern cat with file syntax highlighting
 #
-if [ -x "`which bat`" ]; then
+if [ -x "$commands[bat]" ]; then
     # you can select another theme, use fast preview with your favorite source file:
     # bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/any/file"
 
@@ -129,10 +128,10 @@ fi
 
 # git-delta: beatiful git differ with many settings, fast and cool
 #
-if [ -x "`which delta`" ]; then
+if [ -x "$commands[delta]" ]; then
     DELTA_OPTIONS=${DELTA_OPTIONS:-"--commit-style='yellow ul' --commit-decoration-style='' --file-style='cyan ul' --file-decoration-style='' --hunk-style normal --zero-style='dim syntax' --24-bit-color='always' --minus-style='syntax #330000' --plus-style='syntax #002200' --file-modified-label='M' --file-removed-label='D' --file-added-label='A' --file-renamed-label='R' --line-numbers-left-format='{nm:^4}' --line-numbers-minus-style='#aa2222' --line-numbers-zero-style='#505055' --line-numbers-plus-style='#229922' --line-numbers --navigate --relative-paths"}
     export DELTA="delta $DELTA_OPTIONS"
-    if [ -x "`which bat`" ]; then
+    if [ -x "$commands[bat]" ]; then
         export DELTA="$DELTA --pager bat"
     fi
 fi
@@ -140,7 +139,7 @@ fi
 
 # fzf: amazing fast fuzzy search and select tool
 #
-if [ -x "`which fzf`" ]; then
+if [ -x "$commands[fzf]" ]; then
     export FZF_DEFAULT_OPTS="--ansi --extended"
     export FZF_DEFAULT_COMMAND="fd --type file --follow --hidden --color=always --exclude .git/ --exclude \"*.pyc\" --exclude node_modules/"
     export FZF_THEME=${FZF_THEME:-"fg:#ebdbb2,hl:#fabd2f,fg+:#ebdbb2,bg+:#3c3836,hl+:#fabd2f,info:#83a598,prompt:#bdae93,spinner:#fabd2f,pointer:#83a598,marker:#fe8019,header:#665c54"}
@@ -149,41 +148,41 @@ fi
 
 # csview: just csview with delimiters
 #
-if [ -x "`which csview`" ]; then
+if [ -x "$commands[csview]" ]; then
     alias csv="csview --style Rounded"
     alias tsv="csv --tsv"
     alias ssv="csv --delimiter ';'"
 fi
 
 
-if [ -x "`which docker`" ]; then
+if [ -x "$commands[docker]" ]; then
     export DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1}
     export BUILDKIT_INLINE_CACHE=${BUILDKIT_INLINE_CACHE:-1}
     export COMPOSE_DOCKER_CLI_BUILD=${COMPOSE_DOCKER_CLI_BUILD:-1}
 fi
 
-[ -x "`which lolcate`" ]  && alias lc="lolcate"
-[ -x "`which micro`" ] && alias mi="micro"
-[ -x "`which rsync`" ] && alias cpdir="rsync --archive --links --times"
-[ -x "`which rcrawl`" ] && alias dtree="rcrawl -Rs"
+[ -x "$commands[lolcate]" ]  && alias lc="lolcate"
+[ -x "$commands[micro]" ] && alias mi="micro"
+[ -x "$commands[rsync]" ] && alias cpdir="rsync --archive --links --times"
+[ -x "$commands[rcrawl]" ] && alias dtree="rcrawl -Rs"
 
 # ———
 
 
-if [ -x "`which tree`" ]; then
+if [ -x "$commands[tree]" ]; then
     lst() {
         tree -F -f -i | grep -v '[/]$' I $*
     }
 fi
 
-if [ -x "`which gpg`" ]; then
+if [ -x "$commands[gpg]" ]; then
     kimport() {
         [ -z "$1" ] && return 1
         gpg --recv-key $1 && gpg --export $1 | apt-key add -
     }
 fi
 
-if [ -x "`which wget`" ]; then
+if [ -x "$commands[wget]" ]; then
     function sget {
         wget --no-check-certificate -O- $* &> /dev/null
     }
@@ -192,7 +191,7 @@ if [ -x "`which wget`" ]; then
     }
 fi
 
-if [ -x "`which ssh-agent`" ]; then
+if [ -x "$commands[ssh-agent]" ]; then
     alias ssh-agent="$temp"
 
     function initalize_agent {
@@ -202,7 +201,7 @@ fi
 
 
 naming_functions=()
-if [ -x "`which xkpwgen`" ]; then
+if [ -x "$commands[xkpwgen]" ]; then
     function make_xkpwgen_name() {
         local count=${1:-2}
         local sep=${2:-'.'}
@@ -211,7 +210,7 @@ if [ -x "`which xkpwgen`" ]; then
     naming_functions+=(make_xkpwgen_name)
 fi
 
-if  [ -x "`which pgen`" ]; then
+if  [ -x "$commands[pgen]" ]; then
     function make_pgen_name() {
         local count=${1:-2}
         local sep=${2:-'.'}
@@ -220,7 +219,7 @@ if  [ -x "`which pgen`" ]; then
     naming_functions+=(make_pgen_name)
 fi
 
-if [ -x "`which petname`" ]; then
+if [ -x "$commands[petname]" ]; then
     function make_petname_name() {
         local count=${1:-2}
         local sep=${2:-'.'}
