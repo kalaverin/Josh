@@ -71,6 +71,10 @@ function config_git() {
         ln -s "$HOME/.gitignore" "$HOME/.ignore"
     fi
 
+    function set_style() {
+        git config --global core.pager "delta --commit-style='yellow ul' --commit-decoration-style='' --file-style='cyan ul' --file-decoration-style='' --hunk-header-decoration-style='' --zero-style='dim syntax' --24-bit-color='always' --minus-style='syntax #330000' --plus-style='syntax #002200' --file-modified-label='M' --file-removed-label='D' --file-added-label='A' --file-renamed-label='R' --line-numbers-left-format='{nm:^4}' --line-numbers-minus-style='#aa2222' --line-numbers-zero-style='#505055' --line-numbers-plus-style='#229922' --line-numbers --navigate"
+    }
+
     if [ ! "`git config --global core.pager | grep -P '^(delta)'`" ]; then
         backup_file "$HOME/.gitconfig" && \
         git config --global color.branch auto && \
@@ -82,7 +86,11 @@ function config_git() {
         git config --global color.showbranch auto && \
         git config --global color.status auto && \
         git config --global color.ui auto && \
-        git config --global core.pager "delta --commit-style='yellow ul' --commit-decoration-style='' --file-style='cyan ul' --file-decoration-style='' --hunk-style normal --zero-style='dim syntax' --24-bit-color='always' --minus-style='syntax #330000' --plus-style='syntax #002200' --file-modified-label='M' --file-removed-label='D' --file-added-label='A' --file-renamed-label='R' --line-numbers-left-format='{nm:^4}' --line-numbers-minus-style='#aa2222' --line-numbers-zero-style='#505055' --line-numbers-plus-style='#229922' --line-numbers --navigate"
+        set_style
+    fi
+
+    if [ -n "`git config --global core.pager | grep 'hunk-style normal'`" ]; then
+        set_style
     fi
 
     if [ ! "`git config --global sequence.editor`" ] && [ -x "`which interactive-rebase-tool`" ]; then
