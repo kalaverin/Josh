@@ -40,7 +40,7 @@ function bak {
     [ "$?" -gt 0 ] && return 4
 
     run_show "mkdir -p \"$target\" 2>/dev/null; tar -cO --exclude-vcs --numeric-owner --sparse . | $JOSH_PAQ > $backup"
-    echo " => cat $backup | $JOSH_QAP | tar -x"
+    echo " => cat $backup | $JOSH_QAP | tar -x --numeric-owner --preserve-permissions"
     export BAK_RESTORE="$backup"
 }
 
@@ -70,7 +70,7 @@ function bakf {
     [ "$?" -gt 0 ] && return 4
 
     run_show "mkdir -p \"$target\" 2>/dev/null; tar -cO --exclude-vcs-ignores --numeric-owner --sparse . | $JOSH_PAQ > $backup"
-    echo " => cat $backup | $JOSH_QAP | tar -x"
+    echo " => cat $backup | $JOSH_QAP | tar -x --numeric-owner --preserve-permissions"
     export BAK_RESTORE="$backup"
 }
 
