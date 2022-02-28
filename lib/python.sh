@@ -40,11 +40,13 @@ PIP_REQ_PACKAGES=(
 )
 
 PIP_OPT_PACKAGES=(
+    asciinema  # shell movies recorder and player
+    clickhouse-cli
+    crudini    # ini configs parser
+    nodeenv    # virtual environments for node packaging
+    paramiko   # for ssh tunnels with mycli & pgcli
     mycli      # python-driver MySQL client
     pgcli      # python-driver PostgreSQL client
-    clickhouse-cli
-    paramiko   # for ssh tunnels with mycli & pgcli
-    nodeenv    # virtual environments for node packaging
     tmuxp      # tmux session manager
 )
 
