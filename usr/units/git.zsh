@@ -19,7 +19,7 @@ alias git_list_commits="git log --color=always --format='%C(auto)%D %C(reset)%s 
 alias -g pipe_remove_dots_and_spaces="sed -re 's/(\.{2,})+$//g' | sed -re 's/(\\s+)/ /g' | sd '^\s+' ''"
 alias -g pipe_numerate="awk '{print NR,\$0}'"
 
-DELTA_FOR_COMMITS_LIST_OUT="xargs -I$ git show --find-renames --find-copies --function-context --format='format:%H %ad%n%an <%ae>%n%s' --diff-algorithm=histogram $ | $DELTA --paging='always'"
+DELTA_FOR_COMMITS_LIST_OUT="xargs -I$ git show --find-renames --find-copies --format='format:%H %ad%n%an <%ae>%n%s' --diff-algorithm=histogram $ | $DELTA --paging='always'"
 
 # ——— required
 
