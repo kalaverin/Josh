@@ -822,7 +822,7 @@ git_widget_rebase_branch() {
         break
     fi
 
-    local command="`cmd_git_fetch "$value"` && git rebase --stat --interactive --no-autosquash --autostash --onto \"$value\" \"$value\""
+    local command="`cmd_git_fetch "$value"` && git rebase --stat --interactive --no-autosquash --autostash \"origin/$value\""
 
     if [ ! "$BUFFER" ]; then
         LBUFFER=" $command"
