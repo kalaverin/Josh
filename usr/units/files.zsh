@@ -1,6 +1,15 @@
 source "$JOSH/lib/shared.sh"
 
 
+function __stream_unpak {
+    if [ "$JOSH_OS" = 'BSD' ]; then
+        echo 'tar -x --numeric-owner --preserve-permissions -f -'
+    else
+        echo 'tar -x --numeric-owner --preserve-permissions'
+    fi
+}
+
+
 function backup_file_get {
     local backup="$BAK_RESTORE"
     if [ "$backup" = "" ]; then
@@ -40,7 +49,7 @@ function bak {
     [ "$?" -gt 0 ] && return 4
 
     run_show "mkdir -p \"$target\" 2>/dev/null; tar -cO --exclude-vcs --numeric-owner --sparse . | $JOSH_PAQ > $backup"
-    echo " => cat $backup | $JOSH_QAP | tar -x --numeric-owner --preserve-permissions"
+    echo " => cat $backup | $JOSH_QAP | `__stream_unpak`"
     export BAK_RESTORE="$backup"
 }
 
@@ -70,7 +79,7 @@ function bakf {
     [ "$?" -gt 0 ] && return 4
 
     run_show "mkdir -p \"$target\" 2>/dev/null; tar -cO --exclude-vcs-ignores --numeric-owner --sparse . | $JOSH_PAQ > $backup"
-    echo " => cat $backup | $JOSH_QAP | tar -x --numeric-owner --preserve-permissions"
+    echo " => cat $backup | $JOSH_QAP | `__stream_unpak`"
     export BAK_RESTORE="$backup"
 }
 
@@ -81,7 +90,7 @@ function kab {
 
     git_repository_clean || return "$?"
 
-    run_show "cat $backup | $JOSH_QAP | tar -x --numeric-owner --preserve-permissions" && return 0
+    run_show "cat $backup | $JOSH_QAP | `__stream_unpak`" && return 0
     return "$?"
 }
 
@@ -89,7 +98,7 @@ function kabf {
     local backup="`backup_file_get 2>/dev/null`"
     [ -z "$backup" ] && return "$?"
 
-    run_show "cat $backup | $JOSH_QAP | tar -x --numeric-owner --preserve-permissions" && return 0
+    run_show "cat $backup | $JOSH_QAP | `__stream_unpak`" && return 0
     return "$?"
 }
 
