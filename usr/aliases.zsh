@@ -161,6 +161,7 @@ if [ -x "$commands[docker]" ]; then
     export COMPOSE_DOCKER_CLI_BUILD=${COMPOSE_DOCKER_CLI_BUILD:-1}
 fi
 
+[ -x "$commands[gfold]" ]  && alias gls="gfold -d classic"
 [ -x "$commands[lolcate]" ]  && alias lc="lolcate"
 [ -x "$commands[micro]" ] && alias mi="micro"
 [ -x "$commands[rsync]" ] && alias cpdir="rsync --archive --links --times"
