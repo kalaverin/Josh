@@ -12,6 +12,7 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
         for sub in $path; do
             if [ -x "$sub/$1" ]; then
                 echo "$sub/$1"
+                return 0
             fi
         done
     }

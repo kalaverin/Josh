@@ -261,6 +261,15 @@ function shortcut() {
     return 0
 }
 
+function function_exists() {
+    declare -f "$1" >/dev/null
+    if [ "$?" -eq 0 ]; then
+        echo "1"
+    else
+        return 1
+    fi
+}
+
 
 function which() {
     local src="$*"
@@ -283,8 +292,8 @@ function which() {
     elif [ "$commands[$src]" ]; then
         local dst="$commands[$src]"
 
-    else
-        # printf " -- info ($0): query term '$src' isn't found, fallback to PATH scan\n" >&2
+    elif [ "`function_exists lookup`" -gt 0 ]; then
+        printf " -- info ($0): fallback to PATH scan, because query term isn't found '$src'\n" >&2
         local dst="$(lookup "$src")"
     fi
 
