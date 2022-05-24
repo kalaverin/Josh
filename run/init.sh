@@ -12,25 +12,25 @@ fi
 
 
 if [ -z "$HTTP_GET" ]; then
-    if [ -x "`which curl`" ]; then
-        export HTTP_GET="`which curl` -fsSL"
+    if [ -x "`which fetch`" ]; then
+        export HTTP_GET="`which fetch` -qo - "
         [ "$VERBOSE" -eq 1 ] && \
-        echo " * using curl `curl --version | head -n 1 | awk '{print $2}'`: $HTTP_GET" 1>&2
+        echo " * using fetch: $HTTP_GET" 1>&2
 
     elif [ -x "`which wget`" ]; then
         export HTTP_GET="`which wget` -qO -"
         [ "$VERBOSE" -eq 1 ] && \
         echo " * using wget `wget --version | head -n 1 | awk '{print $3}'`: $HTTP_GET" 1>&2
 
-    elif [ -x "`which fetch`" ]; then
-        export HTTP_GET="`which fetch` -qo - "
-        [ "$VERBOSE" -eq 1 ] && \
-        echo " * using fetch: $HTTP_GET" 1>&2
-
     elif [ -x "`which http`" ]; then
         export HTTP_GET="`which http` -FISb"
         [ "$VERBOSE" -eq 1 ] && \
         echo " * using httpie `http --version`: $HTTP_GET" 1>&2
+
+    elif [ -x "`which curl`" ]; then
+        export HTTP_GET="`which curl` -fsSL"
+        [ "$VERBOSE" -eq 1 ] && \
+        echo " * using curl `curl --version | head -n 1 | awk '{print $2}'`: $HTTP_GET" 1>&2
 
     else
         echo " - fatal: curl, wget, fetch or httpie doesn't exists" 1>&2
