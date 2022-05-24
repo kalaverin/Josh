@@ -188,13 +188,9 @@ function python_executable() {
     fi
     local result="$(cached_execute "$0" "`path_last_modified "$dirs"`" "$JOSH_CACHE_DIR" "python_executable_scan $dirs")"
 
-    echo "1: >$result<" >&2
     if [ "$result" ]; then
-        echo "2: >$result<" >&2
         local python="`fs_realpath $result`"
-        echo "3: >$python<" >&2
         if [ -x "$python" ]; then
-            echo "4: >$python<" >&2
             fs_realpath "$python" 1>/dev/null
             [ "$?" -eq 0 ] && echo "$python"
         fi
