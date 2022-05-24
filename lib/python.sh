@@ -329,12 +329,13 @@ function pip_install() {
         local flags="--root=\"$target\" $flags"
     fi
 
-    local cmd="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false `python_executable` -m pip install $flags $PIP_DEFAULT_KEYS"
+    local command="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false `python_executable` -m pip install $flags $PIP_DEFAULT_KEYS"
+    echo " * $0 info: run $command" >&2
 
     local done=''
     local fail=''
     for row in $@; do
-        $SHELL -c "$cmd $row"
+        $SHELL -c "$command $row"
         if [ "$?" -eq 0 ]; then
             if [ -z "$done" ]; then
                 local done="$row"
