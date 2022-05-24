@@ -55,7 +55,6 @@ PIP_DEFAULT_KEYS=(
     --compile
     --disable-pip-version-check
     --no-input
-    --no-input
     --no-python-version-warning
     --no-warn-conflicts
     --no-warn-script-location
@@ -318,7 +317,7 @@ function pip_install() {
         return 3
     fi
 
-    local cmd="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false $pip install $PIP_DEFAULT_KEYS --upgrade --upgrade-strategy=eager"
+    local cmd="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false $pip install $PIP_DEFAULT_KEYS --root=\"$target\" --prefix=\"\" --upgrade --upgrade-strategy=eager"
 
     local done=''
     local fail=''
@@ -368,8 +367,13 @@ function pip_update() {
         echo "$PIP_REQ_PACKAGES $PIP_OPT_PACKAGES" | \
         sed 's:^:^:' | sed 's: *$:$:' | sed 's: :$|^:g')"
 
+    local pipdep="`which pipdeptree`"
+    if [ ! -x "$pipdep" ]; then
+        pip_install pipdeptree
+    fi
+
     local result="$(
-        pipdeptree --all --warn silence --reverse | \
+        $pipdep --all --warn silence --reverse | \
         grep -Pv '\s+' | sd '^(.+)==(.+)$' '$1' | grep -Po "$josh_regex" | sed -z 's:\n\b: :g'
     )"
     pip_install "$result"
