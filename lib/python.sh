@@ -103,7 +103,6 @@ function python_directory() {
 
 function python_executable_scan() {
     source $BASE/run/units/compat.sh
-    echo " * $0 runs" >&2
 
     for dir in $($SHELL -c "echo "$*" | sed 's#:#\n#g'"); do
         if [ ! -d "$dir" ]; then
@@ -229,6 +228,7 @@ function python_init() {
             ln -s "$python" "$target/bin/python3"
             ln -s "$python" "$target/bin/"  # finally /pythonX.Y.Z
             ln -s "$target" "`fs_dirname $target`/default"
+            rehash
         fi
     else
         echo " - $0 fatal: python executable and home directory can't detected" >&2
@@ -268,10 +268,7 @@ function pip_init() {
 
         echo " * $0 info: deploy pip with python:\`$python\` to hier:\`$target\`" >&2
 
-        local flags="--verbose --disable-pip-version-check --no-input --no-python-version-warning --no-warn-conflicts --no-warn-script-location"
-        if [ "$USER" = 'root' ]; then
-            local flags="--root='/' --prefix='$target' $flags"
-        fi
+        local flags="--root='/' --prefix='$target' --disable-pip-version-check --no-input --no-python-version-warning --no-warn-conflicts --no-warn-script-location"
         local command="PIP_REQUIRE_VIRTUALENV=false $python $pip_file $flags pip"
 
         echo " * $0 debug: $command" >&2
@@ -290,6 +287,8 @@ function pip_init() {
             echo " - $0 fatal: pip doesn't exists in $target/bin/" >&2
             return 127
         fi
+
+        rehash
         pip_install "$PIP_REQ_PACKAGES"
     fi
     export JOSH_PIP="$target/bin/pip"
@@ -327,11 +326,7 @@ function pip_install() {
         return 3
     fi
 
-    local flags="--verbose --upgrade --upgrade-strategy=eager"
-    if [ "$USER" = 'root' ]; then
-        local flags="--root='/' --prefix='$target' $flags"
-    fi
-
+    local flags="--root='/' --prefix='$target' --upgrade --upgrade-strategy=eager"
     local command="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false `python_executable` -m pip install $flags $PIP_DEFAULT_KEYS"
     echo " * $0 debug: $command" >&2
 
@@ -354,6 +349,8 @@ function pip_install() {
             fi
         fi
     done
+
+    rehash
 
     local result=''
     if [ -n "$done" ]; then
@@ -400,9 +397,14 @@ function pip_update() {
 }
 
 function pip_extras() {
-    pip_install "$PIP_REQ_PACKAGES" && \
+    pip_install "$PIP_REQ_PACKAGES"
+    local retval="$?"
     run_show "pip_install $PIP_OPT_PACKAGES"
-    return "$?"
+    rehash
+
+    if [ "$?" -gt 0 ] || [ "$retval" -gt 0 ]; then
+        return 1
+    fi
 }
 
 function python_env() {
