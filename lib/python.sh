@@ -329,7 +329,7 @@ function pip_install() {
         local flags="--root='/' --prefix='$target' $flags"
     fi
 
-    local command="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false `python_executable` -m pip $flags $PIP_DEFAULT_KEYS install"
+    local command="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false `python_executable` -m pip install $flags $PIP_DEFAULT_KEYS"
     echo " * $0 debug: $command" >&2
 
     local done=''
