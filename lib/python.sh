@@ -269,7 +269,8 @@ function pip_init() {
 
         $SHELL -c "$HTTP_GET $url > $pip_file" && \
             PIP_REQUIRE_VIRTUALENV=false $python $pip_file \
-                --root="$target" --prefix="" --user \
+                --verbose \
+                --prefix="" \
                 --disable-pip-version-check \
                 --no-input \
                 --no-python-version-warning \
@@ -324,7 +325,7 @@ function pip_install() {
         return 3
     fi
 
-    local cmd="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false `python_executable` -m pip install $PIP_DEFAULT_KEYS --root=\"$target\" --prefix=\"\" --user --upgrade --upgrade-strategy=eager"
+    local cmd="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false `python_executable` -m pip install $PIP_DEFAULT_KEYS --prefix=\"\" --verbose --upgrade --upgrade-strategy=eager"
 
     local done=''
     local fail=''
