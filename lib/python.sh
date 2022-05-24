@@ -294,6 +294,10 @@ function pip_init {
 
         local flags="--disable-pip-version-check --no-input --no-python-version-warning --no-warn-conflicts --no-warn-script-location"
 
+        if [ "`josh_branch`" != "develop" ]; then
+            local flags="$flags -vv"
+        fi
+
         if [ "$JOSH_OS" = 'BSD' ] || [ "$JOSH_OS" = 'MAC' ]; then
             local flags="--root='/' --prefix='$target' $flags"
         fi
@@ -356,6 +360,11 @@ function pip_install {
     fi
 
     local flags="--upgrade --upgrade-strategy=eager"
+
+    if [ "`josh_branch`" != "develop" ]; then
+        local flags="$flags -v"
+    fi
+
     if [ "$JOSH_OS" = 'BSD' ] || [ "$JOSH_OS" = 'MAC' ]; then
         local flags="--root='/' --prefix='$target' $flags"
     fi
