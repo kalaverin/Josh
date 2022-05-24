@@ -267,9 +267,9 @@ function pip_init() {
 
         echo " * $0 info: deploy pip with python:\`$python\` to hier:\`$target\`" >&2
 
-        local flags="--verbose --prefix='' --disable-pip-version-check --no-input --no-python-version-warning --no-warn-conflicts --no-warn-script-location"
+        local flags="--prefix='' --verbose --disable-pip-version-check --no-input --no-python-version-warning --no-warn-conflicts --no-warn-script-location"
         if [ "$USER" = 'root' ]; then
-            local flags="--user $flags"
+            local flags="--root=\"$target\" $flags"
         fi
         local command="PIP_REQUIRE_VIRTUALENV=false $python $pip_file $flags pip"
 
@@ -326,7 +326,7 @@ function pip_install() {
 
     local flags="--prefix='' --verbose --upgrade --upgrade-strategy=eager"
     if [ "$USER" = 'root' ]; then
-        local flags="--user $flags"
+        local flags="--root=\"$target\" $flags"
     fi
 
     local cmd="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false `python_executable` -m pip install $flags $PIP_DEFAULT_KEYS"
