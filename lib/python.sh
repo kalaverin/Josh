@@ -298,7 +298,7 @@ function pip_init {
             local flags="$flags -vv"
         fi
 
-        if [ "$JOSH_OS" = 'BSD' ] || [ "$JOSH_OS" = 'MAC' ]; then
+        if [ "$USER" = 'root' ] || [ "$JOSH_OS" = 'BSD' ] || [ "$JOSH_OS" = 'MAC' ]; then
             local flags="--root='/' --prefix='$target' $flags"
         fi
         local command="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false $python $pip_file $flags pip"
@@ -318,6 +318,11 @@ function pip_init {
         if [ ! -x "`pip_executive`" ]; then
             echo " - $0 fatal: pip doesn't exists in $target/bin/ or $target/local/bin/" >&2
             return 127
+        fi
+
+        local packages="`find $target/lib/ -maxdepth 1 -type d -name 'python*'`"
+        if [ -d "$packages/dist-packages" ] && [ ! -d "$packages/site-packages" ]; then
+            ln -s "$packages/dist-packages" "$packages/site-packages"
         fi
 
         rehash
@@ -365,7 +370,7 @@ function pip_install {
         local flags="$flags -v"
     fi
 
-    if [ "$JOSH_OS" = 'BSD' ] || [ "$JOSH_OS" = 'MAC' ]; then
+    if [ "$USER" = 'root' ] || [ "$JOSH_OS" = 'BSD' ] || [ "$JOSH_OS" = 'MAC' ]; then
         local flags="--root='/' --prefix='$target' $flags"
     fi
     local command="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false `python_executable` -m pip install $flags $PIP_DEFAULT_KEYS"
