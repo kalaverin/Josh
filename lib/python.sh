@@ -188,8 +188,9 @@ function python_executable() {
             fs_realpath "$python" 1>/dev/null
             [ "$?" -eq 0 ] && echo "$python"
         fi
+    else
+        echo " - $0 fatal: python doesn't exists in dirs:'$dirs'" >&2
     fi
-    echo " - $0 fatal: python doesn't exists in dirs:'$dirs'" >&2
     return 1
 }
 
