@@ -188,7 +188,7 @@ function check_compliance() {
         fi
     else
 
-        echo " + all requirements resolved: executives ($REQ_BINS $REQ_SYS_BINS), libraries ($REQ_LIBS $REQ_SYS_LIBS)"
+        echo " + all requirements resolved, executives: $REQ_BINS $REQ_SYS_BINS, libraries: $REQ_LIBS $REQ_SYS_LIBS"
     fi
     return 0
 }
