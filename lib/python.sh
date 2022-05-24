@@ -267,16 +267,15 @@ function pip_init() {
 
         echo " * $0 info: deploy pip with python:\`$python\` to hier:\`$target\`" >&2
 
-        $SHELL -c "$HTTP_GET $url > $pip_file" && \
-            PIP_REQUIRE_VIRTUALENV=false $python $pip_file \
-                --verbose \
-                --prefix="" \
-                --disable-pip-version-check \
-                --no-input \
-                --no-python-version-warning \
-                --no-warn-conflicts \
-                --no-warn-script-location \
-                pip
+        local flags="--verbose --prefix='' --disable-pip-version-check --no-input --no-python-version-warning --no-warn-conflicts --no-warn-script-location"
+        if [ "$USER" == 'root' ]; then
+            local flags="--user --root=\"$target\" $flags"
+        end
+        local command="PIP_REQUIRE_VIRTUALENV=false $python $pip_file $flags pip"
+
+        echo " * $0 info: run $command" >&2
+
+        $SHELL -c "$HTTP_GET $url > $pip_file" && eval ${command} >&2
 
         local retval=$?
         [ -f "$pip_file" ] && unlink "$pip_file"
