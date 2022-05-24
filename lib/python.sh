@@ -269,7 +269,7 @@ function pip_init() {
 
         local flags="--verbose --prefix='' --disable-pip-version-check --no-input --no-python-version-warning --no-warn-conflicts --no-warn-script-location"
         if [ "$USER" = 'root' ]; then
-            local flags="--user --root=\"$target\" $flags"
+            local flags="--user $flags"
         fi
         local command="PIP_REQUIRE_VIRTUALENV=false $python $pip_file $flags pip"
 
