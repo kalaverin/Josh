@@ -317,7 +317,7 @@ function pip_install() {
         return 3
     fi
 
-    local cmd="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false $pip install $PIP_DEFAULT_KEYS --root=\"$target\" --prefix=\"\" --upgrade --upgrade-strategy=eager"
+    local cmd="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false `python_executable` -m pip install $PIP_DEFAULT_KEYS --root=\"$target\" --prefix=\"\" --upgrade --upgrade-strategy=eager"
 
     local done=''
     local fail=''
