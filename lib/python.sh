@@ -128,12 +128,12 @@ function python_executable_scan() {
                 break
             fi
         done
-
-        if [ -n "$result" ]; then
-            echo "$result"
-            return 0
-        fi
     done
+    if [ -n "$result" ]; then
+        echo "$result"
+        return 0
+    fi
+    echo " - $0 fatal: python binarty not found" >&2
     return 1
 }
 
