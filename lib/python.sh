@@ -208,7 +208,7 @@ function python_init() {
 
     local python="`python_executable`"
 
-    if [ -x "$python" ]; then
+    if [ "$?" -gt 0 ] || [ -x "$python" ]; then
         local target="`python_directory $python`"
 
         if [ ! -x "$target/bin/python" ]; then
@@ -248,7 +248,7 @@ function pip_init() {
     fi
 
     local target="`python_init`"
-    if [ ! -d "$target" ]; then
+    if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
         echo " - $0 fatal: python target dir:\`$target\`" >&2
         return 2
     fi
@@ -258,10 +258,11 @@ function pip_init() {
         local pip_file="/tmp/get-pip.py"
 
         local python="`python_executable`"
-        if [ ! -x "$python" ]; then
+        if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
             echo " - $0 fatal: python binary doesn't exists:\`$python\`" >&2
             return 3
         fi
+
         export JOSH_PIP="$target/bin/pip"
         export PYTHONUSERBASE="$target"
 
@@ -316,11 +317,13 @@ function pip_install() {
     local venv="`venv_deactivate`"
 
     local pip="`pip_init`"
-    [ ! -x "$pip" ] && return 2
+    if [ "$?" -gt 0 ] || [ ! -x "$pip" ]; then
+        return 2
+    fi
 
     local target="`python_init`"
-    if [ ! -d "$target" ]; then
-        echo " - $0 fatal: target=\`$target\`"
+    if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
+        echo " - $0 fatal: python target dir:\`$target\`" >&2
         return 3
     fi
 
@@ -397,8 +400,9 @@ function pip_update() {
 }
 
 function pip_extras() {
-    pip_install "$PIP_REQ_PACKAGES"
+    pip_install "$PIP_REQ_PACKAGES" && \
     run_show "pip_install $PIP_OPT_PACKAGES"
+    return "$?"
 }
 
 function python_env() {
