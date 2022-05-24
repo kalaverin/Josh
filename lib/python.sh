@@ -324,7 +324,12 @@ function pip_install() {
         return 3
     fi
 
-    local cmd="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false `python_executable` -m pip install $PIP_DEFAULT_KEYS --prefix=\"\" --verbose --upgrade --upgrade-strategy=eager"
+    local flags="--prefix='' --verbose --upgrade --upgrade-strategy=eager"
+    if [ "$USER" = 'root' ]; then
+        local flags="--user $flags"
+    fi
+
+    local cmd="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false `python_executable` -m pip install $flags $PIP_DEFAULT_KEYS"
 
     local done=''
     local fail=''
