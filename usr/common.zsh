@@ -634,11 +634,22 @@ function josh_bootstrap_command() {
     echo "((curl -fsSL $url || wget -qO - $url || fetch -qo - $url) | zsh) && zsh"
 }
 
-function josh_branch() {
+function __josh_branch {
     echo "$(
         git --git-dir="$JOSH/.git" --work-tree="$JOSH/" \
         rev-parse --quiet --abbrev-ref HEAD 2>/dev/null
     )"
+}
+
+function josh_branch {
+    if [ -n "$JOSH" ] && [ -d "$JOSH" ]; then
+        local branch="`__josh_branch`"
+        if [ "$?" -eq 0 ]; then
+            echo "$branch"
+            return 0
+        fi
+    fi
+    return 1
 }
 
 function josh_bootstrap_command_branched() {

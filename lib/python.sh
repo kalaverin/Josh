@@ -166,7 +166,7 @@ function python_executable() {
     fi
 
     local dirs="$($SHELL -c "echo "$PATH" | sed 's#:#\n#g' | grep -v "$HOME" | sort -su | sed -z 's#\n#:#g' | awk '{\$1=\$1};1'")"
-    if [ -z "$dirs"]; then
+    if [ -z "$dirs" ]; then
         local dirs="$PATH"
     fi
     local result="$(cached_execute "$0" "`path_last_modified "$dirs"`" "$JOSH_CACHE_DIR" "python_executable_scan $dirs")"
