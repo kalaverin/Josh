@@ -165,7 +165,18 @@ function python_executable() {
         fi
     fi
 
-    local dirs="$($SHELL -c "echo "$PATH" | sed 's#:#\n#g' | grep -v "$HOME" | sort -su | sed -z 's#\n#:#g' | awk '{\$1=\$1};1'")"
+    if [ "$JOSH_OS" = 'BSD' ] || [ "$JOSH_OS" = 'MAC' ]; then
+        local gsed="`which gsed`"
+    else
+        local gsed="`which sed`"
+    fi
+
+    if [ ! -x "$gsed" ]; then
+        echo " - $0 fatal: GNU sed for \'$JOSH_OS\' don't found" >&2
+        return 1
+    fi
+
+    local dirs="$($SHELL -c "echo "$PATH" | sed 's#:#\n#g' | grep -v "$HOME" | sort -su | $gsed -z 's#\n#:#g' | awk '{\$1=\$1};1'")"
     if [ -z "$dirs" ]; then
         local dirs="$PATH"
     fi
