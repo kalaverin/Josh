@@ -273,7 +273,7 @@ function pip_init() {
         fi
         local command="PIP_REQUIRE_VIRTUALENV=false $python $pip_file $flags pip"
 
-        echo " * $0 info: run $command" >&2
+        echo " * $0 debug: $command" >&2
 
         $SHELL -c "$HTTP_GET $url > $pip_file" && eval ${command} >&2
 
@@ -330,7 +330,7 @@ function pip_install() {
     fi
 
     local command="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false `python_executable` -m pip $flags $PIP_DEFAULT_KEYS install"
-    echo " * $0 info: run $command" >&2
+    echo " * $0 debug: $command" >&2
 
     local done=''
     local fail=''
