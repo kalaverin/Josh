@@ -61,20 +61,20 @@ PIP_DEFAULT_KEYS=(
     --prefer-binary
 )
 
-function python_distutils() {
+function python_distutils {
     local distutils="`echo 'import distutils; print(distutils)' | $1 2>/dev/null | grep '<module'`"
     ([ "$distutils" ] && echo 1) || echo 0
 }
 
-function python_get_full_version() {
+function python_get_full_version {
     if [ ! -x "$1" ]; then
         echo " - $0 fatal: isn't valid executable \'`$1\'`" >&2
         return 1
     fi
-    echo "`$1 --version 2>&1 | grep -Po '([\d\.]+)$'`"
+    echo "`$1 --version 2>&1 | grep -Po '(\d+\.\d+\.\d+)'`"
 }
 
-function python_get_version() {
+function python_get_version {
     if [ ! -x "$1" ]; then
         echo " - $0 fatal: isn't valid executable \'`$1\'`" >&2
         return 1
@@ -95,13 +95,13 @@ function python_get_version() {
     fi
 }
 
-function python_directory() {
+function python_directory {
     local version="`python_get_version $1`"
     [ -z "$version" ] && return 1
     echo "$PYTHON_BINARIES/$version"
 }
 
-function python_executable_scan() {
+function python_executable_scan {
     source $BASE/run/units/compat.sh
 
     for dir in $($SHELL -c "echo "$*" | sed 's#:#\n#g'"); do
@@ -138,11 +138,11 @@ function python_executable_scan() {
         echo "$result"
         return 0
     fi
-    echo " - $0 fatal: python binarty not found" >&2
+    echo " - $0 fatal: python binary not found" >&2
     return 1
 }
 
-function python_executable() {
+function python_executable {
     source $BASE/run/units/compat.sh
     if [ $? -gt 0 ]; then
         echo " - $0 fatal: something wrong, source BASE:\`$BASE\`" >&2
@@ -192,14 +192,14 @@ function python_executable() {
         if [ -x "$python" ]; then
             fs_realpath "$python" 1>/dev/null
             [ "$?" -eq 0 ] && echo "$python"
+            return 0
         fi
-    else
-        echo " - $0 fatal: python doesn't exists in dirs:'$dirs'" >&2
     fi
+    echo " - $0 fatal: python doesn't exists in dirs:'$dirs'" >&2
     return 1
 }
 
-function python_init() {
+function python_init {
     if [ -x "$JOSH_PYTHON" ] && [ -d "$PYTHONUSERBASE" ]; then
         echo "$JOSH_PYTHON"
         return 0
@@ -225,6 +225,8 @@ function python_init() {
                 echo " - $0 fatal: something wrong on link :-\ " >&2
                 return 2
             fi
+
+            ln -s "$target" "$target/local"
             ln -s "$python" "$target/bin/python3"
             ln -s "$python" "$target/bin/"  # finally /pythonX.Y.Z
             ln -s "$target" "`fs_dirname $target`/default"
@@ -241,7 +243,30 @@ function python_init() {
     return 0
 }
 
-function pip_init() {
+function pip_executive {
+
+    pip_subdirectories=(
+        bin
+    )
+
+    local target="`python_init`"
+    if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
+        echo " - $0 fatal: python target dir:\`$target\`" >&2
+        return 2
+    fi
+
+    for dir in $pip_subdirectories; do
+        local pip="$target/$dir/pip"
+        if [ -x "$pip" ]; then
+            echo "$pip"
+            return 0
+        fi
+    done
+    echo " - $0 fatal: pip binary not found" >&2
+    return 1
+}
+
+function pip_init {
     if [ -x "$JOSH_PIP" ] && [ -d "$PYTHONUSERBASE" ]; then
         echo "$JOSH_PIP"
         return 0
@@ -253,7 +278,7 @@ function pip_init() {
         return 2
     fi
 
-    if [ ! -x "$target/bin/pip" ]; then
+    if [ ! -x "`pip_executive`" ]; then
         url="https://bootstrap.pypa.io/get-pip.py"
         local pip_file="/tmp/get-pip.py"
 
@@ -263,13 +288,16 @@ function pip_init() {
             return 3
         fi
 
-        export JOSH_PIP="$target/bin/pip"
         export PYTHONUSERBASE="$target"
 
         echo " * $0 info: deploy pip with python:\`$python\` to hier:\`$target\`" >&2
 
-        local flags="--root='/' --prefix='$target' --disable-pip-version-check --no-input --no-python-version-warning --no-warn-conflicts --no-warn-script-location"
-        local command="PIP_REQUIRE_VIRTUALENV=false $python $pip_file $flags pip"
+        local flags="--disable-pip-version-check --no-input --no-python-version-warning --no-warn-conflicts --no-warn-script-location"
+
+        if [ "$JOSH_OS" = 'BSD' ] || [ "$JOSH_OS" = 'MAC' ]; then
+            local flags="--root='/' --prefix='$target' $flags"
+        fi
+        local command="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false $python $pip_file $flags pip"
 
         echo " * $0 debug: $command" >&2
 
@@ -283,21 +311,22 @@ function pip_init() {
             return 1
         fi
 
-        if [ ! -x "$target/bin/pip" ]; then
-            echo " - $0 fatal: pip doesn't exists in $target/bin/" >&2
+        if [ ! -x "`pip_executive`" ]; then
+            echo " - $0 fatal: pip doesn't exists in $target/bin/ or $target/local/bin/" >&2
             return 127
         fi
 
         rehash
         pip_install "$PIP_REQ_PACKAGES"
     fi
-    export JOSH_PIP="$target/bin/pip"
+
+    export JOSH_PIP="`pip_executive`"
     export PYTHONUSERBASE="$target"
     echo "$target/bin/pip"
     return 0
 }
 
-function venv_deactivate() {
+function venv_deactivate {
     if [ -z "$VIRTUAL_ENV" ] || [ ! -f "$VIRTUAL_ENV/bin/activate" ]; then
         unset venv
     else
@@ -307,7 +336,7 @@ function venv_deactivate() {
     fi
 }
 
-function pip_install() {
+function pip_install {
     if [ -z "$*" ]; then
         echo " - $0 fatal: nothing to do" >&2
         return 1
@@ -326,7 +355,10 @@ function pip_install() {
         return 3
     fi
 
-    local flags="--root='/' --prefix='$target' --upgrade --upgrade-strategy=eager"
+    local flags="--upgrade --upgrade-strategy=eager"
+    if [ "$JOSH_OS" = 'BSD' ] || [ "$JOSH_OS" = 'MAC' ]; then
+        local flags="--root='/' --prefix='$target' $flags"
+    fi
     local command="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false `python_executable` -m pip install $flags $PIP_DEFAULT_KEYS"
     echo " * $0 debug: $command" >&2
 
@@ -371,7 +403,7 @@ function pip_install() {
     [ -n "$venv" ] && source $venv/bin/activate
 }
 
-function pip_update() {
+function pip_update {
     local pip="`pip_init`"
     [ ! -x "$pip" ] && return 1
 
@@ -396,7 +428,7 @@ function pip_update() {
     return $retval
 }
 
-function pip_extras() {
+function pip_extras {
     pip_install "$PIP_REQ_PACKAGES"
     local retval="$?"
     run_show "pip_install $PIP_OPT_PACKAGES"
@@ -407,6 +439,6 @@ function pip_extras() {
     fi
 }
 
-function python_env() {
+function python_env {
     pip_init >/dev/null
 }

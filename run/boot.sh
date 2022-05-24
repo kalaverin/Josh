@@ -293,7 +293,6 @@ function which() {
         local dst="$commands[$src]"
 
     elif [ "`function_exists lookup`" -gt 0 ]; then
-        printf " -- info ($0): fallback to PATH scan, because query term isn't found '$src'\n" >&2
         local dst="$(lookup "$src")"
     fi
 

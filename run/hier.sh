@@ -64,7 +64,6 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
         fi
 
         if [ -z "$JOSH_MD5_PIPE" ] || [ -z "$JOSH_QAP" ] || [ -z "$JOSH_QAP" ]; then
-            # echo " ! important $0: compressors undefined; $*" >&2
             local command="${@:4}"
             local result="`eval ${command}`"
             local retval="$?"
