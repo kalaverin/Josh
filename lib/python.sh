@@ -252,14 +252,17 @@ function pip_init() {
 
         local python="`python_executable`"
         if [ ! -x "$python" ]; then
-            echo " - $0 fatal: python=\`$python\`" >&2
+            echo " - $0 fatal: python binary doesn't exists:\`$python\`" >&2
             return 3
         fi
         export JOSH_PIP="$target/bin/pip"
         export PYTHONUSERBASE="$target"
 
+        echo " * $0 info: deploy pip with python:\`$python\` to hier:\`$target\`" >&2
+
         $SHELL -c "$HTTP_GET $url > $pip_file" && \
             PIP_REQUIRE_VIRTUALENV=false $python $pip_file \
+                --root="$target" --prefix="" \
                 --disable-pip-version-check \
                 --no-input \
                 --no-python-version-warning \
@@ -276,7 +279,7 @@ function pip_init() {
         fi
 
         if [ ! -x "$target/bin/pip" ]; then
-            echo " - $0 fatal: pip isn't exists in $target/bin/" >&2
+            echo " - $0 fatal: pip doesn't exists in $target/bin/" >&2
             return 127
         fi
         pip_install "$PIP_REQ_PACKAGES"
@@ -314,7 +317,7 @@ function pip_install() {
         return 3
     fi
 
-    local cmd="PIP_REQUIRE_VIRTUALENV=false $pip install $PIP_DEFAULT_KEYS --upgrade --upgrade-strategy=eager"
+    local cmd="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false $pip install $PIP_DEFAULT_KEYS --upgrade --upgrade-strategy=eager"
 
     local done=''
     local fail=''
@@ -349,7 +352,7 @@ function pip_install() {
     fi
 
     if [ -n "$result" ]; then
-        echo " - $0 info: $result" >&2
+        echo " * $0 info: $result" >&2
     fi
 
     [ -n "$venv" ] && source $venv/bin/activate
