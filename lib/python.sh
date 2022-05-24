@@ -128,6 +128,7 @@ function python_executable_scan() {
                 break
             fi
         done
+
         if [ -n "$result" ]; then
             echo "$result"
             return 0
@@ -174,6 +175,7 @@ function python_executable() {
             [ "$?" -eq 0 ] && echo "$python"
         fi
     fi
+    echo " - $0 fatal: python doesn't exists in dirs:'$dirs'" >&2
     return 1
 }
 
@@ -208,6 +210,7 @@ function python_init() {
             ln -s "$target" "`fs_dirname $target`/default"
         fi
     else
+        echo " - $0 fatal: python executable and home directory can't detected" >&2
         return 1
     fi
 
@@ -225,7 +228,7 @@ function pip_init() {
 
     local target="`python_init`"
     if [ ! -d "$target" ]; then
-        echo " - $0 fatal: target=\`$target\`" >&2
+        echo " - $0 fatal: python target dir:\`$target\`" >&2
         return 2
     fi
 
