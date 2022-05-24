@@ -120,15 +120,22 @@ function python_executable_scan() {
 
             unset result
             version_not_compatible $MIN_PYTHON_VERSION $version
-            [ $? -gt 0 ] && [ "`python_distutils $exe`" -gt 0 ] && local result="$exe"
+            if [ $? -gt 0 ]; then
+                if [ "`python_distutils $exe`" -gt 0 ]; then
+                    local result="$exe"
+                else
+                    echo " * $0 info: python $version from $exe do not have distutils, skip" >&2
+                fi
+            fi
 
             if [ "$result" ]; then
-                echo " * $0 info: using python $version from $exe" >&2
+                echo " * $0 info: using python $version" >&2
                 break
             fi
         done
     done
     if [ -n "$result" ]; then
+        echo " * $0 info: python binary $result" >&2
         echo "$result"
         return 0
     fi
@@ -181,9 +188,13 @@ function python_executable() {
     fi
     local result="$(cached_execute "$0" "`path_last_modified "$dirs"`" "$JOSH_CACHE_DIR" "python_executable_scan $dirs")"
 
+    echo "1: >$result<" >&2
     if [ "$result" ]; then
+        echo "2: >$result<" >&2
         local python="`fs_realpath $result`"
+        echo "3: >$python<" >&2
         if [ -x "$python" ]; then
+            echo "4: >$python<" >&2
             fs_realpath "$python" 1>/dev/null
             [ "$?" -eq 0 ] && echo "$python"
         fi

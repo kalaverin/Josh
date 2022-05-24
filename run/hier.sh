@@ -105,12 +105,13 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
 
         local result="`eval ${@:4}`"
         local retval="$?"
+
         if [ -n "$result" ] && [ "$retval" -eq 0 ]; then
             if [ ! -d "`fs_dirname "$file"`" ]; then
                 mkdir -p "`fs_dirname "$file"`"
             fi
             local command="echo \"$result\" | $JOSH_PAQ > \"$file\""
-            local result="`eval ${command}`"
+            eval ${command}
         fi
         echo "$result"
         return "$retval"
