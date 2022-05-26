@@ -18,6 +18,10 @@ source "$JOSH/lib/rust.sh" && rust_env
 
 path_prune
 
+if [ ! -f "$HOME/.config/starship.toml" ]; then
+    export STARSHIP_CONFIG="$JOSH/usr/share/starship.toml"
+fi
+
 # JOSH_PY_ENVS_ROOT
 # directory for permanent virtualenvs maded by virtualenv_create
 #
