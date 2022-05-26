@@ -1,29 +1,39 @@
-right_format = ''
+right_format = '$cmd_duration$status'
 scan_timeout = 50
-command_timeout = 3000
+command_timeout = 5000
 add_newline = false
 
 [aws]
 format = ' @[$symbol($profile )(\($region\) )(\[$duration\])]($style)'
 
+[azure]
+format = ' [$symbol($subscription)]($style) '
+
+[buf]
+format = ' [$symbol($version)]($style)'
+
+[c]
+format = ' [$symbol($version(-$name))]($style)'
+
 [character]
 format = '$symbol'
 success_symbol = '[λ](bold green) '
-error_symbol = ''
-vicmd_symbol = '[λ](bold green) '
+error_symbol = '[λ](bold red) '
+vicmd_symbol = '[λ](bold blue) '
 disabled = false
 
 [cmake]
 format = ' [$symbol($version)]($style)'
 
 [cmd_duration]
-min_time = 5000
-format = ' [$duration]($style)'
-style = 'yellow dimmed'
-show_milliseconds = false
-disabled = false
-show_notifications = false
-min_time_to_notify = 45000
+min_time = 3000
+format = '[$duration]($style)'
+style = 'blue'
+show_notifications = true
+min_time_to_notify = 0
+
+[cobol]
+format = ' [$symbol($version)]($style)'
 
 [conda]
 format = ' [$symbol$environment]($style)'
@@ -42,7 +52,6 @@ truncate_to_repo = false
 fish_style_pwd_dir_length = 2
 format = '[$path]($style)[/](black bold)[$read_only]($read_only_style)'
 style = 'white'
-disabled = false
 read_only = 'RO'
 read_only_style = 'fg:white bold bg:red'
 repo_root_style = 'yellow'
@@ -72,25 +81,14 @@ format = ' [$symbol$account(@$domain)(\($region\))]($style)'
 format = '[$symbol$branch]($style)(:[$remote]($style))[/](black bold)'
 symbol = ''
 style = 'yellow bold'
-truncation_length = 9223372036854775807
-truncation_symbol = '…'
-only_attached = false
-always_show_remote = false
 disabled = false
 
 [git_commit]
-commit_hash_length = 7
 format = '[$hash$tag]($style)[/](black bold)'
-style = 'green bold'
-only_detached = true
-disabled = false
 tag_symbol = '/'
 tag_disabled = false
 
 [git_metrics]
-added_style = 'bold green'
-deleted_style = 'bold red'
-only_nonzero_diffs = true
 format = '[$added]($added_style)[$deleted]($deleted_style)'
 disabled = false
 
@@ -112,6 +110,7 @@ style = 'fg:white bold'
 stashed = ''
 ahead = '⇡'
 behind = '⇣'
+up_to_date = '))))'
 diverged = '⇕'
 conflicted = '='
 deleted = '✘'
@@ -119,36 +118,39 @@ renamed = '»'
 modified = '!'
 staged = '+'
 untracked = '?'
+ignore_submodules = false
 disabled = false
 
 [golang]
 format = ' [$symbol($version)]($style)'
 
+[haskell]
+format = ' [$symbol($version )]($style)'
+
 [helm]
 format = ' [$symbol($version)]($style)'
 
+[hg_branch]
+format = ' [$symbol$branch]($style)'
+
 [hostname]
-ssh_only = false
-trim_at = '.'
 format = '[$hostname]($style)[:](black bold)'
-style = 'green bold'
-disabled = false
+style = 'green'
 
 [java]
 format = ' [$symbol($version)]($style)'
 
 [jobs]
-threshold = 1
 format = ' [$symbol$number]($style)'
-symbol = '✦'
-style = 'bold blue'
-disabled = false
 
 [julia]
 format = ' [$symbol($version)]($style)'
 
 [kotlin]
 format = ' [$symbol($version)]($style)'
+
+[line_break]
+disabled = false
 
 [lua]
 format = ' [$symbol($version)]($style)'
@@ -158,11 +160,6 @@ format = ' [$symbol($version)]($style)'
 
 [nix_shell]
 format = '[$symbol$state( \($name\))]($style) '
-symbol = '❄️  '
-style = 'bold blue'
-impure_msg = 'impure'
-pure_msg = 'pure'
-disabled = false
 
 [nodejs]
 format = ' [$symbol($version)]($style)'
@@ -175,10 +172,6 @@ format = ' [$symbol$cloud(\($project\))]($style) '
 
 [package]
 format = ' [$symbol$version]($style)'
-symbol = '📦 '
-style = '208 bold'
-display_private = false
-disabled = false
 
 [perl]
 format = ' [$symbol($version)]($style)'
@@ -186,38 +179,21 @@ format = ' [$symbol($version)]($style)'
 [php]
 format = ' [$symbol($version)]($style)'
 
+[pulumi]
+format = ' [$symbol($version)]($style)'
+
 [purescript]
 format = ' [$symbol($version)]($style)'
 
 [python]
-pyenv_version_name = false
-pyenv_prefix = 'pyenv '
-python_binary = [
-    'python',
-    'python3',
-    'python2',
-]
 format = ' [${pyenv_prefix}$virtualenv](bright-yellow)[:](black)[${version}]($style)'
 version_format = '${raw}'
 style = 'purple'
-symbol = '🐍 '
-disabled = false
-detect_extensions = ['py']
-detect_files = [
-    'requirements.txt',
-    '.python-version',
-    'pyproject.toml',
-    'Pipfile',
-    'tox.ini',
-    'setup.py',
-    '__init__.py',
-]
-detect_folders = []
-
-[rlang]
-format = ' [$symbol($version)]($style)'
 
 [red]
+format = ' [$symbol($version)]($style)'
+
+[rlang]
 format = ' [$symbol($version)]($style)'
 
 [ruby]
@@ -229,23 +205,24 @@ format = ' [$symbol($version)]($style)'
 [scala]
 format = ' [$symbol($version)]($style)'
 
+[singularity]
+format = '[$symbol\[$env\]]($style) '
+
+[spack]
+format = ' [$symbol$environment]($style)'
+
 [status]
-format = '[$status]($style) '
-symbol = '✖'
-not_executable_symbol = '🚫'
-not_found_symbol = '🔍'
-sigint_symbol = '🧱'
-signal_symbol = '⚡'
-style = 'bold red'
-map_symbol = false
-recognize_signal_code = true
+format = ' [$status]($style)'
+symbol = ''
+success_symbol = ''
+style = 'bg:purple fg:white bold'
 disabled = false
 
 [sudo]
 format = ' [$symbol]($style)'
 style = 'fg:white bold bg:red'
 symbol = 'SU'
-disabled = true
+disabled = false
 
 [swift]
 format = ' [$symbol($version)]($style)'
@@ -255,26 +232,21 @@ format = ' [$symbol$workspace]($style)'
 
 [time]
 format = '[$time]($style) '
-style = 'bold yellow'
-use_12hr = false
-disabled = true
-utc_time_offset = 'local'
-time_range = '-'
 
 [username]
 format = '[$user]($style)[@](black bold)'
 style_root = 'bg:red fg:white bold'
-style_user = 'yellow bold'
+style_user = 'yellow'
 show_always = true
-disabled = false
-
-[vlang]
-format = ' [$symbol($version)]($style)'
 
 [vagrant]
 format = ' [$symbol($version)]($style)'
 
-[zig]
+[vcsh]
+format = ' [$symbol$repo]($style)'
+
+[vlang]
 format = ' [$symbol($version)]($style)'
 
-[custom]
+[zig]
+format = ' [$symbol($version)]($style)'
