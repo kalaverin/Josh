@@ -78,6 +78,7 @@ function update_internals() {
     source "$JOSH/lib/python.sh" && \
     pip_install "$PIP_REQ_PACKAGES"
     pip_update
+    pip_compliance
 }
 
 function update_packages() {

@@ -17,6 +17,79 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
         done
     }
 
+    function fs.dirs.normalize {
+        local result=''
+        for dir in $*; do
+            local dir="$($SHELL -c "echo $dir" 2>/dev/null)"
+            if [ -n "$dir" ] && [ -d "$dir" ]; then
+                local dir="$(realpath "$dir")"
+                if [ -n "$dir" ] && [ -d "$dir" ]; then
+                    if [ -z "$result" ]; then
+                        local result="$dir"
+                    else
+                        local result="$result:$dir"
+                    fi
+                fi
+            fi
+        done
+        echo "$result"
+    }
+
+    function escape.regex {
+        echo "$(printf '%s' "$1" | sed 's/[.[\(*^$+?{|]/\\&/g')"
+    }
+
+    function fs.dirs.exclude {
+        local regex="^`echo "$(escape.regex "$2")" | sed "s#:#|^#g"`"
+
+        for dir in $(echo "$1" | sed 's#:#\n#g'); do
+            if [ -z "$dir" ]; then
+                continue
+            fi
+
+            local dir="$(realpath "$dir")"
+            if [ -z "$dir" ]; then
+                continue
+            fi
+
+            if [ -n "$(echo "$dir" | grep -Po "$regex")" ]; then
+                continue
+            fi
+
+            if [ -n "$dir" ] && [ -d "$dir" ]; then
+                if [ -z "$result" ]; then
+                    local result="$dir"
+                else
+                    local result="$result:$dir"
+                fi
+            fi
+        done
+        echo "$result"
+    }
+
+    function lookup.all() {
+        local ignore="$(
+            cached_execute "$0" "$2" "$JOSH_CACHE_DIR" \
+            "fs.dirs.normalize" ${@:3})"
+
+        local directories="$(
+            cached_execute "$0" "$2" "$JOSH_CACHE_DIR" \
+            "fs.dirs.exclude" "$PATH" "$ignore")"
+
+        local result=''
+        for dir in $(echo "$directories" | sed 's#:#\n#g'); do
+            local bin="$dir/$1"
+            if [ -x "$bin" ] || [ -L "$bin" ]; then
+                if [ -z "$result" ]; then
+                    local result="$bin"
+                else
+                    local result="$result:$bin"
+                fi
+            fi
+        done
+        echo "$result"
+    }
+
     function path_last_modified() {
         if [ -n "$*" ]; then
             local result="$(
@@ -59,7 +132,7 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
             return 3
 
         elif [ -z "$4" ]; then
-            echo " - fatal $0: args expire must be: \`$1\`, \`$2\`, \`$3\`, \`${@:4}\` " >&2
+            echo " - fatal $0: args one or many must be: \`$1\`, \`$2\`, \`$3\`, \`${@:4}\` " >&2
             return 4
         fi
 

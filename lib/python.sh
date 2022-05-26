@@ -67,6 +67,11 @@ function python_distutils {
 }
 
 function python_get_full_version {
+    if [ -z "$1" ]; then
+        printf " ** fail ($0): call without args, I need to do — what?\n" >&2
+        return 1
+    fi
+
     if [ ! -x "$1" ]; then
         echo " - $0 fatal: isn't valid executable \'`$1\'`" >&2
         return 1
@@ -75,6 +80,11 @@ function python_get_full_version {
 }
 
 function python_get_version {
+    if [ -z "$1" ]; then
+        printf " ** fail ($0): call without args, I need to do — what?\n" >&2
+        return 1
+    fi
+
     if [ ! -x "$1" ]; then
         echo " - $0 fatal: isn't valid executable \'`$1\'`" >&2
         return 1
@@ -96,6 +106,11 @@ function python_get_version {
 }
 
 function python_directory {
+    if [ -z "$1" ]; then
+        printf " ** fail ($0): call without args, I need to do — what?\n" >&2
+        return 1
+    fi
+
     local version="`python_get_version $1`"
     [ -z "$version" ] && return 1
     echo "$PYTHON_BINARIES/$version"
@@ -346,8 +361,8 @@ function venv_deactivate {
 }
 
 function pip_install {
-    if [ -z "$*" ]; then
-        echo " - $0 fatal: nothing to do" >&2
+    if [ -z "$1" ]; then
+        printf " ** fail ($0): call without args, I need to do — what?\n" >&2
         return 1
     fi
 
@@ -455,4 +470,52 @@ function pip_extras {
 
 function python_env {
     pip_init >/dev/null
+}
+
+function pip_compliance {
+    local target="`python_init`"
+    if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
+        echo " - $0 fatal: python target dir:\`$target\`" >&2
+        return 1
+    fi
+
+    local result=""
+    local expire="`path_last_modified $PATH`"
+    local system="/bin /sbin /usr/bin /usr/sbin /usr/local/bin /usr/local/sbin"
+
+    for bin in $(find "$target/bin" -maxdepth 1 -type f 2>/dev/null | sort -Vr); do
+        local short="`basename $bin`"
+
+        local src="$target/bin/$short"
+        local src_size="`fs_size "$src"`"
+
+        if [ -n "$short" ] && [ -x "$src" ]; then
+            local shadows="$(lookup.all "$short" "$expire" "$target/bin" $system)"
+            if [ -n "$shadows" ]; then
+                for dst in $(echo "$shadows" | sed 's#:#\n#g'); do
+                    local dst_size="`fs_size "$dst"`"
+
+                    local msg="$src ($src_size bytes) -> $dst ($dst_size bytes)"
+                    if [ -n "$JOSH_MD5_PIPE" ] && [ "$src_size" = "$dst_size" ]; then
+                        local src_md5="$(cat "$src" | sh -c "$JOSH_MD5_PIPE")"
+                        local dst_md5="$(cat "$dst" | sh -c "$JOSH_MD5_PIPE")"
+                        if [ "$src_md5" = "$dst_md5" ]; then
+                            local msg="$src ($src_size bytes) -> $dst (absolutely same, unlink last)"
+                        fi
+                    fi
+
+                    if [ -z "$result" ]; then
+                        local result="$msg"
+                    else
+                        local result="$result\n$msg"
+                    fi
+                done
+            fi
+        fi
+    done
+    if [ -n "$result" ]; then
+        echo " -- $0 warning: one or many binaries may be shadowed"
+        echo "$result"
+        echo " -- $0 warning: disable execution by chmod a-x /file/path or unlink shadow from right side"
+    fi
 }

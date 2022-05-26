@@ -43,14 +43,32 @@ path=(
     $path
 )
 
+function fs_size() {
+    if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
+        echo " - $0 fatal: python target dir:\`$target\`" >&2
+        return 1
+    fi
+
+    builtin zstat -LA result "$1" 2>/dev/null
+    [ "$?" -eq 0 ] && echo "$result[8]"
+}
 
 function fs_mtime() {
+    if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
+        echo " - $0 fatal: python target dir:\`$target\`" >&2
+        return 1
+    fi
+
     builtin zstat -LA result "$1" 2>/dev/null
     [ "$?" -eq 0 ] && echo "$result[10]"
 }
 
-
 function fs_readlink() {
+    if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
+        echo " - $0 fatal: python target dir:\`$target\`" >&2
+        return 1
+    fi
+
     builtin zstat -LA result "$1" 2>/dev/null
     local retval="$?"
     local result="$result[14]"
