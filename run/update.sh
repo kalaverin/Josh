@@ -4,7 +4,7 @@ if [[ -n ${(M)zsh_eval_context:#file} ]]; then
     fi
 fi
 
-function pull_update() {
+function pull_update {
     local cwd="`pwd`" && builtin cd "$JOSH"
 
     local detected="`git rev-parse --quiet --abbrev-ref HEAD`"
@@ -54,18 +54,18 @@ function pull_update() {
     builtin cd "$cwd" && return "$retval"
 }
 
-function post_update() {
+function post_update {
     update_internals
     source "$JOSH/run/units/compat.sh" && check_compliance
 }
 
-function post_upgrade() {
+function post_upgrade {
     update_internals
     update_packages
     source "$JOSH/run/units/compat.sh" && check_compliance
 }
 
-function update_internals() {
+function update_internals {
     source "$JOSH/run/units/configs.sh" && \
     zero_configuration
 
@@ -78,10 +78,9 @@ function update_internals() {
     source "$JOSH/lib/python.sh" && \
     pip_install "$PIP_REQ_PACKAGES"
     pip_update
-    pip_compliance
 }
 
-function update_packages() {
+function update_packages {
     source "$JOSH/lib/rust.sh" && \
     cargo_install "$CARGO_REQ_PACKAGES"
     cargo_update
@@ -90,7 +89,7 @@ function update_packages() {
     brew_update
 }
 
-function deploy_extras() {
+function deploy_extras {
     local cwd="`pwd`"
     (source "$JOSH/lib/python.sh" && pip_extras || echo " - warning (python): something went wrong") && \
     (source "$JOSH/lib/rust.sh" && cargo_extras || echo " - warning (rust): something went wrong")

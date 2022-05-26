@@ -592,6 +592,7 @@ function josh_pull() {
     source "$JOSH/run/update.sh" && pull_update $@
     local retval="$?"
     builtin cd "$cwd"
+    source "$JOSH/lib/python.sh" && pip_compliance_check
     return $retval
 }
 
@@ -601,7 +602,7 @@ function josh_update() {
     source "$JOSH/run/update.sh" && post_update $@
     local retval="$?"
     builtin cd "$cwd"
-    exec zsh
+    source "$JOSH/lib/python.sh" && pip_compliance_check
     return $retval
 }
 
@@ -611,23 +612,22 @@ function josh_upgrade() {
     source "$JOSH/run/update.sh" && post_upgrade $@
     local retval="$?"
     builtin cd "$cwd"
-    exec zsh
+    source "$JOSH/lib/python.sh" && pip_compliance_check
     return $retval
 }
 
-function josh_reinstall() {
-    local cwd="`pwd`"
-    url='"https://kalaver.in/shell?$RANDOM"'
-    run_show "$HTTP_GET $url | $SHELL"
-    local retval="$?"
-    if [ "$retval" -gt 0 ]; then
-        echo ' - fatal: something wrong :-\'
-        return 1
-    fi
-    builtin cd "$cwd"
-    exec zsh
-    return $retval
-}
+# function josh_reinstall() {
+#     local cwd="`pwd`"
+#     url='"https://kalaver.in/shell?$RANDOM"'
+#     run_show "$HTTP_GET $url | $SHELL"
+#     local retval="$?"
+#     if [ "$retval" -gt 0 ]; then
+#         echo ' - fatal: something wrong :-\'
+#         return 1
+#     fi
+#     builtin cd "$cwd"
+#     return $retval
+# }
 
 function josh_bootstrap_command() {
     local url="${1:-"http://kalaver.in/shell?$RANDOM"}"

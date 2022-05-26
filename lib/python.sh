@@ -472,7 +472,7 @@ function python_env {
     pip_init >/dev/null
 }
 
-function pip_compliance {
+function pip_compliance_check {
     local target="`python_init`"
     if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
         echo " - $0 fatal: python target dir:\`$target\`" >&2
