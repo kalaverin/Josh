@@ -516,6 +516,6 @@ function pip_compliance_check {
     if [ -n "$result" ]; then
         echo " -- $0 warning: one or many binaries may be shadowed"
         echo "$result"
-        echo " -- $0 warning: disable execution by chmod a-x /file/path or unlink shadow from right side and run this test again by: josh_source lib/python.sh && pip_compliance"
+        echo " -- $0 warning: disable execution by chmod a-x /file/path or unlink shadow from right side and run this test again by: pip_compliance_check"
     fi
 }
