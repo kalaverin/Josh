@@ -44,8 +44,8 @@ path=(
 )
 
 function fs_size() {
-    if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
-        echo " - $0 fatal: python target dir:\`$target\`" >&2
+    if [ -z "$1" ]; then
+        printf " ** fail ($0): call without args, I need to do — what?\n" >&2
         return 1
     fi
 
@@ -54,8 +54,8 @@ function fs_size() {
 }
 
 function fs_mtime() {
-    if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
-        echo " - $0 fatal: python target dir:\`$target\`" >&2
+    if [ -z "$1" ]; then
+        printf " ** fail ($0): call without args, I need to do — what?\n" >&2
         return 1
     fi
 
@@ -64,8 +64,8 @@ function fs_mtime() {
 }
 
 function fs_readlink() {
-    if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
-        echo " - $0 fatal: python target dir:\`$target\`" >&2
+    if [ -z "$1" ]; then
+        printf " ** fail ($0): call without args, I need to do — what?\n" >&2
         return 1
     fi
 
