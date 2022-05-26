@@ -52,7 +52,7 @@ truncate_to_repo = false
 fish_style_pwd_dir_length = 2
 format = '[$path]($style)[/](black bold)[$read_only]($read_only_style)'
 style = 'white'
-read_only = 'RO'
+read_only = 'ro'
 read_only_style = 'fg:white bold bg:red'
 repo_root_style = 'yellow'
 repo_root_format = '[$before_root_path]($style)[$repo_root]($repo_root_style)[$path]($style)[$read_only]($read_only_style)[/](black bold)'
@@ -221,7 +221,7 @@ disabled = false
 [sudo]
 format = ' [$symbol]($style)'
 style = 'fg:white bold bg:red'
-symbol = 'SU'
+symbol = 'root'
 disabled = false
 
 [swift]
