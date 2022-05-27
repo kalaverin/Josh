@@ -361,10 +361,12 @@ function python.set {
         return 5
     fi
 
-    pip.exe
+    pip.deploy
+
     if [ ! "$(python.version "$PYTHON_BINARIES/default/bin/python" 2>/dev/null)" = "$(python.version "$python" 2>/dev/null)" ]; then
         printf " ++ warn ($0): using $python ($source=$version) from $target, don't forget pip.extras\n" >&2
     fi
+
     [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
     josh_source run/boot.sh && path_prune && rehash
 }
