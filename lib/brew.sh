@@ -129,7 +129,7 @@ function brew_install() {
         if [ -x "$bin" ]; then
             local dst="`shortcut "$bin"`"
             if [ -n "$dst" ]; then
-                printf " -- info ($0): $exe -> `which $exe` ($dst)\n" >&2
+                printf " -- info ($0): $dst -> `which $exe`\n" >&2
             fi
         fi
     done
