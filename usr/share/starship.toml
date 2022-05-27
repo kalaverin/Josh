@@ -26,9 +26,10 @@ disabled = false
 format = ' [$symbol($version)]($style)'
 
 [cmd_duration]
-min_time = 3000
+min_time = 250
 format = '[$duration]($style)'
 style = 'blue'
+show_milliseconds = true
 show_notifications = true
 min_time_to_notify = 0
 
