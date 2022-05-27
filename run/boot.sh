@@ -263,23 +263,23 @@ function shortcut {
 
     if [ -z "$2" ]; then
         local src="$dir/`fs_basename $1`"
-        local dst="`fs_realpath $1`"
+        local dst="$1"
 
         if [ ! -x "$dst" ]; then
-            echo " - $0 fail: link source \`$1\` -> \`$dst\` isn't executable (exists?)" >&2
+            printf " ** fail ($0): link source '$1' -> '$dst' isn't executable (exists?)\n" >&2
             return 2
         fi
 
     else
         if [[ "$1" =~ "/" ]]; then
-            echo " - $0 fail: link source \`$1\` couldn't contains slashes" >&2
+            printf " ** fail ($0): link source '$1' couldn't contains slashes\n" >&2
             return 1
         fi
         local src="$dir/$1"
-        local dst="`fs_realpath $2`"
+        local dst="$2"
 
         if [ ! -x "$dst" ]; then
-            echo " - $0 fail: link source \`$2\` -> \`$dst\` isn't executable (exists?)" >&2
+            printf " ** fail ($0): link source '$2' -> '$dst' isn't executable (exists?)\n" >&2
             return 2
         fi
     fi

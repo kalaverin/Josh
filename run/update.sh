@@ -47,7 +47,7 @@ function pull_update {
         local retval=1
     fi
 
-    if [ -x "`which git-restore-mtime`" ]; then
+    if [ -x "$commands[git-restore-mtime]" ]; then
         git-restore-mtime --skip-missing --quiet
     fi
 
@@ -91,7 +91,7 @@ function update_packages {
 
 function deploy_extras {
     local cwd="`pwd`"
-    (source "$JOSH/lib/python.sh" && pip_extras || echo " - warning (python): something went wrong") && \
+    (source "$JOSH/lib/python.sh" && pip.extras || echo " - warning (python): something went wrong") && \
     (source "$JOSH/lib/rust.sh" && cargo_extras || echo " - warning (rust): something went wrong")
     (source "$JOSH/lib/brew.sh" && brew_env && (brew_extras || echo " - warning (brew): something went wrong"))
     builtin cd "$cwd"

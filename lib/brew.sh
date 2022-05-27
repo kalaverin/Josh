@@ -8,7 +8,7 @@ if [[ -n ${(M)zsh_eval_context:#file} ]]; then
     JOSH_CACHE_DIR="$HOME/.cache/josh"
     if [ ! -d "$JOSH_CACHE_DIR" ]; then
         mkdir -p "$JOSH_CACHE_DIR"
-        echo " * make Josh cache directory \`$JOSH_CACHE_DIR\`"
+        echo " * make Josh cache directory '$JOSH_CACHE_DIR'"
     fi
 
     if [ -n "$JOSH_DEST" ]; then
@@ -40,7 +40,7 @@ BREW_REС_PACKAGES=(
 
 
 function brew_root() {
-    local msg=" - $0 fatal: isn't supported \`$JOSH_OS\`: `uname -srv`"
+    local msg=" ** fail ($0): isn't supported '$JOSH_OS': `uname -srv`"
 
     if [ "$JOSH_OS" = "BSD" ]; then
         echo "$msg" >&2
@@ -61,7 +61,7 @@ function brew_bin() {
 
     local bin="$root/bin/brew"
     if [ ! -x "$bin" ]; then
-        echo " - $0 fatal: brew binary \`$root/bin/brew\` isn't found" >&2
+        printf " ** fail ($0): brew binary '$root/bin/brew' isn't found\n" >&2
         return 2
     fi
 
@@ -74,11 +74,11 @@ function brew_deploy() {
     [ -z "$root" ] && return 1
 
     if [ -d "$root" ]; then
-        echo " - $0 fatal: brew path \`$root\` exists" >&2
+        printf " ** fail ($0): brew path '$root' exists\n" >&2
         return 2
 
     elif [ ! -d "`fs_dirname $root`" ]; then
-        echo " - $0 fatal: brew path \`$root\` subroot isn't found" >&2
+        printf " ** fail ($0): brew path '$root' subroot isn't found\n" >&2
         return 3
     fi
 
@@ -98,7 +98,7 @@ function brew_init() {
     [ -z "$root" ] && return 1
 
     if [ ! -x "$root/bin/brew" ]; then
-        echo " - $0 fatal: brew binary \`$root/bin/brew\` isn't found, deploy now" >&2
+        printf " ** fail ($0): brew binary '$root/bin/brew' isn't found, deploy now\n" >&2
         brew_deploy || return 2
     fi
 
@@ -109,7 +109,7 @@ function brew_install() {
     brew_init || return 1
 
     if [ -z "$*" ]; then
-        echo " - $0 fatal: nothing to do" >&2
+        printf " ** fail ($0): nothing to do\n" >&2
         return 2
     fi
 
@@ -121,7 +121,7 @@ function brew_install() {
 
         local exe="`fs_basename $row`"
         if [ -z "$exe" ]; then
-            echo " - $0 fatal: basename for \`$row\` empty" >&2
+            printf " ** fail ($0): basename for '$row' empty\n" >&2
             continue
         fi
 
@@ -129,7 +129,7 @@ function brew_install() {
         if [ -x "$bin" ]; then
             local dst="`shortcut "$bin"`"
             if [ -n "$dst" ]; then
-                echo " + $0 info: $exe -> `which $exe` ($dst)" >&2
+                printf " -- info ($0): $exe -> `which $exe` ($dst)\n" >&2
             fi
         fi
     done
