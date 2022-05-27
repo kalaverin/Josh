@@ -599,31 +599,43 @@ zle -N sudoize
 
 
 function josh_pull() {
+    local version="`python.version`"; python.set
+
     local cwd="`pwd`"
     source "$JOSH/run/update.sh" && pull_update $@
     local retval="$?"
     builtin cd "$cwd"
     source "$JOSH/lib/python.sh" && pip_compliance_check
+
+    python.set "$version"
     return $retval
 }
 
 function josh_update() {
+    local version="`python.version`"; python.set
+
     local cwd="`pwd`"
     josh_pull $@ && \
     source "$JOSH/run/update.sh" && post_update $@
     local retval="$?"
     builtin cd "$cwd"
     source "$JOSH/lib/python.sh" && pip_compliance_check
+
+    python.set "$version"
     return $retval
 }
 
 function josh_upgrade() {
+    local version="`python.version`"; python.set
+
     local cwd="`pwd`"
     josh_pull $@ && \
     source "$JOSH/run/update.sh" && post_upgrade $@
     local retval="$?"
     builtin cd "$cwd"
     source "$JOSH/lib/python.sh" && pip_compliance_check
+
+    python.set "$version"
     return $retval
 }
 
