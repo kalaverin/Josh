@@ -10,50 +10,47 @@ if [[ -n ${(M)zsh_eval_context:#file} ]]; then
     fi
 fi
 
+if [ -x "$commands[fetch]" ]; then
+    export HTTP_GET="$commands[fetch] -qo - "
+    [ "$VERBOSE" -eq 1 ] && \
+    echo " * using fetch: $HTTP_GET" 1>&2
 
-if [ -z "$HTTP_GET" ]; then
-    if [ -x "`which fetch`" ]; then
-        export HTTP_GET="`which fetch` -qo - "
-        [ "$VERBOSE" -eq 1 ] && \
-        echo " * using fetch: $HTTP_GET" 1>&2
+elif [ -x "$commands[wget]" ]; then
+    export HTTP_GET="$commands[wget] -qO -"
+    [ "$VERBOSE" -eq 1 ] && \
+    echo " * using wget `wget --version | head -n 1 | awk '{print $3}'`: $HTTP_GET" 1>&2
 
-    elif [ -x "`which wget`" ]; then
-        export HTTP_GET="`which wget` -qO -"
-        [ "$VERBOSE" -eq 1 ] && \
-        echo " * using wget `wget --version | head -n 1 | awk '{print $3}'`: $HTTP_GET" 1>&2
+elif [ -x "$commands[http]" ]; then
+    export HTTP_GET="$commands[http] -FISb"
+    [ "$VERBOSE" -eq 1 ] && \
+    echo " * using httpie `http --version`: $HTTP_GET" 1>&2
 
-    elif [ -x "`which http`" ]; then
-        export HTTP_GET="`which http` -FISb"
-        [ "$VERBOSE" -eq 1 ] && \
-        echo " * using httpie `http --version`: $HTTP_GET" 1>&2
+elif [ -x "$commands[curl]" ]; then
+    export HTTP_GET="$commands[curl] -fsSL"
+    [ "$VERBOSE" -eq 1 ] && \
+    echo " * using curl `curl --version | head -n 1 | awk '{print $2}'`: $HTTP_GET" 1>&2
 
-    elif [ -x "`which curl`" ]; then
-        export HTTP_GET="`which curl` -fsSL"
-        [ "$VERBOSE" -eq 1 ] && \
-        echo " * using curl `curl --version | head -n 1 | awk '{print $2}'`: $HTTP_GET" 1>&2
-
-    else
-        echo " - fatal: curl, wget, fetch or httpie doesn't exists" 1>&2
-        return 127
-    fi
+else
+    echo " - fatal: curl, wget, fetch or httpie doesn't exists" 1>&2
+    return 127
 fi
 
 
-if [ -x "`which zstd`" ]; then
-    export JOSH_PAQ="`which zstd` -0 -T0"
-    export JOSH_QAP="`which zstd` -qd"
+if [ -x "$commands[zstd]" ]; then
+    export JOSH_PAQ="$commands[zstd] -0 -T0"
+    export JOSH_QAP="$commands[zstd] -qd"
 
-elif [ -x "`which lz4`" ] && [ -x "`which lz4cat`" ]; then
-    export JOSH_PAQ="`which lz4` -1 - -"
-    export JOSH_QAP="`which lz4` -d - -"
+elif [ -x "$commands[lz4]" ] && [ -x "$commands[lz4cat]" ]; then
+    export JOSH_PAQ="$commands[lz4] -1 - -"
+    export JOSH_QAP="$commands[lz4] -d - -"
 
-elif [ -x "`which xz`" ] && [ -x "`which xzcat`" ]; then
-    export JOSH_PAQ="`which xz` -0 -T0"
-    export JOSH_QAP="`which xzcat`"
+elif [ -x "$commands[xz]" ] && [ -x "$commands[xzcat]" ]; then
+    export JOSH_PAQ="$commands[xz] -0 -T0"
+    export JOSH_QAP="$commands[xzcat]"
 
 else
-    export JOSH_PAQ="`which gzip` -1"
-    export JOSH_QAP="`which zcat`"
+    export JOSH_PAQ="$commands[gzip] -1"
+    export JOSH_QAP="$commands[zcat]"
 fi
 
 
