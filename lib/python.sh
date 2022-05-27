@@ -483,6 +483,18 @@ function pip_compliance_check {
     local expire="`path_last_modified $PATH`"
     local system="/bin /sbin /usr/bin /usr/sbin /usr/local/bin /usr/local/sbin"
 
+    if [ -n "$SUDO_USER" ]; then
+        local home="`fs_retrieve_userhome "$SUDO_USER"`"
+
+        if [ "$?" -eq 0 ] && [ -n "$home" ]; then
+            local system="$system $home"
+            local real="`fs_realpath $home`"
+            if [ "$?" -eq 0 ] && [ ! "$home" = "$real" ]; then
+                local system="$system $real"
+            fi
+        fi
+    fi
+
     for bin in $(find "$target/bin" -maxdepth 1 -type f 2>/dev/null | sort -Vr); do
         local short="`basename $bin`"
 
