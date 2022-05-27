@@ -1,4 +1,4 @@
-git_widget_add() {
+function git_widget_add {
     local branch="`git_current_branch`"
     [ -z "$branch" ] && return 1
 
@@ -46,7 +46,7 @@ git_widget_add() {
 zle -N git_widget_add
 
 
-git_widget_checkout_modified() {
+function git_widget_checkout_modified {
     local branch="`git_current_branch`"
     [ ! "$branch" ] && return 1
 
@@ -86,7 +86,7 @@ git_widget_checkout_modified() {
 zle -N git_widget_checkout_modified
 
 
-git_auto_skip_or_continue() {
+function git_auto_skip_or_continue {
     local state="`get_repository_state`"  # merging, rebase or cherry-pick
     if [ "$state" ]; then
         # nothing to resolve, just skip
@@ -112,7 +112,7 @@ git_auto_skip_or_continue() {
 }
 
 
-git_widget_conflict_solver() {
+function git_widget_conflict_solver {
     local branch="`git_current_branch`"
     [ ! "$branch" ] && return 1
 
@@ -196,7 +196,7 @@ git_widget_conflict_solver() {
 zle -N git_widget_conflict_solver
 
 
-git_widget_select_commit_then_files_checkout() {
+function git_widget_select_commit_then_files_checkout {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local branch=${1:-$(echo "$GET_BRANCH" | $SHELL)}
         local commit="$(git_list_commits "$branch" \
@@ -271,13 +271,13 @@ git_widget_select_commit_then_files_checkout() {
 zle -N git_widget_select_commit_then_files_checkout
 
 
-git_widget_select_branch_then_commit_then_file_checkout() {
+function git_widget_select_branch_then_commit_then_file_checkout {
     git_widget_select_branch_with_callback git_widget_select_commit_then_files_checkout
 }
 zle -N git_widget_select_branch_then_commit_then_file_checkout
 
 
-git_widget_show_commits() {
+function git_widget_show_commits {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local branch=${1:-$(echo "$GET_BRANCH" | $SHELL)}
         eval "git_list_commits $branch" | pipe_remove_dots_and_spaces | pipe_numerate | \
@@ -313,7 +313,7 @@ git_widget_show_commits() {
 zle -N git_widget_show_commits
 
 
-git_widget_select_branch_with_callback() {
+function git_widget_select_branch_with_callback {
     local branch="`git_current_branch`"
     [ ! "$branch" ] && return 1
 
@@ -359,7 +359,7 @@ git_widget_select_branch_with_callback() {
 zle -N git_widget_select_branch_with_callback
 
 
-git_show_branch_file_commits() {
+function git_show_branch_file_commits {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local file="$2"
         local branch="$1"
@@ -400,7 +400,7 @@ git_show_branch_file_commits() {
 zle -N git_show_branch_file_commits
 
 
-git_widget_select_file_show_commits() {
+function git_widget_select_file_show_commits {
     # diff full creeen at alt-bs
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local branch=${1:-$(echo "$GET_BRANCH" | $SHELL)}
@@ -452,13 +452,13 @@ git_widget_select_file_show_commits() {
 zle -N git_widget_select_file_show_commits
 
 
-git_widget_select_branch_then_file_show_commits() {
+function git_widget_select_branch_then_file_show_commits {
     git_widget_select_branch_with_callback git_widget_select_file_show_commits
 }
 zle -N git_widget_select_branch_then_file_show_commits
 
 
-git_widget_checkout_tag() {
+function git_widget_checkout_tag {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local current="$(echo "$GET_BRANCH" | $SHELL)"
 
@@ -510,7 +510,7 @@ git_widget_checkout_tag() {
 zle -N git_widget_checkout_tag
 
 
-git_widget_checkout_branch() {
+function git_widget_checkout_branch {
     # нужен нормальный просмотровщик диффа между хешами
     # git rev-list --first-parent develop...master --pretty=oneline | sd "(.{8})(.{32}) (.+)" "\$1 \$3" | pipe_numerate | sort -hr
     local branch="`git_current_branch`"
@@ -549,7 +549,7 @@ git_widget_checkout_branch() {
 zle -N git_widget_checkout_branch
 
 
-git_widget_fetch_branch() {
+function git_widget_fetch_branch {
     local root="`git_root`"
     [ ! "$root" ] && return 1
     local branch="`git_current_branch`"
@@ -596,7 +596,7 @@ git_widget_fetch_branch() {
 zle -N git_widget_fetch_branch
 
 
-git_widget_delete_branch() {
+function git_widget_delete_branch {
     local root="`git_root`"
     [ ! "$root" ] && return 1
     local branch="`git_current_branch`"
@@ -634,7 +634,7 @@ git_widget_delete_branch() {
 zle -N git_widget_delete_branch
 
 
-git_widget_delete_local_branch() {
+function git_widget_delete_local_branch {
     local branch="`git_current_branch`"
     [ ! "$branch" ] && return 1
 
@@ -671,7 +671,7 @@ git_widget_delete_local_branch() {
 zle -N git_widget_delete_local_branch
 
 
-git_widget_delete_remote_branch() {
+function git_widget_delete_remote_branch {
     local root="`git_root`"
     [ ! "$root" ] && return 1
     local branch="`git_current_branch`"
@@ -709,7 +709,7 @@ git_widget_delete_remote_branch() {
 zle -N git_widget_delete_remote_branch
 
 
-git_widget_checkout_commit() {
+function git_widget_checkout_commit {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local branch="$(echo "$GET_BRANCH" | $SHELL)"
         local differ="echo {} | head -1 | grep -o '[a-f0-9]\{7\}' | cut -d ' ' -f 1 | xargs -I% git diff --color=always --stat=\$FZF_PREVIEW_COLUMNS --patch --diff-algorithm=histogram $branch % | $DELTA"
@@ -757,7 +757,7 @@ git_widget_checkout_commit() {
 zle -N git_widget_checkout_commit
 
 
-git_widget_merge_branch() {
+function git_widget_merge_branch {
     local branch="`git_current_branch`"
     [ ! "$branch" ] && return 1
 
@@ -798,7 +798,7 @@ git_widget_merge_branch() {
 zle -N git_widget_merge_branch
 
 
-git_widget_rebase_branch() {
+function git_widget_rebase_branch {
     local branch="`git_current_branch`"
     [ ! "$branch" ] && return 1
 
@@ -835,7 +835,8 @@ git_widget_rebase_branch() {
 }
 zle -N git_widget_rebase_branch
 
-function git_replace_all_commits_with_one() {
+
+function git_replace_all_commits_with_one {
     local branch="${1:-`git_current_branch`}"
     [ ! "$branch" ] && return 1
 
