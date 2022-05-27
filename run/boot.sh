@@ -43,7 +43,7 @@ path=(
     $path
 )
 
-function fs_size() {
+function fs_size {
     if [ -z "$1" ]; then
         printf " ** fail ($0): call without args, I need to do — what?\n" >&2
         return 1
@@ -53,7 +53,7 @@ function fs_size() {
     [ "$?" -eq 0 ] && echo "$result[8]"
 }
 
-function fs_mtime() {
+function fs_mtime {
     if [ -z "$1" ]; then
         printf " ** fail ($0): call without args, I need to do — what?\n" >&2
         return 1
@@ -63,7 +63,7 @@ function fs_mtime() {
     [ "$?" -eq 0 ] && echo "$result[10]"
 }
 
-function fs_readlink() {
+function fs_readlink {
     if [ -z "$1" ]; then
         printf " ** fail ($0): call without args, I need to do — what?\n" >&2
         return 1
@@ -78,13 +78,12 @@ function fs_readlink() {
 }
 
 
-function fs_basename() {
+function fs_basename {
     [ -z "$1" ] && return 1
     [[ "$1" -regex-match '[^/]+/?$' ]] && echo "$MATCH"
 }
 
-
-function fs_dirname() {
+function fs_dirname {
     [ -z "$1" ] && return 1
 
     local result=`fs_basename $1`
@@ -94,8 +93,7 @@ function fs_dirname() {
     echo "${1[0,$offset]}"
 }
 
-
-function fs_realdir() {
+function fs_realdir {
     [ -z "$1" ] && return 1
 
     local result="`fs_realpath "$1"`"
@@ -107,8 +105,7 @@ function fs_realdir() {
     echo "$result"
 }
 
-
-function fs_joshpath() {
+function fs_joshpath {
     if [ -z "$1" ] || [ -z "$JOSH" ]; then
         return 1
     fi
@@ -122,32 +119,38 @@ function fs_joshpath() {
     echo "${result[${#result} - $length,${#result}]}"
 }
 
+function fs_resolver {
+    if [ -n "$JOSH_REALPATH" ]; then
+        return 0
+    fi
 
-function fs_realpath() {
-    function get_resolver() {
-        if [ -x "$commands[realpath]" ]; then
-            echo "$commands[realpath] -q"
+    local result=''
+    if [ -x "$commands[realpath]" ]; then
+        local result="$commands[realpath] -q"
 
-        elif [ -x "$commands[readlink]" ]; then
-            if [ -z "$(uname | grep -i darwin)" ]; then
-                echo "$commands[readlink] -n"
-            else
-                echo "$commands[readlink] -qf"
-            fi
+    elif [ -x "$commands[readlink]" ]; then
+        if [ -z "$(uname | grep -i darwin)" ]; then
+            local result="$commands[readlink] -f"
+        else
+            local result="$commands[readlink] -qf"
         fi
-    }
+    fi
 
+    if [ -n "$result" ]; then
+        export JOSH_REALPATH="$result"
+        return 0
+    fi
+    echo " - $0 fatal: resolver isn't configured, need realpath or readlink" >&2
+    return 1
+}
+
+function fs_realpath {
     local link="$1"
     if [ -z "$link" ]; then
-        return 1
+        return 2
 
     elif [ -e "$link" ]; then
-        if [[ "$link" =~ "^/" ]] && [[ ! "$link" =~ "/../" ]] && [ ! -L "$link" ]; then
-            # it's not link, it is full file path
-            echo "$link"
-            return 0
-
-        elif [ -L "$link" ]; then
+        if [ -L "$link" ]; then
             local node="`fs_readlink "$1"`"
             if [ -n "$node" ]; then
 
@@ -175,55 +178,53 @@ function fs_realpath() {
             fi
         fi
 
-        local resolver="`get_resolver`"
-        if [ -z "$resolver" ]; then
-            echo " - $0 fatal: resolver: \`$resolver\` isn't configured" >&2
+        fs_resolver
+        if [ -z "$JOSH_REALPATH" ]; then
             echo "$link"
             return 3
         fi
-        echo "`$SHELL -c "$resolver $link"`"
 
+        local cmd="$JOSH_REALPATH $link"
+        eval "${cmd}"
     else
-        echo " - $0 fatal: \`$link\` invalid" >&2
-        return 2
+        echo " - $0 fatal: '$link' doesn't exist" >&2
+        return 1
     fi
 }
 
 
-function fs_retrieve_userhome() {
-    if [ "`export | grep SUDO_ | wc -l`" -gt 0 ]; then
-        # try to subshell expand
-        local home="`$SHELL -c 'echo ~$USER' 2>/dev/null`"
+function fs_retrieve_userhome {
+    local login="${1:-\$USER}"
+
+    # try to subshell expand
+    local home="`$SHELL -c "echo ~$login" 2>/dev/null`"
+    if [ "$?" -eq 0 ] && [ -x "$home" ]; then
+        echo "$home"
+        return 0
+    fi
+
+    if [ -x "`builtin which getent`" ];  then
+        # passwd with getent
+        local home="`getent passwd $login | cut -f6 -d: 2>/dev/null`"
         if [ "$?" -eq 0 ] && [ -x "$home" ]; then
             echo "$home"
             return 0
         fi
-
-        if [ -x "`builtin which getent`" ];  then
-            # passwd with getent
-            local home="`getent passwd $USER | cut -f6 -d: 2>/dev/null`"
-            if [ "$?" -eq 0 ] && [ -x "$home" ]; then
-                echo "$home"
-                return 0
-            fi
-        fi
-
-        if [ -x "`builtin which awk`" ];  then
-            # passwd with awk
-            local home="`awk -v u="$USER" -v FS=':' '$1==u {print $6}' /etc/passwd 2>/dev/null`"
-            if [ "$?" -eq 0 ] && [ -x "$home" ]; then
-                echo "$home"
-                return 0
-            fi
-        fi
-    else
-        echo "$HOME"
-        return 0
     fi
+
+    if [ -x "`builtin which awk`" ];  then
+        # passwd with awk
+        local home="`awk -v u="$login" -v FS=':' '$1==u {print $6}' /etc/passwd 2>/dev/null`"
+        if [ "$?" -eq 0 ] && [ -x "$home" ]; then
+            echo "$home"
+            return 0
+        fi
+    fi
+    return 1
 }
 
 
-function fs_userhome() {
+function fs_userhome {
     local home="`fs_retrieve_userhome`"
     local real="$(fs_realpath $home)"
 
@@ -239,7 +240,7 @@ function fs_userhome() {
 }
 
 
-function shortcut() {
+function shortcut {
     [ -z "$ZSH" ] || [ -z "$1" ] && return 1
 
     local dir="$JOSH/bin"
@@ -279,7 +280,7 @@ function shortcut() {
     return 0
 }
 
-function function_exists() {
+function function_exists {
     declare -f "$1" >/dev/null
     if [ "$?" -eq 0 ]; then
         echo "1"
@@ -289,7 +290,7 @@ function function_exists() {
 }
 
 
-function which() {
+function which {
     local src="$*"
 
     if [ -z "$src" ]; then
