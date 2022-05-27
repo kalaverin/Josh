@@ -86,29 +86,43 @@ function python.library.is {
 
 function python.version.full {
     if [ -z "$1" ]; then
-        printf " ** fail ($0): call without args, I need to do — what?\n" >&2
-        return 1
+        if [ -n "$PYTHONUSERBASE" ] && [ -x "$PYTHONUSERBASE/bin/python" ]; then
+            local source="$PYTHONUSERBASE/bin/python"
+
+        else
+            printf " ** fail ($0): call without args, I need to do — what?\n" >&2
+            return 1
+        fi
+    else
+        local source="$1"
     fi
 
-    if [ ! -x "$1" ]; then
-        printf " ** fail ($0): isn't valid executable '$1'\n" >&2
+    if [ ! -x "$source" ]; then
+        printf " ** fail ($0): isn't valid executable '$source'\n" >&2
         return 1
     fi
-    echo "`$1 --version 2>&1 | grep -Po '(\d+\.\d+\.\d+)'`"
+    echo "`$source --version 2>&1 | grep -Po '(\d+\.\d+\.\d+)'`"
 }
 
 function python.version {
     if [ -z "$1" ]; then
-        printf " ** fail ($0): call without args, I need to do — what?\n" >&2
-        return 1
+        if [ -n "$PYTHONUSERBASE" ] && [ -x "$PYTHONUSERBASE/bin/python" ]; then
+            local source="$PYTHONUSERBASE/bin/python"
+
+        else
+            printf " ** fail ($0): call without args, I need to do — what?\n" >&2
+            return 1
+        fi
+    else
+        local source="$1"
     fi
 
-    if [ ! -x "$1" ]; then
-        printf " ** fail ($0): isn't valid executable '$1'\n" >&2
+    if [ ! -x "$source" ]; then
+        printf " ** fail ($0): isn't valid executable '$source'\n" >&2
         return 2
     fi
 
-    local python="`fs_realpath $1 2>/dev/null`"
+    local python="`fs_realpath $source 2>/dev/null`"
     if [ ! -x "$python" ]; then
         printf " ** fail ($0): isn't valid python '$python'\n" >&2
         return 3
@@ -209,9 +223,9 @@ function python.exe {
     fi
 
     if [ "$JOSH_OS" = 'BSD' ] || [ "$JOSH_OS" = 'MAC' ]; then
-        local gsed="`which gsed`"
+        local gsed="$commands[gsed]"
     else
-        local gsed="`which sed`"
+        local gsed="$commands[sed]"
     fi
 
     if [ ! -x "$gsed" ]; then
@@ -310,16 +324,18 @@ function python.set {
         fi
     fi
 
+    local version="`python.version.full "$source"`"
+    if [ -z "$version" ]; then
+        printf " ** fail ($0): python $source version fetch\n" >&2
+        return 2
+
+    elif [ -n "$PYTHONUSERBASE" ] && [ "$version" = "`python.version.full`" ]; then
+        return 0
+    fi
 
     local target="`python.home "$source"`"
     if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
         printf " ** fail ($0): python $source home directory isn't exist\n" >&2
-        return 2
-    fi
-
-    local version="`python.version.full "$source"`"
-    if [ -z "$version" ]; then
-        printf " ** fail ($0): python $source version fetch\n" >&2
         return 3
     fi
 
@@ -328,7 +344,7 @@ function python.set {
 
     local python="`python.exe`"
     if [ ! -x "$python" ]; then
-        printf " ** fail ($0): isn't valid python '$python'\n" >&2
+        printf " ** fail ($0): something wrong on setup python '$python' from source $source\n" >&2
         [ -n "$base" ] && export PYTHONUSERBASE="$base"
         return 4
     fi
@@ -339,7 +355,7 @@ function python.set {
         return 5
     fi
 
-    printf " ++ warn ($0): using $python ($source=$version) from $target\n" >&2
+    printf " ++ warn ($0): using $python ($source=$version) from $target, don't forgot pip.extras\n" >&2
     pip.exe >/dev/null
     rehash && josh_source run/boot.sh && path_prune
 }
@@ -420,7 +436,7 @@ function pip.exe {
         fi
         local command="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false $python $pip_file $flags pip"
 
-        printf " ++ warn ($0): $command\n" >&2
+        printf "\n ++ warn ($0): $command\n\n" >&2
 
         $SHELL -c "$HTTP_GET $url > $pip_file" && eval ${command} >&2
 
@@ -497,7 +513,7 @@ function pip.install {
         local flags="--root='/' --prefix='$target' $flags"
     fi
     local command="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false `python.exe` -m pip install $flags $PIP_DEFAULT_KEYS"
-    printf " ++ warn ($0): $command\n" >&2
+    printf "\n ++ warn ($0): $command\n\n" >&2
 
     local done=''
     local fail=''
@@ -517,6 +533,7 @@ function pip.install {
                 local fail="$fail $row"
             fi
         fi
+        printf "\n" >&2
     done
 
     rehash
@@ -545,36 +562,45 @@ function pip.update {
     if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
         return 1
 
-    elif python.library.is 'pipdeptree' "$python"; then
+    elif ! python.library.is 'pipdeptree' "$python"; then
+        printf " -- info ($0): pipdeptree isn't installed for `python.version`, proceed\n" >&2
         pip.install pipdeptree
+
+        if ! python.library.is 'pipdeptree' "$python"; then
+            printf " ** fail ($0): something went wrong\n" >&2
+            return 2
+        fi
     fi
 
-    local packages="$*"
-    if [ -z "$packages" ]; then
-        local packages="$PIP_REQ_PACKAGES $PIP_OPT_PACKAGES"
+    local package="$1"
+    if [ -z "$package" ]; then
+        local package="$PIP_REQ_PACKAGES $PIP_OPT_PACKAGES"
     fi
 
     local venv="`venv_deactivate`"
     local regex="$(
-        echo "$packages" | \
+        echo "$package" | \
         sed 's:^:^:' | sed 's: *$:$:' | sed 's: :$|^:g')"
 
-    echo "$regex"
-
-    return 0
-
-    local result="$(
-        $pipdep --all --warn silence --reverse | \
+    local installed="$(
+        $python -m pipdeptree --all --warn silence --reverse | \
         grep -Pv '\s+' | sd '^(.+)==(.+)$' '$1' | grep -Po "$regex" | sed -z 's:\n\b: :g'
     )"
-    pip.install "$result"
+
+    if [ -n "$1" ] && [ -z "$installed" ]; then
+        echo "$regex"
+        printf " ** fail ($0): package '$1' isn't installed\n" >&2
+        return 3
+    fi
+
+    pip.install "$installed"
     local retval="$?"
 
     [ -n "$venv" ] && source $venv/bin/activate
     return $retval
 }
 
-function pip_extras {
+function pip.extras {
     pip.install "$PIP_REQ_PACKAGES"
     local retval="$?"
     run_show "pip.install $PIP_OPT_PACKAGES"
