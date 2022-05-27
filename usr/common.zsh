@@ -5,6 +5,17 @@ source "$JOSH/lib/shared.sh"
 local THIS_DIR="`fs_realdir "$0"`"
 local INCLUDE_DIR="`fs_realpath $THIS_DIR/src`"
 
+function clear {
+    local bin="$commands[clear]"
+    if [ -x "$bin" ]; then
+        $bin
+    fi
+    let lines="$LINES - 2"
+    for i in {1..$lines}
+    do
+        printf "\n"
+    done
+}
 
 function commit_text () {
     local text="`$SHELL -c "$HTTP_GET http://whatthecommit.com/index.txt"`"

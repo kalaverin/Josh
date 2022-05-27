@@ -83,16 +83,8 @@ function tmx_get_matching_detached_session() {
     [ -z "$result" ] && return 1 || echo "$result"
 }
 
-function tmx_fill_spaces() {
-    let lines="$LINES - 2"
-    for i in {1..$lines}
-    do
-        printf "\n"
-    done
-}
-
 if [ -z "$JOSH_TMUX_AUTORETACH_DISABLE" ] && [ -n "$PS1" ] && [ -z "$TMUX" ] && [ -n "$SSH_CONNECTION" ]; then
     tmx lost
 elif [ -z "$JOSH_TMUX_SPACES_FILL_DISABLE" ] && [ -n "$PS1" ] && [ -n "$TMUX" ] && [ "`josh_branch`" != "develop" ]; then
-    tmx_fill_spaces
+    clear
 fi
