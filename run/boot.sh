@@ -25,7 +25,7 @@ JOSH_SUBDIR_NAME=".josh"
 
 perm_path=(
     $HOME/.cargo/bin
-    $HOME/.python/default/bin
+    $PYTHONUSERBASE/bin
     $HOME/.brew/bin
     $HOME/.local/bin
     $HOME/bin
@@ -298,15 +298,22 @@ function which {
         return 2
 
     elif [[ "$src" =~ "/" ]]; then
+        if [ -e "$src" ]; then 
+            echo "$src"
+            return 0
+        fi
         printf " ** fail ($0): link name '$src' couldn't contains slashes\n" >&2
-        return 2
+        return 3
 
     elif [ -z "$JOSH" ]; then
-        printf " ++ warn ($0): kalash root '$JOSH' isn't defined\n" >&2
+        printf " ++ warn ($0): root '$JOSH' isn't defined\n" >&2
     fi
 
     if [ -n "$JOSH" ] && [ -L "$JOSH/bin/$src" ]; then
         local dst="$JOSH/bin/$src"
+
+    elif [ -n "$PYTHON_BINARIES" ] && [[ "$src" -regex-match '[0-9]+\.[0-9]+' ]] && [ -x "$PYTHON_BINARIES/$MATCH/bin/python" ]; then
+        local dst="$PYTHON_BINARIES/$MATCH/bin/python"
 
     elif [ "$commands[$src]" ]; then
         local dst="$commands[$src]"
@@ -325,7 +332,7 @@ function which {
             return 1
         fi
     fi
-    printf "$dst"
+    printf "$dst\n"
 }
 
 

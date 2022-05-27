@@ -61,13 +61,8 @@ PIP_DEFAULT_KEYS=(
     --prefer-binary
 )
 
-function python_distutils {
-    local distutils="`echo 'import distutils; print(distutils)' | $1 2>/dev/null | grep '<module'`"
-    ([ "$distutils" ] && echo 1) || echo 0
-}
 
-
-function python_library_found {
+function python.library.is {
     if [ -z "$1" ]; then
         printf " ** fail ($0): call without args, I need to do — what?\n" >&2
         return 2
@@ -80,7 +75,7 @@ function python_library_found {
             return 3
         fi
     else
-        local bin="`python_executable`"
+        local bin="`python.exe`"
     fi
 
     if [ -z "$(echo "import $1 as x; print(x)" | $bin 2>/dev/null | grep '<module')" ]; then
@@ -89,57 +84,57 @@ function python_library_found {
     fi
 }
 
-function python_get_full_version {
+function python.version.full {
     if [ -z "$1" ]; then
         printf " ** fail ($0): call without args, I need to do — what?\n" >&2
         return 1
     fi
 
     if [ ! -x "$1" ]; then
-        echo " - $0 fatal: isn't valid executable \'`$1\'`" >&2
+        printf " ** fail ($0): isn't valid executable '$1'\n" >&2
         return 1
     fi
     echo "`$1 --version 2>&1 | grep -Po '(\d+\.\d+\.\d+)'`"
 }
 
-function python_get_version {
+function python.version {
     if [ -z "$1" ]; then
         printf " ** fail ($0): call without args, I need to do — what?\n" >&2
         return 1
     fi
 
     if [ ! -x "$1" ]; then
-        echo " - $0 fatal: isn't valid executable \'`$1\'`" >&2
-        return 1
+        printf " ** fail ($0): isn't valid executable '$1'\n" >&2
+        return 2
     fi
 
     local python="`fs_realpath $1 2>/dev/null`"
     if [ ! -x "$python" ]; then
-        echo " - $0 fatal: isn't valid python \'`$python\'`" >&2
-        return 2
+        printf " ** fail ($0): isn't valid python '$python'\n" >&2
+        return 3
     fi
 
-    local version="`python_get_full_version $python`"
+    local version="`python.version.full $python`"
     if [[ "$version" -regex-match '^[0-9]+\.[0-9]+' ]]; then
         echo "$MATCH"
     else
-        echo " - $0 fatal: python $python==$version missing minor version" >&2
-        return 3
+        printf " ** fail ($0): python $python==$version missing minor version\n" >&2
+        return 4
     fi
 }
 
-function python_directory {
+function python.home.from_version {
     if [ -z "$1" ]; then
         printf " ** fail ($0): call without args, I need to do — what?\n" >&2
         return 1
     fi
 
-    local version="`python_get_version $1`"
+    local version="`python.version $1`"
     [ -z "$version" ] && return 1
     echo "$PYTHON_BINARIES/$version"
 }
 
-function python_executable_scan {
+function python.exe.lookup {
     source $BASE/run/units/compat.sh
 
     if [ -n "$1" ]; then
@@ -153,10 +148,10 @@ function python_executable_scan {
             continue
         fi
 
-        for exe in $(find "$dir" -type f -name 'python*' 2>/dev/null | sort -Vr); do
-            [ ! -x "$exe" ] || [[ ! "$exe" -regex-match '[0-9]$' ]] && continue
+        for python in $(find "$dir" -type f -name 'python*' 2>/dev/null | sort -Vr); do
+            [ ! -x "$python" ] || [[ ! "$python" -regex-match '[0-9]$' ]] && continue
 
-            local version="`python_get_full_version $exe`"
+            local version="`python.version.full $python`"
             [ -z "$version" ] && continue
 
             [[ ! "$version" -regex-match '^[0-9]+\.[0-9]+' ]] && continue
@@ -164,28 +159,28 @@ function python_executable_scan {
             unset result
             version_not_compatible $MIN_PYTHON_VERSION $version
             if [ $? -gt 0 ]; then
-                if python_library_found 'distutils' "$exe"; then
-                    local result="$exe"
+                if python.library.is 'distutils' "$python"; then
+                    local result="$python"
                 else
-                    echo " * $0 info: python $version from $exe do not have distutils, skip" >&2
+                    printf " -- info ($0): python $python (`python.version.full $python`) haven't distutils, skip\n" >&2
                 fi
             fi
             [ "$result" ] && break
         done
     done
     if [ -n "$result" ]; then
-        echo " * $0 info: python binary $result ($version)" >&2
+        printf " -- info ($0): python binary $result (`python.version.full $python`)\n" >&2
         echo "$result"
         return 0
     fi
-    echo " - $0 fatal: python binary not found" >&2
+    printf " ** fail ($0): python binary not found\n" >&2
     return 1
 }
 
-function python_executable {
+function python.exe {
     source $BASE/run/units/compat.sh
-    if [ $? -gt 0 ]; then
-        echo " - $0 fatal: something wrong, source BASE:\`$BASE\`" >&2
+    if [ "$?" -gt 0 ]; then
+        printf " ** fail ($0): something wrong, BASE:'$BASE'\n" >&2
         return 127
     fi
 
@@ -200,13 +195,13 @@ function python_executable {
 
     local link="$PYTHON_BINARIES/default/bin/python"
     if [ -L "$link" ] && [ -x "`fs_realpath "$link" 2>/dev/null`" ]; then
-        local version="`python_get_full_version $link`"
+        local version="`python.version.full $link`"
         [ -z "$version" ] && continue
 
         version_not_compatible "$MIN_PYTHON_VERSION" "$version"
 
         if [ $? -gt 0 ]; then
-            if python_library_found 'distutils' "$link"; then
+            if python.library.is 'distutils' "$link"; then
                 echo "$link"
                 return 0
             fi
@@ -220,7 +215,7 @@ function python_executable {
     fi
 
     if [ ! -x "$gsed" ]; then
-        echo " - $0 fatal: GNU sed for \'$JOSH_OS\' don't found" >&2
+        printf " ** fail ($0): GNU sed for '$JOSH_OS' don't found\n" >&2
         return 1
     fi
 
@@ -228,7 +223,7 @@ function python_executable {
     if [ -z "$dirs" ]; then
         local dirs="$PATH"
     fi
-    local result="$(cached_execute "$0" "`path_last_modified "$dirs"`" "$JOSH_CACHE_DIR" "python_executable_scan $dirs")"
+    local result="$(cached_execute "$0" "`path_last_modified $dirs ~/.python`" "$JOSH_CACHE_DIR" "python.exe.lookup $dirs")"
 
     if [ "$result" ]; then
         local python="`fs_realpath $result`"
@@ -238,63 +233,118 @@ function python_executable {
             return 0
         fi
     fi
-    echo " - $0 fatal: python doesn't exists in dirs:'$dirs'" >&2
+    printf " ** fail ($0): python doesn't exists in: '$dirs'\n" >&2
     return 1
 }
 
-function python_init {
-    if [ -x "$JOSH_PYTHON" ] && [ -d "$PYTHONUSERBASE" ]; then
-        echo "$JOSH_PYTHON"
-        return 0
+function python.home {
+    if [ -z "$1" ]; then
+        local python="`python.exe`"
+    else
+        local python="`which "$1"`"
     fi
 
-    local python="`python_executable`"
-
-    if [ "$?" -gt 0 ] || [ -x "$python" ]; then
-        local target="`python_directory $python`"
-
-        if [ ! -x "$target/bin/python" ]; then
-            mkdir -p "$target/bin"
-
-            local version="`python_get_version $python`"
-            if [ -z "$version" ]; then
-                echo " - $0 fatal: version not found for $python" >&2
-                return 1
-            fi
-            echo " * $0 info: link $python ($version) -> $target/bin/" >&2
-
-            ln -s "$python" "$target/bin/python"
-            if [ "$?" -gt 0 ]; then
-                echo " - $0 fatal: something wrong on link :-\ " >&2
-                return 2
-            fi
-
-            ln -s "$target" "$target/local"
-            ln -s "$python" "$target/bin/python3"
-            ln -s "$python" "$target/bin/"  # finally /pythonX.Y.Z
-            ln -s "$target" "`fs_dirname $target`/default"
-            rehash
-        fi
-    else
-        echo " - $0 fatal: python executable and home directory can't detected" >&2
+    if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
+        printf " ** fail ($0): python executable and home directory can't detected\n" >&2
         return 1
     fi
 
-    export JOSH_PYTHON="$target"
-    export PYTHONUSERBASE="$target"
+    local target="`python.home.from_version $python`"
+
+    if [ ! -x "$target/bin/python" ]; then
+        mkdir -p "$target/bin"
+
+        local version="`python.version $python`"
+        if [ -z "$version" ]; then
+            printf " ** fail ($0): version not found for $python\n" >&2
+            return 1
+        fi
+        printf " -- info ($0): link $python (`python.version.full $python`) -> $target/bin/\n" >&2
+
+        ln -s "$target" "$target/local"
+        ln -s "$python" "$target/bin/python"
+        ln -s "$python" "$target/bin/python${version[1]}"
+        ln -s "$python" "$target/bin/"  # finally /pythonX.Y.Z
+
+        if [ ! -d "$PYTHON_BINARIES/default" ]; then
+            ln -s "$target" "$PYTHON_BINARIES/default"
+            printf " -- info ($0): make $python (`python.version.full $python`) as default\n" >&2
+        fi
+        rehash
+    fi
+
     echo "$target"
-    return 0
+    if [ -z "$1" ]; then
+        export JOSH_PYTHON="$target"
+        export PYTHONUSERBASE="$target"
+    fi
 }
 
-function pip_executive {
+function python.set {
+    if [ -z "$1" ]; then
+        printf " ** fail ($0): call without args, I need to do — what?\n" >&2
+        return 1
+    fi
+
+    local base="$PYTHONUSERBASE"
+
+    if [[ "$1" -regex-match '^[0-9]+\.[0-9]+' ]]; then
+        local source="$(fs_realpath `which "python$MATCH"`)"
+        if [ "$?" -gt 0 ] || [ ! -x "$source" ]; then
+            printf " ** fail ($0): python binary '$source' ($1) doesn't exists or something wrong\n" >&2
+            return 1
+        fi
+
+    else
+        local source="$(fs_realpath `which "$1"`)"
+        if [ "$?" -gt 0 ] || [ ! -x "$source" ]; then
+            printf " ** fail ($0): python binary '$source' doesn't exists or something wrong\n" >&2
+            return 1
+        fi
+    fi
+
+    local target="`python.home "$source"`"
+    if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
+        printf " ** fail ($0): python $source home directory isn't exist\n" >&2
+        return 2
+    fi
+    export PYTHONUSERBASE="$target"
+
+    local version="`python.version.full "$source"`"
+    if [ -z "$version" ]; then
+        printf " ** fail ($0): python $source version fetch\n" >&2
+        [ -n "$base" ] && export PYTHONUSERBASE="$base"
+        return 3
+    fi
+
+
+    local python="`python.exe`"
+    if [ ! -x "$python" ]; then
+        printf " ** fail ($0): isn't valid python '$python'\n" >&2
+        [ -n "$base" ] && export PYTHONUSERBASE="$base"
+        return 4
+    fi
+
+    if [ ! "$version" = "`python.version.full "$python"`" ]; then
+        printf " ** fail ($0): source python $source ($version) != target $python (`python.version.full "$python"`)\n" >&2
+        [ -n "$base" ] && export PYTHONUSERBASE="$base"
+        return 5
+    fi
+
+    printf " ++ warn ($0): using $python ($source=$version) from $target\n" >&2
+    pip.exe >/dev/null
+    rehash && josh_source run/boot.sh && path_prune
+}
+
+function pip.lookup {
 
     pip_subdirectories=(
         bin
     )
 
-    local target="`python_init`"
+    local target="`python.home`"
     if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
-        echo " - $0 fatal: python target dir:\`$target\`" >&2
+        printf " ** fail ($0): python target dir:'$target'\n" >&2
         return 2
     fi
 
@@ -305,39 +355,55 @@ function pip_executive {
             return 0
         fi
     done
-    echo " - $0 fatal: pip binary not found" >&2
+    printf " ++ warn ($0): pip binary not found\n" >&2
     return 1
 }
 
-function pip_init {
-    if [ -x "$JOSH_PIP" ] && [ -d "$PYTHONUSERBASE" ]; then
-        echo "$JOSH_PIP"
-        return 0
+function pip.exe {
+    if [ -z "$1" ]; then
+        local python="`python.exe`"
+    else
+        local python="`which "$1"`"
+        if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
+            printf " ** fail ($0): python binary '$python' doesn't exists or something wrong\n" >&2
+            return 1
+        fi
     fi
 
-    local target="`python_init`"
+    local target="`python.home "$python"`"
     if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
-        echo " - $0 fatal: python target dir:\`$target\`" >&2
+        printf " ** fail ($0): python $python home directory isn't exist\n" >&2
         return 2
     fi
 
-    if [ ! -x "`pip_executive`" ]; then
-        url="https://bootstrap.pypa.io/get-pip.py"
-        local pip_file="/tmp/get-pip.py"
+    if [ ! -x "`pip.lookup`" ]; then
+        # elif python.library.is 'pip' "$python"; then
+        #     printf " ** fail ($0): unexpected behavior: pip binary isn't found, but pip module has been installed for '$python'\n" >&2
+        #     return 4
 
-        local python="`python_executable`"
-        if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
-            echo " - $0 fatal: python binary doesn't exists:\`$python\`" >&2
+        local version="`python.version "$python"`"
+        if [ -z "$version" ]; then
+            printf " ** fail ($0): python $python version fetch\n" >&2
             return 3
         fi
 
+        if [ "$version" = '2.7' ]; then
+            local url='https://bootstrap.pypa.io/pip/2.7/get-pip.py'
+        elif [ "$version" = '3.6' ]; then
+            local url='https://bootstrap.pypa.io/pip/3.6/get-pip.py'
+        else
+            local url='https://bootstrap.pypa.io/get-pip.py'
+        fi
+
+        local pip_file="/tmp/get-pip.py"
+
         export PYTHONUSERBASE="$target"
 
-        echo " * $0 info: deploy pip with python:\`$python\` to hier:\`$target\`" >&2
+        printf " -- info ($0): deploy pip with $python (`python.version.full $python`) to $target\n" >&2
 
         local flags="--disable-pip-version-check --no-input --no-python-version-warning --no-warn-conflicts --no-warn-script-location"
 
-        if [ "`josh_branch`" != "develop" ]; then
+        if [ "`josh_branch 2>/dev/null`" != "develop" ]; then
             local flags="$flags -vv"
         fi
 
@@ -346,7 +412,7 @@ function pip_init {
         fi
         local command="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false $python $pip_file $flags pip"
 
-        echo " * $0 debug: $command" >&2
+        printf " ++ warn ($0): $command\n" >&2
 
         $SHELL -c "$HTTP_GET $url > $pip_file" && eval ${command} >&2
 
@@ -354,13 +420,13 @@ function pip_init {
         [ -f "$pip_file" ] && unlink "$pip_file"
 
         if [ "$retval" -gt 0 ]; then
-            echo " - $0 fatal: pip deploy failed!" >&2
-            return 1
+            printf " ** fail ($0): pip deploy\n" >&2
+            return 4
         fi
 
-        if [ ! -x "`pip_executive`" ]; then
-            echo " - $0 fatal: pip doesn't exists in $target/bin/ or $target/local/bin/" >&2
-            return 127
+        if [ ! -x "`pip.lookup`" ]; then
+            printf " ** fail ($0): pip doesn't exists in '$target/bin' or '$target/local/bin'\n" >&2
+            return 5
         fi
 
         local packages="`find $target/lib/ -maxdepth 1 -type d -name 'python*'`"
@@ -369,11 +435,13 @@ function pip_init {
         fi
 
         rehash
-        pip_install "$PIP_REQ_PACKAGES"
+        pip.install "$PIP_REQ_PACKAGES"
+
     fi
 
-    export JOSH_PIP="`pip_executive`"
-    export PYTHONUSERBASE="$target"
+    if [ -z "$PYTHONUSERBASE" ]; then
+        export PYTHONUSERBASE="$target"
+    fi
     echo "$target/bin/pip"
     return 0
 }
@@ -388,22 +456,26 @@ function venv_deactivate {
     fi
 }
 
-function pip_install {
+function pip.install {
     if [ -z "$1" ]; then
         printf " ** fail ($0): call without args, I need to do — what?\n" >&2
         return 1
     fi
 
+    # local python="`python.exe`"
+    # if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
+    #     return 1
+
     local venv="`venv_deactivate`"
 
-    local pip="`pip_init`"
+    local pip="`pip.exe`"
     if [ "$?" -gt 0 ] || [ ! -x "$pip" ]; then
         return 2
     fi
 
-    local target="`python_init`"
+    local target="`python.home`"
     if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
-        echo " - $0 fatal: python target dir:\`$target\`" >&2
+        echo " - $0 fail: python target dir:\`$target\`" >&2
         return 3
     fi
 
@@ -416,8 +488,8 @@ function pip_install {
     if [ "$USER" = 'root' ] || [ "$JOSH_OS" = 'BSD' ] || [ "$JOSH_OS" = 'MAC' ]; then
         local flags="--root='/' --prefix='$target' $flags"
     fi
-    local command="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false `python_executable` -m pip install $flags $PIP_DEFAULT_KEYS"
-    echo " * $0 debug: $command" >&2
+    local command="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false `python.exe` -m pip install $flags $PIP_DEFAULT_KEYS"
+    printf " ++ warn ($0): $command\n" >&2
 
     local done=''
     local fail=''
@@ -430,7 +502,7 @@ function pip_install {
                 local done="$done $row"
             fi
         else
-            echo " - $0 warning: $row fails" >&2
+            printf " ++ warn ($0): $row fails\n" >&2
             if [ -z "$fail" ]; then
                 local fail="$row"
             else
@@ -454,31 +526,40 @@ function pip_install {
     fi
 
     if [ -n "$result" ]; then
-        echo " * $0 info: $result" >&2
+        printf " -- info ($0): $result\n" >&2
     fi
 
     [ -n "$venv" ] && source $venv/bin/activate
 }
 
-function pip_update {
-    local pip="`pip_init`"
-    [ ! -x "$pip" ] && return 1
+function pip.update {
+    local python="`python.exe`"
+    if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
+        return 1
+
+    elif python.library.is 'pipdeptree' "$python"; then
+        pip.install pipdeptree
+    fi
+
+    local packages="$*"
+    if [ -z "$packages" ]; then
+        local packages="$PIP_REQ_PACKAGES $PIP_OPT_PACKAGES"
+    fi
 
     local venv="`venv_deactivate`"
-    local josh_regex="$(
-        echo "$PIP_REQ_PACKAGES $PIP_OPT_PACKAGES" | \
+    local regex="$(
+        echo "$packages" | \
         sed 's:^:^:' | sed 's: *$:$:' | sed 's: :$|^:g')"
 
-    local pipdep="`which pipdeptree`"
-    if [ ! -x "$pipdep" ]; then
-        pip_install pipdeptree
-    fi
+    echo "$regex"
+
+    return 0
 
     local result="$(
         $pipdep --all --warn silence --reverse | \
-        grep -Pv '\s+' | sd '^(.+)==(.+)$' '$1' | grep -Po "$josh_regex" | sed -z 's:\n\b: :g'
+        grep -Pv '\s+' | sd '^(.+)==(.+)$' '$1' | grep -Po "$regex" | sed -z 's:\n\b: :g'
     )"
-    pip_install "$result"
+    pip.install "$result"
     local retval="$?"
 
     [ -n "$venv" ] && source $venv/bin/activate
@@ -486,9 +567,9 @@ function pip_update {
 }
 
 function pip_extras {
-    pip_install "$PIP_REQ_PACKAGES"
+    pip.install "$PIP_REQ_PACKAGES"
     local retval="$?"
-    run_show "pip_install $PIP_OPT_PACKAGES"
+    run_show "pip.install $PIP_OPT_PACKAGES"
     rehash
 
     if [ "$?" -gt 0 ] || [ "$retval" -gt 0 ]; then
@@ -497,13 +578,13 @@ function pip_extras {
 }
 
 function python_env {
-    pip_init >/dev/null
+    pip.exe >/dev/null
 }
 
 function pip_compliance_check {
-    local target="`python_init`"
+    local target="`python.home`"
     if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
-        echo " - $0 fatal: python target dir:\`$target\`" >&2
+        echo " - $0 fail: python target dir:\`$target\`" >&2
         return 1
     fi
 

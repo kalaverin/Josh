@@ -76,8 +76,8 @@ function update_internals {
     deploy_extensions
 
     source "$JOSH/lib/python.sh" && \
-    pip_install "$PIP_REQ_PACKAGES"
-    pip_update
+    pip.install "$PIP_REQ_PACKAGES"
+    pip.update
 }
 
 function update_packages {
