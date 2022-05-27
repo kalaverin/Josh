@@ -8,7 +8,7 @@ function tml {
     tmux list-sessions -F ' #{?session_attached,+,-} #{window_width}x#{window_height} #{session_name}'
 }
 
-function tmx() {
+function tmx {
     if [ -n "$1"  ]; then
         if [ "$1" = 'any' ]; then
             local session="$(
@@ -45,38 +45,38 @@ function tmx() {
     fi
 }
 
-function tmx_is_session_exists() {
+function tmx_is_session_exists {
     [ -z "$1" ] && return 2
     local result=$(
         tmux list-sessions -F '#{session_name}' 2>/dev/null |
-        timeout -s 2 0.33 cat | grep -P "^$1$" | head -n 1
+        timeout -s 2 0.25 cat | grep -P "^$1$" | head -n 1
     )
     [ -z "$result" ] && return 1 || echo "$result"
 }
 
-function tmx_get_any_session() {
+function tmx_get_any_session {
     local result=$(
         tmux list-sessions -F '#{session_name}' 2>/dev/null |
-        timeout -s 2 0.33 cat | head -n 1
+        timeout -s 2 0.25 cat | head -n 1
     )
     [ -z "$result" ] && return 1 || echo "$result"
 }
 
-function tmx_get_detached_session() {
+function tmx_get_detached_session {
     local result=$(
         tmux list-sessions -f "#{?session_attached,,1}" -F '#{session_name}' 2>/dev/null |
-        timeout -s 2 0.33 cat | tabulate -d ':' -i 1 | head -n 1
+        timeout -s 2 0.25 cat | tabulate -d ':' -i 1 | head -n 1
     )
     [ -z "$result" ] && return 1 || echo "$result"
 }
 
-function tmx_get_matching_detached_session() {
+function tmx_get_matching_detached_session {
     local maxdiff="${JOSH_TMUX_AUTORETACH_MAX_DIFF:-9}"
     local query='zmodload zsh/mathfunc && echo "$((abs(#{window_width} - $COLUMNS) + abs(#{window_height} - $LINES))) #{session_name}"'
 
     local result="$(
         tmux list-sessions -f "#{?session_attached,0,1}" -F $query 2>/dev/null |
-        timeout -s 2 0.33 $SHELL | sort -Vk 1 |
+        timeout -s 2 0.25 $SHELL | sort -Vk 1 |
         sd '(\d+) (.+)' "echo \"\$((\$1 <= $maxdiff)) \$2\"" | $SHELL |
         grep -P '^1' | head -n 1 | tabulate -i 2
     )"

@@ -17,7 +17,7 @@ REQ_LIBS=(
 )
 
 
-function check_executables() {
+function check_executables {
     local missing=""
     for exe in $@; do
         if [ ! -x "`builtin which -p $exe 2>/dev/null`" ]; then
@@ -32,7 +32,7 @@ function check_executables() {
 }
 
 
-function check_libraries() {
+function check_libraries {
     local missing=""
     for lib in $@; do
         $SHELL -c "pkg-config --libs --cflags $lib" 1&>/dev/null 2&>/dev/null
@@ -84,7 +84,7 @@ function check_libraries() {
 }
 
 
-function version_not_compatible() {
+function version_not_compatible {
     if [ "$1" != "$2" ]; then
         local choice=$($SHELL -c "printf '%s\n%s\n' "$1" "$2" | sort --version-sort | tail -n 1")
         [ $($SHELL -c "printf '%s' "$choice" | grep -Pv '^($2)$'") ] && return 0
@@ -93,7 +93,7 @@ function version_not_compatible() {
 }
 
 
-function check_compliance() {
+function check_compliance {
     if [ -n "$(uname | grep -i freebsd)" ]; then
         echo " + os: freebsd `uname -srv`"
         export JOSH_OS="BSD"

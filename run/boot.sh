@@ -23,10 +23,10 @@ JOSH_PATH='custom/plugins/josh'
 JOSH_SUBDIR_NAME='.josh'
 
 
-if [ -n "$PYTHONUSERBASE" ] && [ -d "$PYTHONUSERBASE/bin" ]; then
+if [ -n "$PYTHON" ] && [ -d "$PYTHON/bin" ]; then
     perm_path=(
         $HOME/.cargo/bin
-        $PYTHONUSERBASE/bin
+        $PYTHON/bin
         $HOME/.brew/bin
         $HOME/.local/bin
         $HOME/bin
@@ -298,9 +298,7 @@ function shortcut {
 
 function function_exists {
     declare -f "$1" >/dev/null
-    if [ "$?" -eq 0 ]; then
-        echo "1"
-    else
+    if [ "$?" -gt 0 ]; then
         return 1
     fi
 }
@@ -334,7 +332,7 @@ function which {
     elif [ "$commands[$src]" ]; then
         local dst="$commands[$src]"
 
-    elif [ "`function_exists lookup`" -gt 0 ]; then
+    elif function_exists 'lookup'; then
         local dst="$(lookup "$src")"
     fi
 

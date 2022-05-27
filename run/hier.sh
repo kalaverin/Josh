@@ -8,11 +8,11 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
 
     local perm_path_regex="`echo "$perm_path" | sed 's:^:^:' | sed 's: *$:/:' | sed 's: :/|^:g'`"
 
-    function lookup() {
+    function lookup {
         for sub in $path; do
             if [ -x "$sub/$1" ]; then
                 echo "$sub/$1"
-                return 0
+                [ -z "$2" ] && return 0
             fi
         done
     }
@@ -67,13 +67,17 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
         echo "$result"
     }
 
-    function lookup.find {
-        local cmd="fd --unrestricted --case-sensitive --max-depth 1 --type executable --type symlink -- \"^$1$\" ${@:2}"
+    function lookup.many {
+        local dirs="${@:2}"
+        if [ -z "$dirs" ]; then
+            local dirs="$path"
+        fi
+        local cmd="fd --unrestricted --case-sensitive --max-depth 1 --type executable --type symlink -- \"^$1$\" $dirs"
         local result="`eval {$cmd} 2>/dev/null`"
         echo "$result"
     }
 
-    function lookup.all() {
+    function lookup.copies.cached {
         local expire="$2"
 
         local ignore="$(
@@ -86,7 +90,7 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
 
         local result="$(
             cached_execute "$0" "$expire" "$JOSH_CACHE_DIR" \
-            "lookup.find" "$1" $directories)"
+            "lookup.many" "$1" $directories)"
 
         echo "$result"
     }

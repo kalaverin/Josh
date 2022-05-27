@@ -86,8 +86,8 @@ function python.library.is {
 
 function python.version.full {
     if [ -z "$1" ]; then
-        if [ -n "$PYTHONUSERBASE" ] && [ -x "$PYTHONUSERBASE/bin/python" ]; then
-            local source="$PYTHONUSERBASE/bin/python"
+        if [ -n "$PYTHON" ] && [ -x "$PYTHON/bin/python" ]; then
+            local source="$PYTHON/bin/python"
 
         else
             printf " ** fail ($0): call without args, I need to do — what?\n" >&2
@@ -106,8 +106,8 @@ function python.version.full {
 
 function python.version {
     if [ -z "$1" ]; then
-        if [ -n "$PYTHONUSERBASE" ] && [ -x "$PYTHONUSERBASE/bin/python" ]; then
-            local source="$PYTHONUSERBASE/bin/python"
+        if [ -n "$PYTHON" ] && [ -x "$PYTHON/bin/python" ]; then
+            local source="$PYTHON/bin/python"
 
         else
             printf " ** fail ($0): call without args, I need to do — what?\n" >&2
@@ -192,19 +192,22 @@ function python.exe.lookup {
 }
 
 function python.exe {
-    source $BASE/run/units/compat.sh
+    if ! function_exists "check_executables"; then
+        source $BASE/run/units/compat.sh
+    fi
+
     if [ "$?" -gt 0 ]; then
         printf " ** fail ($0): something wrong, BASE:'$BASE'\n" >&2
         return 127
     fi
 
-    if [ -n "$PYTHONUSERBASE" ]; then
-        local link="$PYTHONUSERBASE/bin/python"
+    if [ -n "$PYTHON" ]; then
+        local link="$PYTHON/bin/python"
         if [ -x "$link" ] && [ -x "`fs_realpath "$link" 2>/dev/null`" ]; then
             echo "$link"
             return 0
         fi
-        unset PYTHONUSERBASE
+        unset PYTHON
     fi
 
     local link="$PYTHON_BINARIES/default/bin/python"
@@ -289,9 +292,9 @@ function python.home {
 
     echo "$target"
     if [ -z "$1" ]; then
-        export JOSH_PYTHON="$target"
-        export PYTHONUSERBASE="$target"
+        export PYTHON="$target"
     fi
+    [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
 }
 
 function python.set {
@@ -329,7 +332,8 @@ function python.set {
         printf " ** fail ($0): python $source version fetch\n" >&2
         return 2
 
-    elif [ -n "$PYTHONUSERBASE" ] && [ "$version" = "`python.version.full`" ]; then
+    elif [ -n "$PYTHON" ] && [ "$version" = "`python.version.full`" ]; then
+        [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
         return 0
     fi
 
@@ -339,24 +343,28 @@ function python.set {
         return 3
     fi
 
-    local base="$PYTHONUSERBASE"
-    export PYTHONUSERBASE="$target"
+    local base="$PYTHON"
+    export PYTHON="$target"
 
     local python="`python.exe`"
     if [ ! -x "$python" ]; then
         printf " ** fail ($0): something wrong on setup python '$python' from source $source\n" >&2
-        [ -n "$base" ] && export PYTHONUSERBASE="$base"
+        [ -n "$base" ] && export PYTHON="$base"
+        [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
         return 4
     fi
 
     if [ ! "$version" = "`python.version.full "$python"`" ]; then
         printf " ** fail ($0): source python $source ($version) != target $python (`python.version.full "$python"`)\n" >&2
-        [ -n "$base" ] && export PYTHONUSERBASE="$base"
+        [ -n "$base" ] && export PYTHON="$base"
+        [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
         return 5
     fi
 
     printf " ++ warn ($0): using $python ($source=$version) from $target, don't forgot pip.extras\n" >&2
+
     pip.exe >/dev/null
+    [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
     rehash && josh_source run/boot.sh && path_prune
 }
 
@@ -421,7 +429,8 @@ function pip.exe {
 
         local pip_file="/tmp/get-pip.py"
 
-        export PYTHONUSERBASE="$target"
+        export PYTHON="$target"
+        [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
 
         printf " -- info ($0): deploy pip with $python (`python.version.full $python`) to $target\n" >&2
 
@@ -463,9 +472,11 @@ function pip.exe {
 
     fi
 
-    if [ -z "$PYTHONUSERBASE" ]; then
-        export PYTHONUSERBASE="$target"
+    if [ -z "$PYTHON" ]; then
+        export PYTHON="$target"
     fi
+
+    [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
     echo "$target/bin/pip"
     return 0
 }
@@ -645,7 +656,7 @@ function pip_compliance_check {
         local src_size="`fs_size "$src"`"
 
         if [ -n "$short" ] && [ -x "$src" ]; then
-            local shadows="$(lookup.all "$short" "$expire" "$target/bin" $system)"
+            local shadows="$(lookup.copies.cached "$short" "$expire" "$target/bin" $system)"
             if [ -n "$shadows" ]; then
                 for dst in $(echo "$shadows" | sed 's#:#\n#g'); do
                     local dst_size="`fs_size "$dst"`"
