@@ -311,7 +311,6 @@ function python.set {
                 return 1
             fi
         fi
-        echo $source
 
     elif [[ "$1" -regex-match '^[0-9]+\.[0-9]+' ]]; then
         local source="$(fs_realpath `which "python$MATCH"`)"
