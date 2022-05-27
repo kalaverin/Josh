@@ -318,4 +318,5 @@ function rchgrp() {
     find $2 ( -not -group $1 ) -print -exec chgrp $1 {} ;
 }
 
+python.home
 path_prune

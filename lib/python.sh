@@ -282,13 +282,20 @@ function python.home {
 
 function python.set {
     if [ -z "$1" ]; then
-        printf " ** fail ($0): call without args, I need to do — what?\n" >&2
-        return 1
-    fi
 
-    local base="$PYTHONUSERBASE"
+        if [ ! -x "$PYTHON_BINARIES/default/bin/python" ]; then
+            printf " ** fail ($0): default python isn't installed, you call me without respect and arguments, I need to do — what?\n" >&2
+            return 1
+        else
 
-    if [[ "$1" -regex-match '^[0-9]+\.[0-9]+' ]]; then
+            local source="$(fs_realpath "$PYTHON_BINARIES/default/bin/python")"
+            if [ "$?" -gt 0 ] || [ ! -x "$source" ]; then
+                printf " ** fail ($0): python default binary '$source' ($1) doesn't exists or something wrong\n" >&2
+                return 1
+            fi
+        fi
+
+    elif [[ "$1" -regex-match '^[0-9]+\.[0-9]+' ]]; then
         local source="$(fs_realpath `which "python$MATCH"`)"
         if [ "$?" -gt 0 ] || [ ! -x "$source" ]; then
             printf " ** fail ($0): python binary '$source' ($1) doesn't exists or something wrong\n" >&2
@@ -303,20 +310,21 @@ function python.set {
         fi
     fi
 
+
     local target="`python.home "$source"`"
     if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
         printf " ** fail ($0): python $source home directory isn't exist\n" >&2
         return 2
     fi
-    export PYTHONUSERBASE="$target"
 
     local version="`python.version.full "$source"`"
     if [ -z "$version" ]; then
         printf " ** fail ($0): python $source version fetch\n" >&2
-        [ -n "$base" ] && export PYTHONUSERBASE="$base"
         return 3
     fi
 
+    local base="$PYTHONUSERBASE"
+    export PYTHONUSERBASE="$target"
 
     local python="`python.exe`"
     if [ ! -x "$python" ]; then

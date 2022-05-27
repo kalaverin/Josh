@@ -2,9 +2,9 @@
 
 if [[ ! "$SHELL" =~ "/zsh$" ]]; then
     if [ -x "`which zsh`" ]; then
-        echo " - $0 fatal: current shell must be zsh, but SHELL \`$SHELL\`, zsh found \``which zsh`\`, change shell to zsh and repeat: sudo chsh -s /usr/bin/zsh $USER" >&2
+        printf " ** fail ($0): current shell must be zsh, but SHELL '$SHELL', zsh found '`which zsh`', change shell to zsh and repeat: sudo chsh -s /usr/bin/zsh $USER" >&2
     else
-        echo " - $0 fatal: current shell must be zsh, but SHELL \`$SHELL\` and zsh not detected" >&2
+        printf " ** fail ($0): current shell must be zsh, but SHELL '$SHELL' and zsh not detected" >&2
     fi
     return 1
 fi
@@ -18,24 +18,40 @@ zmodload zsh/datetime
 zmodload zsh/parameter
 
 
-JOSH_URL="https://github.com/YaakovTooth/Josh.git"
-JOSH_PATH="custom/plugins/josh"
-JOSH_SUBDIR_NAME=".josh"
+JOSH_URL='https://github.com/YaakovTooth/Josh.git'
+JOSH_PATH='custom/plugins/josh'
+JOSH_SUBDIR_NAME='.josh'
 
 
-perm_path=(
-    $HOME/.cargo/bin
-    $PYTHONUSERBASE/bin
-    $HOME/.brew/bin
-    $HOME/.local/bin
-    $HOME/bin
-    /usr/local/bin
-    /bin
-    /sbin
-    /usr/bin
-    /usr/sbin
-    /usr/local/sbin
-)
+if [ -n "$PYTHONUSERBASE" ] && [ -d "$PYTHONUSERBASE/bin" ]; then
+    perm_path=(
+        $HOME/.cargo/bin
+        $PYTHONUSERBASE/bin
+        $HOME/.brew/bin
+        $HOME/.local/bin
+        $HOME/bin
+        /usr/local/bin
+        /bin
+        /sbin
+        /usr/bin
+        /usr/sbin
+        /usr/local/sbin
+    )
+else
+    perm_path=(
+        $HOME/.cargo/bin
+        $HOME/.python/default/bin
+        $HOME/.brew/bin
+        $HOME/.local/bin
+        $HOME/bin
+        /usr/local/bin
+        /bin
+        /sbin
+        /usr/bin
+        /usr/sbin
+        /usr/local/sbin
+    )
+fi
 
 
 path=(
@@ -140,7 +156,7 @@ function fs_resolver {
         export JOSH_REALPATH="$result"
         return 0
     fi
-    echo " - $0 fatal: resolver isn't configured, need realpath or readlink" >&2
+    echo " - $0 fail: resolver isn't configured, need realpath or readlink" >&2
     return 1
 }
 
@@ -187,7 +203,7 @@ function fs_realpath {
         local cmd="$JOSH_REALPATH $link"
         eval "${cmd}"
     else
-        echo " - $0 fatal: '$link' doesn't exist" >&2
+        echo " - $0 fail: '$link' doesn't exist" >&2
         return 1
     fi
 }
@@ -250,20 +266,20 @@ function shortcut {
         local dst="`fs_realpath $1`"
 
         if [ ! -x "$dst" ]; then
-            echo " - $0 fatal: link source \`$1\` -> \`$dst\` isn't executable (exists?)" >&2
+            echo " - $0 fail: link source \`$1\` -> \`$dst\` isn't executable (exists?)" >&2
             return 2
         fi
 
     else
         if [[ "$1" =~ "/" ]]; then
-            echo " - $0 fatal: link source \`$1\` couldn't contains slashes" >&2
+            echo " - $0 fail: link source \`$1\` couldn't contains slashes" >&2
             return 1
         fi
         local src="$dir/$1"
         local dst="`fs_realpath $2`"
 
         if [ ! -x "$dst" ]; then
-            echo " - $0 fatal: link source \`$2\` -> \`$dst\` isn't executable (exists?)" >&2
+            echo " - $0 fail: link source \`$2\` -> \`$dst\` isn't executable (exists?)" >&2
             return 2
         fi
     fi
@@ -353,7 +369,7 @@ fi
 
 if [[ -z ${(M)zsh_eval_context:#file} ]]; then
     if [ ! -x "`builtin which git`" ]; then
-        echo " - fatal: \`git\` required"
+        echo " - fail: \`git\` required"
 
     else
         cwd="`pwd`"
