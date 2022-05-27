@@ -311,6 +311,7 @@ function python.set {
                 return 1
             fi
         fi
+        echo $source
 
     elif [[ "$1" -regex-match '^[0-9]+\.[0-9]+' ]]; then
         local source="$(fs_realpath `which "python$MATCH"`)"
@@ -365,7 +366,8 @@ function python.set {
 
     pip.exe >/dev/null
     [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
-    rehash && josh_source run/boot.sh && path_prune
+    josh_source run/boot.sh && path_prune && rehash
+    echo "$path"
 }
 
 function pip.lookup {
@@ -497,20 +499,18 @@ function pip.install {
         return 1
     fi
 
-    # local python="`python.exe`"
-    # if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
-    #     return 1
-
     local venv="`venv_deactivate`"
 
     local pip="`pip.exe`"
     if [ "$?" -gt 0 ] || [ ! -x "$pip" ]; then
+        [ -n "$venv" ] && source $venv/bin/activate
         return 2
     fi
 
     local target="`python.home`"
     if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
         echo " - $0 fail: python target dir:\`$target\`" >&2
+        [ -n "$venv" ] && source $venv/bin/activate
         return 3
     fi
 

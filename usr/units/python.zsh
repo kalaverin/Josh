@@ -26,15 +26,17 @@ function virtualenv_path_activate {
     else
         source $venv/bin/activate
     fi
+    josh_source run/boot.sh && path_prune && rehash
 }
 
 function virtualenv_deactivate {
     if [ "$VIRTUAL_ENV" != "" ]; then
         source $VIRTUAL_ENV/bin/activate && deactivate
     fi
+    josh_source run/boot.sh && path_prune && rehash
 }
 
-function get_temporary_envs_directory() {
+function get_temporary_envs_directory {
     if [ -z "$JOSH_PY_TEMP_ENVS_ROOT" ]; then
         local directory="`get_tempdir`/`fs_basename $JOSH_PY_ENVS_ROOT`"
         if [ ! -d "$directory" ]; then
@@ -142,7 +144,7 @@ function python_from_version {
         return 1
     fi
 
-    if [[ "$1" =~ ^[0-9]\.[0-9]$ ]]; then
+    if [[ "$1" =~ ^[0-9]\.[0-9]+$ ]]; then
         local exe="`which python$1`"
 
     elif [ "$1" = "3" ]; then
@@ -152,7 +154,7 @@ function python_from_version {
         else
             local exe="$(which python3)"
         fi
-    else
+    elif [ -z "$1" ]; then
         local exe="$(which python2.7)"
     fi
     echo "$exe"
@@ -189,48 +191,44 @@ function virtualenv_create {
         return 1
     fi
 
-    local version="`py.version.full $python`"
-    if [[ "$2" =~ ^[0-9]\.[0-9]$ ]] || [ "$2" = "2" ] || [ "$2" = "3" ]; then
+    local version="`python.version $python`"
+    if [[ "$2" =~ ^[0-9]\.[0-9]+$ ]] || [ "$2" = "2" ] || [ "$2" = "3" ]; then
         local packages="${@:3}"
     else
         local packages="${@:2}"
     fi
 
-    virtualenv_deactivate
-    if [ ! -x "$python" ]; then
-        printf " ** fail ($0): couldn't autodetect python for '$python'\n" >&2
+    local venv="`venv_deactivate`"
+    local using="`python.version`"
+
+    if [ -z "$using" ]; then
+        printf " ** fail ($0) 1 '$python'\n" >&2
+        [ -n "$venv" ] && source $venv/bin/activate
         return 1
     fi
 
-    # if python.library.is 'virtualenv' "$link"; then
-    #     printf " ** fail ($0): couldn't autodetect python for '$2'\n" >&2
-    #     return 2
-    # fi
-
-    local venv="$commands[virtualenv]"
-    if [ ! -x "$venv" ]; then
-        josh_source lib/python.sh && pip_init
-
-        if [ "$?" -gt 0 ] || [ ! -x "$commands[virtualenv]" ]; then
-            printf " ** fail ($0): virtualenv something wrong\n" >&2
-            return 1
-        fi
-        local venv="$commands[virtualenv]"
-    fi
-
-
-    $venv --help 1>/dev/null 2>/dev/null
+    python.set "$python"
     if [ "$?" -gt 0 ]; then
-        if python.library.is 'virtualenv' "$python"; then
-            local venv="$python -m virtualenv"
+        [ -n "$venv" ] && source $venv/bin/activate
+        return 1
+    fi
+
+    if ! python.library.is 'virtualenv' "$python"; then
+        printf " -- info ($0): virtualenv isn't installed for `python.version`, proceed\n" >&2
+        pip.install virtualenv
+
+        if ! python.library.is 'virtualenv' "$python"; then
+            printf " ** fail ($0): something went wrong\n" >&2
+            python.set "$using"
+            [ -n "$venv" ] && source $venv/bin/activate
+            return 2
         fi
     fi
 
-    local message="create env $name with python $python ($version) in $full"
+    local message="create env '$name' with $python ($version): $full"
     if [ -n "$packages" ]; then
-        local message=" (with preinstalled packages: $packages)"
+        local message="$message (preinstalled packages: $packages)"
     fi
-    printf " -- info ($0): $message\n" >&2
 
     if [[ "$version" =~ "^2" ]]; then
         local args_env='--pip="20.3.4"'
@@ -238,8 +236,13 @@ function virtualenv_create {
         local args_pip='pip setuptools wheel'
     fi
 
-    echo "builtin cd "$root" && $venv_ed --python=$python $args_env "$full" && source $full/bin/activate && pip install --compile --no-input --prefer-binary --upgrade --upgrade-strategy=eager pipdeptree $args_pip $packages && builtin cd $cwd"
-    # run_show "builtin cd "$root" && $venv_ed --python=$python $args_env "$full" && source $full/bin/activate && pip install --compile --no-input --prefer-binary --upgrade --upgrade-strategy=eager pipdeptree $args_pip $packages && builtin cd $cwd"
+    printf " -- info ($0): $message\n" >&2
+
+    run_show "builtin cd "$root" && `python.exe` -m virtualenv --python=$python $args_env "$full" && source $full/bin/activate && pip install --compile --no-input --prefer-binary --upgrade --upgrade-strategy=eager pipdeptree $args_pip $packages && builtin cd $cwd"
+
+    local venv="`venv_deactivate`"
+    python.set "$using"
+    [ -n "$venv" ] && source $venv/bin/activate
 }
 
 function virtualenv_temporary_create {
@@ -297,7 +300,7 @@ function virtualenv_temporary_destroy {
 
 # ———
 
-pip_visual_freeze() {
+function pip_visual_freeze {
     . $JOSH/lib/python.sh
     pip_init || return 1
 
