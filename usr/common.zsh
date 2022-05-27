@@ -665,11 +665,27 @@ function josh_bootstrap_command_branched() {
 }
 
 function josh_source() {
-    if [ ! -f "$JOSH/$1" ]; then
-        echo " - $0 fatal: \`$JOSH/$1\` isn't accessible"
+    local result=''
+    for file in $*; do
+        if [ ! -f "$JOSH/$file" ]; then
+            if [ -z "$result" ]; then
+                local result="$file"
+            else
+                local result="$result $file"
+            fi
+        fi
+    done
+
+    if [ -n "$result" ]; then
+        echo " - $0 fatal: one or many sources doesn't exists: $result"
         return 1
     fi
-    source "$JOSH/$1"
+
+    for file in $*; do
+        source "$JOSH/$file"
+    done
+    path_prune
+    rehash
 }
 
 function josh_extras() {
