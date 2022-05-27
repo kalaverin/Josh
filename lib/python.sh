@@ -361,8 +361,9 @@ function python.set {
         return 5
     fi
 
+    pip.exe
     if [ ! "$(python.version "$PYTHON_BINARIES/default/bin/python" 2>/dev/null)" = "$(python.version "$python" 2>/dev/null)" ]; then
-        printf " ++ warn ($0): using $python ($source=$version) from $target, pip `pip.exe`, don't forget pip.extras\n" >&2
+        printf " ++ warn ($0): using $python ($source=$version) from $target, don't forget pip.extras\n" >&2
     fi
     [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
     josh_source run/boot.sh && path_prune && rehash
@@ -391,7 +392,7 @@ function pip.lookup {
     return 1
 }
 
-function pip.exe {
+function pip.deploy {
     if [ -z "$1" ]; then
         local python="`python.exe`"
     else
@@ -472,13 +473,37 @@ function pip.exe {
 
     fi
 
-    if [ -z "$PYTHON" ]; then
-        export PYTHON="$target"
+    [ -z "$PYTHON" ] && export PYTHON="$target"
+    [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
+}
+
+function pip.exe {
+    if [ -z "$1" ]; then
+        local python="`python.exe`"
+    else
+        local python="`which "$1"`"
+        if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
+            printf " ** fail ($0): python binary '$python' doesn't exists or something wrong\n" >&2
+            return 1
+        fi
     fi
 
+    local target="`python.home "$python"`"
+    if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
+        printf " ** fail ($0): python $python home directory isn't exist\n" >&2
+        return 2
+    fi
+
+    pip.deploy $*
+
+    local retval="$?"
+    if [ -x "$target/bin/pip" ]; then
+        echo "$target/bin/pip"
+    fi
+
+    [ -z "$PYTHON" ] && export PYTHON="$target"
     [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
-    echo "$target/bin/pip"
-    return 0
+    return "$retval"
 }
 
 function venv_deactivate {
