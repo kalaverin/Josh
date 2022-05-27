@@ -66,6 +66,29 @@ function python_distutils {
     ([ "$distutils" ] && echo 1) || echo 0
 }
 
+
+function python_library_found {
+    if [ -z "$1" ]; then
+        printf " ** fail ($0): call without args, I need to do — what?\n" >&2
+        return 2
+    fi
+
+    if [ -x "$2" ]; then
+        local bin="`fs_realpath "$2"`"
+        if [ ! -x "$bin" ]; then
+            printf " ** fail ($0): cannot get real path for '$2'\n" >&2
+            return 3
+        fi
+    else
+        local bin="`python_executable`"
+    fi
+
+    if [ -z "$(echo "import $1 as x; print(x)" | $bin 2>/dev/null | grep '<module')" ]; then
+        printf " ** fail ($0): '$1' module doesn't exist for '$bin'\n" >&2
+        return 1
+    fi
+}
+
 function python_get_full_version {
     if [ -z "$1" ]; then
         printf " ** fail ($0): call without args, I need to do — what?\n" >&2
@@ -119,7 +142,13 @@ function python_directory {
 function python_executable_scan {
     source $BASE/run/units/compat.sh
 
-    for dir in $($SHELL -c "echo "$*" | sed 's#:#\n#g'"); do
+    if [ -n "$1" ]; then
+        local dirs="$*"
+    else
+        local dirs="$path"
+    fi
+
+    for dir in $($SHELL -c "echo "$dirs" | sed 's#:#\n#g'"); do
         if [ ! -d "$dir" ]; then
             continue
         fi
@@ -135,21 +164,17 @@ function python_executable_scan {
             unset result
             version_not_compatible $MIN_PYTHON_VERSION $version
             if [ $? -gt 0 ]; then
-                if [ "`python_distutils $exe`" -gt 0 ]; then
+                if python_library_found 'distutils' "$exe"; then
                     local result="$exe"
                 else
                     echo " * $0 info: python $version from $exe do not have distutils, skip" >&2
                 fi
             fi
-
-            if [ "$result" ]; then
-                echo " * $0 info: using python $version" >&2
-                break
-            fi
+            [ "$result" ] && break
         done
     done
     if [ -n "$result" ]; then
-        echo " * $0 info: python binary $result" >&2
+        echo " * $0 info: python binary $result ($version)" >&2
         echo "$result"
         return 0
     fi
@@ -179,9 +204,12 @@ function python_executable {
         [ -z "$version" ] && continue
 
         version_not_compatible "$MIN_PYTHON_VERSION" "$version"
-        if [ $? -gt 0 ] && [ "`python_distutils $link`" -gt 0 ]; then
-            echo "$link"
-            return 0
+
+        if [ $? -gt 0 ]; then
+            if python_library_found 'distutils' "$link"; then
+                echo "$link"
+                return 0
+            fi
         fi
     fi
 
