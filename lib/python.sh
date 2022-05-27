@@ -361,7 +361,7 @@ function python.set {
         return 5
     fi
 
-    printf " ++ warn ($0): using $python ($source=$version) from $target, don't forgot pip.extras\n" >&2
+    printf " ++ warn ($0): using $python ($source=$version) from $target, don't forget pip.extras\n" >&2
 
     pip.exe >/dev/null
     [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
