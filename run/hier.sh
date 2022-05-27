@@ -47,7 +47,7 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
                 continue
             fi
 
-            local dir="$(realpath "$dir")"
+            local dir="$(fs_realpath "$dir" 2>/dev/null)"
             if [ -z "$dir" ]; then
                 continue
             fi
@@ -58,35 +58,36 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
 
             if [ -n "$dir" ] && [ -d "$dir" ]; then
                 if [ -z "$result" ]; then
-                    local result="$dir"
+                    local result="\"$dir\""
                 else
-                    local result="$result:$dir"
+                    local result="$result \"$dir\""
                 fi
             fi
         done
         echo "$result"
     }
 
+    function lookup.find {
+        local cmd="fd --unrestricted --case-sensitive --max-depth 1 --type executable --type symlink -- \"^$1$\" ${@:2}"
+        local result="`eval {$cmd} 2>/dev/null`"
+        echo "$result"
+    }
+
     function lookup.all() {
+        local expire="$2"
+
         local ignore="$(
-            cached_execute "$0" "$2" "$JOSH_CACHE_DIR" \
+            cached_execute "$0" "$expire" "$JOSH_CACHE_DIR" \
             "fs.dirs.normalize" ${@:3})"
 
         local directories="$(
-            cached_execute "$0" "$2" "$JOSH_CACHE_DIR" \
+            cached_execute "$0" "$expire" "$JOSH_CACHE_DIR" \
             "fs.dirs.exclude" "$PATH" "$ignore")"
 
-        local result=''
-        for dir in $(echo "$directories" | sed 's#:#\n#g'); do
-            local bin="$dir/$1"
-            if [ -x "$bin" ] || [ -L "$bin" ]; then
-                if [ -z "$result" ]; then
-                    local result="$bin"
-                else
-                    local result="$result:$bin"
-                fi
-            fi
-        done
+        local result="$(
+            cached_execute "$0" "$expire" "$JOSH_CACHE_DIR" \
+            "lookup.find" "$1" $directories)"
+
         echo "$result"
     }
 
@@ -169,7 +170,7 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
         if [ "$expired" -eq 0 ]; then
             local command="cat \"$file\" | $JOSH_QAP"
             local result="`eval ${command}`"
-            if [ -n "$result" ]; then
+            if [ "$?" -eq 0 ]; then
                 echo "$result"
                 return 0
             fi
@@ -178,7 +179,7 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
         local result="`eval ${@:4}`"
         local retval="$?"
 
-        if [ -n "$result" ] && [ "$retval" -eq 0 ]; then
+        if [ "$retval" -eq 0 ]; then
             if [ ! -d "`fs_dirname "$file"`" ]; then
                 mkdir -p "`fs_dirname "$file"`"
             fi
