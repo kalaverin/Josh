@@ -241,16 +241,13 @@ function fs_retrieve_userhome {
 
 
 function fs_userhome {
-    local home="`fs_retrieve_userhome`"
+    local home="$(fs_retrieve_userhome)"
     local real="$(fs_realpath $home)"
 
     if [ -x "$real" ]; then
-        if [ ! "$real" = "$home" ]; then
-            echo " * link HOME:\`$home\` -> \`$real\`" >&2
-        fi
         echo "$real"
     else
-        echo " - $0 warning: can't make real home path for HOME:\`$home\` with REALPATH:\``which realpath`\`, READLINK:\``which readlink`\`, fallback:\``fs_dirname $home`/`fs_basename $home`\`" >&2
+        printf " -- $0 warning: can't make real home path for HOME '$home', REAL '`which realpath`', READLINK '`which readlink`', fallback '`fs_dirname $home`/`fs_basename $home`'\n" >&2
         echo "$home"
     fi
 }

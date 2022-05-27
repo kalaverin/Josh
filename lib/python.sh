@@ -364,10 +364,9 @@ function python.set {
 
     printf " ++ warn ($0): using $python ($source=$version) from $target, don't forget pip.extras\n" >&2
 
-    pip.exe >/dev/null
+    pip.exe
     [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
     josh_source run/boot.sh && path_prune && rehash
-    echo "$path"
 }
 
 function pip.lookup {

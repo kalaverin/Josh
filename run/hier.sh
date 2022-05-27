@@ -95,7 +95,7 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
         echo "$result"
     }
 
-    function path_last_modified() {
+    function path_last_modified {
         if [ -n "$*" ]; then
             local result="$(
                 builtin zstat -L `echo "$1" | tr ':' ' ' ` 2>/dev/null | \
@@ -105,7 +105,7 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
         fi
     }
 
-    function path_prune() {
+    function path_prune {
         local unified_path="$(
             echo "$path" | sed 's#:#\n#' | sed "s:^~/:$HOME/:" | \
             xargs -n 1 realpath 2>/dev/null | awk '!x[$0]++' | \
@@ -123,7 +123,7 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
         return "$ret"
     }
 
-    function cached_execute() {
+    function cached_execute {
         if [ -z "$1" ]; then
             echo " - fatal $0: \$1 key must be: \`$1\`, \`$2\`, \`$3\`, \`${@:4}\` " >&2
             return 1
