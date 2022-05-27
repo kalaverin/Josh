@@ -363,7 +363,7 @@ function python.set {
 
     pip.deploy
 
-    if [ ! "$(python.version "$PYTHON_BINARIES/default/bin/python" 2>/dev/null)" = "$(python.version "$python" 2>/dev/null)" ]; then
+    if [ -z "$1" ] && [ ! "$(python.version "$PYTHON_BINARIES/default/bin/python" 2>/dev/null)" = "$(python.version "$python" 2>/dev/null)" ]; then
         printf " ++ warn ($0): using $python ($source=$version) from $target, don't forget pip.extras\n" >&2
     fi
 
