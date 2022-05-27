@@ -362,10 +362,8 @@ function python.set {
     fi
 
     if [ ! "$(python.version "$PYTHON_BINARIES/default/bin/python" 2>/dev/null)" = "$(python.version "$python" 2>/dev/null)" ]; then
-        printf " ++ warn ($0): using $python ($source=$version) from $target, don't forget pip.extras\n" >&2
+        printf " ++ warn ($0): using $python ($source=$version) from $target, pip `pip.exe`, don't forget pip.extras\n" >&2
     fi
-
-    pip.exe >/dev/null
     [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
     josh_source run/boot.sh && path_prune && rehash
 }
