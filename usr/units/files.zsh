@@ -1,6 +1,15 @@
 source "$JOSH/lib/shared.sh"
 
 
+function __stream_pak {
+    if [ "$JOSH_OS" = 'BSD' ]; then
+        echo 'tar -cO --exclude-vcs --numeric-owner --sparse . -f -'
+    else
+        echo 'tar -cO --exclude-vcs --numeric-owner --sparse .'
+    fi
+}
+
+
 function __stream_unpak {
     if [ "$JOSH_OS" = 'BSD' ]; then
         echo 'tar -x --numeric-owner --preserve-permissions -f -'
@@ -48,7 +57,7 @@ function bak {
     local backup="$target/$timemark-`make_human_name`.tar"
     [ "$?" -gt 0 ] && return 4
 
-    run_show "mkdir -p \"$target\" 2>/dev/null; tar -cO --exclude-vcs --numeric-owner --sparse . | $JOSH_PAQ > $backup"
+    run_show "mkdir -p \"$target\" 2>/dev/null; `__stream_pak` | $JOSH_PAQ > $backup"
     echo " => cat $backup | $JOSH_QAP | `__stream_unpak`"
     export BAK_RESTORE="$backup"
 }
@@ -78,7 +87,7 @@ function bakf {
     local backup="$target/$timemark-`make_human_name`.tar"
     [ "$?" -gt 0 ] && return 4
 
-    run_show "mkdir -p \"$target\" 2>/dev/null; tar -cO --exclude-vcs-ignores --numeric-owner --sparse . | $JOSH_PAQ > $backup"
+    run_show "mkdir -p \"$target\" 2>/dev/null; tar `__stream_pak` | $JOSH_PAQ > $backup"
     echo " => cat $backup | $JOSH_QAP | `__stream_unpak`"
     export BAK_RESTORE="$backup"
 }
