@@ -31,6 +31,7 @@ CARGO_REQ_PACKAGES=(
     cargo-update     # packages for auto-update installed crates
     chit             # crates info, just type: chit <any>
     csview           # for commas, tabs, etc
+    difftastic       # diff colored visualizer
     fd-find          # fd, fast replace for find for humans
     git-delta        # fast replace for git delta with steroids
     git-interactive-rebase-tool

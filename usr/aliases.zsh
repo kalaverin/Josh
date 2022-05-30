@@ -126,6 +126,18 @@ if [ -x "$commands[bat]" ]; then
 fi
 
 
+# difftascit: beatiful diff wrapper with syntax highlight
+#
+if [ -x "$commands[difft]" ]; then
+    function dift() { $commands[difft] --color always $* | less }
+
+    export DFT_DISPLAY="${DFT_DISPLAY:-"side-by-side"}"
+    export DFT_TAB_WIDTH="${DFT_TAB_WIDTH:-"4"}"
+    export DFT_NODE_LIMIT="${DFT_NODE_LIMIT:-"30000"}"
+    export DFT_SYNTAX_HIGHLIGHT="${DFT_SYNTAX_HIGHLIGHT:-"on"}"
+fi
+
+
 # git-delta: beatiful git differ with many settings, fast and cool
 #
 if [ -x "$commands[delta]" ]; then
