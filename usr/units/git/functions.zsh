@@ -268,10 +268,9 @@ function git_repository_clean {
 
     local modified='echo $(git ls-files --modified `git rev-parse --show-toplevel`)$(git ls-files --deleted --others --exclude-standard `git rev-parse --show-toplevel`)'
     if [ -n "`$SHELL -c "$modified"`" ]; then
-        echo " - isn't clean: $root" >&2
+        printf " ++ warn ($0): $root isn't clean\n" >&2
         return 1
     fi
-    return 0
 }
 
 function git_set_tag {
@@ -300,17 +299,17 @@ function drop_this_branch_right_now {
     git_repository_clean; [ $? -gt 0 ] && return 1
 
     if [ "$branch" = "master" ]; then
-        echo " - $0 ATTENTION! Do not delete MASTER branch!" 1>&2
+        echo " - $0 ATTENTION! Do not delete MASTER branch!" >&2
         return 1
     fi
 
     if [ "$branch" = "develop" ]; then
-        echo " - $0 ATTENTION! Do not delete DEVELOP branch!" 1>&2
+        echo " - $0 ATTENTION! Do not delete DEVELOP branch!" >&2
         return 1
     fi
 
     run_show "git reset --hard && (git checkout develop 2>/dev/null 1>/dev/null 2> /dev/null || git checkout master 2>/dev/null 1>/dev/null) && git branch -D \"$branch\" && git remote prune origin"
-    echo " => git push origin --delete $branch" 1>&2
+    echo " => git push origin --delete $branch" >&2
     return $?
 }
 
@@ -352,40 +351,39 @@ function git_update_nested_repositories {
     # }
     # trap return_workdir INT
 
-    find . -maxdepth 3 -type d -name .git | while read git_directory
+    find . -maxdepth 3 -type d -name .git | sort | while read git_directory
     do
-        echo ""
         current_path="$(fs_dirname "`fs_realpath $git_directory`")"
         builtin cd "$current_path"
         local branch="`$SHELL -c "$GET_BRANCH"`"
         if [ "$?" -gt 0 ]; then
-            printf " ++ warn ($0): something went wrong in:'$current_path', skip\n" 1>&2
+            printf " ++ warn ($0): something went wrong in '$current_path', skip\n" 1>&2
             builtin cd "$cwd"
             continue
         fi
 
-        printf " -- info ($0): $branch in $current_path\n"
-        run_silent "git fetch origin master && git fetch --tags"
-        git_repository_clean
+        printf " -- info ($0): $branch in $current_path.. "
+        run_hide "git fetch origin master && git fetch --tags"
+        git_repository_clean 2>/dev/null
+
         if [ "$?" -gt 0 ]; then
             if [ "$branch" != "master" ]; then
-                printf " -- info ($0): $branch modified, just fetch remote\n"
-                run_silent "git fetch origin $branch"
+                printf "modified, just fetch remote\n"
+                run_hide "git fetch origin $branch"
             fi
 
         else
             if [ "$branch" != "master" ]; then
-                printf " -- info ($0): $branch fetch, reset and pull\n"
-                run_silent "git fetch origin $branch && git reset --hard origin/$branch && git pull origin $branch"
+                printf "fetch, reset and pull\n"
+                run_hide "git fetch origin $branch && git reset --hard origin/$branch && git pull origin $branch"
             else
-                printf " -- info ($0): $branch reset and pull\n"
-                run_silent "git reset --hard origin/$branch && git pull origin $branch"
+                printf "reset and pull\n"
+                run_hide "git reset --hard origin/$branch && git pull origin $branch"
             fi
         fi
 
         if [ -x "`which git-restore-mtime`" ]; then
-            printf " -- info ($0): $branch restore files timestamp\n"
-            git-restore-mtime --skip-missing
+            git-restore-mtime --skip-missing 2>/dev/null
         fi
 
         builtin cd "$cwd"
