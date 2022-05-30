@@ -22,37 +22,41 @@ JOSH_URL='https://github.com/YaakovTooth/Josh.git'
 JOSH_PATH='custom/plugins/josh'
 JOSH_SUBDIR_NAME='.josh'
 
+perm_path=(
+    $HOME/.cargo/bin
+)
 
-if [ -n "$PYTHON" ] && [ -d "$PYTHON/bin" ]; then
+if [ -n "$VIRTUAL_ENV" ] && [ -d "$VIRTUAL_ENV/bin" ]; then
     perm_path=(
-        $HOME/.cargo/bin
-        $PYTHON/bin
-        $HOME/.brew/bin
-        $HOME/.local/bin
-        $HOME/bin
-        /usr/local/bin
-        /bin
-        /sbin
-        /usr/bin
-        /usr/sbin
-        /usr/local/sbin
-    )
-else
-    perm_path=(
-        $HOME/.cargo/bin
-        $HOME/.python/default/bin
-        $HOME/.brew/bin
-        $HOME/.local/bin
-        $HOME/bin
-        /usr/local/bin
-        /bin
-        /sbin
-        /usr/bin
-        /usr/sbin
-        /usr/local/sbin
+        $perm_path
+        $VIRTUAL_ENV/bin
     )
 fi
 
+if [ -n "$PYTHON" ] && [ -d "$PYTHON/bin" ]; then
+    perm_path=(
+        $perm_path
+        $PYTHON/bin
+    )
+else
+    perm_path=(
+        $perm_path
+        $HOME/.python/default/bin
+    )
+fi
+
+perm_path=(
+    $perm_path
+    $HOME/.brew/bin
+    $HOME/.local/bin
+    $HOME/bin
+    /usr/local/bin
+    /bin
+    /sbin
+    /usr/bin
+    /usr/sbin
+    /usr/local/sbin
+)
 
 path=(
     $perm_path
@@ -309,7 +313,7 @@ function which {
         return 2
 
     elif [[ "$src" =~ "/" ]]; then
-        if [ -e "$src" ]; then 
+        if [ -e "$src" ]; then
             echo "$src"
             return 0
         fi
