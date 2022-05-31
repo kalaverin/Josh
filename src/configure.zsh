@@ -13,7 +13,7 @@ fi
 
 # init optional environment
 
-source "$JOSH/lib/python.sh" && python_env
+source "$JOSH/lib/python.sh" && python.env
 source "$JOSH/lib/rust.sh" && rust_env
 
 path_prune

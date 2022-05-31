@@ -43,10 +43,11 @@ PIP_OPT_PACKAGES=(
     asciinema  # shell movies recorder and player
     clickhouse-cli
     crudini    # ini configs parser
+    mycli      # python-driver MySQL client
     nodeenv    # virtual environments for node packaging
     paramiko   # for ssh tunnels with mycli & pgcli
-    mycli      # python-driver MySQL client
     pgcli      # python-driver PostgreSQL client
+    termtosvg  # write shell movie to animated SVG
     tmuxp      # tmux session manager
 )
 
@@ -508,9 +509,10 @@ function pip.exe {
     return "$retval"
 }
 
-function venv_deactivate {
+function venv.deactivate {
     if [ -z "$VIRTUAL_ENV" ] || [ ! -f "$VIRTUAL_ENV/bin/activate" ]; then
         unset venv
+        path_prune 2>/dev/null
     else
         local venv="$VIRTUAL_ENV"
         source $venv/bin/activate && deactivate
@@ -524,7 +526,7 @@ function pip.install {
         return 1
     fi
 
-    local venv="`venv_deactivate`"
+    local venv="`venv.deactivate`"
 
     local pip="`pip.exe`"
     if [ "$?" -gt 0 ] || [ ! -x "$pip" ]; then
@@ -613,7 +615,7 @@ function pip.update {
         local package="$PIP_REQ_PACKAGES $PIP_OPT_PACKAGES"
     fi
 
-    local venv="`venv_deactivate`"
+    local venv="`venv.deactivate`"
     local regex="$(
         echo "$package" | \
         sed 's:^:^:' | sed 's: *$:$:' | sed 's: :$|^:g')"
@@ -647,11 +649,11 @@ function pip.extras {
     fi
 }
 
-function python_env {
+function python.env {
     pip.exe >/dev/null
 }
 
-function pip_compliance_check {
+function pip.compliance.check {
     local target="`python.home`"
     if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
         echo " - $0 fail: python target dir:\`$target\`" >&2

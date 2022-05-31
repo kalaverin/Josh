@@ -198,7 +198,7 @@ function virtualenv_create {
         local packages="${@:2}"
     fi
 
-    local venv="`venv_deactivate`"
+    local venv="`venv.deactivate`"
     local using="`python.version`"
 
     if [ -z "$using" ]; then
@@ -240,7 +240,7 @@ function virtualenv_create {
 
     run_show "builtin cd "$root" && `python.exe` -m virtualenv --python=$python $args_env "$full" && source $full/bin/activate && pip install --compile --no-input --prefer-binary --upgrade --upgrade-strategy=eager pipdeptree $args_pip $packages && builtin cd $cwd"
 
-    local venv="`venv_deactivate`"
+    local venv="`venv.deactivate`"
     python.set "$using"
     [ -n "$venv" ] && source $venv/bin/activate
 }

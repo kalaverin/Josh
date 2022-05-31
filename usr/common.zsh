@@ -605,7 +605,7 @@ function josh_pull() {
     source "$JOSH/run/update.sh" && pull_update $@
     local retval="$?"
     builtin cd "$cwd"
-    source "$JOSH/lib/python.sh" && pip_compliance_check
+    source "$JOSH/lib/python.sh" && pip.compliance.check
 
     python.set "$version"
     return $retval
@@ -619,7 +619,7 @@ function josh_update() {
     source "$JOSH/run/update.sh" && post_update $@
     local retval="$?"
     builtin cd "$cwd"
-    source "$JOSH/lib/python.sh" && pip_compliance_check
+    source "$JOSH/lib/python.sh" && pip.compliance.check
 
     python.set "$version"
     return $retval
@@ -633,7 +633,7 @@ function josh_upgrade() {
     source "$JOSH/run/update.sh" && post_upgrade $@
     local retval="$?"
     builtin cd "$cwd"
-    source "$JOSH/lib/python.sh" && pip_compliance_check
+    source "$JOSH/lib/python.sh" && pip.compliance.check
 
     python.set "$version"
     return $retval
