@@ -6,22 +6,22 @@ local GET_BRANCH='git rev-parse --quiet --abbrev-ref HEAD 2>/dev/null'
 
 function cmd_git_checkout {
     if [ -z "$1" ]; then
-        echo " - $0: task required" >&2
+        printf " ** fail ($0): branch required\n" >&2
         return 1
 
     elif [[ "$1" =~ '^[0-9]+' ]]; then
         if [ -n "$JOSH_BRANCH_PREFIX" ]; then
             local branch="$JOSH_BRANCH_PREFIX-$1"
         else
-            echo " - $0: branch name can't starts with digit" >&2
-            return 1
+            printf " ** fail ($0): branch name doens't start with digit\n" >&2
+            return 2
         fi
 
     else
         local branch="$1"
     fi
 
-    echo "git checkout -b \"$branch\" 2>/dev/null || git checkout \"$branch\""
+    echo "git checkout -b \"$branch\" 2>/dev/null || git switch \"$branch\""
 }
 
 function cmd_git_fetch {
@@ -110,7 +110,7 @@ function get_repository_state {
 
 function git_branch_delete {
     if [ -z "$1" ]; then
-        echo " - $0: branch name required" 1>&2
+        printf " ** fail ($0): branch required\n" >&2
         return 1
     fi
     run_show "git branch -D $1 && git push origin --delete $1"
@@ -120,7 +120,7 @@ function git_branch_delete {
 function git_branch_rename {
     if [ -n "$2" ]; then
         if [ "$1" = "$2" ]; then
-            echo " - $0: source and target branch names must be different" 1>&2
+            printf " ** fail ($0): source and target branch names must be different\n" >&2
             return 1
         fi
         local src="$1"
@@ -129,10 +129,10 @@ function git_branch_rename {
     elif [ -n "$1" ]; then
         local dst="$1"
         local src="`git_current_branch`"
-        [ -z "$src" ] && return 1
+        [ -z "$src" ] && return 2
     else
-        echo " * usage: $0 old_name new_name or $0 new_name (rename current) " 1>&2
-        return 1
+        printf " ** fail ($0): old_name new_name or just new_name (rename current) \n" >&2
+        return 3
     fi
     echo "git branch -m $src $dst && git push origin :$src $dst"
 }
@@ -141,7 +141,7 @@ function git_checkout_from_actual {
     local branch="`git_current_branch`"
     [ -z "$branch" ] && return 1
 
-    git_pull_reset "$branch" || return 1
+    git_pull_reset "$branch" || return 2
     git_checkout_from_current $*
 }
 
@@ -163,7 +163,7 @@ function git_fetch_merge {
     local branch="${1:-`git_current_branch`}"
     [ -z "$branch" ] && return 1
 
-    git_fetch $branch; [ $? -gt 0 ] && return 1
+    git_fetch $branch; [ $? -gt 0 ] && return 2
     run_show "git merge origin/$branch"
     return $?
 }
@@ -173,11 +173,11 @@ function git_fetch_checkout_branch {
 
     local branch="`git_current_branch`"
     if [ -z "$branch" ] || [ "$1" = "$branch" ]; then
-        return 1
+        return 2
     fi
 
     local root="`git_root`"
-    [ -z "$root" ] && return 1
+    [ -z "$root" ] && return 3
 
     local cmd="git fetch origin \"$1\":\"$1\" && git_repository_clean && git checkout --force --quiet $1 && git reset --hard $1 && git pull origin $1"
     run_show "$cmd"
@@ -186,7 +186,7 @@ function git_fetch_checkout_branch {
 
 function git_set_branch_tag {
     if [ -z "$1" ]; then
-        echo " - $0: tag required" >&2
+        printf " ** fail ($0): tag required\n" >&2
         return 1
 
     elif [ -n "$2" ]; then
@@ -197,16 +197,16 @@ function git_set_branch_tag {
         local tag="$1"
         local branch="`git_current_branch`"
         if [ -z "$branch" ]; then
-            echo " - $0: branch couldn't detected" >&2
-            return 1
+            printf " ** fail ($0): branch couldn't detected\n" >&2
+            return 2
         fi
     fi
 
-    echo " + $0: set tag \`$tag\` to branch \`$branch\`" >&2
+    printf " -- info ($0): $branch/$tag\n" >&2
 
-    git_repository_clean;   [ $? -gt 0 ] && return 1
-    git checkout "$branch"; [ $? -gt 0 ] && return 1
-    git_pull "$branch";     [ $? -gt 0 ] && return 1
+    git_repository_clean;   [ $? -gt 0 ] && return 3
+    git checkout "$branch"; [ $? -gt 0 ] && return 4
+    git_pull "$branch";     [ $? -gt 0 ] && return 5
     git_set_tag "$tag"
     return $?
 }
@@ -233,9 +233,9 @@ function git_pull_reset {
     local branch="${1:-`git_current_branch`}"
     [ -z "$branch" ] && return 1
 
-    git_repository_clean;                       [ $? -gt 0 ] && return 1
-    git_fetch $branch;                          [ $? -gt 0 ] && return 1
-    run_show "git reset --hard origin/$branch"; [ $? -gt 0 ] && return 1
+    git_repository_clean;                       [ $? -gt 0 ] && return 2
+    git_fetch $branch;                          [ $? -gt 0 ] && return 3
+    run_show "git reset --hard origin/$branch"; [ $? -gt 0 ] && return 4
     git_pull $branch
     return $?
 }
@@ -257,7 +257,7 @@ function git_push_force {
 function git_rewind_time {
     if [ -x "`which git-restore-mtime`" ]; then
         local root="`git_root 2>/dev/null`"
-        [ -z "$root" ] && return 1
+        [ -z "$root" ] && return 2
         git-restore-mtime --skip-missing --work-tree "$root/" --git-dir "$root/.git/" "$root/"
     fi
 }
@@ -275,7 +275,7 @@ function git_repository_clean {
 
 function git_set_tag {
     if [ -z "$1" ]; then
-        echo " - $0: tag required" >&2
+        printf " ** fail ($0): tag required\n" >&2
         return 1
     fi
     run_show "git tag -a $1 -m \"$1\" && git push --tags && git fetch --tags"
@@ -284,7 +284,7 @@ function git_set_tag {
 
 function git_unset_tag {
     if [ -z "$1" ]; then
-        echo " - $0: tag required" >&2
+        printf " ** fail ($0): tag required\n" >&2
         return 1
     fi
     run_show "git tag -d \"$1\" && git push --delete origin \"$1\""
@@ -296,37 +296,29 @@ function git_unset_tag {
 function drop_this_branch_right_now {
     local branch="${1:-`git_current_branch`}"
     [ ! "$branch" ] && return 1
-    git_repository_clean; [ $? -gt 0 ] && return 1
 
-    if [ "$branch" = "master" ]; then
-        echo " - $0 ATTENTION! Do not delete MASTER branch!" >&2
-        return 1
+    if [ "$branch" = "master" ] || [ "$branch" = "develop" ]; then
+        printf " ** fail ($0): can't delete $branch branch!\n" >&2
+        return 2
     fi
 
-    if [ "$branch" = "develop" ]; then
-        echo " - $0 ATTENTION! Do not delete DEVELOP branch!" >&2
-        return 1
-    fi
+    git_repository_clean; [ $? -gt 0 ] && return 3
 
     run_show "git reset --hard && (git checkout develop 2>/dev/null 1>/dev/null 2> /dev/null || git checkout master 2>/dev/null 1>/dev/null) && git branch -D \"$branch\" && git remote prune origin"
-    echo " => git push origin --delete $branch" >&2
+    printf " => git push origin --delete $branch\n" >&2
     return $?
 }
 
 function DROP_THIS_BRANCH_RIGHT_NOW {
     local branch="${1:-`git_current_branch`}"
     [ ! "$branch" ] && return 1
-    git_repository_clean; [ $? -gt 0 ] && return 1
 
-    if [ "$branch" = "master" ]; then
-        echo " - $0 ATTENTION! Do not delete MASTER branch!" 1>&2
-        return 1
+    if [ "$branch" = "master" ] || [ "$branch" = "develop" ]; then
+        printf " ** fail ($0): can't delete $branch branch!\n" >&2
+        return 2
     fi
 
-    if [ "$branch" = "develop" ]; then
-        echo " - $0 ATTENTION! Do not delete DEVELOP branch!" 1>&2
-        return 1
-    fi
+    git_repository_clean; [ $? -gt 0 ] && return 3
 
     run_show "git reset --hard && (git checkout develop 2>/dev/null 1>/dev/null 2> /dev/null || git checkout master 2>/dev/null 1>/dev/null) && git branch -D \"$branch\" && git push origin --delete \"$branch\" || true && git remote prune origin"
     return $?
@@ -337,19 +329,13 @@ function git_squash_already_pushed {
     [ ! "$branch" ] && return 1
 
     local parent="$(git show-branch | grep '*' | grep -v "`git rev-parse --abbrev-ref HEAD`" | head -n 1 | sd '^(.+)\[' '' | tabulate -d '] ' -i 1)"
-    [ ! "$parent" ] && return 1
+    [ ! "$parent" ] && return 2
 
     run_show "git rebase --interactive --no-autosquash --no-autostash --strategy=recursive --strategy-option=ours --strategy-option=diff-algorithm=histogram \"$parent\""
 }
 
 function git_update_nested_repositories {
-    local cwd="`pwd`"
-
-    # local function return_workdir() {
-    #     builtin cd "$cwd"
-    #     break
-    # }
-    # trap return_workdir INT
+    local cwd="$PWD"
 
     find . -maxdepth 3 -type d -name .git | sort | while read git_directory
     do
