@@ -49,63 +49,59 @@ CARGO_REQ_PACKAGES=(
     vivid            # ls colors themes selections system
 )
 CARGO_REC_PACKAGES=(
+    bingrep          # extract and grep strings from binaries
     bump-bin         # versions with semver specification
+    diffsitter       # AST based diff
+    dirstat-rs       # ds, du replace, summary tree
     dtool            # code decode swiss knife
+    du-dust          # dust, du replace, verbose tree
     dull             # strip any ANSI (color) sequences from pipe
+    dupe-krill       # replace similar (by hash) files with hardlinks
+    durt             # du replace, just sum
+    feroxbuster      # agressively website dumper
     genact           # console activity generator
+    gfold            # git reps in directory branches status
+    gip              # show my ip
+    git-bonsai       # full features analyze and remove unnecessary branches
+    git-hist         # git history for selected file
+    git-trim         # remove local branches when remote merged
+    ipgeo            # fast geoloc by hostname/ip
+    jfmt             # minifier
+    jira-terminal    # Jira client, really
+    jql              # select values by path from JSON input for humans
+    jsonfmt          # another JSON minifier
+    loadem           # website load maker
+    lolcate-rs       # blazing fast filesystem database
+    miniserve        # directory serving over http
+    onefetch         # graphical statistics for git repository
     pgen             # another yet
     procs            # ps aux replacement for humans
-    pueue            # powerful tool to running and management background tasks
     qrrs             # qr code terminal tool
     quickdash        # hasher
     rcrawl           # very fast file by pattern in directory
     rhit             # very fast nginx log analyzer with graphical stats
+    rjo              # JSON generator by key->value
+    rustscan         # scanner around nmap
+    ry               # jq for yamls
     viu              # print images into terminal
-    xkpwgen          # same story
+    x8               # websites scan tool
+    xkpwgen          # generate human readable strings
+    yj               # YAML to JSON converter
     ytop             # same, line bottom
-    # du, ncdu like tools
-    dirstat-rs       # ds, du replace, summary tree
-    du-dust          # dust, du replace, verbose tree
-    durt             # du replace, just sum
-    # search and grep tools
-    lolcate-rs       # blazing fast filesystem database
-    bingrep          # extract and grep strings from binaries
-    # git related tools
-    diffsitter       # AST based diff
+)
+CARGO_OPT_PACKAGES=(
+    pueue            # powerful tool to running and management background tasks
     diffr            # word based diff
-    gfold            # git reps in directory branches status
-    git-bonsai       # full features analyze and remove unnecessary branches
-    git-trim         # remove local branches when remote merged o stray
-    git-hist         # git history for selected file
     git-local-ignore # local (without .gitignore) git ignore wrapper
     gitall           # search git subdirs and run custom command, find+xargs altarnative
     mrh              # recursively search git reps and return status (detached, tagged, etc)
-    onefetch         # graphical statistics for git repository
     tokei            # repository stats
     # JSON tools
-    jql              # select values by path from JSON input for humans
     jen              # generator
-    rjo              # generator by key->value
     fblog            # log viewer
     jex              # interactive explorer
-    jfmt             # minifier
-    jsonfmt          # another json minifier
-    ry               # jq for yamls
-    yj               # yaml to json converter
     # scan and security tools
     binary-security-check
-    checkpwn         # check passwords
-    feroxbuster      # agressively website dumper
-    loadem           # website load maker
-    rustscan         # scanner around nmap
-    x8               # websites scan tool
-    # simple network tools
-    gip              # show my ip
-    ipgeo            # fast geoloc by hostname/ip
-    #
-    miniserve        # directory serving over http
-)
-CARGO_OPT_PACKAGES=(
     gitui            # terminal UI full featured git tool
     git-branchless
     # system meters, like top, htop, etc
@@ -113,7 +109,6 @@ CARGO_OPT_PACKAGES=(
     bottom           # btm, another yet htop
     rmesg            # modern dmesg replacement
     # misc tools
-    dupe-krill       # replace similar (by hash) files with hardlinks
     fw               # workspaces manager
     multi-tunnel     # serving ssh tunnels from toml config
     # semver tools
@@ -129,7 +124,6 @@ CARGO_OPT_PACKAGES=(
     colorizer        # logs colorizer
     ffsend           # sharing files tool
     hyperfine        # full featured time replacement and benchmark tool
-    jira-terminal    # Jira client, really
     logtail          # graphical tail logs in termial
     thwack           # find and run
     # make, build & run systems
@@ -160,9 +154,9 @@ CARGO_OPT_PACKAGES=(
     blockish         # view images in terminal
     broot            # lightweight embeddable file manager
     code-minimap     # terminal code minimap
-    connchk          # connection checkers from yaml
+    connchk          # connection checkers from YAML
     copycat
-    dssim            # pictures similar rating
+    dssim            # pictures similarity compare tool
     fclones          # find and clean trash
     fcp              # fast cp with threading
     gitweb           # git open in browser helper
