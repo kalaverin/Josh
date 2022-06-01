@@ -20,5 +20,7 @@ source "$JOSH/usr/units/files.zsh"
 [ -x "`which python`" ] && source "$JOSH/usr/units/python.zsh"
 
 source "$JOSH/usr/update.zsh"
-
 is_workhours || motd
+
+source "$JOSH/src/plugins.zsh"
+plugins_autoload
