@@ -46,6 +46,7 @@ PIP_OPT_PACKAGES=(
     mycli      # python-driver MySQL client
     nodeenv    # virtual environments for node packaging
     paramiko   # for ssh tunnels with mycli & pgcli
+    sshtunnel  # too
     pgcli      # python-driver PostgreSQL client
     termtosvg  # write shell movie to animated SVG
     tmuxp      # tmux session manager
