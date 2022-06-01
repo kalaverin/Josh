@@ -516,7 +516,7 @@ function git_widget_checkout_branch {
     local branch="`git_current_branch`"
     [ ! "$branch" ] && return 1
 
-    git_repository_clean >/dev/null || local state='(dirty!) '
+    git_repository_clean 2>/dev/null || local state='(dirty!) '
     local select='git for-each-ref \
                     --sort=-committerdate refs/heads/ \
                     --color=always \
@@ -533,11 +533,11 @@ function git_widget_checkout_branch {
         ")"
 
         if [ ! "$BUFFER" ]; then
-            run_show "git checkout $value 2>/dev/null 1>/dev/null"
+            run_show "git switch $value 2>/dev/null 1>/dev/null"
             local retval=$?
 
         elif [ "$value" ]; then
-            LBUFFER="$BUFFER && git checkout $value"
+            LBUFFER="$BUFFER && git switch $value"
         fi
 
         local retval=0
