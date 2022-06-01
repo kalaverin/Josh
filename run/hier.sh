@@ -125,19 +125,19 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
 
     function cached_execute {
         if [ -z "$1" ]; then
-            echo " - fatal $0: \$1 key must be: \`$1\`, \`$2\`, \`$3\`, \`${@:4}\` " >&2
+            echo " ** fail ($0): \$1 key must be: '$1' '$2' '$3' '${@:4}'\n" >&2
             return 1
 
         elif [ -z "$2" ]; then
-            echo " - fatal $0: \$2 expire must be: \`$1\`, \`$2\`, \`$3\`, \`${@:4}\` " >&2
+            echo " ** fail ($0): \$2 expire must be: '$1' '$2' '$3' '${@:4}'\n" >&2
             return 2
 
         elif [ -z "$3" ]; then
-            echo " - fatal $0: \$3 cache dir must be: \`$1\`, \`$2\`, \`$3\`, \`${@:4}\` " >&2
+            echo " ** fail ($0): \$3 cache dir must be: '$1' '$2' '$3' '${@:4}'\n" >&2
             return 3
 
         elif [ -z "$4" ]; then
-            echo " - fatal $0: args one or many must be: \`$1\`, \`$2\`, \`$3\`, \`${@:4}\` " >&2
+            echo " ** fail ($0): args one or many must be: '$1' '$2' '$3' '${@:4}'\n" >&2
             return 4
         fi
 
@@ -145,6 +145,7 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
             local command="${@:4}"
             local result="`eval ${command}`"
             local retval="$?"
+            echo 1 >&2
             echo "$result"
             return "$retval"
         fi
@@ -175,6 +176,7 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
             local command="cat \"$file\" | $JOSH_QAP"
             local result="`eval ${command}`"
             if [ "$?" -eq 0 ]; then
+                echo $file >&2
                 echo "$result"
                 return 0
             fi
@@ -187,9 +189,10 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
             if [ ! -d "`fs_dirname "$file"`" ]; then
                 mkdir -p "`fs_dirname "$file"`"
             fi
-            local command="echo \"$result\" | $JOSH_PAQ > \"$file\""
+            local command="echo '$result' | $JOSH_PAQ > '$file'"
             eval ${command}
         fi
+        echo 3 >&2
         echo "$result"
         return "$retval"
     }
