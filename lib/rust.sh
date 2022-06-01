@@ -89,107 +89,6 @@ CARGO_REC_PACKAGES=(
     yj               # YAML to JSON converter
     ytop             # same, line bottom
 )
-CARGO_OPT_PACKAGES=(
-    pueue            # powerful tool to running and management background tasks
-    diffr            # word based diff
-    git-local-ignore # local (without .gitignore) git ignore wrapper
-    gitall           # search git subdirs and run custom command, find+xargs altarnative
-    mrh              # recursively search git reps and return status (detached, tagged, etc)
-    tokei            # repository stats
-    # JSON tools
-    jen              # generator
-    fblog            # log viewer
-    jex              # interactive explorer
-    # scan and security tools
-    binary-security-check
-    gitui            # terminal UI full featured git tool
-    git-branchless
-    # system meters, like top, htop, etc
-    bandwhich        # network bandwhich meter
-    bottom           # btm, another yet htop
-    rmesg            # modern dmesg replacement
-    # misc tools
-    fw               # workspaces manager
-    multi-tunnel     # serving ssh tunnels from toml config
-    # semver tools
-    gbump
-    vergit
-    what-bump
-    # command-line helpers
-    so               # stack overflow answers in terminal
-    hors
-    bropages
-    #
-    choose           # awk for humans
-    colorizer        # logs colorizer
-    ffsend           # sharing files tool
-    hyperfine        # full featured time replacement and benchmark tool
-    logtail          # graphical tail logs in termial
-    thwack           # find and run
-    # make, build & run systems
-    python-launcher
-    scriptisto       # powerful tool, convert every source to executable with build instructions in same file
-    just             # comfortable system for per project frequently used commands like make test, etc
-    # viewers for csv, md, etc
-    b0x              # info about input vars
-    mandown          # convert markdown to man
-    paper-terminal   # another yet Markdown printer, naturally like newpaper
-    streampager      # less for streams
-    tidy-viewer      # csv prettry printer
-    # dns over https tools
-    encrypted-dns
-    doh-proxy
-    doh-client
-    # coreutils        # rust reimplementation for GNU tools, unstable
-    # other text related tools
-    prose            # reformat text to width
-    cw               # words, lines, bytes and chars counter
-    ff-find          # ff, fd-find interface
-    ruplacer         # in file tree replacer
-    amber            # in file tree replacer, threaded, mmap
-    repgrep          # interactive interface for ripgrep
-    #
-    atuin            # another yet history manager
-    autocshell       # generate completitions for shell
-    blockish         # view images in terminal
-    broot            # lightweight embeddable file manager
-    code-minimap     # terminal code minimap
-    connchk          # connection checkers from YAML
-    copycat
-    dssim            # pictures similarity compare tool
-    fclones          # find and clean trash
-    fcp              # fast cp with threading
-    gitweb           # git open in browser helper
-    hunter           # file manager
-    hx
-    imdl             # torrent-file helper
-    investments      # stocks tools
-    kras             # colorizer
-    limber           # elk import export
-    lino
-    lms              # threaded rsync for local
-    lolcrab
-    menyoki          # screencast
-    mprober
-    ntimes           # ntimes 3 -- echo 'lol'
-    parallel-disk-usage
-    pingkeeper
-    pipecolor        # colorizer
-    runscript
-    sbyte            # hexeditor
-    sheldon
-    sic              # pictures swiss knife
-    silicon          # render source code to pictures
-    songrec          # shazam!
-    ssup             # notifications to telegram
-    t-rec
-    tab              # terminal multiplexer like tmux
-    termscp
-    tickrs           # realtime ticker
-    watchexec-cli    # watchdog for filesystem and runs callback on hit
-    xcompress
-    zoxide           # fast cd, like wd
-)
 
 CARGO_BIN="$CARGO_BINARIES/cargo"
 
@@ -316,7 +215,7 @@ function cargo_install() {
     if [ -n "$*" ]; then
         local selected="$*"
     else
-        local selected="$CARGO_REQ_PACKAGES $CARGO_REC_PACKAGES $CARGO_OPT_PACKAGES"
+        local selected="$CARGO_REQ_PACKAGES $CARGO_REC_PACKAGES"
     fi
 
     local installed_regex="(`cargo_list_installed | sed -z 's:\n: :g' | sed 's/ *$//' | sd '\b +\b' '|'`)"
@@ -360,7 +259,7 @@ function cargo_uninstall() {
     if [ -n "$*" ]; then
         local selected="$*"
     else
-        local selected="$CARGO_REQ_PACKAGES $CARGO_REC_PACKAGES $CARGO_OPT_PACKAGES"
+        local selected="$CARGO_REQ_PACKAGES $CARGO_REC_PACKAGES"
     fi
 
     local installed_regex="(`cargo_list_installed | sed -z 's:\n: :g' | sed 's/ *$//' | sd '\b +\b' '|'`)"
