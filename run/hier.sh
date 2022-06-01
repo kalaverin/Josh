@@ -145,7 +145,6 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
             local command="${@:4}"
             local result="`eval ${command}`"
             local retval="$?"
-            echo 1 >&2
             echo "$result"
             return "$retval"
         fi
@@ -176,7 +175,6 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
             local command="cat \"$file\" | $JOSH_QAP"
             local result="`eval ${command}`"
             if [ "$?" -eq 0 ]; then
-                echo $file >&2
                 echo "$result"
                 return 0
             fi
@@ -192,7 +190,6 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
             local command="echo '$result' | $JOSH_PAQ > '$file'"
             eval ${command}
         fi
-        echo 3 >&2
         echo "$result"
         return "$retval"
     }
