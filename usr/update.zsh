@@ -14,7 +14,7 @@ function is_workhours {
 }
 
 
-function fetch_updates_background {
+function __fetch_updates_background {
     if [ -z "$JOSH" ]; then
         echo " - $0 warning: JOSH:\`$JOSH\`" >&2
         return 1
@@ -31,7 +31,7 @@ function fetch_updates_background {
 }
 
 
-function fetch_updates {
+function __get_updates_count {
     if [ ! -x "$JOSH" ]; then
         printf " ** fail ($0): JOSH:'$JOSH' isn't accessible\n" >&2
         return 1
@@ -74,12 +74,11 @@ function fetch_updates {
     if [ "$need_fetch" -gt 0 ]; then
         source "$ZSH/custom/plugins/zsh-async/async.zsh"
         async_start_worker updates_fetcher
-        async_job updates_fetcher fetch_updates_background
+        async_job updates_fetcher __fetch_updates_background
     fi
 
     [ ! -d "`fs_dirname "$file"`" ] && mkdir -p "`fs_dirname "$file"`"
     echo "$EPOCHSECONDS" > "$file"
-
     [ -z "$count" ] && echo 0 || echo "$count"
     builtin cd "$cwd"
 }
@@ -96,7 +95,7 @@ function check_updates {
     fi
     unset JOSH_UPDATES_COUNT
 
-    local updates="`fetch_updates`"
+    local updates="`__get_updates_count`"
     [ "$?" -gt 0 ] && return 1
     [ "$updates" -eq 0 ] && return 0
 
@@ -163,14 +162,14 @@ function motd {
 
     if [ "$branch" = 'master' ]; then
         if [ "$ctag" ] && [ ! "$ctag" = "$ftag" ]; then
-            echo " + Josh v$ctag (upgrade to v$ftag downloaded), just run: run: josh_update, then: exec zsh"
+            echo " + Josh v$ctag (updates to v$ftag downloaded), just run: run: josh_upgrade, then: exec zsh"
         fi
 
     elif [ "$branch" = 'develop' ]; then
         echo " + Josh v$ctag $branch $last_commit."
 
     else
-        echo " + Josh v$ctag $branch $last_commit, found $JOSH_UPDATES_COUNT updates, run: josh_update, then: exec zsh"
+        echo " + Josh v$ctag $branch $last_commit, found $JOSH_UPDATES_COUNT updates, run: josh_upgrade, then: exec zsh"
 
     fi
 }
