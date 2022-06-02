@@ -1,6 +1,6 @@
 [ -z "$sourced" ] && declare -aUg sourced=() && sourced+=($0)
 
-local source_file="`fs_joshpath "$0"`"
+local source_file="$(fs_joshpath "$0")"
 if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
     sourced+=("$source_file")
 
@@ -114,8 +114,7 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
             echo "$path" | sed 's#:#\n#g' | sed "s:^~/:$HOME/:" | \
             xargs -n 1 realpath 2>/dev/null | awk '!x[$0]++' | \
             grep -v "$JOSH" | \
-            sed -z 's#\n#:#g' | sed 's#:$##g' \
-        )"
+            sed -z 's#\n#:#g' | sed 's#:$##g')"
         local retval="$?"
 
         if [ "$retval" -eq 0 ] && [ -n "$unified_path" ]; then
@@ -212,7 +211,7 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
         fi
 
         if [ "$expired" -eq 0 ]; then
-            eval {"cat \"$file\" | $JOSH_QAP 2>/dev/null"} >"$subdir/stdout"
+            eval {"cat '$file' | $JOSH_QAP 2>/dev/null"} >"$subdir/stdout"
             local retval="$?"
             local result="$(cat "$subdir/stdout")"
             unlink "$subdir/stdout"

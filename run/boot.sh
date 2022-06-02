@@ -1,8 +1,8 @@
 #!/bin/zsh
 
 if [[ ! "$SHELL" =~ "/zsh$" ]]; then
-    if [ -x "`which zsh`" ]; then
-        printf " ** fail ($0): current shell must be zsh, but SHELL '$SHELL', zsh found '`which zsh`', change shell to zsh and repeat: sudo chsh -s /usr/bin/zsh $USER" >&2
+    if [ -x "$(which zsh)" ]; then
+        printf " ** fail ($0): current shell must be zsh, but SHELL '$SHELL', zsh found '$(which zsh)', change shell to zsh and repeat: sudo chsh -s /usr/bin/zsh $USER" >&2
     else
         printf " ** fail ($0): current shell must be zsh, but SHELL '$SHELL' and zsh not detected" >&2
     fi
@@ -106,7 +106,7 @@ function fs_basename {
 function fs_dirname {
     [ -z "$1" ] && return 1
 
-    local result=`fs_basename $1`
+    local result="$(fs_basename "$1")"
     [ -z "$result" ] && return 2
 
     let offset="${#1} - ${#result} -1"
@@ -116,10 +116,10 @@ function fs_dirname {
 function fs_realdir {
     [ -z "$1" ] && return 1
 
-    local result="`fs_realpath "$1"`"
+    local result="$(fs_realpath "$1")"
     [ -z "$result" ] && return 2
 
-    local result="`fs_dirname "$result"`"
+    local result="$(fs_dirname "$result")"
     [ -z "$result" ] && return 3
 
     echo "$result"
@@ -130,7 +130,7 @@ function fs_joshpath {
         return 1
     fi
 
-    local result=`fs_realpath $1`
+    local result="$(fs_realpath "$1")"
     if [ -z "$result" ]; then
         return 2
     fi
@@ -171,7 +171,7 @@ function fs_realpath {
 
     elif [ -e "$link" ]; then
         if [ -L "$link" ]; then
-            local node="`fs_readlink "$1"`"
+            local node="$(fs_readlink "$1")"
             if [ -n "$node" ]; then
 
                 if [[ "$node" =~ "^/" ]] && [ -x "$node" ] && [ ! -L "$node" ]; then
@@ -181,7 +181,7 @@ function fs_realpath {
 
                 elif [[ "$link" =~ "^/" ]] && [[ ! "$node" =~ "/" ]]; then
                     # target it's relative path from source location
-                    local node="`fs_dirname $link`/$node"
+                    local node="$(fs_dirname "$link")/$node"
                     if [ -x "$node" ]; then
                         if [ ! -L "$node" ]; then
                             # target it's regular executable node
@@ -189,7 +189,7 @@ function fs_realpath {
                             return 0
                         else
                             # target it's symlink, okay
-                            local node="`fs_realpath "$node"`"
+                            local node="$(fs_realpath "$node")"
                             echo "$node"
                             return "$?"
                         fi
@@ -217,24 +217,24 @@ function fs_retrieve_userhome {
     local login="${1:-\$USER}"
 
     # try to subshell expand
-    local home="`$SHELL -c "echo ~$login" 2>/dev/null`"
+    local home="$($SHELL -c "echo ~$login" 2>/dev/null)"
     if [ "$?" -eq 0 ] && [ -x "$home" ]; then
         echo "$home"
         return 0
     fi
 
-    if [ -x "`builtin which getent`" ];  then
+    if [ -x "$(builtin which getent)" ];  then
         # passwd with getent
-        local home="`getent passwd $login | cut -f6 -d: 2>/dev/null`"
+        local home="$(getent passwd "$login" | cut -f6 -d: 2>/dev/null)"
         if [ "$?" -eq 0 ] && [ -x "$home" ]; then
             echo "$home"
             return 0
         fi
     fi
 
-    if [ -x "`builtin which awk`" ];  then
+    if [ -x "$(builtin which awk)" ];  then
         # passwd with awk
-        local home="`awk -v u="$login" -v FS=':' '$1==u {print $6}' /etc/passwd 2>/dev/null`"
+        local home="$(awk -v u="$login" -v FS=':' '$1==u {print $6}' /etc/passwd 2>/dev/null)"
         if [ "$?" -eq 0 ] && [ -x "$home" ]; then
             echo "$home"
             return 0
@@ -251,7 +251,7 @@ function fs_userhome {
     if [ -x "$real" ]; then
         echo "$real"
     else
-        printf " -- $0 warning: can't make real home path for HOME '$home', REAL '`which realpath`', READLINK '`which readlink`', fallback '`fs_dirname $home`/`fs_basename $home`'\n" >&2
+        printf " -- $0 warning: can't make real home path for HOME '$home', REAL '$(which realpath)', READLINK '$(which readlink)', fallback '$(fs_dirname "$home")/$(fs_basename "$home")'\n" >&2
         echo "$home"
     fi
 }
@@ -263,7 +263,7 @@ function shortcut {
     local dir="$JOSH/bin"
 
     if [ -z "$2" ]; then
-        local src="$dir/`fs_basename $1`"
+        local src="$dir/$(fs_basename "$1")"
         local dst="$1"
 
         if [ ! -x "$dst" ]; then
@@ -341,7 +341,7 @@ function which {
         local dst="$(eval "builtin which $src")"
         if [ ! -x "$dst" ]; then
             if [ -n "$dst" ] && [ ! $dst = "$src not found" ]; then
-                printf " ++ fail ($0): '$src' isn't found, but $dst\n" >&2
+                printf " ++ warn ($0): '$src' isn't found, but $dst\n" >&2
                 return 0
             fi
             return 1
@@ -352,12 +352,12 @@ function which {
 
 
 if [ -z "$JOSH" ]; then
-    local home="`fs_userhome`"
-    if [ -x "$home" ] && [ ! "$home" = "$HOME" ]; then
-        if [ ! "`fs_realpath $home`" = "`fs_realpath $HOME`" ]; then
-            echo " * set HOME:\`$HOME\` -> \`$home\`" >&2
+    local redirect="$(fs_userhome)"
+    if [ -x "$redirect" ] && [ ! "$redirect" = "$HOME" ]; then
+        if [ ! "$(fs_realpath "$redirect")" = "$(fs_realpath "$HOME")" ]; then
+            printf " ++ warn ($0): HOME:'$HOME' -> '$redirect'\n" >&2
         fi
-        export HOME="$home"
+        export HOME="$redirect"
     fi
 
     export ZSH="$HOME/$JOSH_SUBDIR_NAME"
@@ -367,29 +367,27 @@ fi
 
 
 if [[ -z ${(M)zsh_eval_context:#file} ]]; then
-    if [ ! -x "`builtin which git`" ]; then
-        echo " - fail: \`git\` required"
+    if [ ! -x "$(builtin which git)" ]; then
+        printf " ++ warn ($0): 'git' is required, but doesn't exist\n" >&2
 
     else
-        cwd="`pwd`"
-
         JOSH_DEST="$HOME/$JOSH_SUBDIR_NAME.engine"  && [ -d "$JOSH_DEST" ] && rm -rf "$JOSH_DEST"
         JOSH_BASE="$HOME/$JOSH_SUBDIR_NAME.wrapper" && [ -d "$JOSH_BASE" ] && rm -rf "$JOSH_BASE"
 
-        echo " + initial deploy to $JOSH_DEST, Josh to $JOSH_BASE" >&2
+        printf " -- info ($0): initial deploy to $JOSH_DEST, Josh to $JOSH_BASE\n" >&2
         git clone "$JOSH_URL" "$JOSH_BASE"
-        [ $? -gt 0 ] && return 2
+        [ "$?" -gt 0 ] && return 2
 
-        if [ "$JOSH_BRANCH" ]; then
+        if [ -n "$JOSH_BRANCH" ]; then
             builtin cd "$JOSH_BASE/run/"
             [ $? -gt 0 ] && return 3
 
-            echo " + fetch Josh from \`$JOSH_BRANCH\`" >&2
-
+            printf " -- info ($0): fetch Josh from '$JOSH_BRANCH'\n" >&2
             cmd="git fetch origin "$JOSH_BRANCH":"$JOSH_BRANCH" && git checkout --force --quiet $JOSH_BRANCH && git reset --hard $JOSH_BRANCH && git pull --ff-only --no-edit --no-commit --verbose origin $JOSH_BRANCH"
 
-            echo " -> $cmd" >&2 && $SHELL -c "$cmd"
-            [ $? -gt 0 ] && return 4
+            printf " -- info ($0): -> $cmd\n" >&2
+            $SHELL -c "$cmd"
+            [ "$?" -gt 0 ] && return 4
         fi
 
         source $JOSH_BASE/run/strap.sh && \
@@ -402,9 +400,9 @@ if [[ -z ${(M)zsh_eval_context:#file} ]]; then
 
 
 else
-    source_file="`fs_joshpath "$0"`"
+    source_file="$(fs_joshpath "$0")"
     if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
         sourced+=("$source_file")
-        source "`fs_dirname $0`/init.sh"
+        source "$(fs_dirname $0)/init.sh"
     fi
 fi
