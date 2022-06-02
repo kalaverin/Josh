@@ -64,7 +64,9 @@ CARGO_REC_PACKAGES=(
     gip              # show my ip
     git-bonsai       # full features analyze and remove unnecessary branches
     git-hist         # git history for selected file
+    git-hooks-dispatch
     git-trim         # remove local branches when remote merged
+    git-who          # list branches with date, author and merge status
     ipgeo            # fast geoloc by hostname/ip
     jfmt             # minifier
     jira-terminal    # Jira client, really
