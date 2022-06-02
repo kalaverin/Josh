@@ -153,39 +153,42 @@ function python.home.from_version {
 function python.exe.lookup {
     source $BASE/run/units/compat.sh
 
-    if [ -n "$1" ]; then
+    if [ -n "$*" ]; then
         local dirs="$*"
     else
         local dirs="$path"
     fi
 
-    for dir in $($SHELL -c "echo "$dirs" | sed 's#:#\n#g'"); do
+    echo "$dirs"
+
+    for dir in $(echo "$dirs" | sed 's#:#\n#g'); do
         if [ ! -d "$dir" ]; then
             continue
         fi
 
-        for python in $(find "$dir" -type f -name 'python*' 2>/dev/null | sort -Vr); do
-            [ ! -x "$python" ] || [[ ! "$python" -regex-match '[0-9]$' ]] && continue
+        for python in $(find "$dir" -maxdepth 1 -type f -name 'python?.*' 2>/dev/null | sort -Vr); do
+            [ ! -x "$python" ] || \
+            [[ ! "$python" -regex-match '[0-9]$' ]] && continue
 
             local version="`python.version.full $python`"
-            [ -z "$version" ] && continue
-
+            [ "$?" -gt 0 ] || [ -z "$version" ] || \
             [[ ! "$version" -regex-match '^[0-9]+\.[0-9]+' ]] && continue
 
             unset result
             version_not_compatible $MIN_PYTHON_VERSION $version
-            if [ $? -gt 0 ]; then
+            if [ "$?" -gt 0 ]; then
                 if python.library.is 'distutils' "$python"; then
                     local result="$python"
                 else
-                    printf " -- info ($0): python $python (`python.version.full $python`) haven't distutils, skip\n" >&2
+                    printf " -- info ($0): python $python ($version) haven't distutils, skip\n" >&2
+                    continue
                 fi
             fi
             [ "$result" ] && break
         done
     done
     if [ -n "$result" ]; then
-        printf " -- info ($0): python binary $result (`python.version.full $python`)\n" >&2
+        printf " -- info ($0): python binary $result ($version)\n" >&2
         echo "$result"
         return 0
     fi
@@ -196,11 +199,11 @@ function python.exe.lookup {
 function python.exe {
     if ! function_exists "check_executables"; then
         source $BASE/run/units/compat.sh
-    fi
 
-    if [ "$?" -gt 0 ]; then
-        printf " ** fail ($0): something wrong, BASE:'$BASE'\n" >&2
-        return 127
+        if [ "$?" -gt 0 ]; then
+            printf " ** fail ($0): something wrong, BASE:'$BASE'\n" >&2
+            return 1
+        fi
     fi
 
     if [ -n "$PYTHON" ]; then
@@ -219,7 +222,7 @@ function python.exe {
 
         version_not_compatible "$MIN_PYTHON_VERSION" "$version"
 
-        if [ $? -gt 0 ]; then
+        if [ "$?" -gt 0 ]; then
             if python.library.is 'distutils' "$link"; then
                 echo "$link"
                 return 0
@@ -235,7 +238,7 @@ function python.exe {
 
     if [ ! -x "$gsed" ]; then
         printf " ** fail ($0): GNU sed for '$JOSH_OS' don't found\n" >&2
-        return 1
+        return 2
     fi
 
     local dirs="$($SHELL -c "echo "$PATH" | sed 's#:#\n#g' | grep -v "$HOME" | sort -su | $gsed -z 's#\n#:#g' | awk '{\$1=\$1};1'")"
@@ -253,7 +256,7 @@ function python.exe {
         fi
     fi
     printf " ** fail ($0): python doesn't exists in: '$dirs'\n" >&2
-    return 1
+    return 3
 }
 
 function python.home {
