@@ -1,3 +1,6 @@
+python.home >/dev/null
+path_prune
+
 alias cp='cp -iR'  # prompt on overwrite and use recurse for directories
 alias mv='mv -i'
 alias tt='tail --retry --quiet --sleep-interval=0.5 -f -n 50'
@@ -60,7 +63,7 @@ fi
 
 # just my settings for recursive grep
 #
-alias ri="$commands[grep] --line-buffered -rnH --exclude '*.js' --exclude '*.min.css' --exclude '.git/' --exclude 'node_modules/' --exclude 'lib/python*/site-packages/' --exclude '__snapshots__/' --exclude '.eggs/' --exclude '*.pyc' --exclude '*.po' --exclude '*.svg' --color=auto"
+alias ri="grep --line-buffered -rnH --exclude '*.js' --exclude '*.min.css' --exclude '.git/' --exclude 'node_modules/' --exclude 'lib/python*/site-packages/' --exclude '__snapshots__/' --exclude '.eggs/' --exclude '*.pyc' --exclude '*.po' --exclude '*.svg' --color=auto"
 
 
 # httpie: modern, fast and very usable HTTP client
@@ -82,13 +85,13 @@ fi
 # ripgrep
 #
 if [ -x "$commands[rg]" ]; then
+    local realpath="$commands[realpath]"
     local ripgrep_fast='--max-columns $COLUMNS --smart-case'
     local ripgrep_fine='--max-columns $COLUMNS --case-sensitive --fixed-strings --word-regexp'
     local ripgrep_interactive="--no-stats --text --context 1 --colors 'match:fg:yellow' --colors 'path:fg:red' --context-separator ''"
 
     export JOSH_RIPGREP="rg"
-    local realpath="$commands[realpath]"
-    export JOSH_RIPGREP_OPTS="--require-git --hidden --max-columns-preview --max-filesize=1M --ignore-file=`$realpath --quiet ~/.gitignore`"
+    export JOSH_RIPGREP_OPTS="--require-git --hidden --max-columns-preview --max-filesize=1M --ignore-file=$($realpath --quiet ~/.gitignore)"
 
     alias rr="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS $ripgrep_interactive $ripgrep_fast"
     alias rrs="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS $ripgrep_interactive $ripgrep_fast --sort path"
@@ -129,7 +132,7 @@ fi
 # difftascit: beatiful diff wrapper with syntax highlight
 #
 if [ -x "$commands[difft]" ]; then
-    function dift() { $commands[difft] --color always $* | less }
+    function dift() { difft --color always $* | less }
 
     export DFT_DISPLAY="${DFT_DISPLAY:-"side-by-side"}"
     export DFT_TAB_WIDTH="${DFT_TAB_WIDTH:-"4"}"
@@ -173,11 +176,11 @@ if [ -x "$commands[docker]" ]; then
     export COMPOSE_DOCKER_CLI_BUILD=${COMPOSE_DOCKER_CLI_BUILD:-1}
 fi
 
-[ -x "$commands[gfold]" ]  && alias gls="gfold -d classic"
-[ -x "$commands[lolcate]" ]  && alias lc="lolcate"
-[ -x "$commands[micro]" ] && alias mi="micro"
-[ -x "$commands[rsync]" ] && alias cpdir="rsync --archive --links --times"
-[ -x "$commands[rcrawl]" ] && alias dtree="rcrawl -Rs"
+[ -x "$commands[gfold]" ]   && alias gls="gfold -d classic"
+[ -x "$commands[lolcate]" ] && alias lc="lolcate"
+[ -x "$commands[micro]" ]   && alias mi="micro"
+[ -x "$commands[rcrawl]" ]  && alias dtree="rcrawl -Rs"
+[ -x "$commands[rsync]" ]   && alias cpdir="rsync --archive --links --times"
 
 # ———
 
@@ -218,7 +221,7 @@ if [ -x "$commands[xkpwgen]" ]; then
     function make_xkpwgen_name() {
         local count=${1:-2}
         local sep=${2:-'.'}
-        echo "`xkpwgen -l $count -n 1 -s "$sep"`"
+        echo "$(xkpwgen -l $count -n 1 -s "$sep")"
     }
     naming_functions+=(make_xkpwgen_name)
 fi
@@ -227,7 +230,7 @@ if  [ -x "$commands[pgen]" ]; then
     function make_pgen_name() {
         local count=${1:-2}
         local sep=${2:-'.'}
-        echo "`pgen -n $count -k 1 | sd '( +)' "$sep"`"
+        echo "$(pgen -n $count -k 1 | sd '( +)' "$sep")"
     }
     naming_functions+=(make_pgen_name)
 fi
@@ -236,7 +239,7 @@ if [ -x "$commands[petname]" ]; then
     function make_petname_name() {
         local count=${1:-2}
         local sep=${2:-'.'}
-        echo "`petname -s "$sep" -w $count -a`"
+        echo "$(petname -s "$sep" -w $count -a)"
     }
     naming_functions+=(make_petname_name)
 fi
@@ -247,13 +250,13 @@ if [ "$count" -gt 0 ]; then
     if [ "$select" -gt 0 ]; then
         make_human_name="${naming_functions[$select]}"
         function make_human_name() {
-            echo "`$make_human_name $*`"
+            echo "$($make_human_name $*)"
         }
     fi
 fi
 
 function mktp {
-    mkcd "`get_tempdir`/pet/`make_human_name`"
+    mkcd "$(get_tempdir)/pet/$(make_human_name)"
 }
 
 function shortcut- {
@@ -262,39 +265,39 @@ function shortcut- {
     local dir="$JOSH/bin"
 
     if [[ "$1" =~ "/" ]]; then
-        echo " - $0 fatal: shortcut \`$1\` couldn't contains slashes" >&2
+        printf " ** fail ($0): shortcut '$1' couldn't contains slashes\n" >&2
         return 1
     fi
 
     local src="$dir/$1"
 
     if [ ! -h "$src" ]; then
-        echo " - $0 fatal: shortcut \`$src\` isn't symbolic link" >&2
+        printf " ** fail ($0): shortcut '$src' isn't symbolic link\n" >&2
         return 2
     else
 
-        local dst="`fs_readlink $src`"
+        local dst="$(fs_readlink "$src")"
         unlink "$src"
         local ret="$?"
 
         if [ "$ret" -eq 0 ]; then
-            echo " + $0 info: unlink shortcut \`$src\` -> \`$dst\`" >&2
+            printf " ++ warn ($0): unlink shortcut '$src' -> '$dst'\n" >&2
         else
-            echo " - $0 fatal: unlink shortcut \`$src\` -> \`$dst\` failed: $ret" >&2
+            printf " ** fail ($0): unlink shortcut '$src' -> '$dst' failed: $ret\n" >&2
             return "$ret"
         fi
     fi
 }
 
-function brew() {
+function brew {
     source "$JOSH/lib/brew.sh" && brew_env
 
-    local bin="`brew_bin 2>/dev/null`"
+    local bin="$(brew_bin 2>/dev/null)"
     if [ ! -x "$bin" ]; then
         brew_init || return 1
     fi
 
-    local bin="`brew_bin`"
+    local bin="$(brew_bin)"
     [ ! -x "$bin" ] && return 2
 
 
@@ -315,20 +318,17 @@ function brew() {
 
 # ———
 
-function fchmod() {
+function fchmod {
     [ -z "$1" ] && [ -z "$2" ] && return 1
-    find $2 -type f -not -perm $1 -exec chmod $1 {} \;
+    find "$2" -type f -not -perm $1 -exec chmod "$1" {} \;
 }
 
-function dchmod() {
+function dchmod {
     [ -z "$1" ] && [ -z "$2" ] && return 1
-    find $2 -type d -not -perm $1 -exec chmod $1 {} \;
+    find "$2" -type d -not -perm $1 -exec chmod "$1" {} \;
 }
 
-function rchgrp() {
+function rchgrp {
     [ -z "$1" ] && [ -z "$2" ] && return 1
-    find $2 ( -not -group $1 ) -print -exec chgrp $1 {} ;
+    find "$2" -not -group "$1" -exec chgrp "$1" {} \;
 }
-
-python.home >/dev/null
-path_prune

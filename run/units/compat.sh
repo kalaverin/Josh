@@ -19,23 +19,22 @@ REQ_LIBS=(
 
 function check_executables {
     local missing=""
-    for exe in $@; do
-        if [ ! -x "`builtin which -p $exe 2>/dev/null`" ]; then
-            local missing="$missing $exe"
+    for bin in $@; do
+        if [ ! -x "$(builtin which -p "$bin" 2>/dev/null)" ]; then
+            local missing="$missing $bin"
         fi
     done
-    if [ "$missing" ]; then
-        echo " + missing required packages:$missing"
+    if [ -n "$missing" ]; then
+        printf " ** fail ($0): missing required packages: $missing\n" >&2
         return 1
     fi
-    return 0
 }
 
 
 function check_libraries {
     local missing=""
     for lib in $@; do
-        $SHELL -c "pkg-config --libs --cflags $lib" 1&>/dev/null 2&>/dev/null
+        pkg-config --libs --cflags "$lib" 1&>/dev/null 2&>/dev/null
         if [ "$?" -gt 0 ]; then
             if [ "$lib" = "openssl" ]; then
 
@@ -52,32 +51,33 @@ function check_libraries {
                     local missing="$missing $lib"
                     continue
                 fi
-                echo " * warning: pkg-config $lib failed, we try to which openssl.pc in $lookup_path"
+                printf " ++ warn ($0): pkg-config $lib failed, we try to which openssl.pc in $lookup_path\n" >&2
 
-                local openssl_path="$(fs_dirname `find $lookup_path -type f -name "openssl.pc" -follow 2>/dev/null | head -n 1`)"
+                local openssl_path="$(fs_dirname `find "$lookup_path" -type f -name "openssl.pc" -follow 2>/dev/null | head -n 1`)"
                 if [ ! -d "$openssl_path" ]; then
-                    echo " * warning: pkg-config $lib: nothing about openssl.pc in $lookup_path"
+                    printf " ++ warn ($0): pkg-config $lib: nothing about openssl.pc in $lookup_path\n" >&2
                     local missing="$missing $lib"
                     continue
                 fi
-                echo " * warning: retry pkg-config $lib: openssl.pc found in $openssl_path"
+                printf " ++ warn ($0): retry pkg-config $lib: openssl.pc found in $openssl_path\n" >&2
 
                 export PKG_CONFIG_PATH="$openssl_path"
-                $SHELL -c "pkg-config --libs --cflags $lib" 1&>/dev/null 2&>/dev/null
+                pkg-config --libs --cflags "$lib" 1>/dev/null 2>/dev/null
                 if [ "$?" -gt 0 ]; then
-                    echo " * warning: pkg-config $lib: nothing about openssl.pc in $PKG_CONFIG_PATH"
+                    printf " ++ warn ($0): pkg-config $lib: nothing about openssl.pc in $PKG_CONFIG_PATH\n" >&2
                     local missing="$missing $lib"
                     continue
                 fi
-                echo " * warning: pkg-config $lib: all ok, continue"
+                printf " ++ warn ($0): pkg-config $lib: all ok, continue\n" >&2
 
             else
                 local missing="$missing $lib"
             fi
         fi
     done
-    if [ "$missing" ]; then
-        echo " + missing required libraries:$missing"
+
+    if [ -n "$missing" ]; then
+        printf " ** fail ($0): missing required libraries: $missing\n" >&2
         return 1
     fi
     return 0
@@ -95,7 +95,7 @@ function version_not_compatible {
 
 function check_compliance {
     if [ -n "$(uname | grep -i freebsd)" ]; then
-        echo " + os: freebsd `uname -srv`"
+        printf " -- info ($0): os freebsd $(uname -srv)\n" >&2
         export JOSH_OS="BSD"
 
         local cmd="sudo pkg install -y"
@@ -114,7 +114,7 @@ function check_compliance {
         )
 
     elif [ -n "$(uname | grep -i darwin)" ]; then
-        echo " + os: macos `uname -srv`"
+        printf " -- info ($0): os macos $(uname -srv)\n" >&2
         export JOSH_OS="MAC"
 
         if [ ! -x "`builtin which -p brew 2>/dev/null`" ]; then
@@ -145,39 +145,38 @@ function check_compliance {
 
         if [ -f "/etc/debian_version" ] || [ -n "$(uname -v | grep -Pi '(debian|ubuntu)')" ]; then
             REQ_SYS_BINS=( apt )
-            echo " + os: debian-based `uname -srv`"
-            [ -x "`builtin which -p apt 2>/dev/null`" ] && local bin="apt" || local bin="apt-get"
+            printf " -- info ($0): os debian-based $(uname -srv)\n" >&2
+            [ -x "$(builtin which -p apt 2>/dev/null)" ] && local bin="apt" || local bin="apt-get"
 
             local cmd="(sudo $bin update --yes --quiet || true) && sudo $bin install --yes --quiet --no-remove"
             local pkg="build-essential clang git libevent-dev libpq-dev libssl-dev make pkg-config python-dev python3 python3-distutils zsh"
 
 
-        elif [ -f "/etc/arch-release" ] || [ -n "$(uname -v | grep -Pi '(arch|manjaro)')" ; then
+        elif [ -f "/etc/arch-release" ] || [ -n "$(uname -v | grep -Pi '(arch|manjaro)')" ]; then
             REQ_SYS_BINS=( pacman )
-            echo " + os: arch: `uname -srv`"
+            printf " -- info ($0): os arch: $(uname -srv)\n" >&2
 
             local cmd="sudo pacman --sync --noconfirm"
             local pkg="base-devel clang gcc git libevent openssl pkg-config postgresql-libs python3 tmux zsh"
 
         elif [ -n "$(uname -srv | grep -i gentoo)" ]; then
-            echo " + os: gentoo: `uname -srv`"
+            printf " -- info ($0): os gentoo: $(uname -srv)\n" >&2
 
         elif [ -n "$(uname -srv | grep -i microsoft)" ]; then
-            echo " + os: unknown WSL: `uname -srv`"
+            printf " -- info ($0): os unknown WSL: $(uname -srv)\n" >&2
 
         else
-            echo " - unknown linux: `uname -srv`"
-
+            printf " -- info ($0): os unknown linux: $(uname -srv)\n" >&2
         fi
     else
-        echo " - unknown os: `uname -srv`"
+        printf " -- info ($0): os unknown: $(uname -srv)\n" >&2
         export JOSH_OS="UNKNOWN"
     fi
 
     check_libraries $REQ_LIBS $REQ_SYS_LIBS && \
     check_executables $REQ_BINS $REQ_SYS_BINS
 
-    if [ $? -gt 0 ]; then
+    if [ "$?" -gt 0 ]; then
         local msg=" - please, install required packages and try again"
         [ "$cmd" ] && local msg="$msg: $cmd $pkg"
 
@@ -187,8 +186,7 @@ function check_compliance {
             echo "$msg"
         fi
     else
-
-        echo " + all requirements resolved, executives: $REQ_BINS $REQ_SYS_BINS, libraries: $REQ_LIBS $REQ_SYS_LIBS"
+        printf " ++ warn ($0): all requirements resolved, executives: $REQ_BINS $REQ_SYS_BINS, libraries: $REQ_LIBS $REQ_SYS_LIBS\n" >&2
     fi
     return 0
 }

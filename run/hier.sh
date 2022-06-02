@@ -21,6 +21,24 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
         done
     }
 
+    function fs.lookup.missing {
+        local missing=""
+        for bin in $(echo "$*" | sd '\s+' '\n' | sort -u); do
+            if [ ! -x "$commands[$bin]" ] && [ ! -x "$(which $bin 2>/dev/null)" ]; then
+                if [ -z "$missing" ]; then
+                    local missing="$bin"
+                else
+                    local missing="$missing $bin"
+                fi
+            fi
+        done
+        if [ -n "$missing" ]; then
+            echo "$missing"
+        else
+            return 1
+        fi
+    }
+
     function fs.dirs.normalize {
         local result=''
         for dir in $*; do
@@ -77,8 +95,7 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
             local dirs="$path"
         fi
         local cmd="fd --unrestricted --case-sensitive --max-depth 1 --type executable --type symlink -- \"^$1$\" $dirs"
-        local result="`eval {$cmd} 2>/dev/null`"
-        echo "$result"
+        eval {$cmd} 2>/dev/null
     }
 
     function lookup.copies.cached {
@@ -102,7 +119,7 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
     function path_last_modified {
         if [ -n "$*" ]; then
             local result="$(
-                builtin zstat -L `echo "$1" | tr ':' ' ' ` 2>/dev/null | \
+                builtin zstat -L `echo "$1" | tr ':' ' '` 2>/dev/null | \
                 grep mtime | awk -F ' ' '{print $2}' | sort -n | tail -n 1 \
             )"
             echo "$result"
@@ -171,7 +188,7 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
             return 4
 
         elif [ -z "$JOSH_MD5_PIPE" ] || [ -z "$JOSH_PAQ" ] || [ -z "$JOSH_QAP" ]; then
-            printf " ++ warn ($0): cache isn't works, check JOSH_MD5_PIPE '$JOSH_MD5_PIPE', JOSH_PAQ '$JOSH_PAQ', JOSH_QAP '$JOSH_QAP'\n" >&2
+            printf " ++ warn ($0): cache doesnt't works, check JOSH_MD5_PIPE '$JOSH_MD5_PIPE', JOSH_PAQ '$JOSH_PAQ', JOSH_QAP '$JOSH_QAP'\n" >&2
             local command="${@:4}"
             eval ${command}
             local retval="$?"
