@@ -313,7 +313,7 @@ function python.set {
             local source="$(fs_realpath "$PYTHON_BINARIES/default/bin/python")"
             if [ "$?" -gt 0 ] || [ ! -x "$source" ]; then
                 printf " ** fail ($0): python default binary '$source' ($1) doesn't exists or something wrong\n" >&2
-                return 1
+                return 2
             fi
         fi
 
@@ -321,21 +321,21 @@ function python.set {
         local source="$(fs_realpath `which "python$MATCH"`)"
         if [ "$?" -gt 0 ] || [ ! -x "$source" ]; then
             printf " ** fail ($0): python binary '$source' ($1) doesn't exists or something wrong\n" >&2
-            return 1
+            return 3
         fi
 
     else
         local source="$(fs_realpath `which "$1"`)"
         if [ "$?" -gt 0 ] || [ ! -x "$source" ]; then
             printf " ** fail ($0): python binary '$source' doesn't exists or something wrong\n" >&2
-            return 1
+            return 4
         fi
     fi
 
     local version="`python.version.full "$source"`"
     if [ -z "$version" ]; then
         printf " ** fail ($0): python $source version fetch\n" >&2
-        return 2
+        return 5
 
     elif [ -n "$PYTHON" ] && [ "$version" = "`python.version.full`" ]; then
         [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
@@ -345,7 +345,7 @@ function python.set {
     local target="`python.home "$source"`"
     if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
         printf " ** fail ($0): python $source home directory isn't exist\n" >&2
-        return 3
+        return 6
     fi
 
     local base="$PYTHON"
@@ -356,14 +356,14 @@ function python.set {
         printf " ** fail ($0): something wrong on setup python '$python' from source $source\n" >&2
         [ -n "$base" ] && export PYTHON="$base"
         [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
-        return 4
+        return 7
     fi
 
     if [ ! "$version" = "`python.version.full "$python"`" ]; then
         printf " ** fail ($0): source python $source ($version) != target $python (`python.version.full "$python"`)\n" >&2
         [ -n "$base" ] && export PYTHON="$base"
         [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
-        return 5
+        return 8
     fi
 
     pip.deploy
@@ -385,7 +385,7 @@ function pip.lookup {
     local target="`python.home`"
     if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
         printf " ** fail ($0): python target dir:'$target'\n" >&2
-        return 2
+        return 1
     fi
 
     for dir in $pip_subdirectories; do
@@ -396,7 +396,7 @@ function pip.lookup {
         fi
     done
     printf " ++ warn ($0): pip binary not found\n" >&2
-    return 1
+    return 2
 }
 
 function pip.deploy {

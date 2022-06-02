@@ -107,20 +107,46 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
 
     function path_prune {
         local unified_path="$(
-            echo "$path" | sed 's#:#\n#' | sed "s:^~/:$HOME/:" | \
+            echo "$path" | sed 's#:#\n#g' | sed "s:^~/:$HOME/:" | \
             xargs -n 1 realpath 2>/dev/null | awk '!x[$0]++' | \
             grep -v "$JOSH" | \
             sed -z 's#\n#:#g' | sed 's#:$##g' \
         )"
+        local retval="$?"
 
-        local ret="$?"
-        if [ "$ret" -eq 0 ] && [ -n "$unified_path" ]; then
-            export PATH="$unified_path"
-            if [ ! "$1" = 'links' ]; then
-                export PATH="$JOSH/bin:$unified_path"
+        if [ "$retval" -eq 0 ] && [ -n "$unified_path" ]; then
+
+            local found=""
+            local result=""
+            local pattern="^$HOME/.python"
+            for dir in $(echo "$unified_path" | sed 's#:#\n#g'); do
+
+                if [[ "$dir" -regex-match $pattern ]]; then
+                    if [ -z "$found" ]; then
+                        local found="$dir"
+                    else
+                        continue
+                    fi
+                fi
+
+                if [ -z "$result" ]; then
+                    local result="$dir"
+                else
+                    local result="$result:$dir"
+                fi
+            done
+
+            if [ -z "$result" ]; then
+                printf " ** fail ($0): something went wrong: $path\n" >&2
+                return 1
+            else
+                export PATH="$result"
+                if [ ! "$1" = 'links' ]; then
+                    export PATH="$JOSH/bin:$result"
+                fi
             fi
         fi
-        return "$ret"
+        return "$retval"
     }
 
     function cached_execute {
