@@ -230,12 +230,10 @@ function python.exe {
         fi
     fi
 
-    if [ "$JOSH_OS" = 'BSD' ] || [ "$JOSH_OS" = 'MAC' ]; then
-        local gsed="$commands[gsed]"
-    else
-        local gsed="$commands[sed]"
+    local gsed="$(which gsed)"
+    if [ ! -x "$gsed" ]; then
+        local gsed="$(which sed)"
     fi
-
     if [ ! -x "$gsed" ]; then
         printf " ** fail ($0): GNU sed for '$JOSH_OS' don't found\n" >&2
         return 2
@@ -555,7 +553,7 @@ function pip.install {
         local flags="--root='/' --prefix='$target' $flags"
     fi
     local command="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false `python.exe` -m pip install $flags $PIP_DEFAULT_KEYS"
-    printf "\n ++ warn ($0): $command\n\n" >&2
+    printf "\n ++ warn ($0): $command $*\n\n" >&2
 
     local done=''
     local fail=''

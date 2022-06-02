@@ -95,7 +95,7 @@ CARGO_REC_PACKAGES=(
 
 CARGO_BIN="$CARGO_BINARIES/cargo"
 
-function cargo_init() {
+function cargo_init {
     local cache_exe="$CARGO_BINARIES/sccache"
 
     if [ ! -x "$CARGO_BIN" ]; then
@@ -148,7 +148,7 @@ function cargo_init() {
     return 0
 }
 
-function chit_cached() {
+function chit_cached {
     [ -z "$1" ] && return 0
     if [ -x "`which md5`" ]; then
         local bin="`which md5`"
@@ -175,7 +175,7 @@ function chit_cached() {
     echo "$result"
 }
 
-function cargo_deploy() {
+function cargo_deploy {
     cargo_init || return $?
     if [ ! -x "$CARGO_BIN" ]; then
         echo " - fatal: cargo exe \`$CARGO_BIN\` isn't found!"
@@ -194,12 +194,12 @@ function cargo_deploy() {
     return "$retval"
 }
 
-function cargo_extras() {
+function cargo_extras {
     cargo_install "$CARGO_REQ_PACKAGES $CARGO_REC_PACKAGES"
     return 0
 }
 
-function cargo_list_installed() {
+function cargo_list_installed {
     cargo_init || return $?
     if [ ! -x "$CARGO_BIN" ]; then
         echo " - fatal: cargo exe $CARGO_BIN isn't found!"
@@ -208,7 +208,7 @@ function cargo_list_installed() {
     echo "$($CARGO_BIN install --list | egrep '^[a-z0-9_-]+ v[0-9.]+:$' | cut -f1 -d' ')"
 }
 
-function cargo_install() {
+function cargo_install {
     cargo_init || return $?
     if [ ! -x "$CARGO_BIN" ]; then
         echo " - fatal: cargo exe $CARGO_BIN isn't found!"
@@ -250,7 +250,7 @@ function cargo_install() {
     fi
 }
 
-function cargo_uninstall() {
+function cargo_uninstall {
     cargo_init || return $?
     if [ ! -x "$CARGO_BIN" ]; then
         echo " - fatal: cargo exe $CARGO_BIN isn't found!"
@@ -294,14 +294,14 @@ function cargo_uninstall() {
     fi
 }
 
-function cargo_recompile() {
+function cargo_recompile {
     local packages="`cargo_list_installed | sed -z 's:\n: :g' | sed 's/ *$//'`"
     if [ -n "$packages" ]; then
         $SHELL -c "$CARGO_BIN install --force $packages"
     fi
 }
 
-function cargo_update() {
+function cargo_update {
     cargo_init || return $?
     if [ ! -x "$CARGO_BIN" ]; then
         echo " - fatal: cargo exe $CARGO_BIN isn't found!"
@@ -319,6 +319,6 @@ function cargo_update() {
     return "$?"
 }
 
-function rust_env() {
+function rust_env {
     cargo_init
 }

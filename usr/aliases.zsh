@@ -1,22 +1,22 @@
 alias cp='cp -iR'  # prompt on overwrite and use recurse for directories
 alias mv='mv -i'
-alias tt='tail -f -n 100'
-alias svc='service'
+alias tt='tail --retry --quiet --sleep-interval=0.5 -f -n 50'
 alias sudo='sudo -H'  # this is Ubuntu behavior: never send user env to sudo context!
+alias svc='sudo service'
 
 # ———
 
-alias -g I='| grep -i'
-alias -g E='| grep -iv'
+alias -g I='| grep --line-buffered -i'
+alias -g E='| grep --line-buffered -iv'
 alias -g LL="2>&1 | less"
 alias -g CA="2>&1 | cat -A"
 alias -g NE="2> /dev/null"
 alias -g NUL="> /dev/null 2>&1"
 alias -g TO_LINE="awk '{\$1=\$1};1' | sed -z 's:\n: :g' | awk '{\$1=\$1};1'"
 
-alias -g E_INFO="| grep -v '\[INFO\]'"
-alias -g E_DEBUG="| grep -v '\[DEBUG\]'"
-alias -g E_WARNING="| grep -v '\[WARNING\]'"
+alias -g E_INFO="| grep --line-buffered -v '\[INFO\]'"
+alias -g E_DEBUG="| grep --line-buffered -v '\[DEBUG\]'"
+alias -g E_WARNING="| grep --line-buffered -v '\[WARNING\]'"
 alias -g uri="$HTTP_GET"
 
 

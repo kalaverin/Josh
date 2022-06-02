@@ -29,16 +29,16 @@ bindkey "${terminfo[khome]}" beginning-of-line
 
 # shift+tab: move through the completion menu backwards
 if [[ "${terminfo[kcbt]}" != "" ]]; then
-  bindkey "${terminfo[kcbt]}" reverse-menu-complete
+    bindkey "${terminfo[kcbt]}" reverse-menu-complete
 fi
 
 bindkey "^?"       backward-delete-char
 if [[ "${terminfo[kdch1]}" != "" ]]; then
-  bindkey "${terminfo[kdch1]}" delete-char
+    bindkey "${terminfo[kdch1]}" delete-char
 else
-  bindkey "^[[3~"  delete-char
-  bindkey "^[3;5~" delete-char
-  bindkey "\e[3~"  delete-char
+    bindkey "^[[3~"  delete-char
+    bindkey "^[3;5~" delete-char
+    bindkey "\e[3~"  delete-char
 fi
 # bindkey "${terminfo[kbs]}"   delete-char
 

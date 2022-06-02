@@ -4,9 +4,13 @@ local source_file="`fs_joshpath "$0"`"
 if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
     sourced+=("$source_file")
 
-    alias sed="`which sed`"
+    local gsed="$(which gsed)"
+    if [ ! -x "$gsed" ]; then
+        local gsed="$(which sed)"
+    fi
+    alias sed="$gsed"
 
-    local perm_path_regex="`echo "$perm_path" | sed 's:^:^:' | sed 's: *$:/:' | sed 's: :/|^:g'`"
+    local perm_path_regex="$(echo "$perm_path" | sed 's:^:^:' | sed 's: *$:/:' | sed 's: :/|^:g')"
 
     function lookup {
         for sub in $path; do
@@ -152,27 +156,26 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
 
     function cached_execute {
         if [ -z "$1" ]; then
-            echo " ** fail ($0): \$1 key must be: '$1' '$2' '$3' '${@:4}'\n" >&2
+            printf " ** fail ($0): \$1 key must be: '$1' '$2' '$3' '${@:4}'\n" >&2
             return 1
 
         elif [ -z "$2" ]; then
-            echo " ** fail ($0): \$2 expire must be: '$1' '$2' '$3' '${@:4}'\n" >&2
+            printf " ** fail ($0): \$2 expire must be: '$1' '$2' '$3' '${@:4}'\n" >&2
             return 2
 
         elif [ -z "$3" ]; then
-            echo " ** fail ($0): \$3 cache dir must be: '$1' '$2' '$3' '${@:4}'\n" >&2
+            printf " ** fail ($0): \$3 cache dir must be: '$1' '$2' '$3' '${@:4}'\n" >&2
             return 3
 
         elif [ -z "$4" ]; then
-            echo " ** fail ($0): args one or many must be: '$1' '$2' '$3' '${@:4}'\n" >&2
+            printf " ** fail ($0): args one or many must be: '$1' '$2' '$3' '${@:4}'\n" >&2
             return 4
-        fi
 
-        if [ -z "$JOSH_MD5_PIPE" ] || [ -z "$JOSH_QAP" ] || [ -z "$JOSH_QAP" ]; then
+        elif [ -z "$JOSH_MD5_PIPE" ] || [ -z "$JOSH_PAQ" ] || [ -z "$JOSH_QAP" ]; then
+            printf " ++ warn ($0): cache isn't works, check JOSH_MD5_PIPE '$JOSH_MD5_PIPE', JOSH_PAQ '$JOSH_PAQ', JOSH_QAP '$JOSH_QAP'\n" >&2
             local command="${@:4}"
-            local result="`eval ${command}`"
+            eval ${command}
             local retval="$?"
-            echo "$result"
             return "$retval"
         fi
 
@@ -186,38 +189,49 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
             let expires="$EPOCHSECONDS - $expires"
         fi
 
-        local f1="`eval "echo "$1" | $JOSH_MD5_PIPE"`"
-        local f2="`eval "echo "${@:4}" | $JOSH_MD5_PIPE"`"
+        local f1="$(eval "echo "$1" | $JOSH_MD5_PIPE")"
+        local f2="$(eval "echo "${@:4}" | $JOSH_MD5_PIPE")"
         local file="$3/$f1/$f2"
+
+        if [ -z "$f1" ] || [ -z "$f2" ]; then
+            printf " ** fail ($0): something went wrong for cache file '$file', check JOSH_MD5_PIPE '$JOSH_MD5_PIPE'\n" >&2
+            return 5
+        fi
 
         if [ ! -f "$file" ]; then
             let expired="1"
         else
-            local last_update="`fs_mtime $file 2>/dev/null`"
+            local last_update="$(fs_mtime $file 2>/dev/null)"
             [ -z "$last_update" ] && local last_update="0"
             let expired="$expires > $last_update"
         fi
 
+        local subdir="$(fs_dirname "$file")"
+        if [ ! -d "$subdir" ]; then
+            mkdir -p "$subdir"
+        fi
+
         if [ "$expired" -eq 0 ]; then
-            local command="cat \"$file\" | $JOSH_QAP"
-            local result="`eval ${command}`"
+            eval {"cat \"$file\" | $JOSH_QAP 2>/dev/null"} >"$subdir/stdout"
+            local retval="$?"
+            local result="$(cat "$subdir/stdout")"
+            unlink "$subdir/stdout"
+
             if [ "$?" -eq 0 ]; then
                 echo "$result"
                 return 0
             fi
         fi
 
-        local result="`eval ${@:4}`"
+        eval ${@:4} >"$subdir/stdout"
         local retval="$?"
+        local result="$(cat "$subdir/stdout")"
+        unlink "$subdir/stdout"
 
         if [ "$retval" -eq 0 ]; then
-            if [ ! -d "`fs_dirname "$file"`" ]; then
-                mkdir -p "`fs_dirname "$file"`"
-            fi
-            local command="echo '$result' | $JOSH_PAQ > '$file'"
-            eval ${command}
+            eval {"echo '$result' | $JOSH_PAQ > '$file'"}
+            echo "$result"
         fi
-        echo "$result"
         return "$retval"
     }
 fi
