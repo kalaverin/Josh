@@ -217,7 +217,7 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
             local result="$(cat "$subdir/stdout")"
             unlink "$subdir/stdout"
 
-            if [ "$?" -eq 0 ]; then
+            if [ ! "$retval" -gt 0 ]; then
                 echo "$result"
                 return 0
             fi
