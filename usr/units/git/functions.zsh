@@ -349,7 +349,7 @@ function git_update_nested_repositories {
             continue
         fi
 
-        printf " -- info ($0): $branch in $current_path.. "
+        printf " -- info ($0): $branch in '$current_path'.. "
         run_hide "git fetch origin master && git fetch --tags"
         git_repository_clean 2>/dev/null
 
