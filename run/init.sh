@@ -94,6 +94,21 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
             printf " ** fail ($0): unsupported OS '$(uname -srv)'\n" >&2
             export JOSH_OS="UNKNOWN"
         fi
+
+        dirs=(
+            bin
+            sbin
+            usr/bin
+            usr/sbin
+            usr/local/bin
+            usr/local/sbin
+        )
+
+        for dir in $dirs; do
+            if [ -d "/snap/$dir" ]; then
+                export PATH="$PATH:/snap/$dir"
+            fi
+        done
     fi
 
     if [ "$JOSH_OS" = 'BSD' ] || [ "$JOSH_OS" = 'MAC' ]; then
