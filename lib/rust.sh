@@ -50,6 +50,7 @@ CARGO_REQ_PACKAGES=(
 )
 CARGO_REC_PACKAGES=(
     bingrep          # extract and grep strings from binaries
+    broot            # console file manager
     bump-bin         # versions with semver specification
     diffsitter       # AST based diff
     dirstat-rs       # ds, du replace, summary tree
