@@ -50,7 +50,6 @@ function pull_update {
     if [ -x "$commands[git-restore-mtime]" ]; then
         git-restore-mtime --skip-missing --quiet
     fi
-
     builtin cd "$cwd" && return "$retval"
 }
 
@@ -78,6 +77,8 @@ function update_internals {
     source "$JOSH/lib/python.sh" && \
     pip.install "$PIP_REQ_PACKAGES"
     pip.update
+
+    git_update_nested_repositories "$JOSH/usr/local"
 }
 
 function update_packages {

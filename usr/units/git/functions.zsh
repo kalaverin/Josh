@@ -337,7 +337,8 @@ function git_squash_already_pushed {
 function git_update_nested_repositories {
     local cwd="$PWD"
 
-    find . -maxdepth 3 -type d -name .git | sort | while read git_directory
+    local root="${1:-"."}"
+    find $root -maxdepth 3 -type d -name .git | sort | while read git_directory
     do
         current_path="$(fs_dirname "`fs_realpath $git_directory`")"
         builtin cd "$current_path"
