@@ -146,6 +146,7 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
                 fi
             fi
         fi
+        rehash
         return "$retval"
     }
 
