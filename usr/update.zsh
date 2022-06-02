@@ -2,7 +2,7 @@ zmodload zsh/datetime
 autoload -Uz async && async
 
 
-function is_workhours() {
+function is_workhours {
     local head="${JOSH_WORKHOUR_START:-6}"
     local tail="${JOSH_WORKHOUR_END:-16}"
 
@@ -14,24 +14,33 @@ function is_workhours() {
 }
 
 
-function fetch_updates_background() {
+function fetch_updates_background {
+    if [ -z "$JOSH" ]; then
+        echo " - $0 warning: JOSH:\`$JOSH\`" >&2
+        return 1
+    fi
+    local cwd="$PWD"
+
+    builtin cd "$JOSH"
     if [ "`grep --count -P "fetch.+remotes/origin/\*" .git/config`" -eq 0 ]; then
         git remote set-branches --add origin "*"
     fi
     git fetch --jobs=4 --all --tags --prune --prune-tags --quiet 2>/dev/null
+    builtin cd "$cwd"
     return "$?"
 }
 
 
-function fetch_updates() {
-    if [ -z "$JOSH" ]; then
-        echo " - $0 warning: JOSH:\`$JOSH\`" >&2
+function fetch_updates {
+    if [ ! -x "$JOSH" ]; then
+        printf " ** fail ($0): JOSH:'$JOSH' isn't accessible\n" >&2
         return 1
 
     elif [ -z "$JOSH_CACHE_DIR" ]; then
-        echo " - $0 warning: JOSH_CACHE_DIR:\`$JOSH_CACHE_DIR\`" >&2
+        printf " ** fail ($0): JOSH_CACHE_DIR:'$JOSH_CACHE_DIR' isn't accessible\n" >&2
         return 2
     fi
+
     local file="$JOSH_CACHE_DIR/last-fetch"
     local last_check="`cat $file 2>/dev/null`"
     [ -z "$last_check" ] && local last_check="0"
@@ -52,7 +61,7 @@ function fetch_updates() {
 
     if [ -z "$branch" ]; then
         builtin cd "$cwd"
-        echo " - $0 warning: JOSH branch \`$branch\` failed" >&2
+        printf " ** fail ($0): branch '$branch' empty" >&2
         return 3
     fi
 
@@ -76,13 +85,13 @@ function fetch_updates() {
 }
 
 
-function check_updates() {
-    if [ -z "$JOSH" ]; then
-        echo " - $0 warning: JOSH:\`$JOSH\`" >&2
+function check_updates {
+    if [ ! -x "$JOSH" ]; then
+        printf " ** fail ($0): JOSH:'$JOSH' isn't accessible\n" >&2
         return 1
 
     elif [ -z "$JOSH_CACHE_DIR" ]; then
-        echo " - $0 warning: JOSH_CACHE_DIR:\`$JOSH_CACHE_DIR\`" >&2
+        printf " ** fail ($0): JOSH_CACHE_DIR:'$JOSH_CACHE_DIR' isn't accessible\n" >&2
         return 1
     fi
     unset JOSH_UPDATES_COUNT
@@ -108,12 +117,12 @@ function check_updates() {
 
     local branch="`git_current_branch`"
     if [ "$branch" = "develop" ]; then
-        echo " + $0: $updates new commits found, let's go!" >&2
+        printf " -- info ($0): $updates new commits found, let's go!\n" >&2
         josh_pull "$branch"
         local ret="$?"
-        echo " + $0 commits applied, please run: exec zsh" >&2
-        echo " + $0 for partial (slow) upgrade run: josh_update" >&2
-        echo " + $0 for install (full) all updates: josh_upgrade" >&2
+        printf " -- info ($0): commits applied, please run: exec zsh\n" >&2
+        printf " for partial (fast) update run: josh_update\n" >&2
+        printf " for install (full) all updates: josh_upgrade\n" >&2
 
     elif [ "$branch" = "stable" ]; then
         local last_commit="`git --git-dir="$JOSH/.git" --work-tree="$JOSH/" log -1 --format="%ct"`"
@@ -129,7 +138,7 @@ function check_updates() {
 }
 
 
-function motd() {
+function motd {
     local branch="`check_updates`"
 
     if [ -n "$TMUX" ]; then
