@@ -173,12 +173,9 @@ function python.exe.lookup {
 
             unset result
 
-
             if ! version_not_compatible $MIN_PYTHON_VERSION $version; then
                 echo "$python $MIN_PYTHON_VERSION $version" >&2
             fi
-
-            version_not_compatible $MIN_PYTHON_VERSION $version
 
             if [ "$?" -gt 0 ]; then
                 if python.library.is 'distutils' "$python"; then
@@ -718,6 +715,8 @@ function pip.compliance.check {
     if [ -n "$result" ]; then
         printf " ++ warn ($0): one or many binaries may be shadowed\n" >&2
         printf "$result\n" >&2
-        printf " ++ warn ($0): disable execution by chmod a-x /file/path or unlink shadow from right side and run this test again by: ($0)\n" >&2
+        printf " ++ warn ($0): disable execution by chmod a-x /file/path or unlink shadow from right side and run this test again by: $0\n" >&2
+    else
+        printf " -- info ($0): all ok\n" >&2
     fi
 }
