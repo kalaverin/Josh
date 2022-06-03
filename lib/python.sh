@@ -718,6 +718,6 @@ function pip.compliance.check {
     if [ -n "$result" ]; then
         printf " ++ warn ($0): one or many binaries may be shadowed\n" >&2
         printf "$result\n" >&2
-        printf " ++ warn ($0): disable execution by chmod a-x /file/path or unlink shadow from right side and run this test again by: $(0)\n" >&2
+        printf " ++ warn ($0): disable execution by chmod a-x /file/path or unlink shadow from right side and run this test again by: ($0)\n" >&2
     fi
 }
