@@ -17,7 +17,7 @@ REQ_LIBS=(
 )
 
 
-function check_executables {
+function compat.executables {
     local missing=""
     for bin in $@; do
         if [ ! -x "$(builtin which -p "$bin" 2>/dev/null)" ]; then
@@ -31,7 +31,7 @@ function check_executables {
 }
 
 
-function check_libraries {
+function compat.libraries {
     local missing=""
     for lib in $@; do
         pkg-config --libs --cflags "$lib" 1&>/dev/null 2&>/dev/null
@@ -93,7 +93,7 @@ function version_not_compatible {
 }
 
 
-function check_compliance {
+function compat.compliance {
     if [ -n "$(uname | grep -i freebsd)" ]; then
         printf " -- info ($0): os freebsd $(uname -srv)\n" >&2
         export JOSH_OS="BSD"
@@ -117,8 +117,8 @@ function check_compliance {
         printf " -- info ($0): os macos $(uname -srv)\n" >&2
         export JOSH_OS="MAC"
 
-        if [ ! -x "`builtin which -p brew 2>/dev/null`" ]; then
-            echo ' - brew for MacOS strictly required, just run: curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | zsh"'
+        if [ ! -x "$(builtin which -p brew 2>/dev/null)" ]; then
+            printf " -- info ($0): brew for MacOS strictly required, just run: curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | zsh\n" >&2
         fi
 
         local cmd="brew update && brew install"
@@ -173,20 +173,20 @@ function check_compliance {
         export JOSH_OS="UNKNOWN"
     fi
 
-    check_libraries $REQ_LIBS $REQ_SYS_LIBS && \
-    check_executables $REQ_BINS $REQ_SYS_BINS
+    compat.libraries $REQ_LIBS $REQ_SYS_LIBS && \
+    compat.executables $REQ_BINS $REQ_SYS_BINS
 
     if [ "$?" -gt 0 ]; then
-        local msg=" - please, install required packages and try again"
+        local msg="please, install required packages and try again"
         [ "$cmd" ] && local msg="$msg: $cmd $pkg"
 
         if [ ! "$JOSH_SKIP_REQUIREMENTS_CHECK" ]; then
-            echo "$msg" && return 1
+            printf " ++ warn ($0): $msg\n" >&2 && return 1
         else
-            echo "$msg"
+            printf " ++ warn ($0): $msg\n" >&2
         fi
     else
-        printf " ++ warn ($0): all requirements resolved, executives: $REQ_BINS $REQ_SYS_BINS, libraries: $REQ_LIBS $REQ_SYS_LIBS\n" >&2
+        printf " -- info ($0): all requirements resolved, executives: $REQ_BINS $REQ_SYS_BINS, libraries: $REQ_LIBS $REQ_SYS_LIBS\n" >&2
     fi
     return 0
 }

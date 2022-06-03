@@ -5,9 +5,10 @@ if [[ -n ${(M)zsh_eval_context:#file} ]]; then
 fi
 
 function pull_update {
-    local cwd="`pwd`" && builtin cd "$JOSH"
+    local cwd="$PWD"
+    builtin cd "$JOSH"
 
-    local detected="`git rev-parse --quiet --abbrev-ref HEAD`"
+    local detected="$(git rev-parse --quiet --abbrev-ref HEAD)"
 
     if [ "$detected" ] && [ ! "$detected" = "HEAD" ]; then
 
@@ -23,45 +24,46 @@ function pull_update {
             source "$JOSH/usr/units/git.zsh" && git_fetch_checkout_branch "$branch"
             local retval=$?
         else
-            local retval=0
+            local retval="0"
         fi
 
-        if [ $retval -eq 0 ]; then
-            echo " + pull last changes from \`$branch\` to \``pwd`\`" && \
+        if [ "$retval" -eq 0 ]; then
+            printf " -- info ($0): pull '$branch' into $PWD\n" >&2 && \
             git fetch --tags && git pull --ff-only --no-edit --no-commit origin "$branch"
             local retval="$?"
 
-            if [ $retval -eq 0 ]; then
-                git update-index --refresh &>>/dev/null
-                if [ "$?" -gt 0 ] || [ "`git status --porcelain=v1 &>>/dev/null | wc -l`" -gt 0 ]; then
-                    echo " - fatal: \``pwd`\` is dirty, couldn't automatic fast forward"
-                    local retval=2
+            if [ "$retval" -eq 0 ]; then
+                git update-index --refresh 1>/dev/null 2>/dev/null
+                if [ "$?" -gt 0 ] || [ "$(git status --porcelain=v1 &>>/dev/null | wc -l)" -gt 0 ]; then
+                    printf " ** fail ($0): '$CWD' is dirty, stop\n" >&2
+                    local retval="2"
                 fi
             else
-                echo " - fatal: \``pwd`\` is dirty, pull failed"
+                printf " ** fail ($0): '$CWD' is dirty, stop\n" >&2
             fi
         else
-            echo " - fatal: \``pwd`\` checkout failed"
+            printf " ** fail ($0): '$CWD' is dirty, stop\n" >&2
         fi
     else
-        local retval=1
+        local retval="1"
     fi
 
-    if [ -x "$commands[git-restore-mtime]" ]; then
+    if [ -x "$(which git-restore-mtime)" ]; then
         git-restore-mtime --skip-missing --quiet
     fi
-    builtin cd "$cwd" && return "$retval"
+    builtin cd "$cwd"
+    return "$retval"
 }
 
 function post_update {
     update_internals
-    source "$JOSH/run/units/compat.sh" && check_compliance
+    source "$JOSH/run/units/compat.sh" && compat.compliance
 }
 
 function post_upgrade {
     update_internals
     update_packages
-    source "$JOSH/run/units/compat.sh" && check_compliance
+    source "$JOSH/run/units/compat.sh" && compat.compliance
 }
 
 function update_internals {
@@ -91,9 +93,9 @@ function update_packages {
 }
 
 function deploy_extras {
-    local cwd="`pwd`"
-    (source "$JOSH/lib/python.sh" && pip.extras || echo " - warning (python): something went wrong") && \
-    (source "$JOSH/lib/rust.sh" && cargo_extras || echo " - warning (rust): something went wrong")
-    (source "$JOSH/lib/brew.sh" && brew_env && (brew_extras || echo " - warning (brew): something went wrong"))
+    local cwd="$PWD"
+    (source "$JOSH/lib/python.sh" && pip.extras || printf " ++ warn ($0): (python) something went wrong\n" >&2) && \
+    (source "$JOSH/lib/rust.sh" && cargo_extras || printf " ++ warn ($0): (rust) something went wrong\n" >&2)
+    (source "$JOSH/lib/brew.sh" && brew_env && (brew_extras || printf " ++ warn ($0): (brew) something went wrong\n" >&2))
     builtin cd "$cwd"
 }

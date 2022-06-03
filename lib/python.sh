@@ -201,7 +201,7 @@ function python.exe.lookup {
 }
 
 function python.exe {
-    if ! function_exists "check_executables"; then
+    if ! function_exists "compat.executables"; then
         source $BASE/run/units/compat.sh
 
         if [ "$?" -gt 0 ]; then
