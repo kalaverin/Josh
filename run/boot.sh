@@ -160,7 +160,7 @@ function fs_resolver {
         export JOSH_REALPATH="$result"
         return 0
     fi
-    echo " - $0 fail: resolver isn't configured, need realpath or readlink" >&2
+    printf " ** fail ($0): resolver isn't configured, need realpath or readlink\n" >&2
     return 1
 }
 
@@ -207,7 +207,7 @@ function fs_realpath {
         local cmd="$JOSH_REALPATH $link"
         eval "${cmd}"
     else
-        echo " - $0 fail: '$link' doesn't exist" >&2
+        printf " ** fail ($0): '$link' doesn't exist\n" >&2
         return 1
     fi
 }

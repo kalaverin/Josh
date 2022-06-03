@@ -2,13 +2,13 @@
 
 if [[ -n ${(M)zsh_eval_context:#file} ]]; then
     if [ -z "$HTTP_GET" ]; then
-        source "`dirname $0`/../run/boot.sh"
+        source "$(dirname $0)/../run/boot.sh"
     fi
 
     JOSH_CACHE_DIR="$HOME/.cache/josh"
     if [ ! -d "$JOSH_CACHE_DIR" ]; then
         mkdir -p "$JOSH_CACHE_DIR"
-        echo " * make Josh cache directory \`$JOSH_CACHE_DIR\`"
+        printf " -- info ($0): make Josh cache directory '$JOSH_CACHE_DIR'\n" >&2
     fi
 
     PYTHON_BINARIES="$HOME/.python"
@@ -16,7 +16,7 @@ if [[ -n ${(M)zsh_eval_context:#file} ]]; then
 
     if [ ! -d "$PYTHON_BINARIES" ]; then
         mkdir -p "$PYTHON_BINARIES"
-        echo " * make Python default directory \`$PYTHON_BINARIES\`"
+        printf " -- info ($0): make Python default directory '$PYTHON_BINARIES'\n" >&2
     fi
 
     if [ -n "$JOSH_DEST" ]; then
@@ -71,13 +71,13 @@ function python.library.is {
     fi
 
     if [ -x "$2" ]; then
-        local bin="`fs_realpath "$2"`"
+        local bin="$(fs_realpath "$2")"
         if [ ! -x "$bin" ]; then
             printf " ** fail ($0): cannot get real path for '$2'\n" >&2
             return 3
         fi
     else
-        local bin="`python.exe`"
+        local bin="$(python.exe)"
     fi
 
     if [ -z "$(echo "import $1 as x; print(x)" | $bin 2>/dev/null | grep '<module')" ]; then
@@ -103,14 +103,13 @@ function python.version.full {
         printf " ** fail ($0): isn't valid executable '$source'\n" >&2
         return 1
     fi
-    echo "`$source --version 2>&1 | grep -Po '(\d+\.\d+\.\d+)'`"
+    echo "$($source --version 2>&1 | grep -Po '(\d+\.\d+\.\d+)')"
 }
 
 function python.version {
     if [ -z "$1" ]; then
         if [ -n "$PYTHON" ] && [ -x "$PYTHON/bin/python" ]; then
             local source="$PYTHON/bin/python"
-
         else
             printf " ** fail ($0): call without args, I need to do — what?\n" >&2
             return 1
@@ -124,13 +123,13 @@ function python.version {
         return 2
     fi
 
-    local python="`fs_realpath $source 2>/dev/null`"
+    local python="$(fs_realpath "$source" 2>/dev/null)"
     if [ ! -x "$python" ]; then
         printf " ** fail ($0): isn't valid python '$python'\n" >&2
         return 3
     fi
 
-    local version="`python.version.full $python`"
+    local version="$(python.version.full "$python")"
     if [[ "$version" -regex-match '^[0-9]+\.[0-9]+' ]]; then
         echo "$MATCH"
     else
@@ -145,7 +144,7 @@ function python.home.from_version {
         return 1
     fi
 
-    local version="`python.version $1`"
+    local version="$(python.version "$1")"
     [ -z "$version" ] && return 1
     echo "$PYTHON_BINARIES/$version"
 }
@@ -159,8 +158,6 @@ function python.exe.lookup {
         local dirs="$path"
     fi
 
-    echo "$dirs"
-
     for dir in $(echo "$dirs" | sed 's#:#\n#g'); do
         if [ ! -d "$dir" ]; then
             continue
@@ -170,12 +167,19 @@ function python.exe.lookup {
             [ ! -x "$python" ] || \
             [[ ! "$python" -regex-match '[0-9]$' ]] && continue
 
-            local version="`python.version.full $python`"
+            local version="$(python.version.full $python)"
             [ "$?" -gt 0 ] || [ -z "$version" ] || \
             [[ ! "$version" -regex-match '^[0-9]+\.[0-9]+' ]] && continue
 
             unset result
+
+
+            if ! version_not_compatible $MIN_PYTHON_VERSION $version; then
+                echo "$python $MIN_PYTHON_VERSION $version" >&2
+            fi
+
             version_not_compatible $MIN_PYTHON_VERSION $version
+
             if [ "$?" -gt 0 ]; then
                 if python.library.is 'distutils' "$python"; then
                     local result="$python"
@@ -208,7 +212,7 @@ function python.exe {
 
     if [ -n "$PYTHON" ]; then
         local link="$PYTHON/bin/python"
-        if [ -x "$link" ] && [ -x "`fs_realpath "$link" 2>/dev/null`" ]; then
+        if [ -x "$link" ] && [ -x "$(fs_realpath "$link" 2>/dev/null)" ]; then
             echo "$link"
             return 0
         fi
@@ -216,8 +220,8 @@ function python.exe {
     fi
 
     local link="$PYTHON_BINARIES/default/bin/python"
-    if [ -L "$link" ] && [ -x "`fs_realpath "$link" 2>/dev/null`" ]; then
-        local version="`python.version.full $link`"
+    if [ -L "$link" ] && [ -x "$(fs_realpath "$link" 2>/dev/null)" ]; then
+        local version="$(python.version.full "$link")"
         [ -z "$version" ] && continue
 
         version_not_compatible "$MIN_PYTHON_VERSION" "$version"
@@ -243,10 +247,13 @@ function python.exe {
     if [ -z "$dirs" ]; then
         local dirs="$PATH"
     fi
-    local result="$(cached_execute "$0" "`path_last_modified $dirs ~/.python`" "$JOSH_CACHE_DIR" "python.exe.lookup $dirs")"
+
+    local result="$(
+        cached_execute "$0" "`path_last_modified $dirs ~/.python`" \
+        "$JOSH_CACHE_DIR" "python.exe.lookup $dirs")"
 
     if [ "$result" ]; then
-        local python="`fs_realpath $result`"
+        local python="$(fs_realpath "$result")"
         if [ -x "$python" ]; then
             fs_realpath "$python" 1>/dev/null
             [ "$?" -eq 0 ] && echo "$python"
@@ -259,9 +266,9 @@ function python.exe {
 
 function python.home {
     if [ -z "$1" ]; then
-        local python="`python.exe`"
+        local python="$(python.exe)"
     else
-        local python="`which "$1"`"
+        local python="$(which "$1")"
     fi
 
     if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
@@ -269,17 +276,17 @@ function python.home {
         return 1
     fi
 
-    local target="`python.home.from_version $python`"
+    local target="$(python.home.from_version "$python")"
 
     if [ ! -x "$target/bin/python" ]; then
         mkdir -p "$target/bin"
 
-        local version="`python.version $python`"
+        local version="$(python.version "$python")"
         if [ -z "$version" ]; then
             printf " ** fail ($0): version not found for $python\n" >&2
             return 1
         fi
-        printf " -- info ($0): link $python (`python.version.full $python`) -> $target/bin/\n" >&2
+        printf " -- info ($0): link $python ($(python.version.full "$python")) -> $target/bin/\n" >&2
 
         ln -s "$target" "$target/local"
         ln -s "$python" "$target/bin/python"
@@ -288,7 +295,7 @@ function python.home {
 
         if [ ! -d "$PYTHON_BINARIES/default" ]; then
             ln -s "$target" "$PYTHON_BINARIES/default"
-            printf " -- info ($0): make $python (`python.version.full $python`) as default\n" >&2
+            printf " -- info ($0): make $python ($(python.version.full "$python")) as default\n" >&2
         fi
         rehash
     fi
@@ -330,17 +337,17 @@ function python.set {
         fi
     fi
 
-    local version="`python.version.full "$source"`"
+    local version="$(python.version.full "$source")"
     if [ -z "$version" ]; then
         printf " ** fail ($0): python $source version fetch\n" >&2
         return 5
 
-    elif [ -n "$PYTHON" ] && [ "$version" = "`python.version.full`" ]; then
+    elif [ -n "$PYTHON" ] && [ "$version" = "$(python.version.full)" ]; then
         [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
         return 0
     fi
 
-    local target="`python.home "$source"`"
+    local target="$(python.home "$source")"
     if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
         printf " ** fail ($0): python $source home directory isn't exist\n" >&2
         return 6
@@ -349,7 +356,7 @@ function python.set {
     local base="$PYTHON"
     export PYTHON="$target"
 
-    local python="`python.exe`"
+    local python="$(python.exe)"
     if [ ! -x "$python" ]; then
         printf " ** fail ($0): something wrong on setup python '$python' from source $source\n" >&2
         [ -n "$base" ] && export PYTHON="$base"
@@ -357,8 +364,8 @@ function python.set {
         return 7
     fi
 
-    if [ ! "$version" = "`python.version.full "$python"`" ]; then
-        printf " ** fail ($0): source python $source ($version) != target $python (`python.version.full "$python"`)\n" >&2
+    if [ ! "$version" = "$(python.version.full "$python")" ]; then
+        printf " ** fail ($0): source python $source ($version) != target $python ($(python.version.full "$python"))\n" >&2
         [ -n "$base" ] && export PYTHON="$base"
         [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
         return 8
@@ -380,7 +387,7 @@ function pip.lookup {
         bin
     )
 
-    local target="`python.home`"
+    local target="$(python.home)"
     if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
         printf " ** fail ($0): python target dir:'$target'\n" >&2
         return 1
@@ -399,27 +406,27 @@ function pip.lookup {
 
 function pip.deploy {
     if [ -z "$1" ]; then
-        local python="`python.exe`"
+        local python="$(python.exe)"
     else
-        local python="`which "$1"`"
+        local python="$(which "$1")"
         if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
             printf " ** fail ($0): python binary '$python' doesn't exists or something wrong\n" >&2
             return 1
         fi
     fi
 
-    local target="`python.home "$python"`"
+    local target="$(python.home "$python")"
     if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
         printf " ** fail ($0): python $python home directory isn't exist\n" >&2
         return 2
     fi
 
-    if [ ! -x "`pip.lookup`" ]; then
+    if [ ! -x "$(pip.lookup)" ]; then
         # elif python.library.is 'pip' "$python"; then
         #     printf " ** fail ($0): unexpected behavior: pip binary isn't found, but pip module has been installed for '$python'\n" >&2
         #     return 4
 
-        local version="`python.version "$python"`"
+        local version="$(python.version "$python")"
         if [ -z "$version" ]; then
             printf " ** fail ($0): python $python version fetch\n" >&2
             return 3
@@ -438,11 +445,11 @@ function pip.deploy {
         export PYTHON="$target"
         [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
 
-        printf " -- info ($0): deploy pip with $python (`python.version.full $python`) to $target\n" >&2
+        printf " -- info ($0): deploy pip with $python ($(python.version.full $python)) to $target\n" >&2
 
         local flags="--disable-pip-version-check --no-input --no-python-version-warning --no-warn-conflicts --no-warn-script-location"
 
-        if [ "`josh_branch 2>/dev/null`" != "develop" ]; then
+        if [ "$(josh_branch 2>/dev/null)" = "develop" ]; then
             local flags="$flags -vv"
         fi
 
@@ -463,12 +470,12 @@ function pip.deploy {
             return 4
         fi
 
-        if [ ! -x "`pip.lookup`" ]; then
+        if [ ! -x "$(pip.lookup)" ]; then
             printf " ** fail ($0): pip doesn't exists in '$target/bin' or '$target/local/bin'\n" >&2
             return 5
         fi
 
-        local packages="`find $target/lib/ -maxdepth 1 -type d -name 'python*'`"
+        local packages="$(find $target/lib/ -maxdepth 1 -type d -name 'python*')"
         if [ -d "$packages/dist-packages" ] && [ ! -d "$packages/site-packages" ]; then
             ln -s "$packages/dist-packages" "$packages/site-packages"
         fi
@@ -484,18 +491,18 @@ function pip.deploy {
 
 function pip.exe {
     if [ -z "$1" ]; then
-        local python="`python.exe`"
+        local python="$(python.exe)"
     else
-        local python="`which "$1"`"
+        local python="$(which "$1")"
         if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
             printf " ** fail ($0): python binary '$python' doesn't exists or something wrong\n" >&2
             return 1
         fi
     fi
 
-    local target="`python.home "$python"`"
+    local target="$(python.home "$python")"
     if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
-        printf " ** fail ($0): python $python home directory isn't exist\n" >&2
+        printf " ** fail ($0): python '$python' home directory isn't exist\n" >&2
         return 2
     fi
 
@@ -528,31 +535,31 @@ function pip.install {
         return 1
     fi
 
-    local venv="`venv.deactivate`"
+    local venv="$(venv.deactivate)"
 
-    local pip="`pip.exe`"
+    local pip="$(pip.exe)"
     if [ "$?" -gt 0 ] || [ ! -x "$pip" ]; then
         [ -n "$venv" ] && source $venv/bin/activate
         return 2
     fi
 
-    local target="`python.home`"
+    local target="$(python.home)"
     if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
-        echo " - $0 fail: python target dir:\`$target\`" >&2
+        printf " ** fail ($0): python target dir '$target'\n" >&2
         [ -n "$venv" ] && source $venv/bin/activate
         return 3
     fi
 
     local flags="--upgrade --upgrade-strategy=eager"
 
-    if [ "`josh_branch`" != "develop" ]; then
+    if [ "$(josh_branch 2>/dev/null)" != "develop" ]; then
         local flags="$flags -v"
     fi
 
     if [ "$USER" = 'root' ] || [ "$JOSH_OS" = 'BSD' ] || [ "$JOSH_OS" = 'MAC' ]; then
         local flags="--root='/' --prefix='$target' $flags"
     fi
-    local command="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false `python.exe` -m pip install $flags $PIP_DEFAULT_KEYS"
+    local command="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false $(python.exe) -m pip install $flags $PIP_DEFAULT_KEYS"
     printf "\n ++ warn ($0): $command $*\n\n" >&2
 
     local done=''
@@ -598,12 +605,12 @@ function pip.install {
 }
 
 function pip.update {
-    local python="`python.exe`"
+    local python="$(python.exe)"
     if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
         return 1
 
     elif ! python.library.is 'pipdeptree' "$python"; then
-        printf " -- info ($0): pipdeptree isn't installed for `python.version`, proceed\n" >&2
+        printf " -- info ($0): pipdeptree isn't installed for $(python.version), proceed\n" >&2
         pip.install pipdeptree
 
         if ! python.library.is 'pipdeptree' "$python"; then
@@ -617,7 +624,7 @@ function pip.update {
         local package="$PIP_REQ_PACKAGES $PIP_OPT_PACKAGES"
     fi
 
-    local venv="`venv.deactivate`"
+    local venv="$(venv.deactivate)"
     local regex="$(
         echo "$package" | \
         sed 's:^:^:' | sed 's: *$:$:' | sed 's: :$|^:g')"
@@ -656,22 +663,22 @@ function python.env {
 }
 
 function pip.compliance.check {
-    local target="`python.home`"
+    local target="$(python.home)"
     if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
-        echo " - $0 fail: python target dir:\`$target\`" >&2
+        printf " ** fail ($0): python target dir '$target'\n" >&2
         return 1
     fi
 
     local result=""
-    local expire="`path_last_modified $PATH`"
+    local expire="$(path_last_modified $PATH)"
     local system="/bin /sbin /usr/bin /usr/sbin /usr/local/bin /usr/local/sbin"
 
     if [ -n "$SUDO_USER" ]; then
-        local home="`fs_retrieve_userhome "$SUDO_USER"`"
+        local home="$(fs_retrieve_userhome "$SUDO_USER")"
 
         if [ "$?" -eq 0 ] && [ -n "$home" ]; then
             local system="$system $home"
-            local real="`fs_realpath $home`"
+            local real="$(fs_realpath "$home")"
             if [ "$?" -eq 0 ] && [ ! "$home" = "$real" ]; then
                 local system="$system $real"
             fi
@@ -679,16 +686,16 @@ function pip.compliance.check {
     fi
 
     for bin in $(find "$target/bin" -maxdepth 1 -type f 2>/dev/null | sort -Vr); do
-        local short="`basename $bin`"
+        local short="$(basename "$bin")"
 
         local src="$target/bin/$short"
-        local src_size="`fs_size "$src"`"
+        local src_size="$(fs_size "$src")"
 
         if [ -n "$short" ] && [ -x "$src" ]; then
             local shadows="$(lookup.copies.cached "$short" "$expire" "$target/bin" $system)"
             if [ -n "$shadows" ]; then
                 for dst in $(echo "$shadows" | sed 's#:#\n#g'); do
-                    local dst_size="`fs_size "$dst"`"
+                    local dst_size="$(fs_size "$dst")"
 
                     local msg="$src ($src_size bytes) -> $dst ($dst_size bytes)"
                     if [ -n "$JOSH_MD5_PIPE" ] && [ "$src_size" = "$dst_size" ]; then

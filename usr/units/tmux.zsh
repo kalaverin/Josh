@@ -85,6 +85,9 @@ function tmx_get_matching_detached_session {
 
 if [ -z "$JOSH_TMUX_AUTORETACH_DISABLE" ] && [ -n "$PS1" ] && [ -z "$TMUX" ] && [ -n "$SSH_CONNECTION" ]; then
     tmx lost
-elif [ -z "$JOSH_TMUX_SPACES_FILL_DISABLE" ] && [ -n "$PS1" ] && [ -n "$TMUX" ] && [ "`josh_branch`" != "develop" ]; then
-    clear
+elif [ -z "$JOSH_TMUX_SPACES_FILL_DISABLE" ] && [ -n "$PS1" ] && [ -n "$TMUX" ]; then
+    local branch="$(josh_branch)"
+    if [ "$branch" = "master" ] || [ "$branch" = "stable" ]; then
+        clear
+    fi
 fi
