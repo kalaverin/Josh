@@ -367,42 +367,83 @@ function git_update_nested_repositories {
         return 1
     fi
 
-    printf " -- info ($0): working in '$root'\n" >&2
+    local header=""
+    local mtime="$(which git-restore-mtime)"
+
     find "$root" -maxdepth 2 -type d -name .git | sort | while read git_directory
     do
+        if [ -z "$header" ]; then
+            printf " -- info ($0): update nested repositories in '$root'\n\n" >&2
+            local header="1"
+        fi
+
         current_path="$(fs_dirname "`fs_realpath $git_directory`")"
         builtin cd "$current_path"
         local branch="`$SHELL -c "$GET_BRANCH"`"
         if [ "$?" -gt 0 ] || [ -z "$branch" ]; then
-            printf " ++ warn ($0): something went wrong in '$current_path', skip\n" 1>&2
+            printf " ++ warn ($0): something went wrong in '$current_path', skip\n" >&2
             builtin cd "$cwd"
             continue
         fi
 
         printf " -- info ($0): $branch in '$current_path'.. "
-        run_hide "git fetch origin master && git fetch --tags"
-        git_repository_clean 2>/dev/null
+        local cmd="git fetch origin master && git fetch --tags"
 
-        if [ "$?" -gt 0 ]; then
+        if git_repository_clean 2>/dev/null; then
+
             if [ "$branch" != "master" ]; then
-                printf "fetch\n"
-                run_hide "git fetch origin $branch"
+                printf "fetch, reset and pull '$branch'.. " >&2
+                local cmd="$cmd && git fetch origin \"$branch\" && git reset --hard \"origin/$branch\" && git pull origin \"$branch\""
+
+            else
+                printf "reset and pull '$branch'.. " >&2
+                local cmd="$cmd && git reset --hard \"origin/$branch\" && git pull origin \"$branch\""
             fi
 
         else
             if [ "$branch" != "master" ]; then
-                printf "fetch, reset and pull\n"
-                run_hide "git fetch origin $branch && git reset --hard origin/$branch && git pull origin $branch"
+                printf "unclean, just fetch '$branch'.. " >&2
+                local cmd="$cmd && git fetch origin \"$branch\""
             else
-                printf "reset and pull\n"
-                run_hide "git reset --hard origin/$branch && git pull origin $branch"
+                printf "unclean, just fetch '$branch'.. " >&2
             fi
         fi
 
-        if [ -x "`which git-restore-mtime`" ]; then
+        eval.retval "$cmd" 1>/dev/null 2>/dev/null
+        if [ "$?" -eq 0 ]; then
+            printf "ok\n\n" >&2
+        else
+            printf "fail\n\n" >&2
+        fi
+
+        if [ -x "$mtime" ]; then
             git-restore-mtime --skip-missing 2>/dev/null
         fi
 
         builtin cd "$cwd"
     done
+}
+
+
+function eval.retval {
+    local dir="$(get_tempdir)"
+    if [ ! -x "$dir" ]; then
+        return 1
+
+    elif [ -z "$JOSH_MD5_PIPE" ]; then
+        return 2
+    fi
+
+    local key="$dir/$(echo "$* $USER $HOME" | sh -c "$JOSH_MD5_PIPE").$USER.tmp"
+    touch "$key" 2>/dev/null
+    if [ "$?" -gt 0 ]; then
+        return 3
+    fi
+
+    eval $* >"$key"
+    local retval="$?"
+    local result="$(cat "$key")"
+    unlink "$key"
+    echo "$result"
+    return "$retval"
 }
