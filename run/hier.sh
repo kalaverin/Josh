@@ -228,10 +228,8 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
         fi
 
         if [ "$expired" -eq 0 ]; then
-            eval {"cat '$file' | $JOSH_QAP 2>/dev/null"} >"$subdir/stdout"
+            local result="$(eval.retval "cat '$file' | $JOSH_QAP 2>/dev/null")"
             local retval="$?"
-            local result="$(cat "$subdir/stdout")"
-            unlink "$subdir/stdout"
 
             if [ ! "$retval" -gt 0 ]; then
                 echo "$result"
@@ -239,10 +237,8 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
             fi
         fi
 
-        eval ${@:4} >"$subdir/stdout"
+        local result="$(eval.retval ${@:4})"
         local retval="$?"
-        local result="$(cat "$subdir/stdout")"
-        unlink "$subdir/stdout"
 
         if [ "$retval" -eq 0 ]; then
             eval {"echo '$result' | $JOSH_PAQ > '$file'"}

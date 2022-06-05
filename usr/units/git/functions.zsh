@@ -373,7 +373,7 @@ function git_update_nested_repositories {
     find "$root" -maxdepth 2 -type d -name .git | sort | while read git_directory
     do
         if [ -z "$header" ]; then
-            printf " -- info ($0): update nested repositories in '$root'\n\n" >&2
+            printf " -- info ($0): update '$(fs_realpath "$root")'\n" >&2
             local header="1"
         fi
 
@@ -411,9 +411,9 @@ function git_update_nested_repositories {
 
         eval.retval "$cmd" 1>/dev/null 2>/dev/null
         if [ "$?" -eq 0 ]; then
-            printf "ok\n\n" >&2
+            printf "ok\n" >&2
         else
-            printf "fail\n\n" >&2
+            printf "fail\n" >&2
         fi
 
         if [ -x "$mtime" ]; then
