@@ -336,14 +336,15 @@ function git_squash_already_pushed {
 
 function git_update_nested_repositories {
     local cwd="$PWD"
-
     local root="${1:-"."}"
-    find $root -maxdepth 3 -type d -name .git | sort | while read git_directory
+
+    printf " -- info ($0): working in '$root'"
+    find "$root" -maxdepth 2 -type d -name .git | sort | while read git_directory
     do
         current_path="$(fs_dirname "`fs_realpath $git_directory`")"
         builtin cd "$current_path"
         local branch="`$SHELL -c "$GET_BRANCH"`"
-        if [ "$?" -gt 0 ]; then
+        if [ "$?" -gt 0 ] || [ -z "$branch" ]; then
             printf " ++ warn ($0): something went wrong in '$current_path', skip\n" 1>&2
             builtin cd "$cwd"
             continue
@@ -355,7 +356,7 @@ function git_update_nested_repositories {
 
         if [ "$?" -gt 0 ]; then
             if [ "$branch" != "master" ]; then
-                printf "modified, just fetch remote\n"
+                printf "fetch\n"
                 run_hide "git fetch origin $branch"
             fi
 
