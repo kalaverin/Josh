@@ -80,7 +80,9 @@ function update_internals {
     pip.install "$PIP_REQ_PACKAGES"
     pip.update
 
-    git_update_nested_repositories "$JOSH/usr/local"
+    if [ -d "$JOSH/usr/local" ]; then
+        git_update_nested_repositories "$JOSH/usr/local"
+    fi
 }
 
 function update_packages {

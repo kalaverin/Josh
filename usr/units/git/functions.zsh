@@ -67,9 +67,27 @@ function cmd_git_pull_merge {
 # core functions
 
 function git_root {
-    local cmd="$GET_ROOT 2>/dev/null"
-    local result="$(fs_realpath `eval $cmd`)"
-    [ -d "$result" ] && echo "$result"
+    if [ -z "$1" ]; then
+        local result="$(fs_realpath `eval "$GET_ROOT 2>/dev/null"`)"
+        local retval="$?"
+    else
+        if [ -d "$1" ]; then
+            local cwd="$PWD"
+            builtin cd "$1"
+            local result="$(git_root)"
+            local retval="$?"
+            builtin cd "$cwd"
+
+        else
+            printf " ** fail ($0): path '$1' isn't acessible\n" >&2
+            return 1
+        fi
+    fi
+    if [ "$retval" -eq 0 ] && [ -d "$result" ]; then
+        echo "$result"
+    else
+        return "$retval"
+    fi
 }
 
 function git_current_hash {
@@ -263,11 +281,17 @@ function git_rewind_time {
 }
 
 function git_repository_clean {
-    local root="`git_root`"
+    if [ -z "$1" ]; then
+        local root="$(git_root)"
+    else
+        local root="$(git_root "$1")"
+    fi
+
     [ ! "$root" ] && return 0
 
     local modified='echo $(git ls-files --modified `git rev-parse --show-toplevel`)$(git ls-files --deleted --others --exclude-standard `git rev-parse --show-toplevel`)'
-    if [ -n "`$SHELL -c "$modified"`" ]; then
+
+    if [ -n "$($SHELL -c "$modified")" ]; then
         printf " ++ warn ($0): $root isn't clean\n" >&2
         return 1
     fi
@@ -338,7 +362,12 @@ function git_update_nested_repositories {
     local cwd="$PWD"
     local root="${1:-"."}"
 
-    printf " -- info ($0): working in '$root'"
+    if [ ! -d "$root" ]; then
+        printf " -- info ($0): working path '$root' isn't accessible\n" >&2
+        return 1
+    fi
+
+    printf " -- info ($0): working in '$root'\n" >&2
     find "$root" -maxdepth 2 -type d -name .git | sort | while read git_directory
     do
         current_path="$(fs_dirname "`fs_realpath $git_directory`")"
