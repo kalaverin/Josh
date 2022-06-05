@@ -689,7 +689,7 @@ function pip.compliance.check {
         local src_size="$(fs_size "$src")"
 
         if [ -n "$short" ] && [ -x "$src" ]; then
-            local shadows="$(lookup.copies.cached "$short" "$expire" "$target/bin" $system "$VIRTUALENV")"
+            local shadows="$(lookup.copies.cached "$short" "$expire" "$target/bin" $system "$VIRTUAL_ENV")"
             if [ -n "$shadows" ]; then
                 for dst in $(echo "$shadows" | sed 's#:#\n#g'); do
                     local dst_size="$(fs_size "$dst")"
