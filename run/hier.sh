@@ -205,11 +205,17 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
             let expires="$EPOCHSECONDS - $expires"
         fi
 
-        local f1="$(eval "echo "$1" | $JOSH_MD5_PIPE")"
-        local f2="$(eval "echo "${@:4}" | $JOSH_MD5_PIPE")"
-        local file="$3/$f1/$f2"
+        echo "eval \"builtin which '$1' | $JOSH_MD5_PIPE\"" >&2
+        echo "eval \"builtin which '$4' 2>/dev/null| $JOSH_MD5_PIPE\"" >&2
 
-        if [ -z "$f1" ] || [ -z "$f2" ]; then
+        local call="$(eval "builtin which '$1' | $JOSH_MD5_PIPE | cut -c -4")"
+        local body="$(eval "builtin which '$4' 2>/dev/null | $JOSH_MD5_PIPE | cut -c -4")"
+
+        local name="$(eval "echo "$1" | $JOSH_MD5_PIPE")"
+        local args="$(eval "echo "${@:4}" | $JOSH_MD5_PIPE")"
+        local file="$3/$name/$args.$call$body"
+
+        if [ -z "$body" ] || [ -z "$call" ] || [ -z "$name" ] || [ -z "$args" ]; then
             printf " ** fail ($0): something went wrong for cache file '$file', check JOSH_MD5_PIPE '$JOSH_MD5_PIPE'\n" >&2
             return 5
         fi
@@ -236,6 +242,7 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
                 return 0
             fi
         fi
+
 
         local result="$(eval.retval ${@:4})"
         local retval="$?"
