@@ -119,7 +119,7 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
     function path_last_modified {
         if [ -n "$*" ]; then
             local result="$(
-                builtin zstat -L `echo "$1" | tr ':' ' '` 2>/dev/null | \
+                builtin zstat -L `echo "$*" | sd ':' ' ' | sd '\n+' ' '` 2>/dev/null | \
                 grep mtime | awk -F ' ' '{print $2}' | sort -n | tail -n 1 \
             )"
             echo "$result"
