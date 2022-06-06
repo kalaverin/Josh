@@ -373,6 +373,9 @@ function git_update_nested_repositories {
     find "$root" -maxdepth 2 -type d -name .git | sort | while read git_directory
     do
         if [ -z "$header" ]; then
+            if [ -x "$(which gfold)" ]; then
+                gfold -d classic
+            fi
             printf " -- info ($0): update '$(fs_realpath "$root")'\n" >&2
             local header="1"
         fi
@@ -422,28 +425,4 @@ function git_update_nested_repositories {
 
         builtin cd "$cwd"
     done
-}
-
-
-function eval.retval {
-    local dir="$(get_tempdir)"
-    if [ ! -x "$dir" ]; then
-        return 1
-
-    elif [ -z "$JOSH_MD5_PIPE" ]; then
-        return 2
-    fi
-
-    local key="$dir/$(echo "$* $USER $HOME" | sh -c "$JOSH_MD5_PIPE").$USER.tmp"
-    touch "$key" 2>/dev/null
-    if [ "$?" -gt 0 ]; then
-        return 3
-    fi
-
-    eval $* >"$key"
-    local retval="$?"
-    local result="$(cat "$key")"
-    unlink "$key"
-    echo "$result"
-    return "$retval"
 }
