@@ -205,9 +205,6 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
             let expires="$EPOCHSECONDS - $expires"
         fi
 
-        echo "eval \"builtin which '$1' | $JOSH_MD5_PIPE\"" >&2
-        echo "eval \"builtin which '$4' 2>/dev/null| $JOSH_MD5_PIPE\"" >&2
-
         local call="$(eval "builtin which '$1' | $JOSH_MD5_PIPE | cut -c -4")"
         local body="$(eval "builtin which '$4' 2>/dev/null | $JOSH_MD5_PIPE | cut -c -4")"
 
