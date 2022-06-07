@@ -246,8 +246,7 @@ function python.exe {
     fi
 
     local result="$(
-        cached_execute "$0" "`path_last_modified $dirs ~/.python`" \
-        "$JOSH_CACHE_DIR" "python.exe.lookup $dirs")"
+        eval.cached "`path_last_modified $dirs ~/.python`" python.exe.lookup $dirs)"
 
     if [ "$result" ]; then
         local python="$(fs_realpath "$result")"
