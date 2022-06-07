@@ -101,11 +101,11 @@ FORGIT_FZF_DEFAULT_OPTS="
     --reverse
     --height '80%'
 "
-if [ -n "$PAGER" ] && [ -x "`which $PAGER`" ]; then
-    PAGER_BIN="`which $PAGER`"
+if [ -n "$PAGER" ] && [ -x "$(which $PAGER)" ]; then
+    PAGER_BIN="$(which $PAGER)"
 fi
 
-LISTER_LESS="`which less` -M"
+LISTER_LESS="$(which less) -M"
 if [ ! -x "$PAGER_BIN" ]; then
     LISTER_FILE="$LISTER_LESS -Nu"
 else

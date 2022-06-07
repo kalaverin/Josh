@@ -6,7 +6,7 @@ function is_workhours {
     local head="${JOSH_WORKHOUR_START:-6}"
     local tail="${JOSH_WORKHOUR_END:-16}"
 
-    local current_hour="`builtin strftime '%H' $EPOCHSECONDS`"
+    local current_hour="$(builtin strftime '%H' $EPOCHSECONDS)"
     if [ "$current_hour" -ge "$head" ] && [ "$current_hour" -lt "$tail" ]; then
         return 0
     fi
@@ -16,13 +16,13 @@ function is_workhours {
 
 function __fetch_updates_background {
     if [ -z "$JOSH" ]; then
-        echo " - $0 warning: JOSH:\`$JOSH\`" >&2
+        printf " ** fail ($0): JOSH:'$JOSH' isn't accessible\n" >&2
         return 1
     fi
     local cwd="$PWD"
 
     builtin cd "$JOSH"
-    if [ "`grep --count -P "fetch.+remotes/origin/\*" .git/config`" -eq 0 ]; then
+    if [ "$(grep --count -P "fetch.+remotes/origin/\*" .git/config)" -eq 0 ]; then
         git remote set-branches --add origin "*"
     fi
     git fetch --jobs=4 --all --tags --prune --prune-tags --quiet 2>/dev/null
@@ -42,7 +42,8 @@ function __get_updates_count {
     fi
 
     local file="$JOSH_CACHE_DIR/last-fetch"
-    local last_check="`cat $file 2>/dev/null`"
+
+    local last_check="$(cat $file 2>/dev/null)"
     [ -z "$last_check" ] && local last_check="0"
 
     let fetch_every="${JOSH_UPDATES_FETCH_H:-1} * 3600"
@@ -56,9 +57,10 @@ function __get_updates_count {
     local last_fetch="`fs_mtime "$JOSH/.git/FETCH_HEAD" 2>/dev/null`"
     let need_fetch="$EPOCHSECONDS - $fetch_every > $last_fetch"
 
-    local cwd="$PWD" && builtin cd "$JOSH"
-    local branch="`git_current_branch`"
+    local cwd="$PWD"
+    builtin cd "$JOSH"
 
+    local branch="`git_current_branch`"
     if [ -z "$branch" ]; then
         builtin cd "$cwd"
         printf " ** fail ($0): branch '$branch' empty" >&2
@@ -85,22 +87,24 @@ function __get_updates_count {
 
 
 function check_updates {
+    local updates
+
     if [ ! -x "$JOSH" ]; then
         printf " ** fail ($0): JOSH:'$JOSH' isn't accessible\n" >&2
         return 1
 
     elif [ -z "$JOSH_CACHE_DIR" ]; then
         printf " ** fail ($0): JOSH_CACHE_DIR:'$JOSH_CACHE_DIR' isn't accessible\n" >&2
-        return 1
+        return 2
     fi
     unset JOSH_UPDATES_COUNT
 
-    local updates="`__get_updates_count`"
+    updates="$(__get_updates_count)"
     [ "$?" -gt 0 ] && return 1
     [ "$updates" -eq 0 ] && return 0
 
     local file="$JOSH_CACHE_DIR/last-update"
-    local last_check="`cat $file 2>/dev/null`"
+    local last_check="$(cat $file 2>/dev/null)"
     [ -z "$last_check" ] && local last_check="0"
 
     let check_every=" ${JOSH_UPDATES_REPORT_D:-1} * 86400"
@@ -118,7 +122,7 @@ function check_updates {
     if [ "$branch" = "develop" ]; then
         printf " -- info ($0): $updates new commits found, let's go!\n" >&2
         josh_pull "$branch"
-        local ret="$?"
+
         printf " -- info ($0): commits applied, please run: exec zsh\n" >&2
         printf " for partial (fast) update run: josh_update\n" >&2
         printf " for install (full) all updates: josh_upgrade\n" >&2
@@ -155,13 +159,13 @@ function motd {
     fi
 
     local cwd="$PWD" && builtin cd "$JOSH"
-    local ctag="`git describe --tags --abbrev=0 2>/dev/null`"
-    local ftag="`git --no-pager log --oneline --no-walk --tags="?.?.?" --format="%d" | grep -Po '\d+\.\d+\.\d+' | proximity-sort - | tail -n 1`"
-    local last_commit="`git log -1 --format="at %h updated %cr" 2>/dev/null`"
+    local ctag="$(git describe --tags --abbrev=0 2>/dev/null)"
+    local ftag="$(git --no-pager log --oneline --no-walk --tags="?.?.?" --format="%d" | grep -Po '\d+\.\d+\.\d+' | proximity-sort - | tail -n 1)"
+    local last_commit="$(git log -1 --format="at %h updated %cr" 2>/dev/null)"
     builtin cd "$cwd"
 
     if [ "$branch" = 'master' ]; then
-        if [ "$ctag" ] && [ ! "$ctag" = "$ftag" ]; then
+        if [ "$ctag" ] && [ "$ctag" != "$ftag" ]; then
             echo " + Josh v$ctag (updates to v$ftag downloaded), just run: run: josh_upgrade, then: exec zsh"
         fi
 

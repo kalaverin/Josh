@@ -11,7 +11,7 @@ if [[ -n ${(M)zsh_eval_context:#file} ]]; then
     if [ -n "$JOSH_DEST" ]; then
         BASE="$JOSH_BASE"
         if [ -z "$CONFIG_ROOT" ]; then
-            echo " + copy template configs to \`$CONFIG_DIR\`"
+            printf " -- info ($0): copy template configs to '$CONFIG_DIR'\n" >&2
         fi
     else
         BASE="$JOSH"
@@ -20,17 +20,18 @@ fi
 
 CONFIG_ROOT="$BASE/usr/share"
 
-function backup_file() {
+function backup_file {
     if [ -f "$1" ]; then
         local dst="$1+`date "+%Y%m%d%H%M%S"`"
         if [ ! -f "$dst" ]; then
-            echo " + backup: $1 -> $dst" && cp -fa "$1" "$dst"
+            printf " -- info ($0): backup $1 -> $dst\n" >&2
+            cp -fa "$1" "$dst"
         fi
         return $?
     fi
 }
 
-function copy_config() {
+function copy_config {
     local dst="$2"
     if [ -f "$dst" ] && [ ! "$JOSH_RENEW_CONFIGS" ] && [ ! "$JOSH_FORCE_CONFIGS" ]; then
         return 0
@@ -38,7 +39,7 @@ function copy_config() {
 
     local src="$1"
     if [ ! -f "$src" ]; then
-        echo " - error: copy config failed, source \`$src\` not exists"
+        printf " ** fail ($0): copy config failed, source '$src' doesn't exists\n" >&2
         return 1
     fi
 
@@ -53,14 +54,16 @@ function copy_config() {
     [ ! -d "`fs_dirname $dst`" ] && mkdir -p "`fs_dirname $dst`";
 
     if [ "$JOSH_RENEW_CONFIGS" ] && [ ! "$JOSH_OS" = "BSD" ]; then
-        echo " + ${3:-"renew: $src -> $dst"}" && cp -nu "$src" "$dst"
+        printf " -- info ($0): ${3:-"renew: $src -> $dst"}\n" >&2
+        cp -nu "$src" "$dst"
     else
-        echo " + ${3:-"copy: $src -> $dst"}" && cp -n "$src" "$dst"
+        printf " -- info ($0): ${3:-"copy: $src -> $dst"}\n" >&2
+        cp -n "$src" "$dst"
     fi
     return $?
 }
 
-function config_git() {
+function config_git {
     copy_config "$BASE/usr/share/.gitignore" "$HOME/.gitignore"
 
     if [ -f "$HOME/.gitignore" ] && [ ! -L "$HOME/.agignore" ]; then
@@ -97,29 +100,27 @@ function config_git() {
         backup_file "$HOME/.gitconfig" && \
         git config --global sequence.editor interactive-rebase-tool
     fi
-
-    return 0
 }
 
-function nano_syntax_compile() {
+function nano_syntax_compile {
     if [ ! -f "$HOME/.nanorc" ]; then
         # https://github.com/scopatz/nanorc
 
         if [ -d /usr/share/nano/ ]; then
             # linux
-            find /usr/share/nano/ -iname "*.nanorc" -exec echo include {} \; >> $HOME/.nanorc
+            find /usr/share/nano/ -iname "*.nanorc" -exec ec2ho include {} \; >> $HOME/.nanorc
 
         elif [ -d /usr/local/share/nano/ ]; then
             # freebsd
-            find /usr/local/share/nano/ -iname "*.nanorc" -exec echo include {} \; >> $HOME/.nanorc
+            find /usr/local/share/nano/ -iname "*.nanorc" -exec ec2ho include {} \; >> $HOME/.nanorc
 
         fi
-        [ -f "$HOME/.nanorc" ] && echo " + nano syntax highlighting generated to $HOME/.nanorc ok"
+        [ -f "$HOME/.nanorc" ] && printf " -- info ($0): nano syntax highlight profile generated to $HOME/.nanorc\n" >&2
     fi
     return 0
 }
 
-function zero_configuration() {
+function zero_configuration {
     config_git
     nano_syntax_compile
 

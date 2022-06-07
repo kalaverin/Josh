@@ -1,7 +1,7 @@
 source "$JOSH/usr/aliases.zsh"
 source "$JOSH/usr/common.zsh"
 
-[ -x "`which tmux`" ] && source "$JOSH/usr/units/tmux.zsh"
+[ -x "$(which tmux)" ] && source "$JOSH/usr/units/tmux.zsh"
 
 source "$ZSH/custom/plugins/forgit/forgit.plugin.zsh"
 source "$ZSH/custom/plugins/ondir/scripts.zsh"
@@ -16,8 +16,8 @@ source "$JOSH/src/completion.zsh"
 source "$JOSH/usr/bindings.zsh"
 source "$JOSH/usr/units/files.zsh"
 
-[ -x "`which git`" ]    && source "$JOSH/usr/units/git.zsh"
-[ -x "`which python`" ] && source "$JOSH/usr/units/python.zsh"
+[ -x "$(which git)" ]    && source "$JOSH/usr/units/git.zsh"
+[ -x "$(which python)" ] && source "$JOSH/usr/units/python.zsh"
 
 source "$JOSH/usr/update.zsh"
 is_workhours || motd

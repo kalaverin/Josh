@@ -214,10 +214,11 @@ function fs_realpath {
 
 
 function fs_retrieve_userhome {
+    local home
     local login="${1:-\$USER}"
 
     # try to subshell expand
-    local home="$($SHELL -c "echo ~$login" 2>/dev/null)"
+    home="$($SHELL -c "echo ~$login" 2>/dev/null)"
     if [ "$?" -eq 0 ] && [ -x "$home" ]; then
         echo "$home"
         return 0
@@ -225,7 +226,7 @@ function fs_retrieve_userhome {
 
     if [ -x "$(builtin which getent)" ];  then
         # passwd with getent
-        local home="$(getent passwd "$login" | cut -f6 -d: 2>/dev/null)"
+        home="$(getent passwd "$login" | cut -f6 -d: 2>/dev/null)"
         if [ "$?" -eq 0 ] && [ -x "$home" ]; then
             echo "$home"
             return 0
@@ -234,7 +235,7 @@ function fs_retrieve_userhome {
 
     if [ -x "$(builtin which awk)" ];  then
         # passwd with awk
-        local home="$(awk -v u="$login" -v FS=':' '$1==u {print $6}' /etc/passwd 2>/dev/null)"
+        home="$(awk -v u="$login" -v FS=':' '$1==u {print $6}' /etc/passwd 2>/dev/null)"
         if [ "$?" -eq 0 ] && [ -x "$home" ]; then
             echo "$home"
             return 0

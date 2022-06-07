@@ -44,7 +44,7 @@ function prepare_and_deploy {
     source "lib/python.sh" && \
     source "lib/rust.sh"
 
-    if [ $? -gt 0 ]; then
+    if [ "$?" -gt 0 ]; then
         builtin cd "$cwd"
         return 5
     fi
@@ -69,7 +69,7 @@ function replace_existing_installation {
         save_previous_installation && \
         rename_and_link
 
-        [ $? -gt 0 ] && return 3
+        [ "$?" -gt 0 ] && return 3
 
         builtin cd "$HOME"
         printf " ++ warn ($0): success! now just run: exec zsh\n" >&2

@@ -2,15 +2,16 @@
 
 zmodload zsh/datetime
 
+
 if [[ -n ${(M)zsh_eval_context:#file} ]]; then
     if [ -z "$HTTP_GET" ]; then
-        echo " - $0 warning: HTTP_GET isn't declared, cwd \`$PWD\`, eval `dirname $0`/../init.sh"
+        printf " ++ warn ($0): HTTP_GET isn't set, PWD '$PWD', eval $(dirname $0)/../init.sh\n" >&2
 
-        [ -z "$HTTP_GET" ] && source "`dirname $0`/../init.sh"
+        [ -z "$HTTP_GET" ] && source "$(dirname $0)/../init.sh"
         [ -z "$HTTP_GET" ] && source "run/init.sh"
 
         if [ -z "$HTTP_GET" ]; then
-            echo " - $0 fatal: HTTP_GET isn't declared"
+            printf " ++ warn ($0): HTTP_GET isn't set\n" >&2
             return 1
         fi
     fi
@@ -18,16 +19,17 @@ if [[ -n ${(M)zsh_eval_context:#file} ]]; then
     if [ -n "$JOSH_DEST" ]; then
         DEST="$JOSH_DEST"
         if [ -z "$OMZ_PLUGIN_DIR" ]; then
-            echo " + install oh-my-zsh to \`$DEST\`"
+            printf " -- info ($0): install oh-my-zsh to '$DEST'\n" >&2
         fi
     else
         DEST="$ZSH"
     fi
 
     if [ -z "$DEST" ]; then
-        echo "- $0 fatal: DEST isn't declared"
+        printf " ** fail ($0): DEST isn't set\n" >&2
     fi
 fi
+
 
 OMZ_PLUGIN_DIR="$DEST/custom/plugins"
 PACKAGES=(
@@ -53,40 +55,53 @@ PACKAGES=(
 
 # ——- first, clone oh-my-zsh as core
 
-function deploy_ohmyzsh() {
+function deploy_ohmyzsh {
+    local cwd="$PWD"
+    local url='https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh'
+
     if [ -z "$HTTP_GET" ]; then
-        echo " - $0 fatal: HTTP_GET isn't declared"
+        printf " ** fail ($0): HTTP_GET isn't set\n" >&2
         return 1
     fi
-    local cwd="`pwd`"
-    url='https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh'
+
     if [ -d "$JOSH_DEST" ]; then
-        echo " * oh-my-zsh already in $JOSH_DEST"
-        builtin cd "$JOSH_DEST" && git reset --hard && git pull origin master; builtin cd "$cwd"
+        printf " -- info ($0): oh-my-zsh already in '$JOSH_DEST'\n" >&2
+        builtin cd "$JOSH_DEST" && git pull origin; builtin cd "$cwd"
+
     else
-        echo " + deploy oh-my-zsh to $JOSH_DEST"
+        printf " -- info ($0): deploy oh-my-zsh to '$JOSH_DEST'\n" >&2
         $SHELL -c "$HTTP_GET $url | CHSH=no RUNZSH=no KEEP_ZSHRC=yes ZSH=$JOSH_DEST $SHELL -s - --unattended --keep-zshrc"
-        if [ $? -gt 0 ] || [ ! -f "$JOSH_DEST/oh-my-zsh.sh" ]; then
-            echo " - $0 fatal: oh-my-zsh isn't deployed"
-            return 1
+
+        if [ "$?" -gt 0 ] || [ ! -f "$JOSH_DEST/oh-my-zsh.sh" ]; then
+            printf " ** fail ($0): something went wrong\n" >&2
+            return 2
         fi
     fi
-    return 0
 }
 
 
 # ——- then clone git-based extensions
 
-function deploy_extensions() {
-    [ ! -d "$OMZ_PLUGIN_DIR" ] && mkdir -p "$OMZ_PLUGIN_DIR"
+function deploy_extensions {
+    if [ -z "$OMZ_PLUGIN_DIR" ]; then
+        printf " -- info ($0): plugins dir isn't set\n" >&2
+        return 1
+    fi
 
-    echo " + $0 to $OMZ_PLUGIN_DIR"
+    [ ! -d "$OMZ_PLUGIN_DIR" ] && mkdir -p "$OMZ_PLUGIN_DIR"
+    if [ ! -d "$OMZ_PLUGIN_DIR" ]; then
+        printf " ** fail ($0): binary dir doesn't exist, OMZ_PLUGIN_DIR '$OMZ_PLUGIN_DIR'\n" >&2
+        return 2
+    fi
+
+    printf " -- info ($0): deploy to '$OMZ_PLUGIN_DIR'\n" >&2
 
     for pkg in "${PACKAGES[@]}"; do
-        local dst="$OMZ_PLUGIN_DIR/`fs_basename $pkg`"
+        local dst="$OMZ_PLUGIN_DIR/$(fs_basename $pkg)"
         if [ ! -x "$dst/.git" ]; then
             local verb='clone'
             $SHELL -c "git clone --depth 1 $pkg"
+
         else
             let fetch_every="${UPDATE_ZSH_DAYS:-1} * 86400"
             local last_fetch="`fs_mtime "$dst/.git/FETCH_HEAD" 2>/dev/null`"
@@ -95,14 +110,15 @@ function deploy_extensions() {
             let need_fetch="$EPOCHSECONDS - $fetch_every > $last_fetch"
             if [ "$need_fetch" -gt 0 ]; then
                 local verb='pull'
-                local branch="`git --git-dir="$dst/.git" --work-tree="$dst/" rev-parse --quiet --abbrev-ref HEAD`"
+                local branch="$(git --git-dir="$dst/.git" --work-tree="$dst/" rev-parse --quiet --abbrev-ref HEAD)"
+
                 if [ -z "$branch" ]; then
-                    echo " - $0 fail: get branch for $pkg in \`$dst\`"
+                    printf " ** fail ($0): get branch for $pkg in '$dst'\n" >&2
                     continue
                 else
                     git --git-dir="$dst/.git" --work-tree="$dst/" pull origin "$branch"
 
-                    if [ -x "`which git-restore-mtime`" ]; then
+                    if [ -x "$(which git-restore-mtime)" ]; then
                         git-restore-mtime --skip-missing --work-tree "$dst/" --git-dir "$dst/.git/"
                     fi
                 fi
@@ -111,86 +127,83 @@ function deploy_extensions() {
             fi
         fi
 
-        if [ $? -gt 0 ]; then
-            echo " - $0 $verb error: $pkg"
+        if [ "$?" -gt 0 ]; then
+            printf " ++ warn ($0): $verb error $pkg\n" >&2
         else
-            echo " + $0 $verb success: $pkg"
+            printf " -- info ($0): $verb success $pkg\n" >&2
         fi
     done
 
-    echo " + $0: ${#PACKAGES[@]} complete"
-    return 0
+    printf " -- info ($0): ${#PACKAGES[@]} complete\n" >&2
 }
 
 
 # ——— after install all required dependencies — finalize installation
 
-function merge_josh_ohmyzsh() {
+function merge_josh_ohmyzsh {
     if [ -d "$JOSH_BASE" ]; then
-        echo " + $JOSH_BASE move into $JOSH_DEST/custom/plugins/"
+        printf " -- info ($0): '$JOSH_BASE' move into '$JOSH_DEST/custom/plugins/'\n" >&2
         mv $JOSH_BASE $JOSH_DEST/custom/plugins/josh
 
     elif [ -d "$JOSH_DEST/custom/plugins/josh" ]; then
-        echo " + $JOSH_BASE already moved to $JOSH_DEST/custom/plugins/"
+        printf " ++ warn ($0): '$JOSH_BASE' already in '$JOSH_DEST/custom/plugins/'\n" >&2
 
     else
-        echo " - fatal: something wrong"
-        return 3
+        printf " ** fail ($0): something went wrong\n" >&2
+        return 1
     fi
-    return 0
 }
 
 
 # ——— backup previous installation and configs
 
-function save_previous_installation() {
+function save_previous_installation {
     if [ -d "$ZSH" ]; then
         # another josh installation found, move backup
 
-        dst="$ZSH-`date "+%Y.%m%d.%H%M"`-backup"
-        echo " + another Josh found, backup to $dst"
+        local dst="$ZSH-$(date "+%Y.%m%d.%H%M")-backup"
+        printf " ++ warn ($0): another Josh found, backup to '$dst'\n" >&2
 
         mv "$ZSH" "$dst"
         if [ $? -gt 0 ]; then
-            echo " - warning: backup $ZSH failed"
-            return 4
+            printf " ** fail ($0): backup '$ZSH' failed\n" >&2
+            return 1
         fi
     fi
 
     if [ -f "$HOME/.zshrc" ]; then
         # .zshrc exists from non-josh installation
 
-        dst="$HOME/.zshrc-`date "+%Y.%m%d.%H%M"`-backup"
-        echo " + backup old .zshrc to $dst"
+        local dst="$HOME/.zshrc-`date "+%Y.%m%d.%H%M"`-backup"
+        printf " -- info ($0): backup old .zshrc to '$dst'\n" >&2
 
         cp -L "$HOME/.zshrc" "$dst" || mv "$HOME/.zshrc" "$dst"
         if [ $? -gt 0 ]; then
-            echo " - warning: backup $HOME/.zshrc failed"
-            return 4
+            printf " ** fail ($0): backup '$HOME/.zshrc' failed\n" >&2
+            return 2
         fi
         rm "$HOME/.zshrc"
     fi
-    return 0
 }
 
 
 # ——— set current installation as main and link config
 
-function rename_and_link() {
+function rename_and_link {
     if [ "$JOSH_DEST" = "$ZSH" ]; then
         return 1
     fi
 
-    echo " + finally, rename $JOSH_DEST -> $ZSH"
+    printf " -- info ($0): finally, rename '$JOSH_DEST' -> '$ZSH'\n" >&2
     mv "$JOSH_DEST" "$ZSH" && ln -s ../plugins/josh/themes/josh.zsh-theme $ZSH/custom/themes/josh.zsh-theme
 
-    dst="`date "+%Y.%m%d.%H%M"`.bak"
+    dst="$(date "+%Y.%m%d.%H%M").bak"
     mv "$HOME/.zshrc" "$HOME/.zshrc-$dst" 2>/dev/null
 
-    ln -s $ZSH/custom/plugins/josh/.zshrc $HOME/.zshrc
-    if [ $? -gt 0 ]; then
-        echo " - fatal: can't create symlink $ZSH/custom/plugins/josh/.zshrc -> $HOME/.zshrc"
-        return 1
+    ln -s "$ZSH/custom/plugins/josh/.zshrc" "$HOME/.zshrc"
+
+    if [ "$?" -gt 0 ]; then
+        printf " ** fail ($0): create symlink '$ZSH/custom/plugins/josh/.zshrc' -> '$HOME/.zshrc' failed\n" >&2
+        return 2
     fi
-    return 0
 }

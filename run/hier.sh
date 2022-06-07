@@ -118,7 +118,9 @@ function path_last_modified {
 }
 
 function path_prune {
-    local unified_path="$(
+    local unified_path
+
+    unified_path="$(
         echo "$path" | sed 's#:#\n#g' | sed "s:^~/:$HOME/:" | \
         xargs -n 1 realpath 2>/dev/null | awk '!x[$0]++' | \
         grep -v "$JOSH" | \
@@ -161,94 +163,6 @@ function path_prune {
     return "$retval"
 }
 
-function cached_execute {
-    if [ -z "$1" ]; then
-        printf " ** fail ($0): \$1 key must be: '$1' '$2' '$3' '${@:4}'\n" >&2
-        return 1
-
-    elif [ -z "$2" ]; then
-        printf " ** fail ($0): \$2 expire must be: '$1' '$2' '$3' '${@:4}'\n" >&2
-        return 2
-
-    elif [ -z "$3" ]; then
-        printf " ** fail ($0): \$3 cache dir must be: '$1' '$2' '$3' '${@:4}'\n" >&2
-        return 3
-
-    elif [ -z "$4" ]; then
-        printf " ** fail ($0): args one or many must be: '$1' '$2' '$3' '${@:4}'\n" >&2
-        return 4
-
-    elif [ -z "$JOSH_MD5_PIPE" ] || [ -z "$JOSH_PAQ" ] || [ -z "$JOSH_QAP" ]; then
-        printf " ++ warn ($0): cache doesnt't works, check JOSH_MD5_PIPE '$JOSH_MD5_PIPE', JOSH_PAQ '$JOSH_PAQ', JOSH_QAP '$JOSH_QAP'\n" >&2
-        local command="${@:4}"
-        eval ${command}
-        local retval="$?"
-        return "$retval"
-    fi
-
-    let expires="$2"
-    if [ "$expires" -eq 0 ]; then
-        let expires="1"
-    fi
-
-    let relative="$expires < 1000000000"
-    if [ "$relative" -gt 0 ]; then
-        let expires="$EPOCHSECONDS - $expires"
-    fi
-
-    local body="$(builtin which "$4")"
-    local args="$(eval "echo "${@:4}" | $JOSH_MD5_PIPE | cut -c -16")"
-
-    if [[ ! "$body" -regex-match 'not found$' ]] && [[ "$body" -regex-match "$4 \(\) \{" ]]; then
-        local body="$(eval "builtin which "$4" | $JOSH_MD5_PIPE | cut -c -16")"
-        if [ -z "$args" ] || [ -z "$body" ]; then
-            printf " ** fail ($0): something went wrong for cache file '$file', check JOSH_MD5_PIPE '$JOSH_MD5_PIPE'\n" >&2
-            return 5
-        fi
-        local file="$3/$body/$args"
-    else
-        if [ -z "$args" ]; then
-            printf " ** fail ($0): something went wrong for cache file '$file', check JOSH_MD5_PIPE '$JOSH_MD5_PIPE'\n" >&2
-            return 5
-        fi
-        local file="$3/.ext/$args"
-    fi
-
-    if [ ! -f "$file" ]; then
-        let expired="1"
-    else
-        local last_update="$(fs_mtime $file 2>/dev/null)"
-        [ -z "$last_update" ] && local last_update="0"
-        let expired="$expires > $last_update"
-    fi
-
-    local subdir="$(fs_dirname "$file")"
-    if [ ! -d "$subdir" ]; then
-        mkdir -p "$subdir"
-    fi
-
-    if [ "$expired" -eq 0 ]; then
-        local result="$(eval.retval "cat '$file' | $JOSH_QAP 2>/dev/null")"
-        local retval="$?"
-
-        if [ ! "$retval" -gt 0 ]; then
-            echo "$result"
-            return 0
-        fi
-    fi
-
-    result="$(eval.retval ${@:4})"
-    local retval="$?"
-
-    if [ "$retval" -eq 0 ]; then
-        eval {"echo '$result' | $JOSH_PAQ > '$file'"}
-        echo "$result"
-    fi
-
-    unset result
-    return "$retval"
-}
-
 function eval.retval {
     local cmd="$*"
     eval "$cmd"
@@ -257,6 +171,8 @@ function eval.retval {
 }
 
 function eval.cached {
+    local result
+
     if [ -z "$1" ]; then
         printf " ** fail ($0): \$1 expire must be: '$1' '${@:2}'\n" >&2
         return 1
@@ -335,13 +251,17 @@ function eval.cached {
     fi
 
     if [ "$expired" -eq 0 ]; then
-        local result="$(eval.retval "cat '$cache' | $JOSH_QAP 2>/dev/null")"
+        result="$(eval.retval "cat '$cache' | $JOSH_QAP 2>/dev/null")"
         local retval="$?"
 
-        if [ ! "$retval" -gt 0 ]; then
+        if [ "$retval" -eq 0 ]; then
             echo "$result"
             return 0
         fi
+    fi
+
+    if [ "$DO_NOT_RUN" -gt 0 ]; then
+        return 255
     fi
 
     result="$(eval.retval ${@:2})"
@@ -351,6 +271,5 @@ function eval.cached {
         eval {"echo '$result' | $JOSH_PAQ > '$cache'"}
         echo "$result"
     fi
-    unset result
     return "$retval"
 }
