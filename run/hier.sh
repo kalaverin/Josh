@@ -199,25 +199,22 @@ function cached_execute {
         let expires="$EPOCHSECONDS - $expires"
     fi
 
-    local args="$(eval "echo "${@:4}" | $JOSH_MD5_PIPE | cut -c -16")"
-    local call="$(eval "builtin which '$1' 2>/dev/null | $JOSH_MD5_PIPE | cut -c -4")"
-
     local body="$(builtin which "$4")"
+    local args="$(eval "echo "${@:4}" | $JOSH_MD5_PIPE | cut -c -16")"
 
     if [[ ! "$body" -regex-match 'not found$' ]] && [[ "$body" -regex-match "$4 \(\) \{" ]]; then
-        local func="$4"
-        local body="$(eval "echo "$body" | $JOSH_MD5_PIPE | cut -c -8")"
-        if [ -z "$func" ] || [ -z "$call" ] || [ -z "$args" ] || [ -z "$body" ]; then
+        local body="$(eval "echo "$body" | $JOSH_MD5_PIPE | cut -c -16")"
+        if [ -z "$args" ] || [ -z "$body" ]; then
             printf " ** fail ($0): something went wrong for cache file '$file', check JOSH_MD5_PIPE '$JOSH_MD5_PIPE'\n" >&2
             return 5
         fi
-        local file="$3/$func/$1.$call/$args.$body"
+        local file="$3/$args.$body"
     else
-        if [ -z "$call" ] || [ -z "$args" ]; then
+        if [ -z "$args" ]; then
             printf " ** fail ($0): something went wrong for cache file '$file', check JOSH_MD5_PIPE '$JOSH_MD5_PIPE'\n" >&2
             return 5
         fi
-        local file="$3/.unnamed/$1.$call/$args"
+        local file="$3/$args"
     fi
 
     if [ ! -f "$file" ]; then
