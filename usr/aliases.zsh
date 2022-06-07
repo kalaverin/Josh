@@ -208,11 +208,7 @@ if [ -x "$commands[wget]" ]; then
 fi
 
 if [ -x "$commands[ssh-agent]" ]; then
-    alias ssh-agent="$temp"
-
-    function initalize_agent {
-        eval `ssh-agent` && ssh-add
-    }
+    eval `ssh-agent` && ssh-add
 fi
 
 
