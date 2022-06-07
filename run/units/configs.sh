@@ -130,7 +130,6 @@ function zero_configuration() {
     copy_config "$CONFIG_ROOT/ondir.rc" "$HOME/.ondirrc"
     copy_config "$CONFIG_ROOT/pgcli.conf" "$CONFIG_DIR/pgcli/config"
     copy_config "$CONFIG_ROOT/pip.conf" "$CONFIG_DIR/pip/pip.conf"
-    copy_config "$CONFIG_ROOT/starship.toml" "$CONFIG_DIR/starship.toml"
     copy_config "$CONFIG_ROOT/tmux.conf" "$HOME/.tmux.conf"
     copy_config "$CONFIG_ROOT/logout.zsh" "$HOME/.zlogout"
 }
