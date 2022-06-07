@@ -40,13 +40,13 @@ if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
     fi
 
 
-    if [ -x "$commands[zstd]" ]; then
-        export JOSH_PAQ="$commands[zstd] -0 -T0"
-        export JOSH_QAP="$commands[zstd] -qd"
-
-    elif [ -x "$commands[lz4]" ]; then
+    if [ -x "$commands[lz4]" ]; then
         export JOSH_PAQ="$commands[lz4] -1 - -"
         export JOSH_QAP="$commands[lz4] -d - -"
+
+    elif [ -x "$commands[zstd]" ]; then
+        export JOSH_PAQ="$commands[zstd] -0 -T0"
+        export JOSH_QAP="$commands[zstd] -qd"
 
     elif [ -x "$commands[xz]" ] && [ -x "$commands[xzcat]" ]; then
         export JOSH_PAQ="$commands[xz] -0 -T0"
