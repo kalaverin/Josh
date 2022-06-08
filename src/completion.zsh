@@ -13,10 +13,11 @@ zstyle :plugin:history-search-multi-word reset-prompt-protect 1
 
 _comp_options+=(globdots)
 
-[ -x "$(which scotty)" ]   && eval "$(scotty init zsh)"
+[ -x "$(which broot)" ] && eval "$(broot --print-shell-function zsh)"
 [ -x "$(which fuck)" ]     && eval $(thefuck --alias)
+[ -x "$(which pip)" ] && eval "$(pip completion --zsh)"
+[ -x "$(which scotty)" ]   && eval "$(scotty init zsh)"
 [ -x "$(which starship)" ] && eval "$(starship init zsh)"
-[ -x "$(which hgrep)" ]    && eval "$(hgrep --generate-completion-script zsh)"
 
 function completition_expired {
     if [ "$SHLVL" -gt 1 ]; then
@@ -37,9 +38,6 @@ function completition_expired {
 
 
 if [ "$(completition_expired)" -gt 0 ]; then
-    [ -x "$(which broot)" ] && eval "$(broot --print-shell-function zsh)"
-    [ -x "$(which pip)" ] && eval "$(pip completion --zsh)"
-
     autoload -Uz compinit
-    compinit -u # -u insecure!
+    compinit # -u insecure!
 fi
