@@ -150,7 +150,7 @@ function path_prune {
         done
 
         if [ -z "$result" ]; then
-            printf " ** fail ($0): something went wrong: $path\n" >&2
+            fail $0 "something went wrong: $path"
             return 1
         else
             export PATH="$result"
@@ -174,15 +174,15 @@ function eval.cached {
     local result
 
     if [ -z "$1" ]; then
-        printf " ** fail ($0): \$1 expire must be: '$1' '${@:2}'\n" >&2
+        fail $0 "\$1 expire must be: '$1' '${@:2}'"
         return 1
 
     elif [ -z "$2" ]; then
-        printf " ** fail ($0): \$2.. command line empty: '$1' '${@:2}'\n" >&2
+        fail $0 "\$2.. command line empty: '$1' '${@:2}'"
         return 2
 
     elif [ -z "$JOSH_MD5_PIPE" ] || [ -z "$JOSH_PAQ" ] || [ -z "$JOSH_QAP" ]; then
-        printf " ++ warn ($0): cache doesnt't works, check JOSH_MD5_PIPE '$JOSH_MD5_PIPE', JOSH_PAQ '$JOSH_PAQ', JOSH_QAP '$JOSH_QAP'\n" >&2
+        warn $0 "cache doesnt't works, check JOSH_MD5_PIPE '$JOSH_MD5_PIPE', JOSH_PAQ '$JOSH_PAQ', JOSH_QAP '$JOSH_QAP'"
         local command="${@:2}"
         eval ${command}
         local retval="$?"
@@ -208,7 +208,7 @@ function eval.cached {
         local cache="$JOSH_CACHE_DIR/$body/$args"
 
         if [ -z "$args" ] || [ -z "$body" ]; then
-            printf " ** fail ($0): something went wrong for cache file '$cache', check JOSH_MD5_PIPE '$JOSH_MD5_PIPE'\n" >&2
+            fail $0 "something went wrong for cache file '$cache', check JOSH_MD5_PIPE '$JOSH_MD5_PIPE'"
             return 3
         fi
     fi
@@ -228,13 +228,13 @@ function eval.cached {
         local cache="$JOSH_CACHE_DIR/.pipelines/$args"
 
         if [ -z "$args" ]; then
-            printf " ** fail ($0): something went wrong for cache file '$cache', check JOSH_MD5_PIPE '$JOSH_MD5_PIPE'\n" >&2
+            fail $0 "something went wrong for cache file '$cache', check JOSH_MD5_PIPE '$JOSH_MD5_PIPE'"
             return 4
         fi
     fi
 
     if [ -z "$cache" ]; then
-        printf " ** fail ($0): something went wrong: '$1' '${@:2}'\n" >&2
+        fail $0 "something went wrong: '$1' '${@:2}'"
     fi
 
     if [ ! -f "$cache" ]; then

@@ -6,14 +6,14 @@ local GET_BRANCH='git rev-parse --quiet --abbrev-ref HEAD 2>/dev/null'
 
 function cmd_git_checkout {
     if [ -z "$1" ]; then
-        printf " ** fail ($0): branch required\n" >&2
+        fail $0 "branch required"
         return 1
 
     elif [[ "$1" =~ '^[0-9]+' ]]; then
         if [ -n "$JOSH_BRANCH_PREFIX" ]; then
             local branch="$JOSH_BRANCH_PREFIX-$1"
         else
-            printf " ** fail ($0): branch name doens't start with digit\n" >&2
+            fail $0 "branch name doens't start with digit"
             return 2
         fi
 
@@ -79,7 +79,7 @@ function git_root {
             builtin cd "$cwd"
 
         else
-            printf " ** fail ($0): path '$1' isn't acessible\n" >&2
+            fail $0 "path '$1' isn't acessible"
             return 1
         fi
     fi
@@ -128,7 +128,7 @@ function get_repository_state {
 
 function git_branch_delete {
     if [ -z "$1" ]; then
-        printf " ** fail ($0): branch required\n" >&2
+        fail $0 "branch required"
         return 1
     fi
     run_show "git branch -D $1 && git push origin --delete $1"
@@ -138,7 +138,7 @@ function git_branch_delete {
 function git_branch_rename {
     if [ -n "$2" ]; then
         if [ "$1" = "$2" ]; then
-            printf " ** fail ($0): source and target branch names must be different\n" >&2
+            fail $0 "source and target branch names must be different"
             return 1
         fi
         local src="$1"
@@ -149,7 +149,7 @@ function git_branch_rename {
         local src="`git_current_branch`"
         [ -z "$src" ] && return 2
     else
-        printf " ** fail ($0): old_name new_name or just new_name (rename current) \n" >&2
+        fail $0 "old_name new_name or just new_name (rename current) "
         return 3
     fi
     echo "git branch -m $src $dst && git push origin :$src $dst"
@@ -204,7 +204,7 @@ function git_fetch_checkout_branch {
 
 function git_set_branch_tag {
     if [ -z "$1" ]; then
-        printf " ** fail ($0): tag required\n" >&2
+        fail $0 "tag required"
         return 1
 
     elif [ -n "$2" ]; then
@@ -215,12 +215,12 @@ function git_set_branch_tag {
         local tag="$1"
         local branch="`git_current_branch`"
         if [ -z "$branch" ]; then
-            printf " ** fail ($0): branch couldn't detected\n" >&2
+            fail $0 "branch couldn't detected"
             return 2
         fi
     fi
 
-    printf " -- info ($0): $branch/$tag\n" >&2
+    info $0 "$branch/$tag"
 
     git_repository_clean;   [ $? -gt 0 ] && return 3
     git checkout "$branch"; [ $? -gt 0 ] && return 4
@@ -292,14 +292,14 @@ function git_repository_clean {
     local modified='echo $(git ls-files --modified `git rev-parse --show-toplevel`)$(git ls-files --deleted --others --exclude-standard `git rev-parse --show-toplevel`)'
 
     if [ -n "$($SHELL -c "$modified")" ]; then
-        printf " ++ warn ($0): $root isn't clean\n" >&2
+        warn $0 "$root isn't clean"
         return 1
     fi
 }
 
 function git_set_tag {
     if [ -z "$1" ]; then
-        printf " ** fail ($0): tag required\n" >&2
+        fail $0 "tag required"
         return 1
     fi
     run_show "git tag -a $1 -m \"$1\" && git push --tags && git fetch --tags"
@@ -308,7 +308,7 @@ function git_set_tag {
 
 function git_unset_tag {
     if [ -z "$1" ]; then
-        printf " ** fail ($0): tag required\n" >&2
+        fail $0 "tag required"
         return 1
     fi
     run_show "git tag -d \"$1\" && git push --delete origin \"$1\""
@@ -322,7 +322,7 @@ function drop_this_branch_right_now {
     [ ! "$branch" ] && return 1
 
     if [ "$branch" = "master" ] || [ "$branch" = "develop" ]; then
-        printf " ** fail ($0): can't delete $branch branch!\n" >&2
+        fail $0 "can't delete $branch branch!"
         return 2
     fi
 
@@ -338,7 +338,7 @@ function DROP_THIS_BRANCH_RIGHT_NOW {
     [ ! "$branch" ] && return 1
 
     if [ "$branch" = "master" ] || [ "$branch" = "develop" ]; then
-        printf " ** fail ($0): can't delete $branch branch!\n" >&2
+        fail $0 "can't delete $branch branch!"
         return 2
     fi
 
@@ -363,7 +363,7 @@ function git_update_nested_repositories {
     local root="${1:-"."}"
 
     if [ ! -d "$root" ]; then
-        printf " -- info ($0): working path '$root' isn't accessible\n" >&2
+        info $0 "working path '$root' isn't accessible"
         return 1
     fi
 
@@ -373,7 +373,7 @@ function git_update_nested_repositories {
     find "$root" -maxdepth 2 -type d -name .git | sort | while read git_directory
     do
         if [ -z "$header" ]; then
-            printf "\n -- info ($0): update '$(fs_realpath "$root")'\n\n" >&2
+            info $0 "\nupdate '$(fs_realpath "$root")'\n"
             if [ -x "$(which gfold)" ]; then
                 gfold -d classic
             fi
@@ -385,12 +385,12 @@ function git_update_nested_repositories {
         builtin cd "$current_path"
         local branch="`$SHELL -c "$GET_BRANCH"`"
         if [ "$?" -gt 0 ] || [ -z "$branch" ]; then
-            printf " ++ warn ($0): something went wrong in '$current_path', skip\n" >&2
+            warn $0 "something went wrong in '$current_path', skip"
             builtin cd "$cwd"
             continue
         fi
 
-        printf " -- info ($0): $branch in '$current_path'.. "
+        printf " $0: $branch in '$current_path'.. "
         local cmd="git fetch origin master && git fetch --tags"
 
         if git_repository_clean 2>/dev/null; then
@@ -417,7 +417,7 @@ function git_update_nested_repositories {
         if [ "$?" -eq 0 ]; then
             printf "ok\n" >&2
         else
-            printf "fail\n" >&2
+            printf "err\n" >&2
         fi
 
         if [ -x "$mtime" ]; then

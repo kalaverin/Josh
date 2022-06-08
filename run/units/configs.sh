@@ -2,7 +2,7 @@
 
 if [[ -n ${(M)zsh_eval_context:#file} ]]; then
     if [ -z "$JOSH" ] && [ -z "$JOSH_BASE" ]; then
-        source "`dirname $0`/../boot.sh"
+        source "$(dirname $0)/../boot.sh"
     fi
 
     CONFIG_DIR="$HOME/.config"
@@ -11,7 +11,7 @@ if [[ -n ${(M)zsh_eval_context:#file} ]]; then
     if [ -n "$JOSH_DEST" ]; then
         BASE="$JOSH_BASE"
         if [ -z "$CONFIG_ROOT" ]; then
-            printf " -- info ($0): copy template configs to '$CONFIG_DIR'\n" >&2
+            info $0 "copy template configs to '$CONFIG_DIR'"
         fi
     else
         BASE="$JOSH"
@@ -24,7 +24,7 @@ function backup_file {
     if [ -f "$1" ]; then
         local dst="$1+`date "+%Y%m%d%H%M%S"`"
         if [ ! -f "$dst" ]; then
-            printf " -- info ($0): backup $1 -> $dst\n" >&2
+            info $0 "backup $1 -> $dst"
             cp -fa "$1" "$dst"
         fi
         return $?
@@ -39,7 +39,7 @@ function copy_config {
 
     local src="$1"
     if [ ! -f "$src" ]; then
-        printf " ** fail ($0): copy config failed, source '$src' doesn't exists\n" >&2
+        fail $0 "copy config failed, source '$src' doesn't exists"
         return 1
     fi
 
@@ -51,13 +51,13 @@ function copy_config {
     fi
 
     [ -f "$dst" ] && backup_file "$dst" && unlink "$dst"
-    [ ! -d "`fs_dirname $dst`" ] && mkdir -p "`fs_dirname $dst`";
+    [ ! -d "$(fs_dirname $dst)" ] && mkdir -p "$(fs_dirname $dst)";
 
-    if [ "$JOSH_RENEW_CONFIGS" ] && [ ! "$JOSH_OS" = "BSD" ]; then
-        printf " -- info ($0): ${3:-"renew: $src -> $dst"}\n" >&2
+    if [ "$JOSH_RENEW_CONFIGS" ] && [ "$JOSH_OS" != "BSD" ]; then
+        info $0 "${3:-"renew: $src -> $dst"}"
         cp -nu "$src" "$dst"
     else
-        printf " -- info ($0): ${3:-"copy: $src -> $dst"}\n" >&2
+        info $0 "${3:-"copy: $src -> $dst"}"
         cp -n "$src" "$dst"
     fi
     return $?
@@ -92,11 +92,11 @@ function config_git {
         set_style
     fi
 
-    if [ -n "`git config --global core.pager | grep 'hunk-style normal'`" ]; then
+    if [ -n "$(git config --global core.pager | grep 'hunk-style normal')" ]; then
         set_style
     fi
 
-    if [ -z "`git config --global sequence.editor`" ] && [ -x "`which interactive-rebase-tool`" ]; then
+    if [ -z "$(git config --global sequence.editor)" ] && [ -x "$(which interactive-rebase-tool)" ]; then
         backup_file "$HOME/.gitconfig" && \
         git config --global sequence.editor interactive-rebase-tool
     fi
@@ -115,7 +115,7 @@ function nano_syntax_compile {
             find /usr/local/share/nano/ -iname "*.nanorc" -exec ec2ho include {} \; >> $HOME/.nanorc
 
         fi
-        [ -f "$HOME/.nanorc" ] && printf " -- info ($0): nano syntax highlight profile generated to $HOME/.nanorc\n" >&2
+        [ -f "$HOME/.nanorc" ] && info $0 "nano syntax highlight profile generated to $HOME/.nanorc"
     fi
     return 0
 }

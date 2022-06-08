@@ -30,7 +30,8 @@ source "$INCLUDE_DIR/binds.zsh"
 # ——— simple helpers
 
 function git_abort {
-    local state="`get_repository_state`"  # merge, rebase or cherry-pick
+    local state
+    state="$(get_repository_state)"  # merge, rebase or cherry-pick
     [ "$?" -gt 0 ] && return 0
     [ "$state" ] && $SHELL -c "git $state --abort"
     zle reset-prompt
@@ -38,32 +39,33 @@ function git_abort {
 zle -N git_abort
 
 function open_editor_on_conflict {
-    local line="$($SHELL -c "
-        grep -P --line-number --max-count=1 '^=======' $1 | tabulate -d ':' -i 1
-    ")"
+    local line
+    line="$($SHELL -c "grep -P --line-number --max-count=1 '^=======' $1 | tabulate -d ':' -i 1")"
     if [ "$line" -gt 0 ]; then
         $EDITOR $* +$line
-        return $?
+        return "$?"
     fi
 }
 
 function chdir_to_setupcfg {
     if [ ! -f 'setup.cfg' ]; then
-        local root=`cat "$SETUPCFG_LOOKUP" | $SHELL`
-        if [ "$root" = "" ]; then
-            echo " - setup.cfg not found in $cwd" 1>&2
+        local root="$(cat "$SETUPCFG_LOOKUP" | $SHELL)"
+        if [ -z "$root" ]; then
+            fail $0 "setup.cfg not found in $cwd"
             return 1
         fi
-        builtin cd $root
+        builtin cd "$root"
     fi
     return 0
 }
 
 
 function git_autoaccept {
+    local state
     if [ "$1" = 'theirs' ] || [ "$1" = 'ours' ]; then
-        local state="`get_repository_state`"  # merge, rebase or cherry-pick
+        state="$(get_repository_state)"  # merge, rebase or cherry-pick
         [ "$?" -gt 0 ] && return 0
+
         run_show "git checkout --$1 . && git $state --skip"
         if [ "$?" -eq 128 ]; then
             git_autoaccept "$1"

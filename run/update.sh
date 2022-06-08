@@ -1,6 +1,8 @@
+source "$(dirname $0)/init.sh"
+
 if [[ -n ${(M)zsh_eval_context:#file} ]]; then
     if [ -z "$JOSH" ]; then
-        source "`dirname $0`/../run/boot.sh"
+        source "$(dirname $0)/../run/boot.sh"
     fi
 fi
 
@@ -28,21 +30,21 @@ function pull_update {
         fi
 
         if [ "$retval" -eq 0 ]; then
-            printf " -- info ($0): pull '$branch' into $PWD\n" >&2 && \
+            info $0 "pull '$branch' into $PWD"
             git fetch --tags && git pull --ff-only --no-edit --no-commit origin "$branch"
             local retval="$?"
 
             if [ "$retval" -eq 0 ]; then
                 git update-index --refresh 1>/dev/null 2>/dev/null
                 if [ "$?" -gt 0 ] || [ "$(git status --porcelain=v1 &>>/dev/null | wc -l)" -gt 0 ]; then
-                    printf " ** fail ($0): '$CWD' is dirty, stop\n" >&2
+                    fail $0 "'$CWD' is dirty, stop\n"
                     local retval="2"
                 fi
             else
-                printf " ** fail ($0): '$CWD' is dirty, stop\n" >&2
+                fail $0 "'$CWD' is dirty, stop\n"
             fi
         else
-            printf " ** fail ($0): '$CWD' is dirty, stop\n" >&2
+            fail $0 "'$CWD' is dirty, stop\n"
         fi
     else
         local retval="1"
@@ -94,8 +96,8 @@ function update_packages {
 
 function deploy_extras {
     local cwd="$PWD"
-    (source "$JOSH/lib/python.sh" && pip.extras || printf " ++ warn ($0): (python) something went wrong\n" >&2) && \
-    (source "$JOSH/lib/rust.sh" && cargo_extras || printf " ++ warn ($0): (rust) something went wrong\n" >&2)
-    (source "$JOSH/lib/brew.sh" && brew_env && (brew_extras || printf " ++ warn ($0): (brew) something went wrong\n" >&2))
+    (source "$JOSH/lib/python.sh" && pip.extras || warn $0 "(python) something went wrong") && \
+    (source "$JOSH/lib/rust.sh" && cargo_extras || warn $0 "(rust) something went wrong")
+    (source "$JOSH/lib/brew.sh" && brew_env && (brew_extras || warn $0 "(brew) something went wrong"))
     builtin cd "$cwd"
 }
