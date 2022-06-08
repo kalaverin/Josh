@@ -20,16 +20,20 @@ if [ "$commands[pastel]" ]; then
     }
 else
     function info {
-        printf " -- $0 ($1): %s\n" "${*:2}" >&2
+        local msg="${@:2}"
+        printf "\033[0;32m -- $0 ($1):\033[0m $msg\n" >&2
     }
     function warn {
-        printf " ++ $0 ($1): %s\n" "${*:2}" >&2
+        local msg="${@:2}"
+        printf "\033[0;33m ++ $0 ($1):\033[0m $msg\n" >&2
     }
     function fail {
-        printf " ** $0 ($1): %s\n" "${*:2}" >&2
+        local msg="${@:2}"
+        printf "\033[1;31m ** $0 ($1):\033[0m $msg\n" >&2
     }
     function term {
-        printf " ## $0 ($1): %s\n" "${*:2}" >&2
+        local msg="${@:2}"
+        printf "\033[42m\033[0;101m ## $0 ($1):\033[0m $msg\n" >&2
     }
 fi
 
