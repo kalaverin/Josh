@@ -2,8 +2,8 @@ source "$JOSH/lib/shared.sh"
 
 # ———
 
-local THIS_DIR="`fs_realdir "$0"`"
-local INCLUDE_DIR="`fs_realpath $THIS_DIR/src`"
+local THIS_DIR="$(fs_realdir "$0")"
+local INCLUDE_DIR="$(fs_realpath $THIS_DIR/src)"
 
 function clear {
     local bin="$commands[clear]"
@@ -17,14 +17,14 @@ function clear {
     done
 }
 
-function commit_text () {
+function commit_text {
     local text="`$SHELL -c "$HTTP_GET http://whatthecommit.com/index.txt"`"
     echo "$text" | anyframe-action-insert
     zle end-of-line
 }
 zle -N commit_text
 
-function insert_directory() {
+function insert_directory {
     # анализировать запрос и если есть слеш и такой каталог — то есть уже в нём
     if [ "$LBUFFER" ]; then
         local pre="`echo "$LBUFFER" | grep -Po '([^\s]+)$'`"
@@ -96,7 +96,7 @@ function insert_directory() {
 }
 zle -N insert_directory
 
-function insert_endpoint() {
+function insert_endpoint {
     if [ "$LBUFFER" ]; then
         local pre="`echo "$LBUFFER" | grep -Po '([^\s]+)$'`"
     else
@@ -170,7 +170,7 @@ function insert_endpoint() {
 }
 zle -N insert_endpoint
 
-function visual_chdir() {
+function visual_chdir {
     if [[ "$#" != 0 ]]; then
         builtin cd "$@";
         return
@@ -237,7 +237,7 @@ function visual_chdir() {
 }
 zle -N visual_chdir
 
-function visual_recent_chdir() {
+function visual_recent_chdir {
     if [[ "$#" != 0 ]]; then
         builtin cd "$@";
         return
@@ -277,7 +277,7 @@ function visual_recent_chdir() {
 }
 zle -N visual_recent_chdir
 
-function visual_warp_chdir() {
+function visual_warp_chdir {
     local directory=$(wd list | sd '(.+?)\s+->\s+(.+)' '$1::$2' | sed '1d' | sort -k 1 | sd '::(~)' "::$HOME" | tabulate -d '::' | \
         fzf \
             -i -s --exit-0 --select-1 \
@@ -313,7 +313,7 @@ function visual_warp_chdir() {
 }
 zle -N visual_warp_chdir
 
-function insert_command() {
+function insert_command {
     local file="`get_tempdir`/.insert.cmd.tmp"
     [ -f "$file" ] && unlink "$file"
 
@@ -361,21 +361,21 @@ function insert_command() {
 }
 zle -N insert_command
 
-function chdir_up() {
+function chdir_up {
     builtin cd "`fs_realpath ..`"
     zle reset-prompt
     return 0
 }
 zle -N chdir_up
 
-function chdir_home() {
+function chdir_home {
     builtin cd "`fs_realpath ~`"
     zle reset-prompt
     return 0
 }
 zle -N chdir_home
 
-function visual_grep() {
+function visual_grep {
     local execute="$INCLUDE_DIR/ripgrep_query_name_to_micro.sh"
     local search_one="$JOSH/usr/src/ripgrep_spaced_words.sh"
 
@@ -454,7 +454,7 @@ function visual_grep() {
 }
 zle -N visual_grep
 
-function ps_widget() {
+function ps_widget {
     while true; do
         local pids="$(
             ps -o %cpu,%mem,pid,command -A | grep -v "zsh" | awk '{$1=$1};1' | \
@@ -492,7 +492,7 @@ function ps_widget() {
 }
 zle -N ps_widget
 
-function term_widget() {
+function term_widget {
     local pids="$(
         ps -o %cpu,%mem,pid,command -A | grep -v "zsh" | awk '{$1=$1};1' | \
         awk 'NR<2{print $0;next}{print $0| "sort -rk 1,2"}' | \
@@ -519,7 +519,7 @@ function term_widget() {
 }
 zle -N term_widget
 
-function kill_widget() {
+function kill_widget {
     local pids="$(
         ps -o %cpu,%mem,pid,command -A | grep -v "zsh" | awk '{$1=$1};1' | \
         awk 'NR<2{print $0;next}{print $0| "sort -rk 1,2"}' | \
@@ -546,7 +546,7 @@ function kill_widget() {
 }
 zle -N kill_widget
 
-function share_file() {
+function share_file {
     if [ $# -eq 0 ]
         local temp="`get_tempdir`"
         then echo -e "No arguments specified. Usage:\necho share $temp/test.md\ncat $temp/test.md | share test.md"
@@ -563,12 +563,12 @@ function share_file() {
     rm -f $tmpfile
 }
 
-function term_last() {
+function term_last {
     kill %1
 }
 zle -N term_last
 
-function empty_buffer() {
+function empty_buffer {
     if [[ ! -z $BUFFER ]]; then
         LBUFFER=''
         RBUFFER=''
@@ -577,7 +577,7 @@ function empty_buffer() {
 }
 zle -N empty_buffer
 
-function sudoize() {
+function sudoize {
     [[ -z $BUFFER ]] && zle up-history
 
     if [[ $BUFFER == sudo\ * ]]; then
@@ -598,7 +598,7 @@ function sudoize() {
 zle -N sudoize
 
 
-function josh_pull() {
+function josh_pull {
     local version="`python.version`"; python.set
 
     local cwd="`pwd`"
@@ -611,7 +611,7 @@ function josh_pull() {
     return $retval
 }
 
-function josh_update() {
+function josh_update {
     local version="`python.version`"; python.set
 
     local cwd="`pwd`"
@@ -625,7 +625,7 @@ function josh_update() {
     return $retval
 }
 
-function josh_upgrade() {
+function josh_upgrade {
     local version="`python.version`"; python.set
 
     local cwd="`pwd`"
@@ -652,7 +652,7 @@ function josh_upgrade() {
 #     return $retval
 # }
 
-function josh_bootstrap_command() {
+function josh_bootstrap_command {
     local url="${1:-"http://kalaver.in/shell?$RANDOM"}"
     echo "((curl -fsSL $url || wget -qO - $url || fetch -qo - $url) | zsh) && zsh"
 }
@@ -675,7 +675,7 @@ function josh_branch {
     return 1
 }
 
-function josh_bootstrap_command_branched() {
+function josh_bootstrap_command_branched {
     if [ -n "$1" ]; then
         local branch="$1"
 
@@ -687,7 +687,7 @@ function josh_bootstrap_command_branched() {
     echo "export JOSH_RENEW_CONFIGS=1 && export JOSH_BRANCH="$branch" && ((curl -fsSL $url || wget -qO - $url || fetch -qo - $url) | zsh); unset JOSH_RENEW_CONFIGS && unset JOSH_BRANCH"
 }
 
-function josh_source() {
+function josh_source {
     local result=''
     for file in $*; do
         if [ ! -f "$JOSH/$file" ]; then
@@ -711,7 +711,7 @@ function josh_source() {
     rehash
 }
 
-function josh_extras() {
+function josh_extras {
     josh_source "run/update.sh"
     deploy_extras
 }

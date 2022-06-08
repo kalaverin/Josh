@@ -16,7 +16,7 @@ function is_workhours {
 
 function __fetch_updates_background {
     if [ -z "$JOSH" ]; then
-        printf " ** fail ($0): JOSH:'$JOSH' isn't accessible\n" >&2
+        fail $0 "JOSH:'$JOSH' isn't accessible"
         return 1
     fi
     local cwd="$PWD"
@@ -33,11 +33,11 @@ function __fetch_updates_background {
 
 function __get_updates_count {
     if [ ! -x "$JOSH" ]; then
-        printf " ** fail ($0): JOSH:'$JOSH' isn't accessible\n" >&2
+        fail $0 "JOSH:'$JOSH' isn't accessible"
         return 1
 
     elif [ -z "$JOSH_CACHE_DIR" ]; then
-        printf " ** fail ($0): JOSH_CACHE_DIR:'$JOSH_CACHE_DIR' isn't accessible\n" >&2
+        fail $0 "JOSH_CACHE_DIR:'$JOSH_CACHE_DIR' isn't accessible"
         return 2
     fi
 
@@ -54,7 +54,7 @@ function __get_updates_count {
         return 0
     fi
 
-    local last_fetch="`fs_mtime "$JOSH/.git/FETCH_HEAD" 2>/dev/null`"
+    local last_fetch="$(fs_mtime "$JOSH/.git/FETCH_HEAD" 2>/dev/null)"
     let need_fetch="$EPOCHSECONDS - $fetch_every > $last_fetch"
 
     local cwd="$PWD"
@@ -63,7 +63,7 @@ function __get_updates_count {
     local branch="`git_current_branch`"
     if [ -z "$branch" ]; then
         builtin cd "$cwd"
-        printf " ** fail ($0): branch '$branch' empty" >&2
+        fail $0 "branch '$branch' emp"
         return 3
     fi
 
@@ -90,11 +90,11 @@ function check_updates {
     local updates
 
     if [ ! -x "$JOSH" ]; then
-        printf " ** fail ($0): JOSH:'$JOSH' isn't accessible\n" >&2
+        fail $0 "JOSH:'$JOSH' isn't accessible"
         return 1
 
     elif [ -z "$JOSH_CACHE_DIR" ]; then
-        printf " ** fail ($0): JOSH_CACHE_DIR:'$JOSH_CACHE_DIR' isn't accessible\n" >&2
+        fail $0 "JOSH_CACHE_DIR:'$JOSH_CACHE_DIR' isn't accessible"
         return 2
     fi
     unset JOSH_UPDATES_COUNT
@@ -120,15 +120,12 @@ function check_updates {
 
     local branch="`git_current_branch`"
     if [ "$branch" = "develop" ]; then
-        printf " -- info ($0): $updates new commits found, let's go!\n" >&2
+        info $0 "$updates new commits found, let's go!"
         josh_pull "$branch"
-
-        printf " -- info ($0): commits applied, please run: exec zsh\n" >&2
-        printf " for partial (fast) update run: josh_update\n" >&2
-        printf " for install (full) all updates: josh_upgrade\n" >&2
+        info $0 "commits applied, please run: exec zsh; for partial (fast) update run: josh_update; for install (full) all updates: josh_upgrade\n" >&2
 
     elif [ "$branch" = "stable" ]; then
-        local last_commit="`git --git-dir="$JOSH/.git" --work-tree="$JOSH/" log -1 --format="%ct"`"
+        local last_commit="$(git --git-dir="$JOSH/.git" --work-tree="$JOSH/" log -1 --format="%ct")"
         let wait_stable=" ${JOSH_UPDATES_STABLE_STAY_D:-7} * 86400"
         let need_check="$EPOCHSECONDS - $wait_stable > $last_commit"
         [ "$need_check" -eq 0 ] && return 0
@@ -166,14 +163,14 @@ function motd {
 
     if [ "$branch" = 'master' ]; then
         if [ "$ctag" ] && [ "$ctag" != "$ftag" ]; then
-            echo " + Josh v$ctag (updates to v$ftag downloaded), just run: run: josh_upgrade, then: exec zsh"
+            info $0 "v$ctag (updates to v$ftag downloaded), just run: run: josh_upgrade, then: exec zsh"
         fi
 
     elif [ "$branch" = 'develop' ]; then
-        echo " + Josh v$ctag $branch $last_commit."
+        info $0 "v$ctag $branch $last_commit."
 
     else
-        echo " + Josh v$ctag $branch $last_commit, found $JOSH_UPDATES_COUNT updates, run: josh_upgrade, then: exec zsh"
+        info $0 "v$ctag $branch $last_commit, found $JOSH_UPDATES_COUNT updates, run: josh_upgrade, then: exec zsh"
 
     fi
 }
