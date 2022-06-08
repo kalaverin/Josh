@@ -1,21 +1,25 @@
 if [ "$commands[pastel]" ]; then
     function info {
+        local msg="${@:2}"
         pastel paint -n limegreen " -- $0 ($1):" >&2
-        pastel paint -n gray " ${*:2}" >&2
+        pastel paint -n gray " $msg" >&2
         printf "\n" >&2
     }
     function warn {
+        local msg="${@:2}"
         pastel paint -n yellow " ++ $0 ($1):" >&2
-        printf " %s\n" "${*:2}" >&2
+        printf " %s\n" "$msg" >&2
     }
     function fail {
+        local msg="${@:2}"
         pastel paint -n red --bold " ** $0 ($1):" >&2
-        pastel paint -n white " ${*:2}" >&2
+        pastel paint -n white " $msg" >&2
         printf "\n" >&2
     }
     function term {
+        local msg="${@:2}"
         pastel paint -n white --on red --bold " ## $0 ($1):" >&2
-        pastel paint -n white --bold " ${*:2}" >&2
+        pastel paint -n white --bold " $msg" >&2
         printf "\n" >&2
     }
 else
