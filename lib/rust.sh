@@ -139,11 +139,11 @@ function cargo_init {
 
         $SHELL -c "$HTTP_GET $url" | RUSTUP_HOME="$HOME/.rustup" CARGO_HOME="`fs_dirname $CARGO_BINARIES`" RUSTUP_INIT_SKIP_PATH_CHECK=yes $SHELL -s - --profile minimal --no-modify-path --quiet -y
 
-        if [ ! -x "$CARGO_BIN" ] || [ $? -gt 0 ]; then
-            echo " - fatal: cargo \`$CARGO_BIN\` isn't installed"
+        if [ "$?" -gt 0 ] || [ ! -x "$CARGO_BIN" ]; then
+            fail $0 "cargo '$CARGO_BIN' isn't installed"
             return 127
         else
-            echo " + info: `$CARGO_BIN --version` in \`$CARGO_BIN\` installed"
+            info $0 "$($CARGO_BIN --version) in '$CARGO_BIN'"
         fi
     fi
 
@@ -152,7 +152,7 @@ function cargo_init {
     if [ ! -x "$cache_exe" ]; then
         $CARGO_BIN install sccache
         if [ ! -x "$cache_exe" ]; then
-            echo " - warning: sccache \`$cache_exe\` isn't compiled"
+            info $0 "sccache '$cache_exe' isn't compiled"
         fi
     fi
 
@@ -166,7 +166,7 @@ function cargo_init {
         else
             export RUSTC_WRAPPER=""
             unset RUSTC_WRAPPER
-            echo " - warning: sccache doesn't exists"
+            info $0 "sccache doesn't exists"
         fi
     fi
 
@@ -174,48 +174,21 @@ function cargo_init {
     if [ ! -x "$update_exe" ]; then
         $CARGO_BIN install cargo-update
         if [ ! -x "$update_exe" ]; then
-            echo " - warning: cargo-update \`$update_exe\` isn't compiled"
+            info $0 "cargo-update '$update_exe' isn't compiled"
         fi
     fi
 
     return 0
 }
 
-function chit_cached {
-    [ -z "$1" ] && return 0
-    if [ -x "`which md5`" ]; then
-        local bin="`which md5`"
-    elif [ -x "`which md5sum`" ]; then
-        local bin="`which md5sum`"
-    else
-        echo " - $0 fatal: md5 sum binaries doesn't exists" >&2
-        return 1
-    fi
-    local cache_file="$JOSH_CACHE_DIR/cargo/`echo "$1" | $bin | tabulate -i 1`"
-
-    if [ ! -x "`which chit`" ]; then
-        echo " - $0 fatal: chit must be installed" >&2
-        return 1
-    fi
-
-    local result="`cat $cache_file 2>/dev/null`"
-    if [ ! "$result" ] || [ ! -f "$cache_file" ] || [ "`find $cache_file -mmin +1 2>/dev/null | grep $cache_file`" ]; then
-        [ ! -d "`fs_dirname $cache_file`" ] && mkdir -p "`fs_dirname $cache_file`"
-
-        local result="`chit $1 | tail -n+3 | head -n -1`"
-        [ $? -eq 0 ] && echo "$result" > "$cache_file"
-    fi
-    echo "$result"
-}
-
 function cargo_deploy {
     cargo_init || return $?
     if [ ! -x "$CARGO_BIN" ]; then
-        echo " - fatal: cargo exe \`$CARGO_BIN\` isn't found!"
+        fail $0 "cargo '$CARGO_BIN' isn't found"
         return 1
     fi
 
-    $SHELL -c "`fs_realpath $CARGO_BINARIES/rustup` update"
+    $SHELL -c "$(fs_realpath $CARGO_BINARIES/rustup) update"
 
     local retval=0
     for pkg in $@; do
@@ -238,9 +211,10 @@ function cargo_all {
 }
 
 function cargo_list_installed {
-    cargo_init || return $?
+    cargo_init || return "$?"
+
     if [ ! -x "$CARGO_BIN" ]; then
-        echo " - fatal: cargo exe $CARGO_BIN isn't found!"
+        fail $0 "cargo exe $CARGO_BIN isn't found!"
         return 1
     fi
     echo "$($CARGO_BIN install --list | egrep '^[a-z0-9_-]+ v[0-9.]+:$' | cut -f1 -d' ')"
@@ -249,7 +223,7 @@ function cargo_list_installed {
 function cargo_install {
     cargo_init || return $?
     if [ ! -x "$CARGO_BIN" ]; then
-        echo " - fatal: cargo exe $CARGO_BIN isn't found!"
+        fail $0 "cargo exe $CARGO_BIN isn't found!"
         return 1
     fi
 
@@ -259,11 +233,20 @@ function cargo_install {
         local selected="$CARGO_REQ_PACKAGES $CARGO_REC_PACKAGES"
     fi
 
-    local installed_regex="(`cargo_list_installed | sed -z 's:\n: :g' | sed 's/ *$//' | sd '\b +\b' '|'`)"
-    local missing_packages="`echo "$selected" | sd '\s+' '\n' | grep -Pv "$installed_regex" | sed -z 's:\n: :g' | sed 's/ *$//' `"
+    local installed_regex="($(
+        cargo_list_installed | sed -z 's:\n: :g' | \
+        sed 's/ *$//' | sd '\b +\b' '|'))"
+
+    local missing_packages="$(
+        echo "$selected" | sd '\s+' '\n' | grep -Pv "$installed_regex" | \
+        sed -z 's:\n: :g' | sed 's/ *$//')"
+
     [ -z "$missing_packages" ] && return 0
 
-    local autoinstall="`echo "$*" | sd '\s+' '\n' | grep -Pv "$installed_regex" | sed -z 's:\n: :g' | sed 's/ *$//' `"
+    local autoinstall="$(
+        echo "$*" | sd '\s+' '\n' | grep -Pv "$installed_regex" | \
+        sed -z 's:\n: :g' | sed 's/ *$//')"
+
     if [ -n "$autoinstall" ]; then
         local packages="$autoinstall"
     else
@@ -290,12 +273,13 @@ function cargo_install {
 
 function cargo_uninstall {
     cargo_init || return $?
+
     if [ ! -x "$CARGO_BIN" ]; then
-        echo " - fatal: cargo exe $CARGO_BIN isn't found!"
+        fail $0 "cargo exe $CARGO_BIN isn't found!"
         return 1
     fi
 
-    local required_regex="(`echo "$CARGO_REQ_PACKAGES" | sed -z 's:\n: :g' | sed 's/ *$//' | sd '\b +\b' '|'`)"
+    local required_regex="($(echo "$CARGO_REQ_PACKAGES" | sed -z 's:\n: :g' | sed 's/ *$//' | sd '\b +\b' '|'))"
 
     if [ -n "$*" ]; then
         local selected="$*"
@@ -303,11 +287,23 @@ function cargo_uninstall {
         local selected="$CARGO_REQ_PACKAGES $CARGO_REC_PACKAGES"
     fi
 
-    local installed_regex="(`cargo_list_installed | sed -z 's:\n: :g' | sed 's/ *$//' | sd '\b +\b' '|'`)"
-    local installed_packages="`echo "$selected" | sd '\s+' '\n' | grep -P "$installed_regex" | grep -Pv "$required_regex" | sed -z 's:\n: :g' | sed 's/ *$//' `"
+    local installed_regex="($(
+        cargo_list_installed | sed -z 's:\n: :g' | sed 's/ *$//' | sd '\b +\b' '|'))"
+
+    local installed_packages="$(
+        echo "$selected" | sd '\s+' '\n' | \
+        grep -P "$installed_regex" | \
+        grep -Pv "$required_regex" | \
+        sed -z 's:\n: :g' | sed 's/ *$//')"
+
     [ -z "$installed_packages" ] && return 0
 
-    local autoremove="`echo "$*" | sd '\s+' '\n' | grep -P "$installed_regex" | grep -Pv "$required_regex" | sed -z 's:\n: :g' | sed 's/ *$//' `"
+    local autoremove="$(
+        echo "$*" | sd '\s+' '\n' | \
+        grep -P "$installed_regex" | \
+        grep -Pv "$required_regex" | \
+        sed -z 's:\n: :g' | sed 's/ *$//')"
+
     if [ -n "$autoremove" ]; then
         local packages="$autoremove"
     else
@@ -333,26 +329,27 @@ function cargo_uninstall {
 }
 
 function cargo_recompile {
-    local packages="`cargo_list_installed | sed -z 's:\n: :g' | sed 's/ *$//'`"
+    local packages="$(cargo_list_installed | sed -z 's:\n: :g' | sed 's/ *$//')"
     if [ -n "$packages" ]; then
         $SHELL -c "$CARGO_BIN install --force $packages"
     fi
 }
 
 function cargo_update {
-    cargo_init || return $?
+    cargo_init || return "$?"
+
     if [ ! -x "$CARGO_BIN" ]; then
-        echo " - fatal: cargo exe $CARGO_BIN isn't found!"
+        fail $0 "cargo exe $CARGO_BIN isn't found!"
         return 1
     fi
 
     local update_exe="$CARGO_BINARIES/cargo-install-update"
     if [ ! -x "$update_exe" ]; then
-        echo " - fatal: cargo-update exe $update_exe isn't found!"
+        fail $0 "cargo-update exe $update_exe isn't found!"
         return 1
     fi
 
-    $SHELL -c "`fs_realpath $CARGO_BINARIES/rustup` update"
+    $SHELL -c "$(fs_realpath $CARGO_BINARIES/rustup) update"
     $CARGO_BIN install-update --all
     return "$?"
 }
