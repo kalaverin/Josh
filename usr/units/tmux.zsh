@@ -89,5 +89,8 @@ elif [ -z "$JOSH_TMUX_SPACES_FILL_DISABLE" ] && [ -n "$PS1" ] && [ -n "$TMUX" ];
     local branch="$(josh_branch)"
     if [ "$branch" = "master" ] || [ "$branch" = "stable" ]; then
         clear
+        if [ -x "$commands[krabby]" ]; then
+            krabby random | sed 1d
+        fi
     fi
 fi
