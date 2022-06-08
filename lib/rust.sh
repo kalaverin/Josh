@@ -92,7 +92,6 @@ CARGO_REC_PACKAGES=(
     ytop             # htop analogue
     jira-terminal    # jira client
 )
-
 CARGO_OPT_PACKAGES=(
     b0x
     difftastic       # diff colored visualizer
@@ -222,6 +221,11 @@ function cargo_deploy {
 
 function cargo_extras {
     cargo_install "$CARGO_REQ_PACKAGES $CARGO_REC_PACKAGES"
+    return 0
+}
+
+function cargo_extras {
+    cargo_install "$CARGO_REQ_PACKAGES $CARGO_REC_PACKAGES $CARGO_OPT_PACKAGES"
     return 0
 }
 
