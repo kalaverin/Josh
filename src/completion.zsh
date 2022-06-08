@@ -13,10 +13,10 @@ zstyle :plugin:history-search-multi-word reset-prompt-protect 1
 
 _comp_options+=(globdots)
 
-[ -x "$(which scotty)" ] && eval "$(scotty init zsh)"
-[ -x "$(which fuck)" ] && eval $(thefuck --alias)
+[ -x "$(which scotty)" ]   && eval "$(scotty init zsh)"
+[ -x "$(which fuck)" ]     && eval $(thefuck --alias)
 [ -x "$(which starship)" ] && eval "$(starship init zsh)"
-
+[ -x "$(which hgrep)" ]    && eval "$(hgrep --generate-completion-script zsh)"
 
 function completition_expired {
     if [ "$SHLVL" -gt 1 ]; then

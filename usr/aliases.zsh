@@ -74,6 +74,10 @@ if [ -x "$commands[http]" ]; then
     alias http="http $HTTPIE_OPTIONS"
 fi
 
+if [ -x "$commands[xh]" ]; then
+    XH_OPTIONS=${XH_OPTIONS:-"--verify no --default-scheme http --follow --all --style monokai"}
+    alias htt="xh $XH_OPTIONS"
+fi
 
 # ag: silver searcher, ripgrep like golang tools with many settings
 #
@@ -81,6 +85,10 @@ if [ -x "$commands[ag]" ]; then
     alias ag="$commands[ag] ${AG_OPTIONS:---context=1 --noaffinity --smart-case --width 140 --path-to-ignore ~/.ignore --path-to-ignore ~/.gitignore}"
 fi
 
+# pastel
+if [ -x "$commands[pastel]" ]; then
+    export PASTEL_COLOR_MODE=8bit
+fi
 
 # ripgrep
 #
@@ -92,6 +100,12 @@ if [ -x "$commands[rg]" ]; then
 
     export JOSH_RIPGREP="rg"
     export JOSH_RIPGREP_OPTS="--require-git --hidden --max-columns-preview --max-filesize=1M --ignore-file=$($realpath --quiet ~/.gitignore)"
+
+    # if [ -x "$commands[hgrep]" ]; then
+    #     function rt {
+    #         $(which rg) -nH $* | $(which hgrep) -G -c 2 -C 3 $*
+    #     }
+    # fi
 
     alias rr="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS $ripgrep_interactive $ripgrep_fast"
     alias rrs="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS $ripgrep_interactive $ripgrep_fast --sort path"
