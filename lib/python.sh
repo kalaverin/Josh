@@ -174,16 +174,15 @@ function python.exe.lookup {
             unset result
 
             if ! version_not_compatible $MIN_PYTHON_VERSION $version; then
-                echo "$python $MIN_PYTHON_VERSION $version" >&2
-            fi
-
-            if [ "$?" -gt 0 ]; then
                 if python.library.is 'distutils' "$python"; then
                     local result="$python"
                 else
                     printf " -- info ($0): python $python ($version) haven't distutils, skip\n" >&2
                     continue
                 fi
+            else
+                printf " -- info ($0): python $python $version < $MIN_PYTHON_VERSION, skip\n" >&2
+                continue
             fi
             [ "$result" ] && break
         done
