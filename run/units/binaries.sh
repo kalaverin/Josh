@@ -8,7 +8,7 @@ if [[ -n ${(M)zsh_eval_context:#file} ]]; then
     [ ! -d "$BINARY_DEST" ] && mkdir -p "$BINARY_DEST"
 
     if [ -n "$JOSH_DEST" ]; then
-        echo " + compile binaries to \`$BINARY_DEST\`"
+        info $0 "compile binaries to '$BINARY_DEST'"
         BASE="$JOSH_BASE"
     else
         BASE="$JOSH"
@@ -23,7 +23,7 @@ function compile_ondir {
     fi
 
     if [ -z "$OMZ_PLUGIN_DIR" ]; then
-        printf " -- info ($0): plugins dir isn't set\n" >&2
+        info $0 "plugins dir isn't set"
         return 1
 
     elif [ ! -d "$OMZ_PLUGIN_DIR/ondir" ]; then
@@ -31,11 +31,11 @@ function compile_ondir {
     fi
 
     local cwd="$PWD"
-    printf " -- info ($0): compile ondir in '$OMZ_PLUGIN_DIR' -> '$BINARY_DEST'\n" >&2
+    info $0 "compile ondir in '$OMZ_PLUGIN_DIR' -> '$BINARY_DEST'"
     builtin cd "$OMZ_PLUGIN_DIR/ondir" && make clean && make && mv ondir "$BINARY_DEST/ondir" && make clean
 
     local retval="$?"
-    [ "$retval" -gt 0 ] && printf " ** fail ($0): something went wrong\n" >&2
+    [ "$retval" -gt 0 ] && fail $0 "something went wrong"
 
     builtin cd "$cwd"
     return "$retval"
@@ -49,7 +49,7 @@ function compile_fzf {
 
     [ ! -d "$BINARY_DEST" ] && mkdir -p "$BINARY_DEST"
     if [ ! -d "$BINARY_DEST" ]; then
-        printf " ** fail ($0): binary dir doesn't exist, BINARY_DEST '$BINARY_DEST'\n" >&2
+        fail $0 "binary dir doesn't exist, BINARY_DEST '$BINARY_DEST'"
         return 1
 
     elif [ -x "$BINARY_DEST/fzf" ]; then
@@ -61,13 +61,13 @@ function compile_fzf {
     fi
 
     if [ ! -f "$BINARY_DEST/fzf" ]; then
-        printf " -- info ($0): deploy fzf to $BINARY_DEST/fzf\n" >&2
+        info $0 "deploy fzf to $BINARY_DEST/fzf"
 
         local tempdir="$(fs_dirname `mktemp -duq`)/fzf"
         [ -d "$tempdir" ] && rm -rf "$tempdir"
 
         $SHELL -c "$clone $url $tempdir && $tempdir/install --completion --key-bindings --update-rc --bin && cp -f $tempdir/bin/fzf $BINARY_DEST/fzf && rm -rf $tempdir"
-        [ "$?" -gt 0 ] && printf " ** fail ($0): something went wrong\n" >&2
+        [ "$?" -gt 0 ] && fail $0 "something went wrong"
     fi
 
     if [ -f "$BINARY_DEST/fzf.bak" ]; then
@@ -86,17 +86,17 @@ function deploy_micro {
 
     [ ! -d "$BINARY_DEST" ] && mkdir -p "$BINARY_DEST"
     if [ ! -d "$BINARY_DEST" ]; then
-        printf " ** fail ($0): binary dir doesn't exist, BINARY_DEST '$BINARY_DEST'\n" >&2
+        fail $0 "binary dir doesn't exist, BINARY_DEST '$BINARY_DEST'"
         return 1
 
     elif [ ! -x "$BINARY_DEST/micro" ]; then
         # $BINARY_DEST/micro --version | head -n 1 | awk '{print $2}'
 
         local cwd="$PWD"
-        printf " -- info ($0): deploy micro: $BINARY_DEST/micro\n" >&2
+        info $0 "deploy micro: $BINARY_DEST/micro"
         builtin cd "$BINARY_DEST" && $SHELL -c "$HTTP_GET $url | $SHELL"
 
-        [ "$?" -gt 0 ] && printf " ** fail ($0): something went wrong\n" >&2
+        [ "$?" -gt 0 ] && fail $0 "something went wrong"
         $SHELL -c "$BINARY_DEST/micro -plugin install fzf wc detectindent bounce editorconfig quickfix"
         builtin cd "$cwd"
     fi
@@ -112,7 +112,7 @@ function deploy_tmux_plugins {
 
     [ ! -d "$TMUX_DEST" ] && mkdir -p "$TMUX_DEST"
     if [ ! -d "$TMUX_DEST" ]; then
-        printf " ** fail ($0): binary dir isn't exist, TMUX_DEST '$TMUX_DEST'\n" >&2
+        fail $0 "binary dir isn't exist, TMUX_DEST '$TMUX_DEST'"
         return 1
 
     elif [ ! -x "$TMUX_DEST/tpm" ]; then
@@ -127,7 +127,7 @@ function deploy_tmux_plugins {
     if [ -x "$(which bash)" ]; then
         bash "$HOME/.tmux/plugins/tpm/scripts/install_plugins.sh"
     else
-        printf " ++ warn ($0): it's funny, but tmux plugin manager required bash for installation bootstrap\n" >&2
+        warn $0 "it's funny, but tmux plugin manager required bash for installation bootstrap"
     fi
 }
 
@@ -136,11 +136,11 @@ function link_fpp {
     local src="$OMZ_PLUGIN_DIR/fpp"
 
     if [ -z "$OMZ_PLUGIN_DIR" ]; then
-        printf " ** fail ($0): plugins dir isn't set\n" >&2
+        fail $0 "plugins dir isn't set"
         return 1
 
     elif [ ! -d "$src" ]; then
-        printf " -- info ($0): deploy to '$OMZ_PLUGIN_DIR'\n" >&2
+        info $0 "deploy to '$OMZ_PLUGIN_DIR'"
         git clone --depth 1 "https://github.com/facebook/PathPicker.git" "$src"
         local retval="$?"
     fi
@@ -150,11 +150,11 @@ function link_fpp {
         if [ -z "$dst" ]; then
             local retval="127"
         else
-            printf " -- info ($0): fpp -> $dst\n" >&2
+            info $0 "fpp -> $dst"
         fi
     fi
 
-    [ "$retval" -gt 0 ] && printf " ** fail ($0): something went wrong\n" >&2
+    [ "$retval" -gt 0 ] && fail $0 "something went wrong"
     return "$retval"
 }
 
@@ -162,11 +162,11 @@ function link_git_tools {
     local src="$OMZ_PLUGIN_DIR/git-tools"
 
     if [ -z "$OMZ_PLUGIN_DIR" ]; then
-        printf " ** fail ($0): plugins dir isn't set\n" >&2
+        fail $0 "plugins dir isn't set"
         return 1
 
     elif [ ! -d "$src" ]; then
-        printf " -- info ($0): deploy '$OMZ_PLUGIN_DIR'\n" >&2
+        info $0 "deploy '$OMZ_PLUGIN_DIR'"
         git clone --depth 1 "https://github.com/MestreLion/git-tools.git" "$src"
         local retval="$?"
     fi
@@ -179,13 +179,13 @@ function link_git_tools {
                 if [ -z "$dst" ]; then
                     local retval="127"
                 else
-                    printf " -- info ($0): '$(fs_basename "$dst")' -> '$dst'\n" >&2
+                    info $0 "'$(fs_basename "$dst")' -> '$dst'"
                 fi
             fi
         done
     fi
 
-    [ "$retval" -gt 0 ] && printf " ** fail ($0): something went wrong\n" >&2
+    [ "$retval" -gt 0 ] && fail $0 "something went wrong"
     return "$retval"
 }
 
