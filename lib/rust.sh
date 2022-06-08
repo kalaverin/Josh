@@ -224,7 +224,7 @@ function cargo_extras {
     return 0
 }
 
-function cargo_extras {
+function cargo_all {
     cargo_install "$CARGO_REQ_PACKAGES $CARGO_REC_PACKAGES $CARGO_OPT_PACKAGES"
     return 0
 }
