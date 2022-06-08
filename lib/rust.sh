@@ -47,6 +47,7 @@ CARGO_REQ_PACKAGES=(
     starship         # shell prompt
     tabulate         # autodetect columns in stdin and tabulate
     vivid            # ls colors themes selections system
+    pastel           # color logging
 )
 CARGO_REC_PACKAGES=(
     bingrep          # extract and grep strings from binaries
