@@ -29,11 +29,13 @@ fi
 CARGO_REQ_PACKAGES=(
     bat              # modern replace for cat with syntax highlight
     cargo-update     # packages for auto-update installed crates
+    cfonts           # colored terminal text with fonts
     chit             # crates info, just type: chit <any>
     csview           # for commas, tabs, etc
     fd-find          # fd, fast replace for find for humans
     git-delta        # fast replace for git delta with steroids
     git-interactive-rebase-tool
+    hgrep            # wonderful grep with syntax highlight
     lsd              # fast ls replacement
     petname          # generate human readable strings
     proximity-sort   # path sorter
@@ -45,7 +47,6 @@ CARGO_REQ_PACKAGES=(
     starship         # shell prompt
     tabulate         # autodetect columns in stdin and tabulate
     vivid            # ls colors themes selections system
-    cfonts           # colored terminal text with fonts
 )
 CARGO_REC_PACKAGES=(
     bingrep          # extract and grep strings from binaries
@@ -58,6 +59,7 @@ CARGO_REC_PACKAGES=(
     dull             # strip any ANSI (color) sequences from pipe
     dupe-krill       # replace similar (by hash) files with hardlinks
     durt             # du replace, just sum
+    dusage           # df replace
     easypassword     # password generator
     gfold            # git reps in directory branches status
     gip              # show my ip
@@ -66,11 +68,14 @@ CARGO_REC_PACKAGES=(
     git-hooks-dispatch
     git-trim         # remove local branches when remote merged
     git-who          # list branches with date, author and merge status
+    hexyl            # hex viewer
     ignoreit         # powerful .gitignore for any languages
     jfmt             # minifier
+    jira-terminal    # jira client
     jql              # select values by path from JSON input for humans
     jsonfmt          # another JSON minifier
     kalker           # powerful terminal interactive calculator
+    krabby           # show pokemon
     loadem           # website load maker
     mdcat            # Markdown files rendered viewer
     miniserve        # directory serving over http
@@ -83,18 +88,20 @@ CARGO_REC_PACKAGES=(
     rjo              # JSON generator by key->value
     ry               # jq for yamls
     sbyte            # hexeditor
+    so               # command line TUI full featured stack overflow questions
     trippy           # network diagnosis tool
     tuc              # cut replacer
     viu              # print images into terminal
-    so               # command line TUI full featured stack overflow questions
+    ptit             # print images into terminal
+    xh               # rust httpie replacement
     xkpwgen          # generate human readable strings
     yj               # YAML to JSON converter
     ytop             # htop analogue
-    jira-terminal    # jira client
 )
 CARGO_OPT_PACKAGES=(
     b0x
     difftastic       # diff colored visualizer
+    ch4              # plain dns client, dig like
     doh-client       # full featured client with caching
     https-dns        # simple client
     doh-proxy        # doh servier, proxy to plain dns
@@ -116,6 +123,7 @@ CARGO_OPT_PACKAGES=(
     streampager      # less for streams
     tidy-viewer      # csv prettry printer
     x8               # websites scan tool
+    mprober          # top like tool
 )
 
 CARGO_BIN="$CARGO_BINARIES/cargo"
