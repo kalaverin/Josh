@@ -65,6 +65,7 @@ CARGO_REC_PACKAGES=(
     gfold            # git reps in directory branches status
     gip              # show my ip
     git-bonsai       # full features analyze and remove unnecessary branches
+    git-eq           # autocommit all changes to new branch and push it
     git-hist         # git history for selected file
     git-hooks-dispatch
     git-trim         # remove local branches when remote merged
@@ -77,54 +78,62 @@ CARGO_REC_PACKAGES=(
     jsonfmt          # another JSON minifier
     kalker           # powerful terminal interactive calculator
     krabby           # show pokemon
+    lnx              # xargs replacement, pass args from stdio
     loadem           # website load maker
     mdcat            # Markdown files rendered viewer
     miniserve        # directory serving over http
+    parallel-sh      # shell commands parallizer
     pgen             # password generator
     procs            # ps aux replacement for humans
+    ptit             # print images into terminal
     qrrs             # qr code terminal tool
     quickdash        # hasher
     rcrawl           # very fast file searcher by pattern in directory
+    readable-name-generator
     rhit             # very fast nginx log analyzer with graphical stats
     rjo              # JSON generator by key->value
+    ruplacer         # refactoring tool, like sed for directory
     ry               # jq for yamls
     sbyte            # hexeditor
     so               # command line TUI full featured stack overflow questions
     trippy           # network diagnosis tool
     tuc              # cut replacer
     viu              # print images into terminal
-    ptit             # print images into terminal
+    xcp              # cp replacement
     xh               # rust httpie replacement
     xkpwgen          # generate human readable strings
+    xt               # json, yaml, toml and msgpack converter
     yj               # YAML to JSON converter
     ytop             # htop analogue
 )
 CARGO_OPT_PACKAGES=(
     b0x
-    difftastic       # diff colored visualizer
     ch4              # plain dns client, dig like
+    difftastic       # diff colored visualizer
     doh-client       # full featured client with caching
-    https-dns        # simple client
     doh-proxy        # doh servier, proxy to plain dns
     dssim            # pictures similarity compare tool
     duf              # miniserver analogue
     feroxbuster      # agressively website dumper
-    httm             # file versions tool
-    investments      # stocks tools
-    tickrs           # realtime ticker
     genact           # console activity generator
+    httm             # file versions tool
+    https-dns        # simple client
+    hyperfine        # time replacement and benchmarking tool
+    investments      # stocks tools
     ipgeo            # geoloc by hostname/ip
     just             # command runner like make
     limber           # elasticsearch importer/exporter
     logtail          # graphical tail logs in termial
     lolcate-rs       # blazing fast filesystem database
+    mprober          # top like tool
+    navi             # local TUI cheatsheets with repositories
     onefetch         # graphical statistics for git repository
     rustscan         # scanner around nmap
     ss-rs            # shadowsocks server and client
     streampager      # less for streams
+    tickrs           # realtime ticker
     tidy-viewer      # csv prettry printer
     x8               # websites scan tool
-    mprober          # top like tool
 )
 
 CARGO_BIN="$CARGO_BINARIES/cargo"

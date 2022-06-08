@@ -250,6 +250,13 @@ if [ -x "$commands[petname]" ]; then
     naming_functions+=(__pwd.func.petname)
 fi
 
+if [ -x "$commands[readable-name-generator]" ]; then
+    function __pwd.func.readablenamegenerator {
+        echo "$(readable-name-generator -s "${2:-.}")"
+    }
+    naming_functions+=(__pwd.func.readablenamegenerator)
+fi
+
 if [ -x "$commands[easypassword]" ]; then
     function __pwd.func.easypassword {
         echo "$(easypassword "${2:-.}" '' -n ${1:-2})"
