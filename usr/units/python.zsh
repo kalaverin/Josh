@@ -246,7 +246,7 @@ function virtualenv_create {
 }
 
 function virtualenv_temporary_create {
-    local venv="`get_tempdir`/`fs_basename $JOSH_PY_ENVS_ROOT`/`make_human_name`"
+    local venv="`get_tempdir`/`fs_basename $JOSH_PY_ENVS_ROOT`/`get.name`"
     virtualenv_create "$venv" $@
 }
 

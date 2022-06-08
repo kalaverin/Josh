@@ -41,7 +41,7 @@ function tmx {
         fi
 
     else
-        tmx lost || tmux new-session -s "`make_human_name 1`"
+        tmx lost || tmux new-session -s "$(get.name 1)"
     fi
 }
 

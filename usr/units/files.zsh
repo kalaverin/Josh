@@ -54,11 +54,11 @@ function bak {
     local target="`get_tempdir`/bak/$source"
     [ "$?" -gt 0 ] && return 3
 
-    local backup="$target/$timemark-`make_human_name`.tar"
+    local backup="$target/$timemark-$(get.name).tar"
     [ "$?" -gt 0 ] && return 4
 
-    run_show "mkdir -p \"$target\" 2>/dev/null; `__stream_pak` | $JOSH_PAQ > $backup"
-    echo " => cat $backup | $JOSH_QAP | `__stream_unpak`"
+    run_show "mkdir -p \"$target\" 2>/dev/null; $(__stream_pak) | $JOSH_PAQ > $backup"
+    echo " => cat $backup | $JOSH_QAP | $(__stream_unpak)"
     export BAK_RESTORE="$backup"
 }
 
@@ -84,11 +84,11 @@ function bakf {
     local target="`get_tempdir`/bak/$source"
     [ "$?" -gt 0 ] && return 3
 
-    local backup="$target/$timemark-`make_human_name`.tar"
+    local backup="$target/$timemark-$(get.name).tar"
     [ "$?" -gt 0 ] && return 4
 
-    run_show "mkdir -p \"$target\" 2>/dev/null; tar `__stream_pak` | $JOSH_PAQ > $backup"
-    echo " => cat $backup | $JOSH_QAP | `__stream_unpak`"
+    run_show "mkdir -p \"$target\" 2>/dev/null; tar $(__stream_pak) | $JOSH_PAQ > $backup"
+    echo " => cat $backup | $JOSH_QAP | $(__stream_unpak)"
     export BAK_RESTORE="$backup"
 }
 
@@ -99,7 +99,7 @@ function kab {
 
     git_repository_clean || return "$?"
 
-    run_show "cat $backup | $JOSH_QAP | `__stream_unpak`" && return 0
+    run_show "cat $backup | $JOSH_QAP | $(__stream_unpak)" && return 0
     return "$?"
 }
 
@@ -107,7 +107,7 @@ function kabf {
     local backup="`backup_file_get 2>/dev/null`"
     [ -z "$backup" ] && return "$?"
 
-    run_show "cat $backup | $JOSH_QAP | `__stream_unpak`" && return 0
+    run_show "cat $backup | $JOSH_QAP | $(__stream_unpak)" && return 0
     return "$?"
 }
 
@@ -115,8 +115,8 @@ function bakrm {
     local backup="`backup_file_get 2>/dev/null`"
     [ -z "$backup" ] && return "$?"
 
-    if [ -x "`which rip`" ]; then
-        local exe="`which rip`"
+    if [ -x "$(which rip)" ]; then
+        local exe="$(which rip)"
         local cmd="$exe $backup"
     else
         local cmd="rm $backup"

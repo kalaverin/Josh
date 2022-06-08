@@ -216,45 +216,44 @@ fi
 
 naming_functions=()
 if [ -x "$commands[xkpwgen]" ]; then
-    function make_xkpwgen_name() {
-        local count=${1:-2}
-        local sep=${2:-'.'}
-        echo "$(xkpwgen -l $count -n 1 -s "$sep")"
+    function __pwd.func.xkpwgen {
+        echo "$(xkpwgen -l ${1:-2} -n 1 -s "${2:-.}")"
     }
-    naming_functions+=(make_xkpwgen_name)
+    naming_functions+=(__pwd.func.xkpwgen)
 fi
 
 if  [ -x "$commands[pgen]" ]; then
-    function make_pgen_name() {
-        local count=${1:-2}
-        local sep=${2:-'.'}
-        echo "$(pgen -n $count -k 1 | sd '( +)' "$sep")"
+    function __pwd.func.pgen {
+        echo "$(pgen -n ${1:-2} -k 1 | sd '( +)' "${2:-.}")"
     }
-    naming_functions+=(make_pgen_name)
+    naming_functions+=(__pwd.func.pgen)
 fi
 
 if [ -x "$commands[petname]" ]; then
-    function make_petname_name() {
-        local count=${1:-2}
-        local sep=${2:-'.'}
-        echo "$(petname -s "$sep" -w $count -a)"
+    function __pwd.func.petname {
+        echo "$(petname -s "${2:-.}" -w ${1:-2} -a)"
     }
-    naming_functions+=(make_petname_name)
+    naming_functions+=(__pwd.func.petname)
+fi
+
+if [ -x "$commands[easypassword]" ]; then
+    function __pwd.func.easypassword {
+        echo "$(easypassword "${2:-.}" '' -n ${1:-2})"
+    }
+    naming_functions+=(__pwd.func.easypassword)
 fi
 
 local count=${#naming_functions[@]}
 if [ "$count" -gt 0 ]; then
-    local select=$(printf "%d" $[RANDOM%$count+1])
-    if [ "$select" -gt 0 ]; then
-        make_human_name="${naming_functions[$select]}"
-        function make_human_name() {
-            echo "$($make_human_name $*)"
-        }
-    fi
+    function get.name {
+        let select="($RANDOM % $count) + 1"
+        local result="$(${naming_functions[$select]} $*)"
+        printf "${result:l}"
+    }
 fi
 
 function mktp {
-    mkcd "$(get_tempdir)/pet/$(make_human_name)"
+    mkcd "$(get_tempdir)/pet/$(get.name)"
 }
 
 function shortcut- {
