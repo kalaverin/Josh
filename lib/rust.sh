@@ -52,6 +52,7 @@ CARGO_REQ_PACKAGES=(
 CARGO_REC_PACKAGES=(
     bingrep          # extract and grep strings from binaries
     broot            # console file manager
+    dsmsg            # phrases from Dark Souls generator
     bump-bin         # versions with semver specification
     diffsitter       # AST based diff
     dirstat-rs       # ds, du replace, summary tree
@@ -72,6 +73,8 @@ CARGO_REC_PACKAGES=(
     git-who          # list branches with date, author and merge status
     hexyl            # hex viewer
     ignoreit         # powerful .gitignore for any languages
+    igrep            # interactive ripgrep
+    jaq              # json query and manipulating tool
     jfmt             # minifier
     jira-terminal    # jira client
     jql              # select values by path from JSON input for humans
@@ -84,6 +87,7 @@ CARGO_REC_PACKAGES=(
     miniserve        # directory serving over http
     parallel-sh      # shell commands parallizer
     pgen             # password generator
+    pouf             # many data formats faker
     procs            # ps aux replacement for humans
     ptit             # print images into terminal
     qrrs             # qr code terminal tool
@@ -99,12 +103,13 @@ CARGO_REC_PACKAGES=(
     trippy           # network diagnosis tool
     tuc              # cut replacer
     viu              # print images into terminal
+    watchexec-cli    # watchdog runner, useful for dev autorestart
     xcp              # cp replacement
     xh               # rust httpie replacement
     xkpwgen          # generate human readable strings
     xt               # json, yaml, toml and msgpack converter
     yj               # YAML to JSON converter
-    ytop             # htop analogue
+    hj               # http response into json
 )
 CARGO_OPT_PACKAGES=(
     b0x
@@ -126,14 +131,33 @@ CARGO_OPT_PACKAGES=(
     logtail          # graphical tail logs in termial
     lolcate-rs       # blazing fast filesystem database
     mprober          # top like tool
+    multi-tunnel     # multiple SSH tunnels
     navi             # local TUI cheatsheets with repositories
+    oha              # tui tool for website benchmarking
     onefetch         # graphical statistics for git repository
     rustscan         # scanner around nmap
     ss-rs            # shadowsocks server and client
+    oreo             # NAT bypass tunnels, like ngrok
     streampager      # less for streams
+    termatrix        # matrix screensaver
+    termscp          # tui for scp, sftp, ftp, s3
     tickrs           # realtime ticker
+    netperf          # simple network perftool
+    basecracker      # BASExx encode, decode and crack
     tidy-viewer      # csv prettry printer
     x8               # websites scan tool
+    ytop             # htop analogue
+    bkt              # invocation cache tool
+    rust-latest      # actual rustup version fetcher
+    slick            # starship fast replacement
+    ztop             # zfs datasets iostat
+    sniffglue        # network sniffer
+    tobaru           # port forwarding tool
+    names            # another names generator
+    grep_bin         # another binary grep
+    toluol           # DNS queries maker
+    enquirer         # for zsh interactive scripting
+    caster           # expose stdout via http
 )
 
 CARGO_BIN="$CARGO_BINARIES/cargo"

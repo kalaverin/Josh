@@ -243,6 +243,13 @@ if  [ -x "$commands[pgen]" ]; then
     naming_functions+=(__pwd.func.pgen)
 fi
 
+if [ -x "$commands[names]" ]; then
+    function __pwd.func.names {
+        echo "$(names | sed -z 's:-:.:g')"
+    }
+    naming_functions+=(__pwd.func.names)
+fi
+
 if [ -x "$commands[petname]" ]; then
     function __pwd.func.petname {
         echo "$(petname -s "${2:-.}" -w ${1:-2} -a)"

@@ -92,5 +92,8 @@ elif [ -z "$JOSH_TMUX_SPACES_FILL_DISABLE" ] && [ -n "$PS1" ] && [ -n "$TMUX" ];
         if [ -x "$commands[krabby]" ]; then
             krabby random | sed 1d
         fi
+        if [ -x "$commands[dsmsg]" ]; then
+            printf "\033[0m$(dsmsg --ds1 --ds2 --ds3)\n"
+        fi
     fi
 fi
