@@ -223,12 +223,19 @@ fi
 
 function ssh.agent {
     if [ -x "$commands[ssh-add]" ] && [ -x "$commands[ssh-agent]" ]; then
-        eval $(ssh-agent) >/dev/null && ssh-add 2>/dev/null
+        eval $(ssh-agent) >/dev/null
     fi
 }
 
 if [ -z "$SSH_AUTH_SOCK" ]; then
     ssh.agent
+    ssh-add 2>/dev/null
+else
+    ssh-add 2>/dev/null
+    if [ "$?" -eq 2 ]; then
+        ssh.agent
+        ssh-add 2>/dev/null
+    fi
 fi
 
 
