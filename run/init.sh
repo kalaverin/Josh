@@ -10,46 +10,30 @@ function __log.spaces {
 }
 
 
-if [ "$commands[pastel]" ]; then
+if [ "$commands[pastel2]" ]; then
     alias draw="pastel -m 8bit paint -n"
-
     function __log.draw {
         __log.spaces "$PRE"
         local msg="$(echo "${@:6}" | sd '[\$"]' '\\$0')"
         printf "$(eval "draw $2 ' $1 $4 ($5):'")$(eval "draw $3 \" $msg\"")"
         __log.spaces "${POST:-1}"
     }
-
     function info { __log.draw '--' 'limegreen' 'gray' $0 $* >&2 }
     function warn { __log.draw '++' 'yellow' 'gray' $0 $* >&2 }
     function fail { __log.draw '**' 'red --bold' 'white --bold' $0 $* >&2 }
     function term { __log.draw '!!' 'white --on red --bold' 'white --bold' $0 $* >&2 }
 
 else
-    function info {
-        local msg="${@:2}"
+    function __log.draw {
         __log.spaces "$PRE"
-        printf "\033[0;32m -- $0 ($1):\033[0m $msg\n" >&2
-        __log.spaces "${POST:-0}"
+        local msg="$(echo "${@:5}" | sd '[\$"]' '\\$0')"
+        printf "$2 $1 $4 ($5):$3 $msg\033[0m" >&2
+        __log.spaces "${POST:-1}"
     }
-    function warn {
-        local msg="${@:2}"
-        __log.spaces "$PRE"
-        printf "\033[0;33m ++ $0 ($1):\033[0m $msg\n" >&2
-        __log.spaces "${POST:-0}"
-    }
-    function fail {
-        local msg="${@:2}"
-        __log.spaces "$PRE"
-        printf "\033[1;31m ** $0 ($1):\033[0m $msg\n" >&2
-        __log.spaces "${POST:-0}"
-    }
-    function term {
-        local msg="${@:2}"
-        __log.spaces "$PRE"
-        printf "\033[42m\033[0;101m ## $0 ($1):\033[0m $msg\n" >&2
-        __log.spaces "${POST:-0}"
-    }
+    function info { __log.draw '--' '\033[0;32m' '\033[0m' $0 $* >&2 }
+    function warn { __log.draw '++' '\033[0;33m' '\033[0m' $0 $* >&2 }
+    function fail { __log.draw '**' '\033[1;31m' '\033[0m' $0 $* >&2 }
+    function term { __log.draw '!!' '\033[42m\033[0;101m' '\033[0m' $0 $* >&2 }
 fi
 
 
