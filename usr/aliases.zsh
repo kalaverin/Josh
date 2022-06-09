@@ -221,10 +221,14 @@ if [ -x "$commands[wget]" ]; then
     }
 fi
 
-if  [ -z "$SSH_AUTH_SOCK" ] && \
-    [ -x "$commands[ssh-add]" ] && \
-    [ -x "$commands[ssh-agent]" ]; then
-    eval `ssh-agent` >/dev/null && ssh-add 2>/dev/null
+function ssh.agent {
+    if [ -x "$commands[ssh-add]" ] && [ -x "$commands[ssh-agent]" ]; then
+        eval $(ssh-agent) >/dev/null && ssh-add 2>/dev/null
+    fi
+}
+
+if [ -z "$SSH_AUTH_SOCK" ]; then
+    ssh.agent
 fi
 
 
