@@ -63,9 +63,15 @@ JOSH_UPDATES_STABLE_STAY_D=${JOSH_UPDATES_STABLE_STAY_D:-7}
 JOSH_TMUX_AUTORETACH_MAX_DIFF=9
 
 #JOSH_TMUX_SPACES_FILL_DISABLE
-# fill terminal with \n, move prompth to bottom place
+# disable default: clear terminal and move prompth to bottom place
 #
 # JOSH_TMUX_SPACES_FILL_DISABLE=1
+
+#JOSH_TMUX_MOTD_DISABLE
+# disable default: show random pokemon and Darks Souls phrase
+#
+# JOSH_TMUX_MOTD_DISABLE=1
+# JOSH_TMUX_MOTD_DISABLE=1
 
 THEFUCK_EXCLUDE_RULES="fix_file"
 
