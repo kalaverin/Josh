@@ -58,6 +58,8 @@ CARGO_REC_PACKAGES=(
     dirstat-rs       # ds, du replace, summary tree
     dtool            # code decode swiss knife
     du-dust          # dust, du replace, verbose tree
+    cargo-whatis     # fast chit replacement
+    diskus           # fast du -sh replacement
     dull             # strip any ANSI (color) sequences from pipe
     dupe-krill       # replace similar (by hash) files with hardlinks
     durt             # du replace, just sum
@@ -67,8 +69,10 @@ CARGO_REC_PACKAGES=(
     gip              # show my ip
     git-bonsai       # full features analyze and remove unnecessary branches
     git-eq           # autocommit all changes to new branch and push it
+    git-gone         # remove local branches
     git-hist         # git history for selected file
     git-hooks-dispatch
+    git-summary      # fast gfold replacement
     git-trim         # remove local branches when remote merged
     git-who          # list branches with date, author and merge status
     hexyl            # hex viewer
@@ -94,6 +98,9 @@ CARGO_REC_PACKAGES=(
     quickdash        # hasher
     rcrawl           # very fast file searcher by pattern in directory
     readable-name-generator
+    parallel-disk-usage # pdu, parallel and fast du
+    ctv              # fast tree
+    cork             # repl hex calculator
     rhit             # very fast nginx log analyzer with graphical stats
     rjo              # JSON generator by key->value
     ruplacer         # refactoring tool, like sed for directory
@@ -144,6 +151,8 @@ CARGO_OPT_PACKAGES=(
     tickrs           # realtime ticker
     netperf          # simple network perftool
     basecracker      # BASExx encode, decode and crack
+    htmlq            # jq for html
+    arp-scan
     tidy-viewer      # csv prettry printer
     x8               # websites scan tool
     ytop             # htop analogue
@@ -156,8 +165,10 @@ CARGO_OPT_PACKAGES=(
     names            # another names generator
     grep_bin         # another binary grep
     toluol           # DNS queries maker
+    fast-ssh         # tui for .ssh/config
     enquirer         # for zsh interactive scripting
     caster           # expose stdout via http
+    gitui            # full featured tui git client
 )
 
 CARGO_BIN="$CARGO_BINARIES/cargo"
