@@ -360,10 +360,10 @@ function git_squash_already_pushed {
 
 function git_update_nested_repositories {
     local cwd="$PWD"
-    local root="${1:-"."}"
+    local root="$(fs_realpath "${1:-.}")"
 
     if [ ! -d "$root" ]; then
-        info $0 "working path '$root' isn't accessible"
+        fail $0 "working path '$root' isn't accessible"
         return 1
     fi
 
@@ -372,8 +372,10 @@ function git_update_nested_repositories {
 
     find "$root" -maxdepth 2 -type d -name .git | sort | while read git_directory
     do
-        if [ -z "$header" ]; then
-            info $0 "update '$(fs_realpath "$root")'"
+        current_path="$(fs_dirname "$(fs_realpath $git_directory)")"
+
+        if [ -z "$header" ] && [ "$root" != "$current_path" ]; then
+            PRE=2 info $0 "update '$(fs_realpath "$root")'"
             if [ -x "$(which gfold)" ]; then
                 gfold -d classic
             fi
@@ -381,7 +383,6 @@ function git_update_nested_repositories {
             local header="1"
         fi
 
-        current_path="$(fs_dirname "`fs_realpath $git_directory`")"
         builtin cd "$current_path"
         local branch="`$SHELL -c "$GET_BRANCH"`"
         if [ "$?" -gt 0 ] || [ -z "$branch" ]; then
@@ -390,7 +391,7 @@ function git_update_nested_repositories {
             continue
         fi
 
-        printf " $0: $branch in '$current_path'.. "
+        POST=0 info $0 "$branch in '$current_path'.. "
         local cmd="git fetch origin master && git fetch --tags"
 
         if git_repository_clean 2>/dev/null; then

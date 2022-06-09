@@ -13,7 +13,7 @@ function __log.spaces {
 if [ "$commands[pastel]" ]; then
     alias draw="pastel -m 8bit paint -n"
 
-    function __draw {
+    function __log.draw {
         __log.spaces "$PRE"
         printf "$(eval "draw $2 ' $1 $4 ($5):'")$(eval "draw $3 ' ${@:6}'")"
         __log.spaces "${POST:-1}"
