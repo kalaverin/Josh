@@ -20,10 +20,10 @@ if [ "$commands[pastel]" ]; then
         __log.spaces "${POST:-1}"
     }
 
-    function info { __log.draw '--' 'limegreen' 'gray' $0 $* }
-    function warn { __log.draw '++' 'yellow' 'gray' $0 $* }
-    function fail { __log.draw '**' 'red --bold' 'white --bold' $0 $* }
-    function term { __log.draw '!!' 'white --on red --bold' 'white --bold' $0 $* }
+    function info { __log.draw '--' 'limegreen' 'gray' $0 $* >&2 }
+    function warn { __log.draw '++' 'yellow' 'gray' $0 $* >&2 }
+    function fail { __log.draw '**' 'red --bold' 'white --bold' $0 $* >&2 }
+    function term { __log.draw '!!' 'white --on red --bold' 'white --bold' $0 $* >&2 }
 
 else
     function info {
