@@ -258,7 +258,7 @@ function git.pull.reset {
     return $?
 }
 
-function git_push {
+function git.push {
     local branch="${1:-`git.this.branch`}"
     [ -z "$branch" ] && return 1
     run_show "git push origin $branch"
