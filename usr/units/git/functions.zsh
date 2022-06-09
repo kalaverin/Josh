@@ -6,27 +6,28 @@ local GET_BRANCH='git rev-parse --quiet --abbrev-ref HEAD 2>/dev/null'
 
 function git.cmd.checkout {
     if [ -z "$1" ]; then
-        fail $0 "branch required"
+        fail $0 "\$1 - branch required"
         return 1
 
     elif [[ "$1" =~ '^[0-9]+' ]]; then
         if [ -n "$JOSH_BRANCH_PREFIX" ]; then
             local branch="$JOSH_BRANCH_PREFIX-$1"
         else
-            fail $0 "branch name doens't start with digit"
+            fail $0 "branch name can't starts by digit"
             return 2
         fi
-
     else
         local branch="$1"
     fi
-
     echo "git checkout -b \"$branch\" 2>/dev/null || git switch \"$branch\""
 }
 
 function git.cmd.fetch {
-    local branch="`git.this.branch`"
-    [ -z "$branch" ] && return 1
+    local branch
+    branch="$(git.this.branch)"
+    if [ "$?" -gt 0 ] || [ -z "$branch" ]; then
+        return 1
+    fi
 
     local function __temp() {
         echo "git fetch origin \"$1\":\"$1\" 2>&1"
@@ -53,28 +54,35 @@ function git.cmd.fetch {
 }
 
 function git.cmd.pull {
-    local branch="${1:-`git.this.branch`}"
-    [ -z "$branch" ] && return 1
+    local branch
+    branch="${1:-$(git.this.branch)}"
+    if [ "$?" -gt 0 ] || [ -z "$branch" ]; then
+        return 1
+    fi
     echo "git pull --ff-only --no-edit --no-commit origin $branch"
 }
 
 function git.cmd.pullmerge {
-    local branch="${1:-`git.this.branch`}"
-    [ -z "$branch" ] && return 1
+    local branch
+    branch="${1:-$(git.this.branch)}"
+    if [ "$?" -gt 0 ] || [ -z "$branch" ]; then
+        return 1
+    fi
     echo "git pull --no-edit --no-commit origin $branch"
 }
 
 # core functions
 
 function git.this.root {
+    local result
     if [ -z "$1" ]; then
-        local result="$(fs_realpath `eval "$GET_ROOT 2>/dev/null"`)"
+        result="$(fs_realpath `eval "$GET_ROOT 2>/dev/null"`)"
         local retval="$?"
     else
         if [ -d "$1" ]; then
             local cwd="$PWD"
             builtin cd "$1"
-            local result="$(git.this.root)"
+            result="$(git.this.root)"
             local retval="$?"
             builtin cd "$cwd"
 
@@ -83,6 +91,7 @@ function git.this.root {
             return 1
         fi
     fi
+
     if [ "$retval" -eq 0 ] && [ -d "$result" ]; then
         echo "$result"
     else
@@ -91,24 +100,37 @@ function git.this.root {
 }
 
 function git.this.hash {
-    local result="`eval $GET_HASH`"
-    [ "$result" ] && echo "$result"
+    local result
+    result="$(eval "$GET_HASH")"
+    if [ "$?" -gt 0 ] || [ -z "$result" ]; then
+        return 1
+    fi
 }
 
 function git.this.branch {
-    local result="`eval $GET_BRANCH`"
-    if [ "$result" = "HEAD" ]; then
-        if [ ! "`git name-rev --name-only HEAD 2>&1 | grep -Pv '^(Could not get sha1)'`" ]; then
-            echo " - empty repository `git.this.root` without any commits?" >&2
-            local result="`git symbolic-ref --short HEAD`"
+    local result
+    result="$(eval $GET_BRANCH)"
+    if [ "$?" -gt 0 ] || [ -z "$result" ]; then
+        return 1
+
+    elif [ "$result" = "HEAD" ]; then
+        if [ -z "$(git name-rev --name-only HEAD 2>&1 | grep -Pv '^(Could not get sha1)')" ]; then
+            warn $0 "empty repository $(git.this.root) without any commits?"
+            local result="$(git symbolic-ref --short HEAD)"
+        else
+            fail $0 "something went wrong"
+            return 2
         fi
     fi
-    [ -n "$result" ] && echo "$result"
+    echo "$result"
 }
 
 function git.this.state {
-    local root="`git.this.root 2>/dev/null`"
-    [ -z "$root" ] && return 1
+    local root
+    root="$(git.this.root 2>/dev/null)"
+    if [ "$?" -gt 0 ] || [ -z "$root" ]; then
+        return 1
+    fi
 
     if [ -d "$root/.git/rebase-merge" ] || [ -d "$root/.git/rebase-apply" ]; then
         local state="rebase"
@@ -126,12 +148,12 @@ function git.this.state {
 
 # just functions
 
-function git.branch.delete {
+function git.branch.delete.force {
     if [ -z "$1" ]; then
-        fail $0 "branch required"
+        fail $0 "\$1 - branch required"
         return 1
     fi
-    run_show "git branch -D $1 && git push origin --delete $1"
+    printf " => git branch -D $1 && git push origin --delete $1\n"
     return $?
 }
 
@@ -146,60 +168,78 @@ function git.branch.rename {
 
     elif [ -n "$1" ]; then
         local dst="$1"
-        local src="`git.this.branch`"
-        [ -z "$src" ] && return 2
+        local src
+        src="$(git.this.branch)"
+        if [ "$?" -gt 0 ] || [ -z "$src" ]; then
+            return 2
+        fi
     else
         fail $0 "old_name new_name or just new_name (rename current) "
         return 3
     fi
-    echo "git branch -m $src $dst && git push origin :$src $dst"
+    printf " => git branch -m $src $dst && git push origin :$src $dst\n"
 }
 
 function git.checkout.actual {
-    local branch="`git.this.branch`"
-    [ -z "$branch" ] && return 1
-
-    git.pull.reset "$branch" || return 2
+    local result
+    result="$(git.this.branch)"
+    if [ "$?" -gt 0 ] || [ -z "$result" ]; then
+        return 1
+    fi
+    git.pull.reset "$result" || return "$?"
     git.checkout.current $*
 }
 
 function git.checkout.current {
-    local cmd="`git.cmd.checkout $@`"
-    [ -z "$cmd" ] && return 1
-    run_show "$cmd"
-    return $?
+    local result
+    result="$(git.cmd.checkout $*)"
+    if [ "$?" -gt 0 ] || [ -z "$result" ]; then
+        return 1
+    fi
+    run_show "$result"
+    return "$?"
 }
 
 function git.fetch {
-    local cmd="`git.cmd.fetch $@`"
-    [ -z "$cmd" ] && return 1
-    run_show "$cmd" 2>&1 | grep -v 'up to date'
-    return $?
+    local result
+    result="$(git.cmd.fetch $@)"
+    if [ "$?" -gt 0 ] || [ -z "$result" ]; then
+        return 1
+    fi
+    run_show "$result" 2>&1 | grep -v 'up to date'
+    return "$?"
 }
 
 function git.fetch.merge {
-    local branch="${1:-`git.this.branch`}"
-    [ -z "$branch" ] && return 1
+    local result
+    result="${1:-$(git.this.branch)}"
+    if [ "$?" -gt 0 ] || [ -z "$result" ]; then
+        return 1
+    fi
 
-    git.fetch $branch; [ $? -gt 0 ] && return 2
-    run_show "git merge origin/$branch"
-    return $?
+    git.fetch "$result"
+    [ "$?" -gt 0 ] && return 2
+
+    run_show "git merge origin/$result"
+    return "$?"
 }
 
 function git.branch.select {
     [ -z "$1" ] && return 1
 
-    local branch="`git.this.branch`"
-    if [ -z "$branch" ] || [ "$1" = "$branch" ]; then
+    local result="$(git.this.branch)"
+
+    if [ "$?" -gt 0 ] || [ -z "$result" ]; then
+        return 1
+    elif [ "$1" = "$result" ]; then
         return 2
     fi
 
-    local root="`git.this.root`"
-    [ -z "$root" ] && return 3
+    [ -z "$(git.this.root)" ] && return 3
 
     local cmd="git fetch origin \"$1\":\"$1\" && git.is_clean && git checkout --force --quiet $1 && git reset --hard $1 && git pull origin $1"
     run_show "$cmd"
-    return $?
+    return "$?"
 }
 
 function git.branch.tag {
@@ -213,8 +253,9 @@ function git.branch.tag {
 
     else
         local tag="$1"
-        local branch="`git.this.branch`"
-        if [ -z "$branch" ]; then
+        local branch
+        branch="$(git.this.branch)"
+        if [ "$?" -gt 0 ] || [ -z "$branch" ]; then
             fail $0 "branch couldn't detected"
             return 2
         fi
@@ -222,75 +263,100 @@ function git.branch.tag {
 
     info $0 "$branch/$tag"
 
-    git.is_clean;   [ $? -gt 0 ] && return 3
-    git checkout "$branch"; [ $? -gt 0 ] && return 4
-    git.pull "$branch";     [ $? -gt 0 ] && return 5
+    git.is_clean           || return "$?"
+    git checkout "$branch" || return "$?"
+    git.pull "$branch"     || return "$?"
     git.tag.set "$tag"
-    return $?
+    return "$?"
 }
 
 function git.pull {
-    local cmd="`git.cmd.pull $@`"
-    [ -z "$cmd" ] && return 1
-    run_show "$cmd" 2>&1 | grep -v 'up to date'
+    local result
+    result="$(git.cmd.pull $@)"
+    if [ "$?" -gt 0 ] || [ -z "$result" ]; then
+        return 1
+    fi
+
+    run_show "$result" 2>&1 | grep -v 'up to date'
     local retval="$?"
     git.mtime.set 2>&1
     return "$retval"
 }
 
 function git.pull.merge {
-    local cmd="`git.cmd.pullmerge $@`"
-    [ -z "$cmd" ] && return 1
-    run_show "$cmd" 2>&1 | grep -v 'up to date'
+    local result
+    result="$(git.cmd.pullmerge $@)"
+    if [ "$?" -gt 0 ] || [ -z "$result" ]; then
+        return 1
+    fi
+
+    run_show "$result" 2>&1 | grep -v 'up to date'
     local retval="$?"
     git.mtime.set 2>&1
     return "$retval"
 }
 
 function git.pull.reset {
-    local branch="${1:-`git.this.branch`}"
-    [ -z "$branch" ] && return 1
+    local result
+    result="${1:-$(git.this.branch)}"
+    if [ "$?" -gt 0 ] || [ -z "$result" ]; then
+        return 1
+    fi
 
-    git.is_clean;                       [ $? -gt 0 ] && return 2
-    git.fetch $branch;                          [ $? -gt 0 ] && return 3
-    run_show "git reset --hard origin/$branch"; [ $? -gt 0 ] && return 4
-    git.pull $branch
-    return $?
+    git.is_clean                               || return "$?"
+    git.fetch "$result"                        || return "$?"
+    run_show "git reset --hard origin/$result" || return "$?"
+    git.pull $result
+    return "$?"
 }
 
 function git.push {
-    local branch="${1:-`git.this.branch`}"
-    [ -z "$branch" ] && return 1
-    run_show "git push origin $branch"
-    return $?
+    local result
+    result="${1:-$(git.this.branch)}"
+    if [ "$?" -gt 0 ] || [ -z "$result" ]; then
+        return 1
+    fi
+    run_show "git push origin $result"
+    return "$?"
 }
 
 function git.push.force {
-    local branch="${1:-`git.this.branch`}"
-    [ -z "$branch" ] && return 1
-    run_show "git push --force origin $branch"
+    local result
+    result="${1:-$(git.this.branch)}"
+    if [ "$?" -gt 0 ] || [ -z "$result" ]; then
+        return 1
+    fi
+    run_show "git push --force origin $result"
     return $?
 }
 
 function git.mtime.set {
-    if [ -x "`which git-restore-mtime`" ]; then
-        local root="`git.this.root 2>/dev/null`"
-        [ -z "$root" ] && return 2
-        git-restore-mtime --skip-missing --work-tree "$root/" --git-dir "$root/.git/" "$root/"
+    local result
+    if [ -x "$(which git-restore-mtime)" ]; then
+        result="${1:-$(git.this.root 2>/dev/null)}"
+        if [ "$?" -gt 0 ] || [ -z "$result" ]; then
+            return 1
+        fi
+
+        git-restore-mtime --skip-missing --work-tree "$result/" --git-dir "$result/.git/" "$result/"
+        return "$?"
     fi
+    return 2
 }
 
 function git.is_clean {
+    local result
     if [ -z "$1" ]; then
-        local root="$(git.this.root)"
+        result="$(git.this.root)"
     else
-        local root="$(git.this.root "$1")"
+        result="$(git.this.root "$1")"
     fi
 
-    [ ! "$root" ] && return 0
+    if [ "$?" -eq 2 ] && [ -z "$result" ]; then
+        return 0
+    fi
 
     local modified='echo $(git ls-files --modified `git rev-parse --show-toplevel`)$(git ls-files --deleted --others --exclude-standard `git rev-parse --show-toplevel`)'
-
     if [ -n "$($SHELL -c "$modified")" ]; then
         warn $0 "$root isn't clean"
         return 1
@@ -299,63 +365,77 @@ function git.is_clean {
 
 function git.tag.set {
     if [ -z "$1" ]; then
-        fail $0 "tag required"
+        fail $0 "\$1 - tag required"
         return 1
     fi
     run_show "git tag -a $1 -m \"$1\" && git push --tags && git fetch --tags"
-    return $?
+    return "$?"
 }
 
 function git.tag.unset {
     if [ -z "$1" ]; then
-        fail $0 "tag required"
+        fail $0 "\$1 - tag required"
         return 1
     fi
     run_show "git tag -d \"$1\" && git push --delete origin \"$1\""
-    return $?
+    return "$?"
 }
 
 # user helpers
 
 function git.branch.delete {
-    local branch="${1:-`git.this.branch`}"
-    [ ! "$branch" ] && return 1
+    local result
+    result="${1:-$(git.this.branch)}"
+    if [ "$?" -gt 0 ] || [ -z "$result" ]; then
+        return 1
+    fi
 
-    if [ "$branch" = "master" ] || [ "$branch" = "develop" ]; then
-        fail $0 "can't delete $branch branch!"
+    if [ "$result" = "master" ] || [ "$result" = "develop" ]; then
+        fail $0 "'$result' is protected"
         return 2
     fi
 
-    git.is_clean; [ $? -gt 0 ] && return 3
+    git.is_clean || return "$?"
 
-    run_show "git reset --hard && (git checkout develop 2>/dev/null 1>/dev/null 2> /dev/null || git checkout master 2>/dev/null 1>/dev/null) && git branch -D \"$branch\" && git remote prune origin"
-    printf " => git push origin --delete $branch\n" >&2
-    return $?
+    run_show "git reset --hard && (git checkout develop 2>/dev/null 1>/dev/null 2> /dev/null || git checkout master 2>/dev/null 1>/dev/null) && git branch -D \"$result\" && git remote prune origin"
+    printf " => git push origin --delete $result\n" >&2
+    return "$?"
 }
 
 function git.branch.DELETE.REMOTE {
-    local branch="${1:-`git.this.branch`}"
-    [ ! "$branch" ] && return 1
+    local result
+    branch="${1:-$(git.this.branch)}"
+    if [ "$?" -gt 0 ] || [ -z "$result" ]; then
+        return 1
+    fi
 
     if [ "$branch" = "master" ] || [ "$branch" = "develop" ]; then
-        fail $0 "can't delete $branch branch!"
+        fail $0 "'$branch' is protected"
         return 2
     fi
 
-    git.is_clean; [ $? -gt 0 ] && return 3
+    git.is_clean || return "$?"
 
     run_show "git reset --hard && (git checkout develop 2>/dev/null 1>/dev/null 2> /dev/null || git checkout master 2>/dev/null 1>/dev/null) && git branch -D \"$branch\" && git push origin --delete \"$branch\" || true && git remote prune origin"
-    return $?
+    return "$?"
 }
 
 function git.squash.pushed {
-    local branch="${1:-`git.this.branch`}"
-    [ ! "$branch" ] && return 1
+    local result
+    result="${1:-$(git.this.branch)}"
+    if [ "$?" -gt 0 ] || [ -z "$result" ]; then
+        return 1
+    fi
 
-    local parent="$(git show-branch | grep '*' | grep -v "`git rev-parse --abbrev-ref HEAD`" | head -n 1 | sd '^(.+)\[' '' | tabulate -d '] ' -i 1)"
-    [ ! "$parent" ] && return 2
+    result="$(
+        git show-branch | grep '*' | \
+        grep -v "`git rev-parse --abbrev-ref HEAD`" | \
+        head -n 1 | sd '^(.+)\[' '' | tabulate -d '] ' -i 1)"
 
-    run_show "git rebase --interactive --no-autosquash --no-autostash --strategy=recursive --strategy-option=ours --strategy-option=diff-algorithm=histogram \"$parent\""
+    if [ "$?" -gt 0 ] || [ -z "$result" ]; then
+        return 2
+    fi
+    run_show "git rebase --interactive --no-autosquash --no-autostash --strategy=recursive --strategy-option=ours --strategy-option=diff-algorithm=histogram \"$result\""
 }
 
 function git.nested {
@@ -458,6 +538,6 @@ JOSH_DEPRECATIONS[git_repository_clean]=git.is_clean
 JOSH_DEPRECATIONS[git_rewind_time]=git.mtime.set
 JOSH_DEPRECATIONS[git_root]=git.this.root
 JOSH_DEPRECATIONS[git_set_branch_tag]=git.branch.tag
-JOSH_DEPRECATIONS[git_set_tag]=git.tah.set
+JOSH_DEPRECATIONS[git_set_tag]=git.tag.set
 JOSH_DEPRECATIONS[git_squash_already_pushed]=git.squash.pushed
 JOSH_DEPRECATIONS[git_unset_tag]=git.tag.unset
