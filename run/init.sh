@@ -10,7 +10,7 @@ function __log.spaces {
 }
 
 
-if [ "$commands[pastel2]" ]; then
+if [ "$commands[pastel]" ]; then
     alias draw="pastel -m 8bit paint -n"
     function __log.draw {
         __log.spaces "$PRE"
