@@ -429,33 +429,35 @@ function git.nested {
     done
 }
 
-JOSH_DEPRECATIONS+=(
-    [DROP_THIS_BRANCH_RIGHT_NOW]=git.branch.DELETE.REMOTE
-    [cmd_git_checkout]=git.cmd.checkout
-    [cmd_git_fetch]=git.cmd.fetch
-    [cmd_git_pull]=git.cmd.pull
-    [cmd_git_pull_merge]=git.cmd.pullmerge
-    [drop_this_branch_right_now]=git.branch.delete
-    [get_repository_state]=git.this.state
-    [git_branch_delete]=git.branch.delete.force
-    [git_branch_rename]=git.branch.rename
-    [git_checkout_from_actual]=git.checkout.actual
-    [git_checkout_from_current]=git.checkout.current
-    [git_current_branch]=git.this.branch
-    [git_current_hash]=git.this.hash
-    [git_fetch]=git.fetch
-    [git_fetch_checkout_branch]=git.branch.select
-    [git_fetch_merge]=git.fetch.merge
-    [git_pull]=git.pull
-    [git_pull_merge]=git.pull.merge
-    [git_pull_reset]=git.pull.reset
-    [git_push]=git.push
-    [git_push_force]=git.push.force
-    [git_repository_clean]=git.is_clean
-    [git_rewind_time]=git.mtime.set
-    [git_root]=git.this.root
-    [git_set_branch_tag]=git.branch.tag
-    [git_set_tag]=git.tah.set
-    [git_squash_already_pushed]=git.squash.pushed
-    [git_unset_tag]=git.tag.unset
-)
+
+function_exists DROP_THIS_BRANCH_RIGHT_NOW && echo 'DROP_THIS_BRANCH_RIGHT_NOW'
+function_exists DROP_THIS_BRANCH_RIGHT_NOW2 && echo 'DROP_THIS_BRANCH_RIGHT_NOW2'
+
+JOSH_DEPRECATIONS[DROP_THIS_BRANCH_RIGHT_NOW]=git.branch.DELETE.REMOTE
+JOSH_DEPRECATIONS[cmd_git_checkout]=git.cmd.checkout
+JOSH_DEPRECATIONS[cmd_git_fetch]=git.cmd.fetch
+JOSH_DEPRECATIONS[cmd_git_pull]=git.cmd.pull
+JOSH_DEPRECATIONS[cmd_git_pull_merge]=git.cmd.pullmerge
+JOSH_DEPRECATIONS[drop_this_branch_right_now]=git.branch.delete
+JOSH_DEPRECATIONS[get_repository_state]=git.this.state
+JOSH_DEPRECATIONS[git_branch_delete]=git.branch.delete.force
+JOSH_DEPRECATIONS[git_branch_rename]=git.branch.rename
+JOSH_DEPRECATIONS[git_checkout_from_actual]=git.checkout.actual
+JOSH_DEPRECATIONS[git_checkout_from_current]=git.checkout.current
+JOSH_DEPRECATIONS[git_current_branch]=git.this.branch
+JOSH_DEPRECATIONS[git_current_hash]=git.this.hash
+JOSH_DEPRECATIONS[git_fetch]=git.fetch
+JOSH_DEPRECATIONS[git_fetch_checkout_branch]=git.branch.select
+JOSH_DEPRECATIONS[git_fetch_merge]=git.fetch.merge
+JOSH_DEPRECATIONS[git_pull]=git.pull
+JOSH_DEPRECATIONS[git_pull_merge]=git.pull.merge
+JOSH_DEPRECATIONS[git_pull_reset]=git.pull.reset
+JOSH_DEPRECATIONS[git_push]=git.push
+JOSH_DEPRECATIONS[git_push_force]=git.push.force
+JOSH_DEPRECATIONS[git_repository_clean]=git.is_clean
+JOSH_DEPRECATIONS[git_rewind_time]=git.mtime.set
+JOSH_DEPRECATIONS[git_root]=git.this.root
+JOSH_DEPRECATIONS[git_set_branch_tag]=git.branch.tag
+JOSH_DEPRECATIONS[git_set_tag]=git.tah.set
+JOSH_DEPRECATIONS[git_squash_already_pushed]=git.squash.pushed
+JOSH_DEPRECATIONS[git_unset_tag]=git.tag.unset

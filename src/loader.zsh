@@ -1,4 +1,4 @@
-typeset -A JOSH_DEPRECATIONS=()
+typeset -Agx JOSH_DEPRECATIONS=()
 
 source "$JOSH/usr/aliases.zsh"
 source "$JOSH/usr/common.zsh"
