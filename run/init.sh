@@ -15,7 +15,8 @@ if [ "$commands[pastel]" ]; then
 
     function __log.draw {
         __log.spaces "$PRE"
-        printf "$(eval "draw $2 ' $1 $4 ($5):'")$(eval "draw $3 ' ${@:6}'")"
+        local msg="$(echo "${@:6}" | sd '[\$"]' '\\$0')"
+        printf "$(eval "draw $2 ' $1 $4 ($5):'")$(eval "draw $3 \" $msg\"")"
         __log.spaces "${POST:-1}"
     }
 
