@@ -165,7 +165,7 @@ function path_prune {
 
 function eval.retval {
     local cmd="$*"
-    eval "$cmd"
+    eval ${cmd}
     local retval="$?"
     return "$retval"
 }
@@ -250,26 +250,69 @@ function eval.cached {
         mkdir -p "$subdir"
     fi
 
-    if [ "$expired" -eq 0 ]; then
-        result="$(eval.retval "cat '$cache' | $JOSH_QAP 2>/dev/null")"
+    if [ -z "$BINARY_SAFE" ]; then
+        if [ "$expired" -eq 0 ]; then
+            result="$(eval.retval "cat '$cache' | $JOSH_QAP 2>/dev/null")"
+            local retval="$?"
+
+            if [ "$retval" -eq 0 ]; then
+                echo "$result"
+                return 0
+            fi
+        fi
+
+        if [ "$DO_NOT_RUN" -gt 0 ]; then
+            return 255
+        fi
+
+        result="$(eval.retval ${@:2})"
         local retval="$?"
 
         if [ "$retval" -eq 0 ]; then
+            eval {"echo '$result' | $JOSH_PAQ > '$cache'"}
             echo "$result"
-            return 0
         fi
-    fi
+        return "$retval"
+    else
 
-    if [ "$DO_NOT_RUN" -gt 0 ]; then
-        return 255
-    fi
+        local dir="$(get_tempdir)"
+        if [ ! -x "$dir" ]; then
+            return 1
+        elif [ -z "$JOSH_MD5_PIPE" ]; then
+            return 2
+        fi
 
-    result="$(eval.retval ${@:2})"
-    local retval="$?"
+        local tempfile="$dir/$(echo "$* $USER $HOME" | sh -c "$JOSH_MD5_PIPE").$USER.tmp"
+        touch "$tempfile" 2>/dev/null
+        if [ "$?" -gt 0 ]; then
+            return 3
+        fi
 
-    if [ "$retval" -eq 0 ]; then
-        eval {"echo '$result' | $JOSH_PAQ > '$cache'"}
-        echo "$result"
+        if [ "$expired" -eq 0 ]; then
+            local cmd="cat '$cache' | $JOSH_QAP 2>/dev/null >'$tempfile'"
+            eval ${cmd} >/dev/null
+            local retval="$?"
+            if [ "$retval" -eq 0 ]; then
+                cat "$tempfile"
+                unlink "$tempfile"
+                return 0
+            fi
+        fi
+
+        if [ "$DO_NOT_RUN" -gt 0 ]; then
+            unlink "$tempfile" 2>/dev/null
+            return 255
+        fi
+
+        eval.retval ${@:2} >$tempfile
+        local retval="$?"
+
+        if [ "$retval" -eq 0 ]; then
+            cat "$tempfile"
+            local cmd="cat '$tempfile' | $JOSH_PAQ >'$cache'"
+            eval ${cmd}
+        fi
+        unlink "$tempfile"
+        return "$retval"
     fi
-    return "$retval"
 }
