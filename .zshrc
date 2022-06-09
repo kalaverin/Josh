@@ -1,10 +1,4 @@
-zmodload zsh/zprof
-
-# exec 3>&2 2>~/zshstart.$$.log
-# setopt xtrace prompt_subst
 source "$HOME/.josh/custom/plugins/josh/run/boot.sh"
-# unsetopt xtrace
-# exec 2>&3 3>&-
 
 path=(
     $path
@@ -61,6 +55,3 @@ source "$JOSH/src/loader.zsh"
 # user can override anything after load
 [ -f ~/.zshrcbinds ] && source ~/.zshrcbinds
 printf '\033[5 q'
-
-# unsetopt xtrace
-# exec 2>&3 3>&-

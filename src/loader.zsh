@@ -1,11 +1,6 @@
 typeset -Agx JOSH_DEPRECATIONS=()
 
-# exec 3>&2 2>~/zshstart.$$.log
-# setopt xtrace prompt_subst
 python.home >/dev/null
-# unsetopt xtrace
-# exec 2>&3 3>&-
-
 path_prune
 
 source "$JOSH/usr/aliases.zsh"
