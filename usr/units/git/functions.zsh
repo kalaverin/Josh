@@ -358,7 +358,7 @@ function git_squash_already_pushed {
     run_show "git rebase --interactive --no-autosquash --no-autostash --strategy=recursive --strategy-option=ours --strategy-option=diff-algorithm=histogram \"$parent\""
 }
 
-function git_update_nested_repositories {
+function git.nested {
     local cwd="$PWD"
     local root="$(fs_realpath "${1:-.}")"
 

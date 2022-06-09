@@ -82,7 +82,7 @@ function update_internals {
     pip.install "$PIP_REQ_PACKAGES"
     pip.update
 
-    git_update_nested_repositories "$JOSH/usr/local"
+    git.nested "$JOSH/usr/local"
 }
 
 function update_packages {
