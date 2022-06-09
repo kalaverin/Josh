@@ -1,40 +1,53 @@
+function __log.spaces {
+    if [ -z "$1" ] || [ ! "$1" -gt 0 ]; then
+        return
+
+    elif [ "$1" -gt 0 ]; then
+        for i in {1..$1}; do
+            printf "\n"
+        done
+    fi
+}
+
+
 if [ "$commands[pastel]" ]; then
-    function info {
-        local msg="${@:2}"
-        pastel paint -n limegreen " -- $0 ($1):" >&2
-        pastel paint gray " $msg" >&2
+    alias draw="pastel -m 8bit paint -n"
+
+    function __draw {
+        __log.spaces "$PRE"
+        printf "$(eval "draw $2 ' $1 $4 ($5):'")$(eval "draw $3 ' ${@:6}'")"
+        __log.spaces "${POST:-1}"
     }
-    function warn {
-        local msg="${@:2}"
-        pastel paint -n yellow " ++ $0 ($1):" >&2
-        pastel paint gray " $msg" >&2
-    }
-    function fail {
-        local msg="${@:2}"
-        pastel paint -n red --bold " ** $0 ($1):" >&2
-        pastel paint white --bold " $msg" >&2
-    }
-    function term {
-        local msg="${@:2}"
-        pastel paint -n white --on red --bold " ## $0 ($1):" >&2
-        pastel paint white --bold " $msg" >&2
-    }
+
+    function info { __log.draw '--' 'limegreen' 'gray' $0 $* }
+    function warn { __log.draw '++' 'yellow' 'gray' $0 $* }
+    function fail { __log.draw '**' 'red --bold' 'white --bold' $0 $* }
+    function term { __log.draw '!!' 'white --on red --bold' 'white --bold' $0 $* }
+
 else
     function info {
         local msg="${@:2}"
+        __log.spaces "$PRE"
         printf "\033[0;32m -- $0 ($1):\033[0m $msg\n" >&2
+        __log.spaces "${POST:-0}"
     }
     function warn {
         local msg="${@:2}"
+        __log.spaces "$PRE"
         printf "\033[0;33m ++ $0 ($1):\033[0m $msg\n" >&2
+        __log.spaces "${POST:-0}"
     }
     function fail {
         local msg="${@:2}"
+        __log.spaces "$PRE"
         printf "\033[1;31m ** $0 ($1):\033[0m $msg\n" >&2
+        __log.spaces "${POST:-0}"
     }
     function term {
         local msg="${@:2}"
+        __log.spaces "$PRE"
         printf "\033[42m\033[0;101m ## $0 ($1):\033[0m $msg\n" >&2
+        __log.spaces "${POST:-0}"
     }
 fi
 
