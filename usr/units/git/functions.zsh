@@ -28,7 +28,7 @@ function git.cmd.fetch {
     local branch="`git.this.branch`"
     [ -z "$branch" ] && return 1
 
-    local function __git.cmd.fetch.temp() {
+    local function __temp() {
         echo "git fetch origin \"$1\":\"$1\" 2>&1"
     }
 
@@ -37,12 +37,12 @@ function git.cmd.fetch {
         if [ "$arg" = "$branch" ]; then
             continue
         elif [ -n "$cmd" ]; then
-            local cmd="$cmd && `__git.cmd.fetch.temp $arg`"
+            local cmd="$cmd && `__temp $arg`"
         else
-            local cmd="`__git.cmd.fetch.temp $arg`"
+            local cmd="`__temp $arg`"
         fi
     done
-    unset __git.cmd.fetch.temp
+    unset __temp
 
     if [ -n "$cmd" ]; then
         local cmd="$cmd && git fetch --tags"
