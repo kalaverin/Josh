@@ -95,7 +95,7 @@ elif [ -z "$JOSH_TMUX_SPACES_FILL_DISABLE" ] && [ -n "$PS1" ] && [ -n "$TMUX" ];
             fi
             if [ -x "$commands[dsmsg]" ]; then
                 let color="31 + ($RANDOM % 7)"
-                printf "\033[2;${color}m - $(dsmsg --ds1 --ds2 --ds3)\033[0m\n"
+                printf "\033[2;${color}m -- $(dsmsg --ds1 --ds2 --ds3)\033[0m\n"
             fi
         fi
     fi
