@@ -117,9 +117,6 @@ function git.this.branch {
         if [ -z "$(git name-rev --name-only HEAD 2>&1 | grep -Pv '^(Could not get sha1)')" ]; then
             warn $0 "empty repository $(git.this.root) without any commits?"
             local result="$(git symbolic-ref --short HEAD)"
-        else
-            fail $0 "something went wrong"
-            return 2
         fi
     fi
     echo "$result"
@@ -404,19 +401,19 @@ function git.branch.delete {
 
 function git.branch.DELETE.REMOTE {
     local result
-    branch="${1:-$(git.this.branch)}"
+    result="${1:-$(git.this.branch)}"
     if [ "$?" -gt 0 ] || [ -z "$result" ]; then
         return 1
     fi
 
-    if [ "$branch" = "master" ] || [ "$branch" = "develop" ]; then
-        fail $0 "'$branch' is protected"
+    if [ "$result" = "master" ] || [ "$result" = "develop" ]; then
+        fail $0 "'$result' is protected"
         return 2
     fi
 
     git.is_clean || return "$?"
 
-    run_show "git reset --hard && (git checkout develop 2>/dev/null 1>/dev/null 2> /dev/null || git checkout master 2>/dev/null 1>/dev/null) && git branch -D \"$branch\" && git push origin --delete \"$branch\" || true && git remote prune origin"
+    run_show "git reset --hard && (git checkout develop 2>/dev/null 1>/dev/null 2> /dev/null || git checkout master 2>/dev/null 1>/dev/null) && git branch -D \"$result\" && git push origin --delete \"$result\" || true && git remote prune origin"
     return "$?"
 }
 
@@ -508,10 +505,6 @@ function git.nested {
         builtin cd "$cwd"
     done
 }
-
-
-function_exists DROP_THIS_BRANCH_RIGHT_NOW && echo 'DROP_THIS_BRANCH_RIGHT_NOW'
-function_exists DROP_THIS_BRANCH_RIGHT_NOW2 && echo 'DROP_THIS_BRANCH_RIGHT_NOW2'
 
 JOSH_DEPRECATIONS[DROP_THIS_BRANCH_RIGHT_NOW]=git.branch.DELETE.REMOTE
 JOSH_DEPRECATIONS[cmd_git_checkout]=git.cmd.checkout
