@@ -1,152 +1,162 @@
-function __log.spaces {
-    if [ -z "$1" ] || [ ! "$1" -gt 0 ]; then
-        return
+[ -z "$SOURCES_CACHE" ] && declare -aUg SOURCES_CACHE=() && SOURCES_CACHE+=($0)
 
-    elif [ "$1" -gt 0 ]; then
-        for i in {1..$1}; do
-            printf "\n"
+local THIS_SOURCE="$(fs_gethash "$0")"
+if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; then
+    SOURCES_CACHE+=("$THIS_SOURCE")
+
+    function __log.spaces {
+        if [ -z "$1" ] || [ ! "$1" -gt 0 ]; then
+            return
+
+        elif [ "$1" -gt 0 ]; then
+            for i in {1..$1}; do
+                printf "\n"
+            done
+        fi
+    }
+
+
+    if [ "$commands[pastel]" ]; then
+        alias draw="pastel -m 8bit paint -n"
+        function __log.draw {
+            __log.spaces "$PRE"
+            local msg="$(echo "${@:6}" | sd '[\$"]' '\\$0')"
+            printf "$(eval "draw $2 ' $1 $4 ($5):'")$(eval "draw $3 \" $msg\"")"
+            __log.spaces "${POST:-1}"
+        }
+        function info { __log.draw '--' 'limegreen' 'gray' $0 $* >&2 }
+        function warn { __log.draw '++' 'yellow' 'gray' $0 $* >&2 }
+        function fail { __log.draw '**' 'red --bold' 'white --bold' $0 $* >&2 }
+        function term { __log.draw '!!' 'white --on red --bold' 'white --bold' $0 $* >&2 }
+
+    else
+        function __log.draw {
+            __log.spaces "$PRE"
+            local msg="$(echo "${@:5}" | sd '[\$"]' '\\$0')"
+            printf "$2 $1 $4 ($5):$3 $msg\033[0m" >&2
+            __log.spaces "${POST:-1}"
+        }
+        function info { __log.draw '--' '\033[0;32m' '\033[0m' $0 $* >&2 }
+        function warn { __log.draw '++' '\033[0;33m' '\033[0m' $0 $* >&2 }
+        function fail { __log.draw '**' '\033[1;31m' '\033[0m' $0 $* >&2 }
+        function term { __log.draw '!!' '\033[42m\033[0;101m' '\033[0m' $0 $* >&2 }
+    fi
+
+
+    if [ -x "$commands[fetch]" ]; then
+        export HTTP_GET="$commands[fetch] -qo - "
+        [ "$VERBOSE" -eq 1 ] && \
+        info $0 "using fetch: $HTTP_GET"
+
+    elif [ -x "$commands[wget]" ]; then
+        export HTTP_GET="$commands[wget] -qO -"
+        [ "$VERBOSE" -eq 1 ] && \
+        info $0 "using wget `wget --version | head -n 1 | awk '{print $3}'`: $HTTP_GET"
+
+    elif [ -x "$commands[http]" ]; then
+        export HTTP_GET="$commands[http] -FISb"
+        [ "$VERBOSE" -eq 1 ] && \
+        info $0 "using httpie `http --version`: $HTTP_GET"
+
+    elif [ -x "$commands[curl]" ]; then
+        export HTTP_GET="$commands[curl] -fsSL"
+        [ "$VERBOSE" -eq 1 ] && \
+        info $0 "using curl `curl --version | head -n 1 | awk '{print $2}'`: $HTTP_GET"
+
+    else
+        fail $0 "curl, wget, fetch or httpie doesn't exists"
+        return 127
+    fi
+
+
+    if [ -x "$commands[zstd]" ]; then
+        export JOSH_PAQ="$commands[zstd] -0 -T0"
+        export JOSH_QAP="$commands[zstd] -qd"
+
+    elif [ -x "$commands[lz4]" ]; then
+        export JOSH_PAQ="$commands[lz4] -1 - -"
+        export JOSH_QAP="$commands[lz4] -d - -"
+
+    elif [ -x "$commands[xz]" ] && [ -x "$commands[xzcat]" ]; then
+        export JOSH_PAQ="$commands[xz] -0 -T0"
+        export JOSH_QAP="$commands[xzcat]"
+
+    elif [ -x "$commands[gzip]" ] && [ -x "$commands[zcat]" ]; then
+        export JOSH_PAQ="$commands[gzip] -1"
+        export JOSH_QAP="$commands[zcat]"
+
+    else
+        unset JOSH_PAQ
+        unset JOSH_QAP
+    fi
+
+    local osname="$(uname)"
+
+    setopt no_case_match
+
+    if [[ "$osname" -regex-match 'freebsd' ]]; then
+        export JOSH_OS="BSD"
+        shortcut 'ls'    '/usr/local/bin/gnuls' >/dev/null
+        shortcut 'grep'  '/usr/local/bin/grep'  >/dev/null
+
+    elif [[ "$osname" -regex-match 'darwin' ]]; then
+        export JOSH_OS="MAC"
+        shortcut 'ls'    '/usr/local/bin/gls'   >/dev/null
+        shortcut 'grep'  '/usr/local/bin/ggrep' >/dev/null
+
+        dirs=(
+            bin
+            sbin
+            usr/bin
+            usr/sbin
+            usr/local/bin
+            usr/local/sbin
+        )
+
+        for dir in $dirs; do
+            if [ -d "/Library/Apple/$dir" ]; then
+                export PATH="$PATH:/Library/Apple/$dir"
+            fi
+        done
+
+    else
+        if [[ "$osname" -regex-match 'linux' ]]; then
+            export JOSH_OS="LINUX"
+        else
+            fail $0 "unsupported OS '$(uname -srv)'"
+            export JOSH_OS="UNKNOWN"
+        fi
+
+        dirs=(
+            bin
+            sbin
+            usr/bin
+            usr/sbin
+            usr/local/bin
+            usr/local/sbin
+        )
+
+        for dir in $dirs; do
+            if [ -d "/snap/$dir" ]; then
+                export PATH="$PATH:/snap/$dir"
+            fi
         done
     fi
-}
 
-
-if [ "$commands[pastel]" ]; then
-    alias draw="pastel -m 8bit paint -n"
-    function __log.draw {
-        __log.spaces "$PRE"
-        local msg="$(echo "${@:6}" | sd '[\$"]' '\\$0')"
-        printf "$(eval "draw $2 ' $1 $4 ($5):'")$(eval "draw $3 \" $msg\"")"
-        __log.spaces "${POST:-1}"
-    }
-    function info { __log.draw '--' 'limegreen' 'gray' $0 $* >&2 }
-    function warn { __log.draw '++' 'yellow' 'gray' $0 $* >&2 }
-    function fail { __log.draw '**' 'red --bold' 'white --bold' $0 $* >&2 }
-    function term { __log.draw '!!' 'white --on red --bold' 'white --bold' $0 $* >&2 }
-
-else
-    function __log.draw {
-        __log.spaces "$PRE"
-        local msg="$(echo "${@:5}" | sd '[\$"]' '\\$0')"
-        printf "$2 $1 $4 ($5):$3 $msg\033[0m" >&2
-        __log.spaces "${POST:-1}"
-    }
-    function info { __log.draw '--' '\033[0;32m' '\033[0m' $0 $* >&2 }
-    function warn { __log.draw '++' '\033[0;33m' '\033[0m' $0 $* >&2 }
-    function fail { __log.draw '**' '\033[1;31m' '\033[0m' $0 $* >&2 }
-    function term { __log.draw '!!' '\033[42m\033[0;101m' '\033[0m' $0 $* >&2 }
-fi
-
-
-if [ -x "$commands[fetch]" ]; then
-    export HTTP_GET="$commands[fetch] -qo - "
-    [ "$VERBOSE" -eq 1 ] && \
-    info $0 "using fetch: $HTTP_GET"
-
-elif [ -x "$commands[wget]" ]; then
-    export HTTP_GET="$commands[wget] -qO -"
-    [ "$VERBOSE" -eq 1 ] && \
-    info $0 "using wget `wget --version | head -n 1 | awk '{print $3}'`: $HTTP_GET"
-
-elif [ -x "$commands[http]" ]; then
-    export HTTP_GET="$commands[http] -FISb"
-    [ "$VERBOSE" -eq 1 ] && \
-    info $0 "using httpie `http --version`: $HTTP_GET"
-
-elif [ -x "$commands[curl]" ]; then
-    export HTTP_GET="$commands[curl] -fsSL"
-    [ "$VERBOSE" -eq 1 ] && \
-    info $0 "using curl `curl --version | head -n 1 | awk '{print $2}'`: $HTTP_GET"
-
-else
-    fail $0 "curl, wget, fetch or httpie doesn't exists"
-    return 127
-fi
-
-
-if [ -x "$commands[lz4]" ]; then
-    export JOSH_PAQ="$commands[lz4] -1 - -"
-    export JOSH_QAP="$commands[lz4] -d - -"
-
-elif [ -x "$commands[zstd]" ]; then
-    export JOSH_PAQ="$commands[zstd] -0 -T0"
-    export JOSH_QAP="$commands[zstd] -qd"
-
-elif [ -x "$commands[xz]" ] && [ -x "$commands[xzcat]" ]; then
-    export JOSH_PAQ="$commands[xz] -0 -T0"
-    export JOSH_QAP="$commands[xzcat]"
-
-elif [ -x "$commands[gzip]" ] && [ -x "$commands[zcat]" ]; then
-    export JOSH_PAQ="$commands[gzip] -1"
-    export JOSH_QAP="$commands[zcat]"
-
-else
-    unset JOSH_PAQ
-    unset JOSH_QAP
-fi
-
-
-if [ -n "$(uname | grep -i freebsd)" ]; then
-    export JOSH_OS="BSD"
-    shortcut 'ls'    '/usr/local/bin/gnuls' >/dev/null
-    shortcut 'grep'  '/usr/local/bin/grep'  >/dev/null
-
-elif [ -n "$(uname | grep -i darwin)" ]; then
-    export JOSH_OS="MAC"
-    shortcut 'ls'    '/usr/local/bin/gls'   >/dev/null
-    shortcut 'grep'  '/usr/local/bin/ggrep' >/dev/null
-
-    dirs=(
-        bin
-        sbin
-        usr/bin
-        usr/sbin
-        usr/local/bin
-        usr/local/sbin
-    )
-
-    for dir in $dirs; do
-        if [ -d "/Library/Apple/$dir" ]; then
-            export PATH="$PATH:/Library/Apple/$dir"
-        fi
-    done
-
-else
-    if [ -n "$(uname | grep -i linux)" ]; then
-        export JOSH_OS="LINUX"
+    if [ "$JOSH_OS" = 'BSD' ] || [ "$JOSH_OS" = 'MAC' ]; then
+        shortcut 'cut'       '/usr/local/bin/gcut'      >/dev/null
+        shortcut 'find'      '/usr/local/bin/gfind'     >/dev/null
+        shortcut 'head'      '/usr/local/bin/ghead'     >/dev/null
+        shortcut 'readlink'  '/usr/local/bin/greadlink' >/dev/null
+        shortcut 'realpath'  '/usr/local/bin/grealpath' >/dev/null
+        shortcut 'sed'       '/usr/local/bin/gsed'      >/dev/null
+        shortcut 'tail'      '/usr/local/bin/gtail'     >/dev/null
+        shortcut 'tar'       '/usr/local/bin/gtar'      >/dev/null
+        shortcut 'xargs'     '/usr/local/bin/gxargs'    >/dev/null
+        export JOSH_MD5_PIPE="$(which md5)"
     else
-        fail $0 "unsupported OS '$(uname -srv)'"
-        export JOSH_OS="UNKNOWN"
+        export JOSH_MD5_PIPE="$(which md5sum) | $(which cut) -c -32"
     fi
 
-    dirs=(
-        bin
-        sbin
-        usr/bin
-        usr/sbin
-        usr/local/bin
-        usr/local/sbin
-    )
-
-    for dir in $dirs; do
-        if [ -d "/snap/$dir" ]; then
-            export PATH="$PATH:/snap/$dir"
-        fi
-    done
+    source "$(fs_dirname $0)/hier.sh"
 fi
-
-if [ "$JOSH_OS" = 'BSD' ] || [ "$JOSH_OS" = 'MAC' ]; then
-    shortcut 'cut'       '/usr/local/bin/gcut'      >/dev/null
-    shortcut 'find'      '/usr/local/bin/gfind'     >/dev/null
-    shortcut 'head'      '/usr/local/bin/ghead'     >/dev/null
-    shortcut 'readlink'  '/usr/local/bin/greadlink' >/dev/null
-    shortcut 'realpath'  '/usr/local/bin/grealpath' >/dev/null
-    shortcut 'sed'       '/usr/local/bin/gsed'      >/dev/null
-    shortcut 'tail'      '/usr/local/bin/gtail'     >/dev/null
-    shortcut 'tar'       '/usr/local/bin/gtar'      >/dev/null
-    shortcut 'xargs'     '/usr/local/bin/gxargs'    >/dev/null
-    export JOSH_MD5_PIPE="$(which md5)"
-else
-    export JOSH_MD5_PIPE="$(which md5sum) | $(which cut) -c -32"
-fi
-
-source "$(fs_dirname $0)/hier.sh"

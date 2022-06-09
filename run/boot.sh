@@ -9,8 +9,7 @@ if [[ ! "$SHELL" =~ "/zsh$" ]]; then
     return 1
 fi
 
-
-[ -z "$sourced" ] && declare -aUg sourced=() && sourced+=($0)
+[ -z "$SOURCES_CACHE" ] && declare -aUg SOURCES_CACHE=() && SOURCES_CACHE+=($0)
 
 
 zmodload zsh/stat
@@ -139,6 +138,26 @@ function fs_joshpath {
     echo "${result[${#result} - $length,${#result}]}"
 }
 
+function fs_gethash {
+    if [ -z "$1" ] || [ -z "$JOSH" ]; then
+        return 1
+    fi
+
+    local meta result
+    result="$(fs_realpath "$1")"
+    if [ -z "$result" ]; then
+        return 2
+    fi
+
+    builtin zstat -LA meta "$1" 2>/dev/null
+    if [ "$?" -gt 0 ]; then
+        return 3
+    fi
+
+    let length="${#result} - ${#JOSH} - 2"
+    echo "${result[${#result} - $length,${#result}]}:$meta[8]:$meta[10]"
+}
+
 function fs_resolver {
     if [ -n "$JOSH_REALPATH" ]; then
         return 0
@@ -175,20 +194,20 @@ function fs_realpath {
             if [ -n "$node" ]; then
 
                 if [[ "$node" =~ "^/" ]] && [ -x "$node" ] && [ ! -L "$node" ]; then
-                    # target it's absolute path to executable, not to link
+                    # target is absolute path to executable, not to link
                     echo "$node"
                     return 0
 
                 elif [[ "$link" =~ "^/" ]] && [[ ! "$node" =~ "/" ]]; then
-                    # target it's relative path from source location
+                    # target is relative path from source location
                     local node="$(fs_dirname "$link")/$node"
                     if [ -x "$node" ]; then
                         if [ ! -L "$node" ]; then
-                            # target it's regular executable node
+                            # target is regular executable node
                             echo "$node"
                             return 0
                         else
-                            # target it's symlink, okay
+                            # target is symlink, okay
                             local node="$(fs_realpath "$node")"
                             echo "$node"
                             return "$?"
@@ -355,7 +374,7 @@ function which {
 if [ -z "$JOSH" ]; then
     local redirect="$(fs_userhome)"
     if [ -x "$redirect" ] && [ ! "$redirect" = "$HOME" ]; then
-        if [ ! "$(fs_realpath "$redirect")" = "$(fs_realpath "$HOME")" ]; then
+        if [ "$(fs_realpath "$redirect")" != "$(fs_realpath "$HOME")" ]; then
             printf " ++ warn ($0): HOME:'$HOME' -> '$redirect'\n" >&2
         fi
         export HOME="$redirect"
@@ -401,9 +420,9 @@ if [[ -z ${(M)zsh_eval_context:#file} ]]; then
 
 
 else
-    source_file="$(fs_joshpath "$0")"
-    if [ -n "$source_file" ] && [[ "${sourced[(Ie)$source_file]}" -eq 0 ]]; then
-        sourced+=("$source_file")
+    local THIS_SOURCE="$(fs_gethash "$0")"
+    if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; then
+        SOURCES_CACHE+=("$THIS_SOURCE")
         source "$(fs_dirname $0)/init.sh"
     fi
 fi

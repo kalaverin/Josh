@@ -1,6 +1,3 @@
-python.home >/dev/null
-path_prune
-
 alias cp='cp -iR'  # prompt on overwrite and use recurse for directories
 alias mv='mv -i'
 alias tt='tail --retry --quiet --sleep-interval=0.5 -f -n 50'

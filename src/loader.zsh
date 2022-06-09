@@ -1,9 +1,17 @@
 typeset -Agx JOSH_DEPRECATIONS=()
 
+# exec 3>&2 2>~/zshstart.$$.log
+# setopt xtrace prompt_subst
+python.home >/dev/null
+# unsetopt xtrace
+# exec 2>&3 3>&-
+
+path_prune
+
 source "$JOSH/usr/aliases.zsh"
 source "$JOSH/usr/common.zsh"
 
-[ -x "$(which tmux)" ] && source "$JOSH/usr/units/tmux.zsh"
+[ -x "$commands[tmux]" ] && source "$JOSH/usr/units/tmux.zsh"
 
 source "$ZSH/custom/plugins/forgit/forgit.plugin.zsh"
 source "$ZSH/custom/plugins/ondir/scripts.zsh"
@@ -18,8 +26,8 @@ source "$JOSH/src/completion.zsh"
 source "$JOSH/usr/bindings.zsh"
 source "$JOSH/usr/units/files.zsh"
 
-[ -x "$(which git)" ]    && source "$JOSH/usr/units/git.zsh"
-[ -x "$(which python)" ] && source "$JOSH/usr/units/python.zsh"
+[ -x "$commands[git]" ]    && source "$JOSH/usr/units/git.zsh"
+[ -x "$commands[python]" ] && source "$JOSH/usr/units/python.zsh"
 
 source "$JOSH/usr/update.zsh"
 is_workhours || motd
