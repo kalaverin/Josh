@@ -4,7 +4,7 @@ local GET_BRANCH='git rev-parse --quiet --abbrev-ref HEAD 2>/dev/null'
 
 # command line batch generators
 
-function cmd_git_checkout {
+function git.cmd.checkout {
     if [ -z "$1" ]; then
         fail $0 "branch required"
         return 1
@@ -24,11 +24,11 @@ function cmd_git_checkout {
     echo "git checkout -b \"$branch\" 2>/dev/null || git switch \"$branch\""
 }
 
-function cmd_git_fetch {
-    local branch="`git_current_branch`"
+function git.cmd.fetch {
+    local branch="`git.this.branch`"
     [ -z "$branch" ] && return 1
 
-    local function git_fetch_make_cmd() {
+    local function __git.cmd.fetch.temp() {
         echo "git fetch origin \"$1\":\"$1\" 2>&1"
     }
 
@@ -37,12 +37,12 @@ function cmd_git_fetch {
         if [ "$arg" = "$branch" ]; then
             continue
         elif [ -n "$cmd" ]; then
-            local cmd="$cmd && `git_fetch_make_cmd $arg`"
+            local cmd="$cmd && `__git.cmd.fetch.temp $arg`"
         else
-            local cmd="`git_fetch_make_cmd $arg`"
+            local cmd="`__git.cmd.fetch.temp $arg`"
         fi
     done
-    unset git_fetch_make_cmd
+    unset __git.cmd.fetch.temp
 
     if [ -n "$cmd" ]; then
         local cmd="$cmd && git fetch --tags"
@@ -52,21 +52,21 @@ function cmd_git_fetch {
     echo "$cmd"
 }
 
-function cmd_git_pull {
-    local branch="${1:-`git_current_branch`}"
+function git.cmd.pull {
+    local branch="${1:-`git.this.branch`}"
     [ -z "$branch" ] && return 1
     echo "git pull --ff-only --no-edit --no-commit origin $branch"
 }
 
-function cmd_git_pull_merge {
-    local branch="${1:-`git_current_branch`}"
+function git.cmd.pullmerge {
+    local branch="${1:-`git.this.branch`}"
     [ -z "$branch" ] && return 1
     echo "git pull --no-edit --no-commit origin $branch"
 }
 
 # core functions
 
-function git_root {
+function git.this.root {
     if [ -z "$1" ]; then
         local result="$(fs_realpath `eval "$GET_ROOT 2>/dev/null"`)"
         local retval="$?"
@@ -74,7 +74,7 @@ function git_root {
         if [ -d "$1" ]; then
             local cwd="$PWD"
             builtin cd "$1"
-            local result="$(git_root)"
+            local result="$(git.this.root)"
             local retval="$?"
             builtin cd "$cwd"
 
@@ -90,24 +90,24 @@ function git_root {
     fi
 }
 
-function git_current_hash {
+function git.this.hash {
     local result="`eval $GET_HASH`"
     [ "$result" ] && echo "$result"
 }
 
-function git_current_branch {
+function git.this.branch {
     local result="`eval $GET_BRANCH`"
     if [ "$result" = "HEAD" ]; then
         if [ ! "`git name-rev --name-only HEAD 2>&1 | grep -Pv '^(Could not get sha1)'`" ]; then
-            echo " - empty repository `git_root` without any commits?" >&2
+            echo " - empty repository `git.this.root` without any commits?" >&2
             local result="`git symbolic-ref --short HEAD`"
         fi
     fi
     [ -n "$result" ] && echo "$result"
 }
 
-function get_repository_state {
-    local root="`git_root 2>/dev/null`"
+function git.this.state {
+    local root="`git.this.root 2>/dev/null`"
     [ -z "$root" ] && return 1
 
     if [ -d "$root/.git/rebase-merge" ] || [ -d "$root/.git/rebase-apply" ]; then
@@ -126,7 +126,7 @@ function get_repository_state {
 
 # just functions
 
-function git_branch_delete {
+function git.branch.delete {
     if [ -z "$1" ]; then
         fail $0 "branch required"
         return 1
@@ -135,7 +135,7 @@ function git_branch_delete {
     return $?
 }
 
-function git_branch_rename {
+function git.branch.rename {
     if [ -n "$2" ]; then
         if [ "$1" = "$2" ]; then
             fail $0 "source and target branch names must be different"
@@ -146,7 +146,7 @@ function git_branch_rename {
 
     elif [ -n "$1" ]; then
         local dst="$1"
-        local src="`git_current_branch`"
+        local src="`git.this.branch`"
         [ -z "$src" ] && return 2
     else
         fail $0 "old_name new_name or just new_name (rename current) "
@@ -155,54 +155,54 @@ function git_branch_rename {
     echo "git branch -m $src $dst && git push origin :$src $dst"
 }
 
-function git_checkout_from_actual {
-    local branch="`git_current_branch`"
+function git.checkout.actual {
+    local branch="`git.this.branch`"
     [ -z "$branch" ] && return 1
 
-    git_pull_reset "$branch" || return 2
-    git_checkout_from_current $*
+    git.pull.reset "$branch" || return 2
+    git.checkout.current $*
 }
 
-function git_checkout_from_current {
-    local cmd="`cmd_git_checkout $@`"
+function git.checkout.current {
+    local cmd="`git.cmd.checkout $@`"
     [ -z "$cmd" ] && return 1
     run_show "$cmd"
     return $?
 }
 
-function git_fetch {
-    local cmd="`cmd_git_fetch $@`"
+function git.fetch {
+    local cmd="`git.cmd.fetch $@`"
     [ -z "$cmd" ] && return 1
     run_show "$cmd" 2>&1 | grep -v 'up to date'
     return $?
 }
 
-function git_fetch_merge {
-    local branch="${1:-`git_current_branch`}"
+function git.fetch.merge {
+    local branch="${1:-`git.this.branch`}"
     [ -z "$branch" ] && return 1
 
-    git_fetch $branch; [ $? -gt 0 ] && return 2
+    git.fetch $branch; [ $? -gt 0 ] && return 2
     run_show "git merge origin/$branch"
     return $?
 }
 
-function git_fetch_checkout_branch {
+function git.branch.select {
     [ -z "$1" ] && return 1
 
-    local branch="`git_current_branch`"
+    local branch="`git.this.branch`"
     if [ -z "$branch" ] || [ "$1" = "$branch" ]; then
         return 2
     fi
 
-    local root="`git_root`"
+    local root="`git.this.root`"
     [ -z "$root" ] && return 3
 
-    local cmd="git fetch origin \"$1\":\"$1\" && git_repository_clean && git checkout --force --quiet $1 && git reset --hard $1 && git pull origin $1"
+    local cmd="git fetch origin \"$1\":\"$1\" && git.is_clean && git checkout --force --quiet $1 && git reset --hard $1 && git pull origin $1"
     run_show "$cmd"
     return $?
 }
 
-function git_set_branch_tag {
+function git.branch.tag {
     if [ -z "$1" ]; then
         fail $0 "tag required"
         return 1
@@ -213,7 +213,7 @@ function git_set_branch_tag {
 
     else
         local tag="$1"
-        local branch="`git_current_branch`"
+        local branch="`git.this.branch`"
         if [ -z "$branch" ]; then
             fail $0 "branch couldn't detected"
             return 2
@@ -222,69 +222,69 @@ function git_set_branch_tag {
 
     info $0 "$branch/$tag"
 
-    git_repository_clean;   [ $? -gt 0 ] && return 3
+    git.is_clean;   [ $? -gt 0 ] && return 3
     git checkout "$branch"; [ $? -gt 0 ] && return 4
-    git_pull "$branch";     [ $? -gt 0 ] && return 5
-    git_set_tag "$tag"
+    git.pull "$branch";     [ $? -gt 0 ] && return 5
+    git.tag.set "$tag"
     return $?
 }
 
-function git_pull {
-    local cmd="`cmd_git_pull $@`"
+function git.pull {
+    local cmd="`git.cmd.pull $@`"
     [ -z "$cmd" ] && return 1
     run_show "$cmd" 2>&1 | grep -v 'up to date'
     local retval="$?"
-    git_rewind_time 2>&1
+    git.mtime.set 2>&1
     return "$retval"
 }
 
-function git_pull_merge {
-    local cmd="`cmd_git_pull_merge $@`"
+function git.pull.merge {
+    local cmd="`git.cmd.pullmerge $@`"
     [ -z "$cmd" ] && return 1
     run_show "$cmd" 2>&1 | grep -v 'up to date'
     local retval="$?"
-    git_rewind_time 2>&1
+    git.mtime.set 2>&1
     return "$retval"
 }
 
-function git_pull_reset {
-    local branch="${1:-`git_current_branch`}"
+function git.pull.reset {
+    local branch="${1:-`git.this.branch`}"
     [ -z "$branch" ] && return 1
 
-    git_repository_clean;                       [ $? -gt 0 ] && return 2
-    git_fetch $branch;                          [ $? -gt 0 ] && return 3
+    git.is_clean;                       [ $? -gt 0 ] && return 2
+    git.fetch $branch;                          [ $? -gt 0 ] && return 3
     run_show "git reset --hard origin/$branch"; [ $? -gt 0 ] && return 4
-    git_pull $branch
+    git.pull $branch
     return $?
 }
 
 function git_push {
-    local branch="${1:-`git_current_branch`}"
+    local branch="${1:-`git.this.branch`}"
     [ -z "$branch" ] && return 1
     run_show "git push origin $branch"
     return $?
 }
 
-function git_push_force {
-    local branch="${1:-`git_current_branch`}"
+function git.push.force {
+    local branch="${1:-`git.this.branch`}"
     [ -z "$branch" ] && return 1
     run_show "git push --force origin $branch"
     return $?
 }
 
-function git_rewind_time {
+function git.mtime.set {
     if [ -x "`which git-restore-mtime`" ]; then
-        local root="`git_root 2>/dev/null`"
+        local root="`git.this.root 2>/dev/null`"
         [ -z "$root" ] && return 2
         git-restore-mtime --skip-missing --work-tree "$root/" --git-dir "$root/.git/" "$root/"
     fi
 }
 
-function git_repository_clean {
+function git.is_clean {
     if [ -z "$1" ]; then
-        local root="$(git_root)"
+        local root="$(git.this.root)"
     else
-        local root="$(git_root "$1")"
+        local root="$(git.this.root "$1")"
     fi
 
     [ ! "$root" ] && return 0
@@ -297,7 +297,7 @@ function git_repository_clean {
     fi
 }
 
-function git_set_tag {
+function git.tag.set {
     if [ -z "$1" ]; then
         fail $0 "tag required"
         return 1
@@ -306,7 +306,7 @@ function git_set_tag {
     return $?
 }
 
-function git_unset_tag {
+function git.tag.unset {
     if [ -z "$1" ]; then
         fail $0 "tag required"
         return 1
@@ -317,8 +317,8 @@ function git_unset_tag {
 
 # user helpers
 
-function drop_this_branch_right_now {
-    local branch="${1:-`git_current_branch`}"
+function git.branch.delete {
+    local branch="${1:-`git.this.branch`}"
     [ ! "$branch" ] && return 1
 
     if [ "$branch" = "master" ] || [ "$branch" = "develop" ]; then
@@ -326,15 +326,15 @@ function drop_this_branch_right_now {
         return 2
     fi
 
-    git_repository_clean; [ $? -gt 0 ] && return 3
+    git.is_clean; [ $? -gt 0 ] && return 3
 
     run_show "git reset --hard && (git checkout develop 2>/dev/null 1>/dev/null 2> /dev/null || git checkout master 2>/dev/null 1>/dev/null) && git branch -D \"$branch\" && git remote prune origin"
     printf " => git push origin --delete $branch\n" >&2
     return $?
 }
 
-function DROP_THIS_BRANCH_RIGHT_NOW {
-    local branch="${1:-`git_current_branch`}"
+function git.branch.DELETE.REMOTE {
+    local branch="${1:-`git.this.branch`}"
     [ ! "$branch" ] && return 1
 
     if [ "$branch" = "master" ] || [ "$branch" = "develop" ]; then
@@ -342,14 +342,14 @@ function DROP_THIS_BRANCH_RIGHT_NOW {
         return 2
     fi
 
-    git_repository_clean; [ $? -gt 0 ] && return 3
+    git.is_clean; [ $? -gt 0 ] && return 3
 
     run_show "git reset --hard && (git checkout develop 2>/dev/null 1>/dev/null 2> /dev/null || git checkout master 2>/dev/null 1>/dev/null) && git branch -D \"$branch\" && git push origin --delete \"$branch\" || true && git remote prune origin"
     return $?
 }
 
-function git_squash_already_pushed {
-    local branch="${1:-`git_current_branch`}"
+function git.squash.pushed {
+    local branch="${1:-`git.this.branch`}"
     [ ! "$branch" ] && return 1
 
     local parent="$(git show-branch | grep '*' | grep -v "`git rev-parse --abbrev-ref HEAD`" | head -n 1 | sd '^(.+)\[' '' | tabulate -d '] ' -i 1)"
@@ -375,7 +375,7 @@ function git.nested {
         current_path="$(fs_dirname "$(fs_realpath $git_directory)")"
 
         if [ -z "$header" ] && [ "$root" != "$current_path" ]; then
-            PRE=2 info $0 "update '$(fs_realpath "$root")'"
+            PRE=1 info $0 "update '$(fs_realpath "$root")'"
             if [ -x "$(which gfold)" ]; then
                 gfold -d classic
             fi
@@ -394,7 +394,7 @@ function git.nested {
         POST=0 info $0 "$branch in '$current_path'.. "
         local cmd="git fetch origin master && git fetch --tags"
 
-        if git_repository_clean 2>/dev/null; then
+        if git.is_clean 2>/dev/null; then
 
             if [ "$branch" != "master" ]; then
                 printf "fetch, reset and pull '$branch'.. " >&2

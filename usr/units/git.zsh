@@ -31,7 +31,7 @@ source "$INCLUDE_DIR/binds.zsh"
 
 function git_abort {
     local state
-    state="$(get_repository_state)"  # merge, rebase or cherry-pick
+    state="$(git.this.state)"  # merge, rebase or cherry-pick
     [ "$?" -gt 0 ] && return 0
     [ "$state" ] && $SHELL -c "git $state --abort"
     zle reset-prompt
@@ -63,7 +63,7 @@ function chdir_to_setupcfg {
 function git_autoaccept {
     local state
     if [ "$1" = 'theirs' ] || [ "$1" = 'ours' ]; then
-        state="$(get_repository_state)"  # merge, rebase or cherry-pick
+        state="$(git.this.state)"  # merge, rebase or cherry-pick
         [ "$?" -gt 0 ] && return 0
 
         run_show "git checkout --$1 . && git $state --skip"

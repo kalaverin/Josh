@@ -15,6 +15,7 @@ source "$JOSH/src/options.zsh"
 source "$JOSH/src/completion.zsh"
 source "$JOSH/usr/bindings.zsh"
 source "$JOSH/usr/units/files.zsh"
+source "$JOSH/usr/deprecated.zsh"
 
 [ -x "$(which git)" ]    && source "$JOSH/usr/units/git.zsh"
 [ -x "$(which python)" ] && source "$JOSH/usr/units/python.zsh"

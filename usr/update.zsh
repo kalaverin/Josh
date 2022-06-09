@@ -60,7 +60,7 @@ function __get_updates_count {
     local cwd="$PWD"
     builtin cd "$JOSH"
 
-    local branch="`git_current_branch`"
+    local branch="$(git.this.branch)"
     if [ -z "$branch" ]; then
         builtin cd "$cwd"
         fail $0 "branch '$branch' emp"
@@ -112,13 +112,13 @@ function check_updates {
     [ "$need_check" -eq 0 ] && return 0
 
     local cwd="$PWD" && builtin cd "$JOSH"
-    git_repository_clean
+    git.is_clean
     if [ "$?" -gt 0 ]; then
         builtin cd "$cwd"
         return 2
     fi
 
-    local branch="`git_current_branch`"
+    local branch="$(git.this.branch)"
     if [ "$branch" = "develop" ]; then
         info $0 "$updates new commits found, let's go!"
         josh_pull "$branch"
@@ -139,7 +139,7 @@ function check_updates {
 
 
 function motd {
-    local branch="`check_updates`"
+    local branch="$(check_updates)"
 
     if [ -n "$TMUX" ]; then
         return 0

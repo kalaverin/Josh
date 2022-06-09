@@ -42,7 +42,7 @@ function bak {
         return 1
     fi
 
-    local root="`git_root`"
+    local root="`git.this.root`"
     [ -z "$root" ] && local root="$PWD"
 
     local source="`fs_basename "$root"`"
@@ -72,7 +72,7 @@ function bakf {
         return 1
     fi
 
-    local root="`git_root`"
+    local root="`git.this.root`"
     [ -z "$root" ] && local root="$PWD"
 
     local source="`fs_basename "$root"`"
@@ -97,7 +97,7 @@ function kab {
     local backup="`backup_file_get 2>/dev/null`"
     [ -z "$backup" ] && return "$?"
 
-    git_repository_clean || return "$?"
+    git.is_clean || return "$?"
 
     run_show "cat $backup | $JOSH_QAP | $(__stream_unpak)" && return 0
     return "$?"

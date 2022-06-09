@@ -1,5 +1,5 @@
 function git_widget_add {
-    local branch="`git_current_branch`"
+    local branch="`git.this.branch`"
     [ -z "$branch" ] && return 1
 
     local cwd="`pwd`"
@@ -30,7 +30,7 @@ function git_widget_add {
             local command="$BUFFER && git add"
         fi
 
-        if [ "`get_repository_state`" ]; then  # merging, rebase or cherry-pick
+        if [ "`git.this.state`" ]; then  # merging, rebase or cherry-pick
             LBUFFER="$command $value "
             RBUFFER=''
         else
@@ -47,7 +47,7 @@ zle -N git_widget_add
 
 
 function git_widget_checkout_modified {
-    local branch="`git_current_branch`"
+    local branch="`git.this.branch`"
     [ ! "$branch" ] && return 1
 
     local cwd="`pwd`"
@@ -87,7 +87,7 @@ zle -N git_widget_checkout_modified
 
 
 function git_auto_skip_or_continue {
-    local state="`get_repository_state`"  # merging, rebase or cherry-pick
+    local state="`git.this.state`"  # merging, rebase or cherry-pick
     if [ "$state" ]; then
         # nothing to resolve, just skip
         local files=$($SHELL -c "$LIST_TO_ADD | wc -l")
@@ -113,7 +113,7 @@ function git_auto_skip_or_continue {
 
 
 function git_widget_conflict_solver {
-    local branch="`git_current_branch`"
+    local branch="`git.this.branch`"
     [ ! "$branch" ] && return 1
 
     git_auto_skip_or_continue
@@ -182,7 +182,7 @@ function git_widget_conflict_solver {
 
     zle reset-prompt
     if [ "$state" -eq 3 ]; then
-        local state="`get_repository_state`"
+        local state="`git.this.state`"
         local conflicts_amount="$($SHELL -c "$select | $conflicts_amount | $UNIQUE_SORT | wc -l")"
         if [ "$conflicts_amount" -gt 0 ]; then
             local conflicts_amount=" and $conflicts_amount files with conflicts block auto$state"
@@ -314,7 +314,7 @@ zle -N git_widget_show_commits
 
 
 function git_widget_select_branch_with_callback {
-    local branch="`git_current_branch`"
+    local branch="`git.this.branch`"
     [ ! "$branch" ] && return 1
 
     while true; do
@@ -513,10 +513,10 @@ zle -N git_widget_checkout_tag
 function git_widget_checkout_branch {
     # нужен нормальный просмотровщик диффа между хешами
     # git rev-list --first-parent develop...master --pretty=oneline | sd "(.{8})(.{32}) (.+)" "\$1 \$3" | pipe_numerate | sort -hr
-    local branch="`git_current_branch`"
+    local branch="`git.this.branch`"
     [ ! "$branch" ] && return 1
 
-    git_repository_clean 2>/dev/null || local state='(dirty!) '
+    git.is_clean 2>/dev/null || local state='(dirty!) '
     local select='git for-each-ref \
                     --sort=-committerdate refs/heads/ \
                     --color=always \
@@ -550,9 +550,9 @@ zle -N git_widget_checkout_branch
 
 
 function git_widget_fetch_branch {
-    local root="`git_root`"
+    local root="`git.this.root`"
     [ ! "$root" ] && return 1
-    local branch="`git_current_branch`"
+    local branch="`git.this.branch`"
 
     local select='git ls-remote --heads --quiet origin | \
                   sd "^([0-9a-f]+)\srefs/heads/(.+)" "\$1 \$2"'
@@ -585,10 +585,10 @@ function git_widget_fetch_branch {
 
     if [ "$count" -gt 1 ]; then
         for brnch in `echo "$value" | sd '(\s+)' '\n'`; do
-            git_fetch_checkout_branch $brnch
+            git.branch.select $brnch
         done
     else
-        git_fetch_checkout_branch $value
+        git.branch.select $value
     fi
     zle reset-prompt
     return $?
@@ -597,9 +597,9 @@ zle -N git_widget_fetch_branch
 
 
 function git_widget_delete_branch {
-    local root="`git_root`"
+    local root="`git.this.root`"
     [ ! "$root" ] && return 1
-    local branch="`git_current_branch`"
+    local branch="`git.this.branch`"
 
     local select='git ls-remote --heads --quiet origin | \
                   sd "^([0-9a-f]+)\srefs/heads/(.+)" "\$1 \$2"'
@@ -635,7 +635,7 @@ zle -N git_widget_delete_branch
 
 
 function git_widget_delete_local_branch {
-    local branch="`git_current_branch`"
+    local branch="`git.this.branch`"
     [ ! "$branch" ] && return 1
 
     local differ="echo {} | tabulate -i 1 | xargs -n 1 $GIT_DIFF"
@@ -672,9 +672,9 @@ zle -N git_widget_delete_local_branch
 
 
 function git_widget_delete_remote_branch {
-    local root="`git_root`"
+    local root="`git.this.root`"
     [ ! "$root" ] && return 1
-    local branch="`git_current_branch`"
+    local branch="`git.this.branch`"
 
     local select='git ls-remote --heads --quiet origin | \
                   sd "^([0-9a-f]+)\srefs/heads/(.+)" "\$1 \$2"'
@@ -758,10 +758,10 @@ zle -N git_widget_checkout_commit
 
 
 function git_widget_merge_branch {
-    local branch="`git_current_branch`"
+    local branch="`git.this.branch`"
     [ ! "$branch" ] && return 1
 
-    git_repository_clean >/dev/null || local state='(dirty!) '
+    git.is_clean >/dev/null || local state='(dirty!) '
     local differ="echo {} | tabulate -i 1 | xargs -n 1 $GIT_DIFF"
     local select='git for-each-ref \
                     --sort=-committerdate refs/heads/ \
@@ -782,7 +782,7 @@ function git_widget_merge_branch {
             break
 
         elif [ ! "$BUFFER" ]; then
-            run_show "git_fetch \"$value\" && git merge --no-commit \"origin/$value\""
+            run_show "git.fetch \"$value\" && git merge --no-commit \"origin/$value\""
             local retval=$?
             git_widget_conflict_solver
 
@@ -799,10 +799,10 @@ zle -N git_widget_merge_branch
 
 
 function git_widget_rebase_branch {
-    local branch="`git_current_branch`"
+    local branch="`git.this.branch`"
     [ ! "$branch" ] && return 1
 
-    git_repository_clean >/dev/null || local state='(dirty!) '
+    git.is_clean >/dev/null || local state='(dirty!) '
     local differ="echo {} | tabulate -i 1 | xargs -n 1 $GIT_DIFF"
     local select='git for-each-ref \
                     --sort=-committerdate refs/heads/ \
@@ -822,7 +822,7 @@ function git_widget_rebase_branch {
         break
     fi
 
-    local command="`cmd_git_fetch "$value"` && git rebase --stat --interactive --no-autosquash --autostash \"origin/$value\""
+    local command="`git.cmd.fetch "$value"` && git rebase --stat --interactive --no-autosquash --autostash \"origin/$value\""
 
     if [ ! "$BUFFER" ]; then
         LBUFFER=" $command"
@@ -837,13 +837,13 @@ zle -N git_widget_rebase_branch
 
 
 function git_replace_all_commits_with_one {
-    local branch="${1:-`git_current_branch`}"
+    local branch="${1:-`git.this.branch`}"
     [ ! "$branch" ] && return 1
 
     local parent="$(git show-branch | grep '*' | grep -v "`git rev-parse --abbrev-ref HEAD`" | head -n 1 | sd '^(.+)\[' '' | tabulate -d '] ' -i 1)"
     [ ! "$parent" ] && return 2
 
-    git_fetch "$parent"
+    git.fetch "$parent"
 
     local count="$(git rev-list --first-parent --count "^$parent" "$branch")"
     [ "$count" -eq 0 ] && return 3
@@ -851,7 +851,7 @@ function git_replace_all_commits_with_one {
     local command=" git reset --soft HEAD~$count && git add ."
     [ "$BUFFER" ] && local command="$BUFFER && $command"
 
-    if [ "`get_repository_state`" ]; then  # merging, rebase or cherry-pick
+    if [ "`git.this.state`" ]; then  # merging, rebase or cherry-pick
         LBUFFER="$command"
         RBUFFER=''
     else

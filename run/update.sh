@@ -23,7 +23,7 @@ function pull_update {
         fi
 
         if [ "$branch" != "$detected" ]; then
-            source "$JOSH/usr/units/git.zsh" && git_fetch_checkout_branch "$branch"
+            source "$JOSH/usr/units/git.zsh" && git.branch.select "$branch"
             local retval=$?
         else
             local retval="0"
