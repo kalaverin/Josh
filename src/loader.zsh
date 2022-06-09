@@ -1,3 +1,5 @@
+typeset -A JOSH_DEPRECATIONS=()
+
 source "$JOSH/usr/aliases.zsh"
 source "$JOSH/usr/common.zsh"
 
@@ -15,7 +17,6 @@ source "$JOSH/src/options.zsh"
 source "$JOSH/src/completion.zsh"
 source "$JOSH/usr/bindings.zsh"
 source "$JOSH/usr/units/files.zsh"
-source "$JOSH/usr/deprecated.zsh"
 
 [ -x "$(which git)" ]    && source "$JOSH/usr/units/git.zsh"
 [ -x "$(which python)" ] && source "$JOSH/usr/units/python.zsh"
@@ -25,3 +26,9 @@ is_workhours || motd
 
 source "$JOSH/src/plugins.zsh"
 plugins_autoload
+
+if [ -n "$JOSH_DEPRECATIONS" ]; then
+    for deprecated func in ${(kv)JOSH_DEPRECATIONS}; do
+        eval {"$deprecated() { warn \$0 \"deprecated, use: $func\"; $func \$* }"}
+    done
+fi
