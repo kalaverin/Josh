@@ -13,31 +13,24 @@ zstyle :plugin:history-search-multi-word reset-prompt-protect 1
 
 _comp_options+=(globdots)
 
-[ -x "$(which broot)" ] && eval "$(broot --print-shell-function zsh)"
-[ -x "$(which fuck)" ]     && eval $(thefuck --alias)
-[ -x "$(which pip)" ] && eval "$(pip completion --zsh)"
-[ -x "$(which scotty)" ]   && eval "$(scotty init zsh)"
-[ -x "$(which starship)" ] && eval "$(starship init zsh)"
 
-function completition_expired {
-    if [ "$SHLVL" -gt 1 ]; then
-        echo 0
+function completition.generate {
+    path_prune
+    [ -x "$commands[broot]" ]    && broot --print-shell-function zsh
+    [ -x "$commands[fuck]" ]     && thefuck --alias
+    [ -x "$commands[pip]" ]      && pip completion --zsh
+    [ -x "$commands[scotty]" ]   && scotty init zsh
 
-    else
-        local file="$HOME/.zcompdump"
-        if [ -f "$file" ]; then
-            let need_check="$EPOCHSECONDS - 7200 > `fs_mtime $file 2>/dev/null`"
-            if [ "$need_check" -eq 0 ]; then
-                echo 0
-                return
-            fi
-        fi
-        echo 1
+    local file="$HOME/.zcompdump"
+    if [ -f "$file" ]; then
+        let need_check="$EPOCHSECONDS - 300 > $(fs_mtime $file 2>/dev/null)"
+        [ "$need_check" -eq 0 ] && return
     fi
+    compinit
 }
 
+eval $(BINARY_SAFE=1 eval.cached "$(path_last_modified $path)" completition.generate)
 
-if [ "$(completition_expired)" -gt 0 ]; then
-    autoload -Uz compinit
-    compinit # -u insecure!
-fi
+[ -x "$commands[starship]" ] && eval $(starship init zsh)
+
+autoload -Uz compinit
