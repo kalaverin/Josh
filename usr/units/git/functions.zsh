@@ -373,7 +373,7 @@ function git_update_nested_repositories {
     find "$root" -maxdepth 2 -type d -name .git | sort | while read git_directory
     do
         if [ -z "$header" ]; then
-            info $0 "\nupdate '$(fs_realpath "$root")'\n"
+            info $0 "update '$(fs_realpath "$root")'"
             if [ -x "$(which gfold)" ]; then
                 gfold -d classic
             fi

@@ -52,14 +52,16 @@ CARGO_REQ_PACKAGES=(
 CARGO_REC_PACKAGES=(
     bingrep          # extract and grep strings from binaries
     broot            # console file manager
-    dsmsg            # phrases from Dark Souls generator
     bump-bin         # versions with semver specification
+    cargo-whatis     # fast chit replacement
+    cork             # repl hex calculator
+    ctv              # fast tree
     diffsitter       # AST based diff
     dirstat-rs       # ds, du replace, summary tree
+    diskus           # fast du -sh replacement
+    dsmsg            # phrases from Dark Souls generator
     dtool            # code decode swiss knife
     du-dust          # dust, du replace, verbose tree
-    cargo-whatis     # fast chit replacement
-    diskus           # fast du -sh replacement
     dull             # strip any ANSI (color) sequences from pipe
     dupe-krill       # replace similar (by hash) files with hardlinks
     durt             # du replace, just sum
@@ -76,6 +78,7 @@ CARGO_REC_PACKAGES=(
     git-trim         # remove local branches when remote merged
     git-who          # list branches with date, author and merge status
     hexyl            # hex viewer
+    hj               # http response into json
     ignoreit         # powerful .gitignore for any languages
     igrep            # interactive ripgrep
     jaq              # json query and manipulating tool
@@ -89,8 +92,10 @@ CARGO_REC_PACKAGES=(
     loadem           # website load maker
     mdcat            # Markdown files rendered viewer
     miniserve        # directory serving over http
+    parallel-disk-usage # pdu, parallel and fast du
     parallel-sh      # shell commands parallizer
     pgen             # password generator
+    pipr             # shell pipelines tui helper with partial execution
     pouf             # many data formats faker
     procs            # ps aux replacement for humans
     ptit             # print images into terminal
@@ -98,9 +103,6 @@ CARGO_REC_PACKAGES=(
     quickdash        # hasher
     rcrawl           # very fast file searcher by pattern in directory
     readable-name-generator
-    parallel-disk-usage # pdu, parallel and fast du
-    ctv              # fast tree
-    cork             # repl hex calculator
     rhit             # very fast nginx log analyzer with graphical stats
     rjo              # JSON generator by key->value
     ruplacer         # refactoring tool, like sed for directory
@@ -116,7 +118,6 @@ CARGO_REC_PACKAGES=(
     xkpwgen          # generate human readable strings
     xt               # json, yaml, toml and msgpack converter
     yj               # YAML to JSON converter
-    hj               # http response into json
 )
 CARGO_OPT_PACKAGES=(
     b0x
