@@ -3,7 +3,7 @@
 
 [ -z "$SOURCES_CACHE" ] && declare -aUg SOURCES_CACHE=() && SOURCES_CACHE+=($0)
 
-local THIS_SOURCE="$(fs_gethash "$0")"
+local THIS_SOURCE="$(fs.gethash "$0")"
 if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; then
     SOURCES_CACHE+=("$THIS_SOURCE")
 
@@ -61,7 +61,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
                     fi
                     warn $0 "pkg-config $lib failed, we try to which openssl.pc in $lookup_path"
 
-                    local openssl_path="$(fs_dirname `find "$lookup_path" -type f -name "openssl.pc" -follow 2>/dev/null | head -n 1`)"
+                    local openssl_path="$(fs.dirname `find "$lookup_path" -type f -name "openssl.pc" -follow 2>/dev/null | head -n 1`)"
                     if [ ! -d "$openssl_path" ]; then
                         warn $0 "pkg-config $lib: nothing about openssl.pc in $lookup_path"
                         local missing="$missing $lib"

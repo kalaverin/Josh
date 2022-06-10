@@ -1,6 +1,6 @@
 [ -z "$SOURCES_CACHE" ] && declare -aUg SOURCES_CACHE=() && SOURCES_CACHE+=($0)
 
-local THIS_SOURCE="$(fs_gethash "$0")"
+local THIS_SOURCE="$(fs.gethash "$0")"
 if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; then
     SOURCES_CACHE+=("$THIS_SOURCE")
 
@@ -67,14 +67,14 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
     function fs.lm {
         local args="$*"
-        [ -x "$1" ] && local args="$(fs_realpath "$1") ${@:2}"
+        [ -x "$1" ] && local args="$(fs.realpath "$1") ${@:2}"
         local cmd="find $args -printf \"%T@ %p\n\" | sort -n | tail -n 1"
         eval ${cmd}
     }
 
     function fs.lm.dirs {
         local args="$*"
-        [ -x "$1" ] && local args="$(fs_realpath "$1") ${@:2}"
+        [ -x "$1" ] && local args="$(fs.realpath "$1") ${@:2}"
         local cmd="find $args -type d -not -path '*/.git*' -printf \"%T@ %p\n\" | sort -n | tail -n 1 | grep -Po '\d+' | head -n 1"
         eval ${cmd}
     }

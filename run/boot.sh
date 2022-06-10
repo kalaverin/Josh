@@ -72,7 +72,7 @@ function fs_size {
     [ "$?" -eq 0 ] && echo "$result[8]"
 }
 
-function fs_mtime {
+function fs.mtime {
     if [ -z "$1" ]; then
         printf " ** fail ($0): call without args, I need to do — what?\n" >&2
         return 1
@@ -82,7 +82,7 @@ function fs_mtime {
     [ "$?" -eq 0 ] && echo "$result[10]"
 }
 
-function fs_readlink {
+function fs.readlink {
     if [ -z "$1" ]; then
         printf " ** fail ($0): call without args, I need to do — what?\n" >&2
         return 1
@@ -97,39 +97,39 @@ function fs_readlink {
 }
 
 
-function fs_basename {
+function fs.basename {
     [ -z "$1" ] && return 1
     [[ "$1" -regex-match '[^/]+/?$' ]] && echo "$MATCH"
 }
 
-function fs_dirname {
+function fs.dirname {
     [ -z "$1" ] && return 1
 
-    local result="$(fs_basename "$1")"
+    local result="$(fs.basename "$1")"
     [ -z "$result" ] && return 2
 
     let offset="${#1} - ${#result} -1"
     echo "${1[0,$offset]}"
 }
 
-function fs_realdir {
+function fs.realdir {
     [ -z "$1" ] && return 1
 
-    local result="$(fs_realpath "$1")"
+    local result="$(fs.realpath "$1")"
     [ -z "$result" ] && return 2
 
-    local result="$(fs_dirname "$result")"
+    local result="$(fs.dirname "$result")"
     [ -z "$result" ] && return 3
 
     echo "$result"
 }
 
-function fs_joshpath {
+function fs.joshpath {
     if [ -z "$1" ] || [ -z "$JOSH" ]; then
         return 1
     fi
 
-    local result="$(fs_realpath "$1")"
+    local result="$(fs.realpath "$1")"
     if [ -z "$result" ]; then
         return 2
     fi
@@ -138,13 +138,13 @@ function fs_joshpath {
     echo "${result[${#result} - $length,${#result}]}"
 }
 
-function fs_gethash {
+function fs.gethash {
     if [ -z "$1" ] || [ -z "$JOSH" ]; then
         return 1
     fi
 
     local meta result
-    result="$(fs_realpath "$1")"
+    result="$(fs.realpath "$1")"
     if [ -z "$result" ]; then
         return 2
     fi
@@ -158,7 +158,7 @@ function fs_gethash {
     echo "${result[${#result} - $length,${#result}]}:$meta[8]:$meta[10]"
 }
 
-function fs_resolver {
+function fs.resolver {
     if [ -n "$JOSH_REALPATH" ]; then
         return 0
     fi
@@ -183,14 +183,14 @@ function fs_resolver {
     return 1
 }
 
-function fs_realpath {
+function fs.realpath {
     local link="$1"
     if [ -z "$link" ]; then
         return 2
 
     elif [ -e "$link" ]; then
         if [ -L "$link" ]; then
-            local node="$(fs_readlink "$1")"
+            local node="$(fs.readlink "$1")"
             if [ -n "$node" ]; then
 
                 if [[ "$node" =~ "^/" ]] && [ -x "$node" ] && [ ! -L "$node" ]; then
@@ -200,7 +200,7 @@ function fs_realpath {
 
                 elif [[ "$link" =~ "^/" ]] && [[ ! "$node" =~ "/" ]]; then
                     # target is relative path from source location
-                    local node="$(fs_dirname "$link")/$node"
+                    local node="$(fs.dirname "$link")/$node"
                     if [ -x "$node" ]; then
                         if [ ! -L "$node" ]; then
                             # target is regular executable node
@@ -208,7 +208,7 @@ function fs_realpath {
                             return 0
                         else
                             # target is symlink, okay
-                            local node="$(fs_realpath "$node")"
+                            local node="$(fs.realpath "$node")"
                             echo "$node"
                             return "$?"
                         fi
@@ -217,7 +217,7 @@ function fs_realpath {
             fi
         fi
 
-        fs_resolver
+        fs.resolver
         if [ -z "$JOSH_REALPATH" ]; then
             echo "$link"
             return 3
@@ -232,7 +232,7 @@ function fs_realpath {
 }
 
 
-function fs_retrieve_userhome {
+function fs.home.eval {
     local home
     local login="${1:-\$USER}"
 
@@ -264,26 +264,26 @@ function fs_retrieve_userhome {
 }
 
 
-function fs_userhome {
-    local home="$(fs_retrieve_userhome)"
-    local real="$(fs_realpath $home)"
+function fs.home {
+    local home="$(fs.home.eval)"
+    local real="$(fs.realpath $home)"
 
     if [ -x "$real" ]; then
         echo "$real"
     else
-        printf " -- $0 warning: can't make real home path for HOME '$home', REAL '$(which realpath)', READLINK '$(which readlink)', fallback '$(fs_dirname "$home")/$(fs_basename "$home")'\n" >&2
+        printf " -- $0 warning: can't make real home path for HOME '$home', REAL '$(which realpath)', READLINK '$(which readlink)', fallback '$(fs.dirname "$home")/$(fs.basename "$home")'\n" >&2
         echo "$home"
     fi
 }
 
 
-function shortcut {
+function fs.link {
     [ -z "$ZSH" ] || [ -z "$1" ] && return 1
 
     local dir="$JOSH/bin"
 
     if [ -z "$2" ]; then
-        local src="$dir/$(fs_basename "$1")"
+        local src="$dir/$(fs.basename "$1")"
         local dst="$1"
 
         if [ ! -x "$dst" ]; then
@@ -305,7 +305,7 @@ function shortcut {
         fi
     fi
 
-    if [ -L "$src" ] && [ ! "$dst" = "`fs_realpath "$src"`" ]; then
+    if [ -L "$src" ] && [ ! "$dst" = "`fs.realpath "$src"`" ]; then
         unlink "$src"
     fi
 
@@ -372,9 +372,9 @@ function which {
 
 
 if [ -z "$JOSH" ]; then
-    local redirect="$(fs_userhome)"
+    local redirect="$(fs.home)"
     if [ -x "$redirect" ] && [ ! "$redirect" = "$HOME" ]; then
-        if [ "$(fs_realpath "$redirect")" != "$(fs_realpath "$HOME")" ]; then
+        if [ "$(fs.realpath "$redirect")" != "$(fs.realpath "$HOME")" ]; then
             printf " ++ warn ($0): HOME:'$HOME' -> '$redirect'\n" >&2
         fi
         export HOME="$redirect"
@@ -420,9 +420,9 @@ if [[ -z ${(M)zsh_eval_context:#file} ]]; then
 
 
 else
-    local THIS_SOURCE="$(fs_gethash "$0")"
+    local THIS_SOURCE="$(fs.gethash "$0")"
     if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; then
         SOURCES_CACHE+=("$THIS_SOURCE")
-        source "$(fs_dirname $0)/init.sh"
+        source "$(fs.dirname $0)/init.sh"
     fi
 fi

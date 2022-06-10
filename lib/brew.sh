@@ -21,7 +21,7 @@ fi
 
 [ -z "$SOURCES_CACHE" ] && declare -aUg SOURCES_CACHE=() && SOURCES_CACHE+=($0)
 
-local THIS_SOURCE="$(fs_gethash "$0")"
+local THIS_SOURCE="$(fs.gethash "$0")"
 if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; then
     SOURCES_CACHE+=("$THIS_SOURCE")
 
@@ -81,7 +81,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             fail $0 "brew path '$root' exists"
             return 2
 
-        elif [ ! -d "$(fs_dirname $root)" ]; then
+        elif [ ! -d "$(fs.dirname $root)" ]; then
             fail $0 "brew path '$root' subroot isn't found"
             return 3
         fi
@@ -123,7 +123,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         for row in $*; do
             run_show "$brew install $row"
 
-            local exe="$(fs_basename $row)"
+            local exe="$(fs.basename $row)"
             if [ -z "$exe" ]; then
                 fail $0 "basename for '$row' empty"
                 continue
@@ -131,7 +131,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
             local bin="$HOMEBREW_PREFIX/bin/$exe"
             if [ -x "$bin" ]; then
-                local dst="`shortcut "$bin"`"
+                local dst="`fs.link "$bin"`"
                 if [ -n "$dst" ]; then
                     info $0 "$dst -> $(which $exe)"
                 fi

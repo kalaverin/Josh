@@ -1,6 +1,6 @@
 [ -z "$SOURCES_CACHE" ] && declare -aUg SOURCES_CACHE=() && SOURCES_CACHE+=($0)
 
-local THIS_SOURCE="$(fs_gethash "$0")"
+local THIS_SOURCE="$(fs.gethash "$0")"
 if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; then
     SOURCES_CACHE+=("$THIS_SOURCE")
 
@@ -69,7 +69,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
                 continue
             fi
 
-            local dir="$(fs_realpath "$dir" 2>/dev/null)"
+            local dir="$(fs.realpath "$dir" 2>/dev/null)"
             if [ -z "$dir" ]; then
                 continue
             fi
@@ -175,7 +175,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     }
 
     function temp.dir {
-        local result="$(fs_dirname `mktemp -duq`)"
+        local result="$(fs.dirname `mktemp -duq`)"
         [ ! -x "$result" ] && mkdir -p "$result"
         echo "$result"
     }
@@ -198,7 +198,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         echo "$dst"
     }
 
-    function eval.retval {
+    function eval.run {
         local cmd="$*"
         eval ${cmd}
         local retval="$?"
@@ -275,19 +275,19 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         if [ ! -f "$cache" ]; then
             let expired="1"
         else
-            local last_update="$(fs_mtime $cache 2>/dev/null)"
+            local last_update="$(fs.mtime $cache 2>/dev/null)"
             [ -z "$last_update" ] && local last_update="0"
             let expired="$expires > $last_update"
         fi
 
-        local subdir="$(fs_dirname "$cache")"
+        local subdir="$(fs.dirname "$cache")"
         if [ ! -d "$subdir" ]; then
             mkdir -p "$subdir"
         fi
 
         if [ -z "$BINARY_SAFE" ]; then
             if [ "$expired" -eq 0 ]; then
-                result="$(eval.retval "cat '$cache' | $JOSH_QAP 2>/dev/null")"
+                result="$(eval.run "cat '$cache' | $JOSH_QAP 2>/dev/null")"
                 local retval="$?"
 
                 if [ "$retval" -eq 0 ]; then
@@ -300,7 +300,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
                 return 255
             fi
 
-            result="$(eval.retval ${@:2})"
+            result="$(eval.run ${@:2})"
             local retval="$?"
 
             if [ "$retval" -eq 0 ]; then
@@ -339,7 +339,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
                 return 255
             fi
 
-            eval.retval ${@:2} >$tempfile
+            eval.run ${@:2} >$tempfile
             local retval="$?"
 
             if [ "$retval" -eq 0 ]; then

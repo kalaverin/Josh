@@ -28,7 +28,7 @@ fi
 
 [ -z "$SOURCES_CACHE" ] && declare -aUg SOURCES_CACHE=() && SOURCES_CACHE+=($0)
 
-local THIS_SOURCE="$(fs_gethash "$0")"
+local THIS_SOURCE="$(fs.gethash "$0")"
 if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; then
     SOURCES_CACHE+=("$THIS_SOURCE")
 
@@ -77,7 +77,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
 
         if [ -x "$2" ]; then
-            local bin="$(fs_realpath "$2")"
+            local bin="$(fs.realpath "$2")"
             if [ ! -x "$bin" ]; then
                 fail $0 "cannot get real path for '$2'"
                 return 3
@@ -113,7 +113,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     }
 
     function python.version.uncached {
-        local python="$(fs_realpath "$1" 2>/dev/null)"
+        local python="$(fs.realpath "$1" 2>/dev/null)"
         if [ ! -x "$python" ]; then
             fail $0 "isn't valid python '$python'"
             return 3
@@ -144,7 +144,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             fail $0 "isn't valid executable '$source'"
             return 2
         fi
-        eval.cached "$(fs_mtime $source)" python.version.uncached "$source"
+        eval.cached "$(fs.mtime $source)" python.version.uncached "$source"
     }
 
     function python.home.from_version {
@@ -261,7 +261,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
         if [ "$result" ]; then
             local python
-            python="$(fs_realpath "$result")"
+            python="$(fs.realpath "$result")"
             if [ "$?" -eq 0 ] && [ -x "$python" ]; then
                 echo "$python"
                 return 0
@@ -312,7 +312,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         else
             local python="$(which "$1")"
         fi
-        target="$(eval.cached "$(fs_mtime $python)" python.home.uncached "$python")"
+        target="$(eval.cached "$(fs.mtime $python)" python.home.uncached "$python")"
         local retval="$?"
 
         echo "$target"
@@ -331,7 +331,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
                 return 1
             else
 
-                local source="$(fs_realpath "$PYTHON_BINARIES/default/bin/python")"
+                local source="$(fs.realpath "$PYTHON_BINARIES/default/bin/python")"
                 if [ "$?" -gt 0 ] || [ ! -x "$source" ]; then
                     fail $0 "python default binary '$source' ($1) doesn't exists or something wrong"
                     return 2
@@ -339,14 +339,14 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             fi
 
         elif [[ "$1" -regex-match '^[0-9]+\.[0-9]+' ]]; then
-            local source="$(fs_realpath `which "python$MATCH"`)"
+            local source="$(fs.realpath `which "python$MATCH"`)"
             if [ "$?" -gt 0 ] || [ ! -x "$source" ]; then
                 fail $0 "python binary '$source' ($1) doesn't exists or something wrong"
                 return 3
             fi
 
         else
-            local source="$(fs_realpath `which "$1"`)"
+            local source="$(fs.realpath `which "$1"`)"
             if [ "$?" -gt 0 ] || [ ! -x "$source" ]; then
                 fail $0 "python binary '$source' doesn't exists or something wrong"
                 return 4
@@ -707,11 +707,11 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         local system="/bin /sbin /usr/bin /usr/sbin /usr/local/bin /usr/local/sbin"
 
         if [ -n "$SUDO_USER" ]; then
-            local home="$(fs_retrieve_userhome "$SUDO_USER")"
+            local home="$(fs.home.eval "$SUDO_USER")"
 
             if [ "$?" -eq 0 ] && [ -n "$home" ]; then
                 local system="$system $home"
-                local real="$(fs_realpath "$home")"
+                local real="$(fs.realpath "$home")"
                 if [ "$?" -eq 0 ] && [ ! "$home" = "$real" ]; then
                     local system="$system $real"
                 fi

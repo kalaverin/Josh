@@ -45,7 +45,7 @@ function bak {
     local root="`git.this.root`"
     [ -z "$root" ] && local root="$PWD"
 
-    local source="`fs_basename "$root"`"
+    local source="`fs.basename "$root"`"
     [ "$?" -gt 0 ] && return 1
 
     local timemark="`date "+%Y.%m.%d-%H.%M.%S"`"
@@ -75,7 +75,7 @@ function bakf {
     local root="`git.this.root`"
     [ -z "$root" ] && local root="$PWD"
 
-    local source="`fs_basename "$root"`"
+    local source="`fs.basename "$root"`"
     [ "$?" -gt 0 ] && return 1
 
     local timemark="`date "+%Y.%m.%d-%H.%M.%S"`"

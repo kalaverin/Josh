@@ -23,7 +23,7 @@ function completition.generate {
 
     local file="$HOME/.zcompdump"
     if [ -f "$file" ]; then
-        let need_check="$EPOCHSECONDS - 300 > $(fs_mtime $file 2>/dev/null)"
+        let need_check="$EPOCHSECONDS - 300 > $(fs.mtime $file 2>/dev/null)"
         [ "$need_check" -eq 0 ] && return
     fi
     compinit

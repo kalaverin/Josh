@@ -292,31 +292,31 @@ function mktp {
     mkcd "$(temp.dir)/pet/$(get.name)"
 }
 
-function shortcut- {
+function fs.link- {
     [ -z "$ZSH" ] || [ -z "$1" ] && return 1
 
     local dir="$JOSH/bin"
 
     if [[ "$1" =~ "/" ]]; then
-        printf " ** fail ($0): shortcut '$1' couldn't contains slashes\n" >&2
+        printf " ** fail ($0): fs.link '$1' couldn't contains slashes\n" >&2
         return 1
     fi
 
     local src="$dir/$1"
 
     if [ ! -h "$src" ]; then
-        printf " ** fail ($0): shortcut '$src' isn't symbolic link\n" >&2
+        printf " ** fail ($0): fs.link '$src' isn't symbolic link\n" >&2
         return 2
     else
 
-        local dst="$(fs_readlink "$src")"
+        local dst="$(fs.readlink "$src")"
         unlink "$src"
         local ret="$?"
 
         if [ "$ret" -eq 0 ]; then
-            printf " ++ warn ($0): unlink shortcut '$src' -> '$dst'\n" >&2
+            printf " ++ warn ($0): unlink fs.link '$src' -> '$dst'\n" >&2
         else
-            printf " ** fail ($0): unlink shortcut '$src' -> '$dst' failed: $ret\n" >&2
+            printf " ** fail ($0): unlink fs.link '$src' -> '$dst' failed: $ret\n" >&2
             return "$ret"
         fi
     fi

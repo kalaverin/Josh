@@ -1,6 +1,6 @@
 [ -z "$SOURCES_CACHE" ] && declare -aUg SOURCES_CACHE=() && SOURCES_CACHE+=($0)
 
-local THIS_SOURCE="$(fs_gethash "$0")"
+local THIS_SOURCE="$(fs.gethash "$0")"
 if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; then
     SOURCES_CACHE+=("$THIS_SOURCE")
 
@@ -96,13 +96,13 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
     if [[ "$osname" -regex-match 'freebsd' ]]; then
         export JOSH_OS="BSD"
-        shortcut 'ls'    '/usr/local/bin/gnuls' >/dev/null
-        shortcut 'grep'  '/usr/local/bin/grep'  >/dev/null
+        fs.link 'ls'    '/usr/local/bin/gnuls' >/dev/null
+        fs.link 'grep'  '/usr/local/bin/grep'  >/dev/null
 
     elif [[ "$osname" -regex-match 'darwin' ]]; then
         export JOSH_OS="MAC"
-        shortcut 'ls'    '/usr/local/bin/gls'   >/dev/null
-        shortcut 'grep'  '/usr/local/bin/ggrep' >/dev/null
+        fs.link 'ls'    '/usr/local/bin/gls'   >/dev/null
+        fs.link 'grep'  '/usr/local/bin/ggrep' >/dev/null
 
         dirs=(
             bin
@@ -144,19 +144,19 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     fi
 
     if [ "$JOSH_OS" = 'BSD' ] || [ "$JOSH_OS" = 'MAC' ]; then
-        shortcut 'cut'       '/usr/local/bin/gcut'      >/dev/null
-        shortcut 'find'      '/usr/local/bin/gfind'     >/dev/null
-        shortcut 'head'      '/usr/local/bin/ghead'     >/dev/null
-        shortcut 'readlink'  '/usr/local/bin/greadlink' >/dev/null
-        shortcut 'realpath'  '/usr/local/bin/grealpath' >/dev/null
-        shortcut 'sed'       '/usr/local/bin/gsed'      >/dev/null
-        shortcut 'tail'      '/usr/local/bin/gtail'     >/dev/null
-        shortcut 'tar'       '/usr/local/bin/gtar'      >/dev/null
-        shortcut 'xargs'     '/usr/local/bin/gxargs'    >/dev/null
+        fs.link 'cut'       '/usr/local/bin/gcut'      >/dev/null
+        fs.link 'find'      '/usr/local/bin/gfind'     >/dev/null
+        fs.link 'head'      '/usr/local/bin/ghead'     >/dev/null
+        fs.link 'readlink'  '/usr/local/bin/greadlink' >/dev/null
+        fs.link 'realpath'  '/usr/local/bin/grealpath' >/dev/null
+        fs.link 'sed'       '/usr/local/bin/gsed'      >/dev/null
+        fs.link 'tail'      '/usr/local/bin/gtail'     >/dev/null
+        fs.link 'tar'       '/usr/local/bin/gtar'      >/dev/null
+        fs.link 'xargs'     '/usr/local/bin/gxargs'    >/dev/null
         export JOSH_MD5_PIPE="$(which md5)"
     else
         export JOSH_MD5_PIPE="$(which md5sum) | $(which cut) -c -32"
     fi
 
-    source "$(fs_dirname $0)/hier.sh"
+    source "$(fs.dirname $0)/hier.sh"
 fi

@@ -76,7 +76,7 @@ function git.cmd.pullmerge {
 function git.this.root {
     local result
     if [ -z "$1" ]; then
-        result="$(fs_realpath `eval "$GET_ROOT 2>/dev/null"`)"
+        result="$(fs.realpath `eval "$GET_ROOT 2>/dev/null"`)"
         local retval="$?"
     else
         if [ -d "$1" ]; then
@@ -437,7 +437,7 @@ function git.squash.pushed {
 
 function git.nested {
     local cwd="$PWD"
-    local root="$(fs_realpath "${1:-.}")"
+    local root="$(fs.realpath "${1:-.}")"
 
     if [ ! -d "$root" ]; then
         fail $0 "working path '$root' isn't accessible"
@@ -449,10 +449,10 @@ function git.nested {
 
     find "$root" -maxdepth 2 -type d -name .git | sort | while read git_directory
     do
-        current_path="$(fs_dirname "$(fs_realpath $git_directory)")"
+        current_path="$(fs.dirname "$(fs.realpath $git_directory)")"
 
         if [ -z "$header" ] && [ "$root" != "$current_path" ]; then
-            PRE=1 info $0 "update '$(fs_realpath "$root")'"
+            PRE=1 info $0 "update '$(fs.realpath "$root")'"
             if [ -x "$(which gfold)" ]; then
                 gfold -d classic
             fi
@@ -491,7 +491,7 @@ function git.nested {
             fi
         fi
 
-        eval.retval "$cmd" 1>/dev/null 2>/dev/null
+        eval.run "$cmd" 1>/dev/null 2>/dev/null
         if [ "$?" -eq 0 ]; then
             printf "ok\n" >&2
         else

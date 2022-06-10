@@ -2,7 +2,7 @@
 
 if [[ -n ${(M)zsh_eval_context:#file} ]]; then
     [ -z "$HTTP_GET" ] && source "$(dirname $0)/../boot.sh"
-    [ -z "$OMZ_PLUGIN_DIR" ] && source "$(fs_dirname $0)/oh-my-zsh.sh"
+    [ -z "$OMZ_PLUGIN_DIR" ] && source "$(fs.dirname $0)/oh-my-zsh.sh"
 
     BINARY_DEST="$HOME/.local/bin"
     [ ! -d "$BINARY_DEST" ] && mkdir -p "$BINARY_DEST"
@@ -63,7 +63,7 @@ function __setup.bin.compile_fzf {
     if [ ! -f "$BINARY_DEST/fzf" ]; then
         info $0 "deploy fzf to $BINARY_DEST/fzf"
 
-        local tempdir="$(fs_dirname `mktemp -duq`)/fzf"
+        local tempdir="$(fs.dirname `mktemp -duq`)/fzf"
         [ -d "$tempdir" ] && rm -rf "$tempdir"
 
         $SHELL -c "$clone $url $tempdir && $tempdir/install --completion --key-bindings --update-rc --bin && cp -f $tempdir/bin/fzf $BINARY_DEST/fzf && rm -rf $tempdir"
@@ -146,7 +146,7 @@ function __setup.bin.link_fpp {
     fi
 
     if [ -x "$src/fpp" ]; then
-        local dst="$(shortcut "$src/fpp")"
+        local dst="$(fs.link "$src/fpp")"
         if [ -z "$dst" ]; then
             local retval="127"
         else
@@ -175,11 +175,11 @@ function __setup.bin.link_git_tools {
         find "$src" -maxdepth 1 -type f -executable | while read exe
         do
             if [ -x "$exe" ]; then
-                local dst="$(shortcut "$exe")"
+                local dst="$(fs.link "$exe")"
                 if [ -z "$dst" ]; then
                     local retval="127"
                 else
-                    info $0 "'$(fs_basename "$dst")' -> '$dst'"
+                    info $0 "'$(fs.basename "$dst")' -> '$dst'"
                 fi
             fi
         done

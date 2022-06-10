@@ -97,14 +97,14 @@ function __setup.omz.deploy_extensions {
     info $0 "deploy to '$OMZ_PLUGIN_DIR'"
 
     for pkg in "${PACKAGES[@]}"; do
-        local dst="$OMZ_PLUGIN_DIR/$(fs_basename $pkg)"
+        local dst="$OMZ_PLUGIN_DIR/$(fs.basename $pkg)"
         if [ ! -x "$dst/.git" ]; then
             local verb='clone'
             $SHELL -c "git clone --depth 1 $pkg"
 
         else
             let fetch_every="${UPDATE_ZSH_DAYS:-1} * 86400"
-            local last_fetch="`fs_mtime "$dst/.git/FETCH_HEAD" 2>/dev/null`"
+            local last_fetch="`fs.mtime "$dst/.git/FETCH_HEAD" 2>/dev/null`"
             [ -z "$last_fetch" ] && local last_fetch=0
 
             let need_fetch="$EPOCHSECONDS - $fetch_every > $last_fetch"

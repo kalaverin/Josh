@@ -2,8 +2,8 @@ source "$JOSH/lib/shared.sh"
 
 # ———
 
-local THIS_DIR="`fs_realdir "$0"`"
-local INCLUDE_DIR="`fs_realpath $THIS_DIR/git`"
+local THIS_DIR="`fs.realdir "$0"`"
+local INCLUDE_DIR="`fs.realpath $THIS_DIR/git`"
 
 local DIFF_FROM_TAG="$INCLUDE_DIR/git_diff_from_tag.sh"
 local LIST_BRANCHES="$INCLUDE_DIR/git_list_branches.sh"

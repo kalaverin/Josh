@@ -2,8 +2,8 @@ source "$JOSH/lib/shared.sh"
 
 # ———
 
-local THIS_DIR="$(fs_realdir "$0")"
-local INCLUDE_DIR="$(fs_realpath $THIS_DIR/pip)"
+local THIS_DIR="$(fs.realdir "$0")"
+local INCLUDE_DIR="$(fs.realpath $THIS_DIR/pip)"
 
 local PIP_LIST_ALL="$INCLUDE_DIR/pip_list_all.sh"
 local PIP_LIST_TOP="$INCLUDE_DIR/pip_list_top_level.sh"
@@ -12,7 +12,7 @@ local PIP_PKG_INFO="$INCLUDE_DIR/pip_pkg_info.sh"
 # ———
 
 function virtualenv_path_activate {
-    local venv="$(fs_realpath ${1:-$VIRTUAL_ENV})"
+    local venv="$(fs.realpath ${1:-$VIRTUAL_ENV})"
 
     if [ ! -d "$venv" ]; then
         return 1
@@ -38,7 +38,7 @@ function virtualenv_deactivate {
 
 function get_temporary_envs_directory {
     if [ -z "$JOSH_PY_TEMP_ENVS_ROOT" ]; then
-        local directory="$(temp.dir)/$(fs_basename "$JOSH_PY_ENVS_ROOT")"
+        local directory="$(temp.dir)/$(fs.basename "$JOSH_PY_ENVS_ROOT")"
         if [ ! -d "$directory" ]; then
             mkdir -p "$directory"
         fi
@@ -56,7 +56,7 @@ function virtualenv_node_deploy {
         fail $0 "venv must be activated"
         return 1
     fi
-    local venvname=`fs_basename "$venv"`
+    local venvname=`fs.basename "$venv"`
 
     info $0 "using venv: $venvname ($venv)"
     virtualenv_path_activate "$venv"
@@ -174,11 +174,11 @@ function virtualenv_create {
         local full="$JOSH_PY_ENVS_ROOT/$name"
 
     elif [[ "$1" =~ ^/.+/[0-9a-z]+[0-9a-z\.-]*[0-9a-z]+$ ]]; then
-        local name="$(fs_basename "$1")"
+        local name="$(fs.basename "$1")"
         local full="$1"
     fi
 
-    local root="$(fs_dirname "$full")"
+    local root="$(fs.dirname "$full")"
     if [ ! -d "$root" ]; then
         mkdir -p "$root"
 
@@ -248,7 +248,7 @@ function virtualenv_create {
 }
 
 function virtualenv_temporary_create {
-    local venv="$(temp.dir)/$(fs_basename "$JOSH_PY_ENVS_ROOT")/$(get.name)"
+    local venv="$(temp.dir)/$(fs.basename "$JOSH_PY_ENVS_ROOT")/$(get.name)"
     virtualenv_create "$venv" $@
 }
 
@@ -308,7 +308,7 @@ function pip_visual_freeze {
     source "$JOSH/lib/python.sh"
     pip.exe || return 1
 
-    local venv="$(fs_basename ${VIRTUAL_ENV:-''})"
+    local venv="$(fs.basename ${VIRTUAL_ENV:-''})"
     local preview="echo {2} | xargs -n 1 $SHELL $PIP_PKG_INFO"
     local value="$($SHELL -c "
         $SHELL $PIP_LIST_TOP \

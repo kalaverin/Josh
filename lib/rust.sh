@@ -28,7 +28,7 @@ fi
 
 [ -z "$SOURCES_CACHE" ] && declare -aUg SOURCES_CACHE=() && SOURCES_CACHE+=($0)
 
-local THIS_SOURCE="$(fs_gethash "$0")"
+local THIS_SOURCE="$(fs.gethash "$0")"
 if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; then
     SOURCES_CACHE+=("$THIS_SOURCE")
 
@@ -189,7 +189,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
             url='https://sh.rustup.rs'
 
-            $SHELL -c "$HTTP_GET $url" | RUSTUP_HOME="$HOME/.rustup" CARGO_HOME="`fs_dirname $CARGO_BINARIES`" RUSTUP_INIT_SKIP_PATH_CHECK=yes $SHELL -s - --profile minimal --no-modify-path --quiet -y
+            $SHELL -c "$HTTP_GET $url" | RUSTUP_HOME="$HOME/.rustup" CARGO_HOME="`fs.dirname $CARGO_BINARIES`" RUSTUP_INIT_SKIP_PATH_CHECK=yes $SHELL -s - --profile minimal --no-modify-path --quiet -y
 
             if [ "$?" -gt 0 ] || [ ! -x "$CARGO_BIN" ]; then
                 fail $0 "cargo '$CARGO_BIN' isn't installed"
@@ -240,7 +240,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             return 1
         fi
 
-        $SHELL -c "$(fs_realpath $CARGO_BINARIES/rustup) update"
+        $SHELL -c "$(fs.realpath $CARGO_BINARIES/rustup) update"
 
         local retval=0
         for pkg in $@; do
@@ -401,7 +401,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             return 1
         fi
 
-        $SHELL -c "$(fs_realpath $CARGO_BINARIES/rustup) update"
+        $SHELL -c "$(fs.realpath $CARGO_BINARIES/rustup) update"
         $CARGO_BIN install-update --all
         return "$?"
     }

@@ -51,7 +51,7 @@ function __setup.cfg.copy_config {
     fi
 
     [ -f "$dst" ] && __setup.cfg.backup_file "$dst" && unlink "$dst"
-    [ ! -d "$(fs_dirname $dst)" ] && mkdir -p "$(fs_dirname $dst)";
+    [ ! -d "$(fs.dirname $dst)" ] && mkdir -p "$(fs.dirname $dst)";
 
     if [ "$JOSH_RENEW_CONFIGS" ] && [ "$JOSH_OS" != "BSD" ]; then
         info $0 "${3:-"renew: $src -> $dst"}"

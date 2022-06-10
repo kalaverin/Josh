@@ -54,7 +54,7 @@ function __get_updates_count {
         return 0
     fi
 
-    local last_fetch="$(fs_mtime "$JOSH/.git/FETCH_HEAD" 2>/dev/null)"
+    local last_fetch="$(fs.mtime "$JOSH/.git/FETCH_HEAD" 2>/dev/null)"
     let need_fetch="$EPOCHSECONDS - $fetch_every > $last_fetch"
 
     local cwd="$PWD"
@@ -79,7 +79,7 @@ function __get_updates_count {
         async_job updates_fetcher __fetch_updates_background
     fi
 
-    [ ! -d "`fs_dirname "$file"`" ] && mkdir -p "`fs_dirname "$file"`"
+    [ ! -d "`fs.dirname "$file"`" ] && mkdir -p "`fs.dirname "$file"`"
     echo "$EPOCHSECONDS" > "$file"
     [ -z "$count" ] && echo 0 || echo "$count"
     builtin cd "$cwd"
