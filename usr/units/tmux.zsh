@@ -83,20 +83,24 @@ function __tmux.get_matching_detached_session {
     [ -z "$result" ] && return 1 || echo "$result"
 }
 
+function cls {
+    clear
+    if [ -z "$JOSH_TMUX_MOTD_DISABLE" ]; then
+        if [ -x "$commands[krabby]" ]; then
+            krabby random | sed 1d | head -n -1
+        fi
+        if [ -x "$commands[dsmsg]" ]; then
+            let color="31 + ($RANDOM % 7)"
+            printf "\033[2;${color}m -- $(dsmsg --ds1 --ds2 --ds3)\033[0m\n"
+        fi
+    fi
+}
+
 if [ -z "$JOSH_TMUX_AUTORETACH_DISABLE" ] && [ -n "$PS1" ] && [ -z "$TMUX" ] && [ -n "$SSH_CONNECTION" ]; then
     tmx lost
 elif [ -z "$JOSH_TMUX_SPACES_FILL_DISABLE" ] && [ -n "$PS1" ] && [ -n "$TMUX" ]; then
     local branch="$(josh_branch)"
     if [ "$branch" = "master" ] || [ "$branch" = "stable" ]; then
-        clear
-        if [ -z "$JOSH_TMUX_MOTD_DISABLE" ]; then
-            if [ -x "$commands[krabby]" ]; then
-                krabby random | sed 1d | head -n -1
-            fi
-            if [ -x "$commands[dsmsg]" ]; then
-                let color="31 + ($RANDOM % 7)"
-                printf "\033[2;${color}m -- $(dsmsg --ds1 --ds2 --ds3)\033[0m\n"
-            fi
-        fi
+        cls
     fi
 fi
