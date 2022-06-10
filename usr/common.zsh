@@ -598,75 +598,15 @@ function sudoize {
 zle -N sudoize
 
 
-function josh_pull {
-    local version="`python.version`"; python.set
-
-    local cwd="`pwd`"
-    source "$JOSH/run/update.sh" && pull_update $@
-    local retval="$?"
-    builtin cd "$cwd"
-    source "$JOSH/lib/python.sh" && pip.compliance.check
-
-    python.set "$version"
-    return $retval
-}
-
-function josh_update {
-    local version="`python.version`"; python.set
-
-    local cwd="`pwd`"
-    josh_pull $@ && \
-    source "$JOSH/run/update.sh" && post_update $@
-    local retval="$?"
-    builtin cd "$cwd"
-    source "$JOSH/lib/python.sh" && pip.compliance.check
-
-    python.set "$version"
-    return $retval
-}
-
-function josh_upgrade {
-    local version="`python.version`"; python.set
-
-    local cwd="`pwd`"
-    josh_pull $@ && \
-    source "$JOSH/run/update.sh" && post_upgrade $@
-    local retval="$?"
-    builtin cd "$cwd"
-    source "$JOSH/lib/python.sh" && pip.compliance.check
-
-    python.set "$version"
-    return $retval
-}
-
-# function josh_reinstall() {
-#     local cwd="`pwd`"
-#     url='"https://kalaver.in/shell?$RANDOM"'
-#     run_show "$HTTP_GET $url | $SHELL"
-#     local retval="$?"
-#     if [ "$retval" -gt 0 ]; then
-#         echo ' - fatal: something wrong :-\'
-#         return 1
-#     fi
-#     builtin cd "$cwd"
-#     return $retval
-# }
-
-function josh_bootstrap_command {
-    local url="${1:-"http://kalaver.in/shell?$RANDOM"}"
-    echo "((curl -fsSL $url || wget -qO - $url || fetch -qo - $url) | zsh) && zsh"
-}
-
-function __josh_branch {
+function __ash.branch {
     echo "$(
         git --git-dir="$JOSH/.git" --work-tree="$JOSH/" \
         rev-parse --quiet --abbrev-ref HEAD 2>/dev/null
     )"
 }
-
-function josh_branch {
+function ash.branch {
     if [ -n "$JOSH" ] && [ -d "$JOSH" ]; then
-        local branch="`__josh_branch`"
+        local branch="$(__ash.branch)"
         if [ "$?" -eq 0 ]; then
             echo "$branch"
             return 0
@@ -674,20 +614,59 @@ function josh_branch {
     fi
     return 1
 }
+function __ash.update.pre {
+    local version
+    local cwd="$PWD"
 
-function josh_bootstrap_command_branched {
-    if [ -n "$1" ]; then
-        local branch="$1"
+    version="$(python.version)" || return "$?"
+    python.set || return "$?"
+    echo "$cwd"
+}
+function __ash.update.post {
+    builtin cd "$1"
+    source "$JOSH/lib/python.sh" && pip.compliance.check
+    python.set "$version"
+    return "$2"
+}
+function ash.pull {
+    local cwd; cwd="$(__ash.update.pre)" || return "$?"
 
-    else
-        local branch="`josh_branch`"
+    source "$JOSH/run/update.sh" && pull_update $@
+
+    __ash.update.post "$cwd" "$?"
+}
+function ash.update {
+    local cwd; cwd="$(__ash.update.pre)" || return "$?"
+
+    ash_pull $@ && \
+    source "$JOSH/run/update.sh" && post_update $@
+
+    __ash.update.post "$cwd" "$?"
+}
+function ash.upgrade {
+    local cwd; cwd="$(__ash.update.pre)" || return "$?"
+
+    ash_pull $@ && \
+    source "$JOSH/run/update.sh" && post_upgrade $@
+
+    __ash.update.post "$cwd" "$?"
+}
+function ash.extras {
+    ash.eval "run/update.sh" && deploy_extras
+}
+function ash.eval {
+    if [ -z "$1" ]; then
+        return 1
+
+    elif [ -z "$2" ]; then
+        if [ -e "$1" ]; then
+            source "$JOSH/$1"
+            return "$?"
+        else
+            return 127
+        fi
     fi
 
-    local url="https://raw.githubusercontent.com/kalaverin/Josh/$branch/run/boot.sh"
-    echo "export JOSH_RENEW_CONFIGS=1 && export JOSH_BRANCH="$branch" && ((curl -fsSL $url || wget -qO - $url || fetch -qo - $url) | zsh); unset JOSH_RENEW_CONFIGS && unset JOSH_BRANCH"
-}
-
-function josh_source {
     local result=''
     for file in $*; do
         if [ ! -f "$JOSH/$file" ]; then
@@ -700,21 +679,23 @@ function josh_source {
     done
 
     if [ -n "$result" ]; then
-        echo " - $0 fatal: one or many sources doesn't exists: $result"
-        return 1
+        fail $0 "doesn't exists: $result"
+        return 2
     fi
 
     for file in $*; do
         source "$JOSH/$file"
     done
-    path.rehash
-    rehash
 }
 
-function josh_extras {
-    josh_source "run/update.sh"
-    deploy_extras
-}
+
+JOSH_DEPRECATIONS[ash_branch]=ash.branch
+JOSH_DEPRECATIONS[ash_extras]=ash.extras
+JOSH_DEPRECATIONS[ash_pull]=ash.pull
+JOSH_DEPRECATIONS[ash_source]=ash.eval
+JOSH_DEPRECATIONS[ash_update]=ash.update
+JOSH_DEPRECATIONS[ash_upgrade]=ash.upgrade
+
 
 autoload znt-history-widget
 zle -N znt-history-widget

@@ -395,7 +395,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
 
         [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
-        josh_source run/boot.sh && path.rehash
+        ash.eval run/boot.sh && path.rehash
     }
 
     function pip.lookup {
@@ -461,7 +461,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
             local flags="--disable-pip-version-check --no-input --no-python-version-warning --no-warn-conflicts --no-warn-script-location"
 
-            if [ "$(josh_branch 2>/dev/null)" = "develop" ]; then
+            if [ "$(ash.branch 2>/dev/null)" = "develop" ]; then
                 local flags="$flags -vv"
             fi
 
@@ -585,7 +585,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
         local flags="--upgrade --upgrade-strategy=eager"
 
-        if [ "$(josh_branch 2>/dev/null)" != "develop" ]; then
+        if [ "$(ash.branch 2>/dev/null)" != "develop" ]; then
             local flags="$flags -v"
         fi
 

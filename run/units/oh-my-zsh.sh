@@ -140,7 +140,7 @@ function __setup.omz.deploy_extensions {
 
 # ——— after install all required dependencies — finalize installation
 
-function __setup.omz.merge_josh_ohmyzsh {
+function __setup.omz.merge_ash_ohmyzsh {
     if [ -d "$JOSH_BASE" ]; then
         info $0 "'$JOSH_BASE' move into '$JOSH_DEST/custom/plugins/'"
         mv $JOSH_BASE $JOSH_DEST/custom/plugins/josh

@@ -121,8 +121,8 @@ function check_updates {
     local branch="$(git.this.branch)"
     if [ "$branch" = "develop" ]; then
         info $0 "$updates new commits found, let's go!"
-        josh_pull "$branch"
-        info $0 "commits applied, please run: exec zsh; for partial (fast) update run: josh_update; for install (full) all updates: josh_upgrade\n" >&2
+        ash.pull "$branch"
+        info $0 "commits applied, please run: exec zsh; for partial (fast) update run: ash.update; for install (full) all updates: ash.upgrade\n" >&2
 
     elif [ "$branch" = "stable" ]; then
         local last_commit="$(git --git-dir="$JOSH/.git" --work-tree="$JOSH/" log -1 --format="%ct")"
@@ -163,14 +163,14 @@ function motd {
 
     if [ "$branch" = 'master' ]; then
         if [ "$ctag" ] && [ "$ctag" != "$ftag" ]; then
-            info $0 "v$ctag (updates to v$ftag downloaded), just run: run: josh_upgrade, then: exec zsh"
+            info $0 "v$ctag (updates to v$ftag downloaded), just run: run: ash.upgrade, then: exec zsh"
         fi
 
     elif [ "$branch" = 'develop' ]; then
         info $0 "v$ctag $branch $last_commit."
 
     else
-        info $0 "v$ctag $branch $last_commit, found $JOSH_UPDATES_COUNT updates, run: josh_upgrade, then: exec zsh"
+        info $0 "v$ctag $branch $last_commit, found $JOSH_UPDATES_COUNT updates, run: ash.upgrade, then: exec zsh"
 
     fi
 }

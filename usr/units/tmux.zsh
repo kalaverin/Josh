@@ -99,7 +99,7 @@ function cls {
 if [ -z "$JOSH_TMUX_AUTORETACH_DISABLE" ] && [ -n "$PS1" ] && [ -z "$TMUX" ] && [ -n "$SSH_CONNECTION" ]; then
     tmx lost
 elif [ -z "$JOSH_TMUX_SPACES_FILL_DISABLE" ] && [ -n "$PS1" ] && [ -n "$TMUX" ]; then
-    local branch="$(josh_branch)"
+    local branch="$(ash.branch)"
     if [ "$branch" = "master" ] || [ "$branch" = "stable" ]; then
         cls
     fi

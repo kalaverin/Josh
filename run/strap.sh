@@ -65,7 +65,7 @@ function prepare_and_deploy {
 function replace_existing_installation {
     if [ ! -z "$JOSH_DEST" ] && [ -d "$JOSH_DEST" ] && [ "$ZSH" != "$JOSH_DEST" ]; then
         source $JOSH_BASE/run/units/oh-my-zsh.sh && \
-        __setup.omz.merge_josh_ohmyzsh && \
+        __setup.omz.merge_ash_ohmyzsh && \
         __setup.omz.save_previous_installation && \
         __setup.omz.rename_and_link
 

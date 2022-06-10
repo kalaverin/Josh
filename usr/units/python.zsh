@@ -26,14 +26,14 @@ function venv.path.activate {
     else
         source "$venv/bin/activate"
     fi
-    josh_source "run/boot.sh" && path.rehash
+    ash.eval "run/boot.sh" && path.rehash
 }
 
 function venv.off {
     if [ "$VIRTUAL_ENV" != "" ]; then
         source "$VIRTUAL_ENV/bin/activate" && deactivate
     fi
-    josh_source "run/boot.sh" && path.rehash
+    ash.eval "run/boot.sh" && path.rehash
 }
 
 function venv.temp.dir {
@@ -48,7 +48,7 @@ function venv.temp.dir {
 }
 
 function venv.node {
-    josh_source "lib/python.sh"
+    ash.eval "lib/python.sh"
     pip.exe >/dev/null || return 1
 
     local venv="${VIRTUAL_ENV:-''}"
@@ -138,7 +138,7 @@ function py.venv.path {
 }
 
 function py.from.version {
-    josh_source "lib/python.sh" && python.home >/dev/null
+    ash.eval "lib/python.sh" && python.home >/dev/null
 
     if [ $? -gt 0 ]; then
         fail $0 "python3 import something wrong, stop"
