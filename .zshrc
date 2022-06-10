@@ -6,8 +6,8 @@ path=(
     /usr/local/etc/rc.d
 )
 
-SAVEHIST=20000
-HISTSIZE=25000
+SAVEHIST=50000
+HISTSIZE=55000
 
 export UPDATE_ZSH_DAYS=60
 
