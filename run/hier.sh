@@ -293,7 +293,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
                 return 2
             fi
 
-            local tempfile="$dir/$(echo "$* $USER $HOME" | sh -c "$JOSH_MD5_PIPE").$USER.tmp"
+            local tempfile="$dir/$(echo "$* $USER $HOME" | sh -c "$JOSH_MD5_PIPE").$USER.$$.tmp"
             touch "$tempfile" 2>/dev/null
             if [ "$?" -gt 0 ]; then
                 return 3
