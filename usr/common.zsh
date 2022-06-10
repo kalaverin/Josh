@@ -689,12 +689,12 @@ function ash.eval {
 }
 
 
-JOSH_DEPRECATIONS[ash_branch]=ash.branch
-JOSH_DEPRECATIONS[ash_extras]=ash.extras
-JOSH_DEPRECATIONS[ash_pull]=ash.pull
-JOSH_DEPRECATIONS[ash_source]=ash.eval
-JOSH_DEPRECATIONS[ash_update]=ash.update
-JOSH_DEPRECATIONS[ash_upgrade]=ash.upgrade
+JOSH_DEPRECATIONS[josh_branch]=ash.branch
+JOSH_DEPRECATIONS[josh_extras]=ash.extras
+JOSH_DEPRECATIONS[josh_pull]=ash.pull
+JOSH_DEPRECATIONS[josh_source]=ash.eval
+JOSH_DEPRECATIONS[josh_update]=ash.update
+JOSH_DEPRECATIONS[josh_upgrade]=ash.upgrade
 
 
 autoload znt-history-widget
