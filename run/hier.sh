@@ -170,6 +170,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
         if [ "$retval" -eq 0 ] || [ -n "$result" ]; then
             export PATH="$JOSH/bin:$result"
+            rehash
         fi
         return "$retval"
     }

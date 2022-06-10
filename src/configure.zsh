@@ -13,8 +13,8 @@ fi
 
 # init optional environment
 
-source "$JOSH/lib/python.sh" && python.env
-source "$JOSH/lib/rust.sh" && cargo.env
+source "$JOSH/lib/python.sh" && pip.exe >/dev/null
+source "$JOSH/lib/rust.sh" && cargo.init
 
 path.rehash
 

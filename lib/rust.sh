@@ -405,8 +405,4 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         $CARGO_BIN install-update --all
         return "$?"
     }
-
-    function cargo.env {
-        cargo.init
-    }
 fi

@@ -618,14 +618,14 @@ function __ash.update.pre {
     local version
     local cwd="$PWD"
 
-    version="$(python.version)" || return "$?"
-    python.set || return "$?"
+    version="$(py.ver)" || return "$?"
+    py.set || return "$?"
     echo "$cwd"
 }
 function __ash.update.post {
     builtin cd "$1"
     source "$JOSH/lib/python.sh" && pip.compliance.check
-    python.set "$version"
+    py.set "$version"
     return "$2"
 }
 function ash.pull {

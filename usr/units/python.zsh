@@ -11,29 +11,30 @@ local PIP_PKG_INFO="$INCLUDE_DIR/pip_pkg_info.sh"
 
 # ———
 
-function venv.path.activate {
-    local venv="$(fs.realpath ${1:-$VIRTUAL_ENV})"
-
-    if [ ! -d "$venv" ]; then
-        return 1
-
-    elif [ "$VIRTUAL_ENV" = "$venv" ]; then
-        source "$venv/bin/activate"
-
-    elif [ "$VIRTUAL_ENV" ]; then
-        venv.off 2>/dev/null; source "$venv/bin/activate"
-
-    else
-        source "$venv/bin/activate"
+function venv.on {
+    local venv="$(venv.path $*)"
+    if [ -n "$venv" ] && [ -d "$venv" ]; then
+        venv.off >dev/null; source "$venv/bin/activate"
+        path.rehash
     fi
-    ash.eval "run/boot.sh" && path.rehash
 }
 
-function venv.off {
-    if [ "$VIRTUAL_ENV" != "" ]; then
-        source "$VIRTUAL_ENV/bin/activate" && deactivate
+function venv.path.activate {
+    local name="$(fs.realpath ${1:-$VIRTUAL_ENV})"
+
+    if [ ! -d "$name" ]; then
+        return 1
+
+    elif [ "$VIRTUAL_ENV" = "$name" ]; then
+        source "$name/bin/activate"
+
+    elif [ "$VIRTUAL_ENV" ]; then
+        venv.off >/dev/null; source "$name/bin/activate"
+
+    else
+        source "$name/bin/activate"
     fi
-    ash.eval "run/boot.sh" && path.rehash
+    path.rehash
 }
 
 function venv.temp.dir {
@@ -115,7 +116,7 @@ function venv.node {
     fi
 }
 
-function py.venv.path {
+function venv.path {
     if [ "$1" ]; then
         if [ -d "$1" ] && [ -f "$1/bin/activate" ]; then
             echo "$1"
@@ -138,7 +139,7 @@ function py.venv.path {
 }
 
 function py.from.version {
-    ash.eval "lib/python.sh" && python.home >/dev/null
+    ash.eval "lib/python.sh" && py.home >/dev/null
 
     if [ "$?" -gt 0 ]; then
         fail $0 "python3 import something wrong, stop"
@@ -192,15 +193,15 @@ function venv.make {
         return 1
     fi
 
-    local version="$(python.version $python)"
+    local version="$(py.ver $python)"
     if [[ "$2" =~ ^[0-9]\.[0-9]+$ ]] || [ "$2" = "2" ] || [ "$2" = "3" ]; then
         local packages="${@:3}"
     else
         local packages="${@:2}"
     fi
 
-    local venv="$(venv.deactivate)"
-    local using="$(python.version)"
+    local venv="$(venv.off)"
+    local using="$(py.ver)"
 
     if [ -z "$using" ]; then
         fail $0 "'$python'"
@@ -208,19 +209,19 @@ function venv.make {
         return 1
     fi
 
-    python.set "$python"
+    py.set "$python"
     if [ "$?" -gt 0 ]; then
         [ -n "$venv" ] && source "$venv/bin/activate"
         return 1
     fi
 
-    if ! python.library.is 'virtualenv' "$python"; then
-        info $0 "virtualenv isn't installed for `python.version`, proceed"
+    if ! py.lib.exists 'virtualenv' "$python"; then
+        info $0 "virtualenv isn't installed for `py.ver`, proceed"
         pip.install virtualenv
 
-        if ! python.library.is 'virtualenv' "$python"; then
+        if ! py.lib.exists 'virtualenv' "$python"; then
             fail $0 "something went wrong"
-            python.set "$using"
+            py.set "$using"
             [ -n "$venv" ] && source "$venv/bin/activate"
             return 2
         fi
@@ -239,10 +240,10 @@ function venv.make {
 
     info $0 "$message"
 
-    run_show "builtin cd "$root" && $(python.exe) -m virtualenv --python=$python $args_env "$full" && source "$full/bin/activate" && pip install --compile --no-input --prefer-binary --upgrade --upgrade-strategy=eager pipdeptree $args_pip $packages && builtin cd $cwd"
+    run_show "builtin cd "$root" && $(py.exe) -m virtualenv --python=$python $args_env "$full" && source "$full/bin/activate" && pip install --compile --no-input --prefer-binary --upgrade --upgrade-strategy=eager pipdeptree $args_pip $packages && builtin cd $cwd"
 
-    local venv="$(venv.deactivate)"
-    python.set "$using"
+    local venv="$(venv.off)"
+    py.set "$using"
     [ -n "$venv" ] && source "$venv/bin/activate"
     rehash
 }
@@ -253,7 +254,7 @@ function venv.temp {
 }
 
 function venv.cd {
-    local venv="$(py.venv.path $*)"
+    local venv="$(venv.path $*)"
     if [ -n "$venv" ] && [ -d "$venv" ]; then
         builtin cd "$venv"
     else
@@ -276,14 +277,6 @@ function venv.site {
     fi
 }
 
-function venv.on {
-    local venv="$(py.venv.path $*)"
-    if [ -n "$venv" ] && [ -d "$venv" ]; then
-        venv.off; source "$venv/bin/activate"
-        rehash
-    fi
-}
-
 function venv.temp.remove {
     local cwd="$PWD"
     venv.cd $* || ([ "$?" -gt 0 ] && return 1)
@@ -301,7 +294,7 @@ function venv.temp.remove {
         run_show "builtin cd $VIRTUAL_ENV/bin && source activate && deactivate && builtin cd .."
     fi
     run_show "rm -rf $vwd 2>/dev/null; builtin cd $cwd || builtin cd ~"
-    rehash
+    path.rehash
 }
 
 # ———
@@ -350,7 +343,7 @@ fi
 JOSH_DEPRECATIONS[chdir_to_virtualenv]=venv.cd
 JOSH_DEPRECATIONS[chdir_to_virtualenv_stdlib]=venv.site
 JOSH_DEPRECATIONS[get_temporary_envs_directory]=venv.temp.dir
-JOSH_DEPRECATIONS[get_virtualenv_path]=py.venv.path
+JOSH_DEPRECATIONS[get_virtualenv_path]=venv.path
 JOSH_DEPRECATIONS[python_from_version]=py.from.version
 JOSH_DEPRECATIONS[virtualenv_activate]=venv.on
 JOSH_DEPRECATIONS[virtualenv_create]=venv.make

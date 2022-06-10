@@ -1,6 +1,6 @@
 typeset -Agx JOSH_DEPRECATIONS=()
 
-python.home >/dev/null
+py.home >/dev/null
 path.rehash
 
 source "$JOSH/usr/aliases.zsh"
