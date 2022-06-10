@@ -16,7 +16,7 @@ fi
 source "$JOSH/lib/python.sh" && python.env
 source "$JOSH/lib/rust.sh" && cargo.env
 
-path_prune
+path.rehash
 
 if [ ! -f "$HOME/.config/starship.toml" ]; then
     export STARSHIP_CONFIG="$JOSH/usr/share/starship.toml"

@@ -162,7 +162,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         HOMEBREW_PREFIX="$root"
         HOMEBREW_REPOSITORY="$root"
         HOMEBREW_SHELLENV_PREFIX="$root"
-        path_prune
+        path.rehash
         rehash
     }
 fi

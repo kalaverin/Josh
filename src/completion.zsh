@@ -15,7 +15,7 @@ _comp_options+=(globdots)
 
 
 function completition.generate {
-    path_prune
+    path.rehash
     [ -x "$commands[broot]" ]    && broot --print-shell-function zsh
     [ -x "$commands[fuck]" ]     && thefuck --alias
     [ -x "$commands[pip]" ]      && pip completion --zsh
@@ -29,7 +29,7 @@ function completition.generate {
     compinit
 }
 
-eval $(BINARY_SAFE=1 eval.cached "$(path_last_modified $path)" completition.generate)
+eval $(BINARY_SAFE=1 eval.cached "$(fs.lm.many $path)" completition.generate)
 
 [ -x "$commands[starship]" ] && eval $(starship init zsh)
 

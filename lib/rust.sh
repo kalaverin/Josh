@@ -2,7 +2,7 @@
 
 if [[ -n ${(M)zsh_eval_context:#file} ]]; then
     if [ -z "$HTTP_GET" ]; then
-        source "`dirname $0`/../run/boot.sh"
+        source "$(dirname $0)/../run/boot.sh"
     fi
 
     JOSH_CACHE_DIR="$HOME/.cache/josh"
@@ -313,7 +313,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
                     --layout=reverse-list \
                     --prompt='install > ' \
                     --preview='chit {1}' \
-                    --preview-window="left:`get_preview_width`:noborder" \
+                    --preview-window="left:`misc.preview.width`:noborder" \
                 | $UNIQUE_SORT | $LINES_TO_LINE
             ")"
         fi
@@ -370,7 +370,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
                     --layout=reverse-list \
                     --prompt='uninstall > ' \
                     --preview='chit {1}' \
-                    --preview-window="left:`get_preview_width`:noborder" \
+                    --preview-window="left:`misc.preview.width`:noborder" \
                 | $UNIQUE_SORT | $LINES_TO_LINE
             ")"
         fi

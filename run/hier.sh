@@ -113,7 +113,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         echo "$result"
     }
 
-    function path_last_modified {
+    function fs.lm.many {
         if [ -n "$*" ]; then
             local result="$(
                 builtin zstat -L `echo "$*" | sd ':' ' ' | sd '\n+' ' '` 2>/dev/null | \
@@ -163,15 +163,39 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         echo "$result"
     }
 
-    function path_prune {
+    function path.rehash {
         local result
-        result="$(eval.cached "$(path_last_modified $path)" path.clean.uncached "$path")"
+        result="$(eval.cached "$(fs.lm.many $path)" path.clean.uncached "$path")"
         local retval="$?"
 
         if [ "$retval" -eq 0 ] || [ -n "$result" ]; then
             export PATH="$JOSH/bin:$result"
         fi
         return "$retval"
+    }
+
+    function temp.dir {
+        local result="$(fs_dirname `mktemp -duq`)"
+        [ ! -x "$result" ] && mkdir -p "$result"
+        echo "$result"
+    }
+
+    function temp.file {
+        local dir="$(temp.dir)"
+        if [ ! -x "$dir" ]; then
+            return 1
+        elif [ -z "$JOSH_MD5_PIPE" ]; then
+            return 2
+        fi
+
+        local dst="$dir/$(echo "$USER $HOME $EPOCHSECONDS $$ $*" | sh -c "$JOSH_MD5_PIPE").$USER.$$.tmp"
+        touch "$dst" 2>/dev/null
+        if [ "$?" -gt 0 ]; then
+            return 3
+        fi
+
+        unlink "$dst" 2>/dev/null
+        echo "$dst"
     }
 
     function eval.retval {
@@ -286,16 +310,16 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             return "$retval"
         else
 
-            local dir="$(get_tempdir)"
+            local dir="$(temp.dir)"
             if [ ! -x "$dir" ]; then
                 return 1
             elif [ -z "$JOSH_MD5_PIPE" ]; then
                 return 2
             fi
 
-            local tempfile="$dir/$(echo "$* $USER $HOME" | sh -c "$JOSH_MD5_PIPE").$USER.$$.tmp"
-            touch "$tempfile" 2>/dev/null
-            if [ "$?" -gt 0 ]; then
+            local tempfile
+            tempfile="$(temp.file "$*")"
+            if [ "$?" -gt 0 ] || [ -z "$tempfile" ]; then
                 return 3
             fi
 

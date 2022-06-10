@@ -76,7 +76,7 @@ function insert_directory {
         --query="$pre$post" \
         --color="$FZF_THEME" \
         --reverse --min-height='11' --height='11' \
-        --preview-window="right:`get_preview_width`:noborder" \
+        --preview-window="right:`misc.preview.width`:noborder" \
         --prompt="dir >  " \
         --preview="$SHELL $JOSH/usr/src/viewer.sh {}" \
         -i --filepath-word \
@@ -150,7 +150,7 @@ function insert_endpoint {
         --query="$pre$post" \
         --color="$FZF_THEME" \
         --reverse --min-height='11' --height='11' \
-        --preview-window="right:`get_preview_width`:noborder" \
+        --preview-window="right:`misc.preview.width`:noborder" \
         --prompt="file >  " \
         --preview="$SHELL $JOSH/usr/src/viewer.sh {}" \
         -i --filepath-word \
@@ -177,7 +177,7 @@ function visual_chdir {
     fi
     while true; do
         local cwd="`pwd`"
-        local temp="`get_tempdir`"
+        local temp="`temp.dir`"
         local name="`fs_basename $cwd`"
 
         [ -f "$temp/.lastdir.tmp" ] && unlink "$temp/.lastdir.tmp"
@@ -196,7 +196,7 @@ function visual_chdir {
                 --prompt="`pwd`/" \
                 --bind='enter:accept' \
                 --reverse --min-height='11' --height='11' \
-                --preview-window="right:`get_preview_width`:noborder" \
+                --preview-window="right:`misc.preview.width`:noborder" \
                 --preview="$SHELL $JOSH/usr/src/viewer.sh {}" \
                 --filepath-word --tiebreak=begin,length,end,index \
                 --bind="alt-bs:execute(echo \`realpath {}\` > $temp/.lastdir.tmp)+abort" \
@@ -249,7 +249,7 @@ function visual_recent_chdir {
             --prompt="cd >  " \
             --bind='enter:accept' \
             --reverse --min-height='11' --height='11' \
-            --preview-window="right:`get_preview_width`:noborder" \
+            --preview-window="right:`misc.preview.width`:noborder" \
             --preview="$SHELL $JOSH/usr/src/viewer.sh {}" \
             --filepath-word --tiebreak=index \
             --ansi --extended --info='inline' \
@@ -284,7 +284,7 @@ function visual_warp_chdir {
             --prompt="wd >  " \
             --bind='enter:accept' \
             --reverse --min-height='11' --height='11' \
-            --preview-window="right:`get_preview_width`:noborder" \
+            --preview-window="right:`misc.preview.width`:noborder" \
             --preview="$SHELL $JOSH/usr/src/viewer.sh {2}" \
             --filepath-word --tiebreak=index \
             --ansi --extended --info='inline' \
@@ -314,7 +314,7 @@ function visual_warp_chdir {
 zle -N visual_warp_chdir
 
 function insert_command {
-    local file="`get_tempdir`/.insert.cmd.tmp"
+    local file="`temp.dir`/.insert.cmd.tmp"
     [ -f "$file" ] && unlink "$file"
 
     local query="`echo "$BUFFER" | sd '(\s+)' ' ' | sd '(^\s+|\s+$)' ''`"
@@ -392,7 +392,7 @@ function visual_grep {
             --disabled \
             --nth=2.. --with-nth=1.. \
             --bind "change:reload:(echo \"{q}\" | $SHELL $search_one || true)" \
-            --preview-window="left:`get_preview_width`:noborder" \
+            --preview-window="left:`misc.preview.width`:noborder" \
             --preview="$preview" \
             --ansi --extended --info='inline' \
             --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
@@ -426,7 +426,7 @@ function visual_grep {
                 --prompt="query \`$query\` >  " --query='' --tiebreak='index' \
                 --no-sort \
                 --nth=2.. --with-nth=1.. \
-                --preview-window="left:`get_preview_width`:noborder" \
+                --preview-window="left:`misc.preview.width`:noborder" \
                 --preview="$preview" \
                 --ansi --extended --info='inline' \
                 --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
@@ -548,7 +548,7 @@ zle -N kill_widget
 
 function share_file {
     if [ $# -eq 0 ]
-        local temp="`get_tempdir`"
+        local temp="`temp.dir`"
         then echo -e "No arguments specified. Usage:\necho share $temp/test.md\ncat $temp/test.md | share test.md"
         return 1
     fi
@@ -707,7 +707,7 @@ function josh_source {
     for file in $*; do
         source "$JOSH/$file"
     done
-    path_prune
+    path.rehash
     rehash
 }
 

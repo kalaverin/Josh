@@ -289,7 +289,7 @@ if [ "$count" -gt 0 ]; then
 fi
 
 function mktp {
-    mkcd "$(get_tempdir)/pet/$(get.name)"
+    mkcd "$(temp.dir)/pet/$(get.name)"
 }
 
 function shortcut- {

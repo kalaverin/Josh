@@ -257,7 +257,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
 
         local result="$(
-            eval.cached "`path_last_modified $dirs $PYTHON_BINARIES`" python.exe.lookup $dirs)"
+            eval.cached "`fs.lm.many $dirs $PYTHON_BINARIES`" python.exe.lookup $dirs)"
 
         if [ "$result" ]; then
             local python
@@ -395,7 +395,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
 
         [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
-        josh_source run/boot.sh && path_prune
+        josh_source run/boot.sh && path.rehash
     }
 
     function pip.lookup {
@@ -539,7 +539,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
 
         local result="$(
-            eval.cached "`path_last_modified $dirs $PYTHON_BINARIES`" pip.exe.uncached $*)"
+            eval.cached "`fs.lm.many $dirs $PYTHON_BINARIES`" pip.exe.uncached $*)"
 
         local retval="$?"
         if [ -x "$target/bin/pip" ]; then
@@ -554,7 +554,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     function venv.deactivate {
         if [ -z "$VIRTUAL_ENV" ] || [ ! -f "$VIRTUAL_ENV/bin/activate" ]; then
             unset venv
-            path_prune 2>/dev/null
+            path.rehash 2>/dev/null
         else
             local venv="$VIRTUAL_ENV"
             source $venv/bin/activate && deactivate
@@ -703,7 +703,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
 
         local result=""
-        local expire="$(path_last_modified $PATH)"
+        local expire="$(fs.lm.many $PATH)"
         local system="/bin /sbin /usr/bin /usr/sbin /usr/local/bin /usr/local/sbin"
 
         if [ -n "$SUDO_USER" ]; then

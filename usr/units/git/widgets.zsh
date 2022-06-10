@@ -12,7 +12,7 @@ function git_widget_add {
             --filepath-word --tac \
             --multi --nth=2.. --with-nth=1.. \
             --preview=\"$GIT_DIFF $branch -- {2} | $DELTA\" \
-            --preview-window=\"left:`get_preview_width`:noborder\" \
+            --preview-window=\"left:`misc.preview.width`:noborder\" \
             --prompt='git add >  ' \
             | tabulate -i 2 | sort --human-numeric-sort | $UNIQUE_SORT \
             | $LINES_TO_LINE")"
@@ -62,7 +62,7 @@ function git_widget_checkout_modified {
             --filepath-word --tac \
             --multi --nth=2.. --with-nth=1.. \
             --preview=\"$GIT_DIFF -R $branch -- {2} | $DELTA\" \
-            --preview-window=\"left:`get_preview_width`:noborder\" \
+            --preview-window=\"left:`misc.preview.width`:noborder\" \
             --prompt=\"checkout to $branch >  \" \
             | tabulate -i 2 | sort --human-numeric-sort | $UNIQUE_SORT \
             | xargs -n 1 realpath --quiet --relative-to=$cwd 2>/dev/null \
@@ -143,7 +143,7 @@ function git_widget_conflict_solver {
                 --multi --nth=1.. --with-nth=1.. \
                 --prompt=\"$branch solving >  \" \
                 --preview=\"$GIT_DIFF $branch -- {1} | $DELTA\" \
-                --preview-window=\"left:`get_preview_width`:noborder\" \
+                --preview-window=\"left:`misc.preview.width`:noborder\" \
                 | sd '(\s*\d+)$' '' | $UNIQUE_SORT | $LINES_TO_LINE")"
 
             if [ ! "$value" ]; then
@@ -219,7 +219,7 @@ function git_widget_select_commit_then_files_checkout {
                 --bind='shift-up:half-page-up' \
                 --bind='alt-space:jump' \
                 --color="$FZF_THEME" \
-                --preview-window="left:`get_preview_width`:noborder" \
+                --preview-window="left:`misc.preview.width`:noborder" \
                 --prompt="$branch: select commit >  " \
                 --preview="echo {} | head -1 | grep -o '[a-f0-9]\{7,\}$' | xargs -I% git diff --color=always --shortstat --patch --diff-algorithm=histogram $branch % | $DELTA --paging='always'" | head -1 | grep -o '[a-f0-9]\{7,\}$'
         )"
@@ -249,7 +249,7 @@ function git_widget_select_commit_then_files_checkout {
                     --bind='shift-up:half-page-up' \
                     --bind='alt-space:jump' \
                     --color="$FZF_THEME" \
-                    --preview-window="left:`get_preview_width`:noborder" \
+                    --preview-window="left:`misc.preview.width`:noborder" \
                     --multi --tac \
                     --prompt="$branch: select file >  " \
                     --filepath-word --preview="$differ" \
@@ -297,7 +297,7 @@ function git_widget_show_commits {
                 --bind='shift-up:half-page-up' \
                 --bind='alt-space:jump' \
                 --color="$FZF_THEME" \
-                --preview-window="left:`get_preview_width`:noborder" \
+                --preview-window="left:`misc.preview.width`:noborder" \
                 --prompt="$branch >  " \
                 --bind="enter:execute(echo {} | head -1 | grep -o '[a-f0-9]\{7,\}$' | $DELTA_FOR_COMMITS_LIST_OUT)" \
                 --preview="echo {} | head -1 | grep -o '[a-f0-9]\{7,\}$' | $DELTA_FOR_COMMITS_LIST_OUT"
@@ -335,7 +335,7 @@ function git_widget_select_branch_with_callback {
                 --bind='shift-up:half-page-up' \
                 --bind='alt-space:jump' \
                 --color="$FZF_THEME" \
-                --preview-window="left:`get_preview_width`:noborder" \
+                --preview-window="left:`misc.preview.width`:noborder" \
                 --prompt="select branch >  " \
                 --preview="$GIT_DIFF $branch {1} | $DELTA " \
                 | cut -d ' ' -f 1
@@ -391,7 +391,7 @@ function git_show_branch_file_commits {
                 --bind='shift-up:half-page-up' \
                 --bind='alt-space:jump' \
                 --color="$FZF_THEME" \
-                --preview-window="left:`get_preview_width`:noborder" \
+                --preview-window="left:`misc.preview.width`:noborder" \
                 --prompt="$branch:$file >  " \
                 --preview="$diff_view" \
                 --bind="enter:execute($file_view)"
@@ -426,7 +426,7 @@ function git_widget_select_file_show_commits {
                     --bind='shift-up:half-page-up' \
                     --bind='alt-space:jump' \
                     --color="$FZF_THEME" --tac \
-                    --preview-window="left:`get_preview_width`:noborder" \
+                    --preview-window="left:`misc.preview.width`:noborder" \
                     --prompt="$branch: select file >  " \
                     --filepath-word --preview="$differ" \
                 | sort | sed -z 's/\n/ /g' | awk '{$1=$1};1'
@@ -482,7 +482,7 @@ function git_widget_checkout_tag {
                 --bind='shift-down:half-page-down' \
                 --bind='shift-up:half-page-up' \
                 --bind='alt-space:jump' \
-                --preview-window="left:`get_preview_width`:noborder" \
+                --preview-window="left:`misc.preview.width`:noborder" \
                 --color="$FZF_THEME" \
                 --prompt="tag >  " \
                 --preview=$cmd | $SHELL $TAG_FROM_STRING \
@@ -527,7 +527,7 @@ function git_widget_checkout_branch {
             $SHELL -c "$select \
             | $FZF \
             --preview=\"$GIT_DIFF $branch {1} | $DELTA \" \
-            --preview-window=\"left:`get_preview_width`:noborder\" \
+            --preview-window=\"left:`misc.preview.width`:noborder\" \
             --prompt=\"branch $state>  \" \
             | cut -d ' ' -f 1
         ")"
@@ -574,7 +574,7 @@ function git_widget_fetch_branch {
         | $FZF \
         --prompt='fetch branch >  ' \
         --preview=\"$differ\" \
-        --preview-window=\"left:`get_preview_width`:noborder\" \
+        --preview-window=\"left:`misc.preview.width`:noborder\" \
         | cut -d ' ' -f 2 \
     ")"
 
@@ -614,7 +614,7 @@ function git_widget_delete_branch {
         --multi \
         --prompt='DELETE REMOTE & LOCAL BRANCH >  ' \
         --preview=\"$differ\" \
-        --preview-window=\"left:`get_preview_width`:noborder\" \
+        --preview-window=\"left:`misc.preview.width`:noborder\" \
         | cut -d ' ' -f 2 \
     ")"
 
@@ -650,7 +650,7 @@ function git_widget_delete_local_branch {
             | $FZF \
             --multi \
             --preview=\"$differ $branch | $DELTA \" \
-            --preview-window=\"left:`get_preview_width`:noborder\" \
+            --preview-window=\"left:`misc.preview.width`:noborder\" \
             --prompt=\"DELETE LOCAL BRANCH >  \" \
             | cut -d ' ' -f 1 | $UNIQUE_SORT | $LINES_TO_LINE
         ")"
@@ -689,7 +689,7 @@ function git_widget_delete_remote_branch {
         --multi \
         --prompt='DELETE REMOTE BRANCH >  ' \
         --preview=\"$differ\" \
-        --preview-window=\"left:`get_preview_width`:noborder\" \
+        --preview-window=\"left:`misc.preview.width`:noborder\" \
         | cut -d ' ' -f 2 \
     ")"
 
@@ -730,7 +730,7 @@ function git_widget_checkout_commit {
                 --bind='shift-down:half-page-down' \
                 --bind='shift-up:half-page-up' \
                 --bind='alt-space:jump' \
-                --preview-window="left:`get_preview_width`:noborder" \
+                --preview-window="left:`misc.preview.width`:noborder" \
                 --color="$FZF_THEME" \
                 --prompt="checkout >  " \
                 --preview=$differ | cut -d ' ' -f 1
@@ -774,7 +774,7 @@ function git_widget_merge_branch {
             $SHELL -c "$select \
             | $FZF \
             --preview=\"$differ $branch | $DELTA \" \
-            --preview-window=\"left:`get_preview_width`:noborder\" \
+            --preview-window=\"left:`misc.preview.width`:noborder\" \
             --prompt=\"merge to $branch $state>  \" \
             | cut -d ' ' -f 1
         ")"
@@ -814,7 +814,7 @@ function git_widget_rebase_branch {
         $SHELL -c "$select \
         | $FZF \
         --preview=\"$differ $branch | $DELTA \" \
-        --preview-window=\"left:`get_preview_width`:noborder\" \
+        --preview-window=\"left:`misc.preview.width`:noborder\" \
         --prompt=\"rebase $branch $state>  \" \
         | cut -d ' ' -f 1
     ")"

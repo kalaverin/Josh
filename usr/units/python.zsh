@@ -26,19 +26,19 @@ function virtualenv_path_activate {
     else
         source $venv/bin/activate
     fi
-    josh_source run/boot.sh && path_prune && rehash
+    josh_source run/boot.sh && path.rehash && rehash
 }
 
 function virtualenv_deactivate {
     if [ "$VIRTUAL_ENV" != "" ]; then
         source $VIRTUAL_ENV/bin/activate && deactivate
     fi
-    josh_source run/boot.sh && path_prune && rehash
+    josh_source run/boot.sh && path.rehash && rehash
 }
 
 function get_temporary_envs_directory {
     if [ -z "$JOSH_PY_TEMP_ENVS_ROOT" ]; then
-        local directory="$(get_tempdir)/$(fs_basename "$JOSH_PY_ENVS_ROOT")"
+        local directory="$(temp.dir)/$(fs_basename "$JOSH_PY_ENVS_ROOT")"
         if [ ! -d "$directory" ]; then
             mkdir -p "$directory"
         fi
@@ -248,7 +248,7 @@ function virtualenv_create {
 }
 
 function virtualenv_temporary_create {
-    local venv="$(get_tempdir)/$(fs_basename "$JOSH_PY_ENVS_ROOT")/$(get.name)"
+    local venv="$(temp.dir)/$(fs_basename "$JOSH_PY_ENVS_ROOT")/$(get.name)"
     virtualenv_create "$venv" $@
 }
 
@@ -319,7 +319,7 @@ function pip_visual_freeze {
             --layout=reverse-list \
             --preview='$preview' \
             --prompt='packages $venv > ' \
-            --preview-window="left:`get_preview_width`:noborder" \
+            --preview-window="left:`misc.preview.width`:noborder" \
             --bind='ctrl-s:reload($SHELL $PIP_LIST_ALL),ctrl-d:reload($SHELL $PIP_LIST_TOP)' \
         | tabulate -i 2 | $UNIQUE_SORT | $LINES_TO_LINE
     ")"

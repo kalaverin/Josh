@@ -51,7 +51,7 @@ function bak {
     local timemark="`date "+%Y.%m.%d-%H.%M.%S"`"
     [ "$?" -gt 0 ] && return 2
 
-    local target="`get_tempdir`/bak/$source"
+    local target="`temp.dir`/bak/$source"
     [ "$?" -gt 0 ] && return 3
 
     local backup="$target/$timemark-$(get.name).tar"
@@ -81,7 +81,7 @@ function bakf {
     local timemark="`date "+%Y.%m.%d-%H.%M.%S"`"
     [ "$?" -gt 0 ] && return 2
 
-    local target="`get_tempdir`/bak/$source"
+    local target="`temp.dir`/bak/$source"
     [ "$?" -gt 0 ] && return 3
 
     local backup="$target/$timemark-$(get.name).tar"
