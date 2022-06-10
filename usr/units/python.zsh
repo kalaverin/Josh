@@ -26,14 +26,14 @@ function venv.path.activate {
     else
         source $venv/bin/activate
     fi
-    josh_source run/boot.sh && path.rehash && rehash
+    josh_source run/boot.sh && path.rehash
 }
 
 function venv.off {
     if [ "$VIRTUAL_ENV" != "" ]; then
         source $VIRTUAL_ENV/bin/activate && deactivate
     fi
-    josh_source run/boot.sh && path.rehash && rehash
+    josh_source run/boot.sh && path.rehash
 }
 
 function venv.temp.dir {
@@ -49,12 +49,12 @@ function venv.temp.dir {
 
 function venv.node {
     josh_source lib/python.sh
-    pip.exe || return 1
+    pip.exe >/dev/null || return 1
 
     local venv="${VIRTUAL_ENV:-''}"
     if [ ! -d "$venv" ]; then
         fail $0 "venv must be activated"
-        return 1
+        return 2
     fi
     local venvname=`fs.basename "$venv"`
 
@@ -64,7 +64,7 @@ function venv.node {
     local pip="$(which pip)"
     if [ ! -x "$pip" ]; then
         fail $0 "pip in venv '$VIRTUAL_ENV' isn't found"
-        return 2
+        return 3
     fi
     info $0 "using pip: $pip"
 
@@ -76,7 +76,7 @@ function venv.node {
     local nodeenv="$(which nodeenv)"
     if [ ! -x "$nodeenv" ]; then
         fail $0 "nodeenv in venv '$VIRTUAL_ENV' isn't found"
-        return 3
+        return 4
     fi
     info $0 "using nodeenv: $nodeenv"
 
@@ -108,12 +108,11 @@ function venv.node {
         ")"
     fi
 
-    if [ "$version" != "" ]; then
+    if [ -n "$version" ]; then
         info $0 "deploy node v$version"
         run_show "nodeenv --python-virtualenv --node=$version"
+        rehash
     fi
-
-    return 0
 }
 
 function py.venv.path {
@@ -245,6 +244,7 @@ function venv.make {
     local venv="$(venv.deactivate)"
     python.set "$using"
     [ -n "$venv" ] && source $venv/bin/activate
+    rehash
 }
 
 function venv.temp {
@@ -280,6 +280,7 @@ function venv.on {
     local venv="$(py.venv.path $*)"
     if [ -n "$venv" ] && [ -d "$venv" ]; then
         venv.off && source "$venv/bin/activate"
+        rehash
     fi
 }
 
@@ -300,6 +301,7 @@ function venv.temp.remove {
         run_show "builtin cd $VIRTUAL_ENV/bin && source activate && deactivate && builtin cd .."
     fi
     run_show "rm -rf $vwd 2>/dev/null; builtin cd $cwd || builtin cd ~"
+    rehash
 }
 
 # ———
@@ -342,6 +344,7 @@ zle -N __widget.pip.freeze
 
 if [ -d "$VIRTUAL_ENV" ]; then
     venv.path.activate "$VIRTUAL_ENV"
+    rehash
 fi
 
 JOSH_DEPRECATIONS[chdir_to_virtualenv]=venv.cd

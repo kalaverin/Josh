@@ -371,7 +371,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
         local base="$PYTHON"
         export PYTHON="$target"
-        pip.lookup
+        pip.lookup >/dev/null
 
         local python="$(python.exe)"
         if [ ! -x "$python" ]; then
@@ -390,7 +390,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
         pip.deploy
 
-        if [ -n "$1" ] || [ ! "$(python.version "$PYTHON_BINARIES/default/bin/python" 2>/dev/null)" = "$(python.version "$python" 2>/dev/null)" ]; then
+        if [ -n "$1" ] && [ ! "$(python.version "$PYTHON_BINARIES/default/bin/python" 2>/dev/null)" = "$(python.version "$python" 2>/dev/null)" ]; then
             warn $0 "using python $target ($source=$version)"
         fi
 
