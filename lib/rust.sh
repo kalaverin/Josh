@@ -43,6 +43,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         git-interactive-rebase-tool
         hgrep            # wonderful grep with syntax highlight
         lsd              # fast ls replacement
+        pastel           # color logging
         petname          # generate human readable strings
         proximity-sort   # path sorter
         ripgrep          # rg, fast replace for grep -ri for humans
@@ -53,7 +54,6 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         starship         # shell prompt
         tabulate         # autodetect columns in stdin and tabulate
         vivid            # ls colors themes selections system
-        pastel           # color logging
     )
     CARGO_REC_PACKAGES=(
         bingrep          # extract and grep strings from binaries
@@ -127,14 +127,23 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     )
     CARGO_OPT_PACKAGES=(
         b0x
+        arp-scan
+        basecracker      # BASExx encode, decode and crack
+        bkt              # invocation cache tool
+        caster           # expose stdout via http
         ch4              # plain dns client, dig like
         difftastic       # diff colored visualizer
         doh-client       # full featured client with caching
         doh-proxy        # doh servier, proxy to plain dns
         dssim            # pictures similarity compare tool
         duf              # miniserver analogue
+        enquirer         # for zsh interactive scripting
+        fast-ssh         # tui for .ssh/config
         feroxbuster      # agressively website dumper
         genact           # console activity generator
+        gitui            # full featured tui git client
+        grep_bin         # another binary grep
+        htmlq            # jq for html
         httm             # file versions tool
         https-dns        # simple client
         hyperfine        # time replacement and benchmarking tool
@@ -146,36 +155,27 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         lolcate-rs       # blazing fast filesystem database
         mprober          # top like tool
         multi-tunnel     # multiple SSH tunnels
+        names            # another names generator
         navi             # local TUI cheatsheets with repositories
+        netperf          # simple network perftool
         oha              # tui tool for website benchmarking
         onefetch         # graphical statistics for git repository
-        rustscan         # scanner around nmap
-        ss-rs            # shadowsocks server and client
         oreo             # NAT bypass tunnels, like ngrok
+        rust-latest      # actual rustup version fetcher
+        rustscan         # scanner around nmap
+        slick            # starship fast replacement
+        sniffglue        # network sniffer
+        ss-rs            # shadowsocks server and client
         streampager      # less for streams
         termatrix        # matrix screensaver
         termscp          # tui for scp, sftp, ftp, s3
         tickrs           # realtime ticker
-        netperf          # simple network perftool
-        basecracker      # BASExx encode, decode and crack
-        htmlq            # jq for html
-        arp-scan
         tidy-viewer      # csv prettry printer
+        tobaru           # port forwarding tool
+        toluol           # DNS queries maker
         x8               # websites scan tool
         ytop             # htop analogue
-        bkt              # invocation cache tool
-        rust-latest      # actual rustup version fetcher
-        slick            # starship fast replacement
         ztop             # zfs datasets iostat
-        sniffglue        # network sniffer
-        tobaru           # port forwarding tool
-        names            # another names generator
-        grep_bin         # another binary grep
-        toluol           # DNS queries maker
-        fast-ssh         # tui for .ssh/config
-        enquirer         # for zsh interactive scripting
-        caster           # expose stdout via http
-        gitui            # full featured tui git client
     )
 
     CARGO_BIN="$CARGO_BINARIES/cargo"
