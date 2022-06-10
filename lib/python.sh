@@ -401,6 +401,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     function pip.lookup {
         if [ -x "$PYTHON_PIP" ]; then
             echo "$PYTHON_PIP"
+            return 0
         fi
         local target="$(python.home)"
         if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
@@ -482,7 +483,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             fi
 
             if [ ! -x "$(pip.lookup)" ]; then
-                fail $0 "pip doesn't exists in '$target/bin' or '$target/local/bin'"
+                fail $0 "pip doesn't exists in '$target'"
                 return 5
             fi
 
@@ -516,7 +517,6 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             fail $0 "python '$python' home directory isn't exist"
             return 2
         fi
-
         pip.deploy $*
         local retval="$?"
         echo "$target"
