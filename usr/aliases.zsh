@@ -323,26 +323,26 @@ function shortcut- {
 }
 
 function brew {
-    source "$JOSH/lib/brew.sh" && brew_env
+    source "$JOSH/lib/brew.sh" && brew.env
 
-    local bin="$(brew_bin 2>/dev/null)"
+    local bin="$(brew.bin 2>/dev/null)"
     if [ ! -x "$bin" ]; then
-        brew_init || return 1
+        brew.init || return 1
     fi
 
-    local bin="$(brew_bin)"
+    local bin="$(brew.bin)"
     [ ! -x "$bin" ] && return 2
 
 
     if [ "$1" = 'install' ]; then
-        run_show "brew_install ${@:2}"
+        run_show "brew.install ${@:2}"
 
     elif [ "$1" = 'env' ]; then
-        brew_env
+        brew.env
         export | grep -i BREW
 
     elif [ "$1" = 'extras' ]; then
-        brew_extras
+        brew.extras
 
     else
         run_show "$bin $*"

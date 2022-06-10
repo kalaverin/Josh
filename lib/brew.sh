@@ -32,6 +32,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         pv    # contatenate pipes with monitoring
         tmux  # terminal multiplexer
         tree  # hierarchy explore tool
+        ncdu
         git
         findutils
         fzf
@@ -42,8 +43,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         nano
     )
 
-
-    function brew_root {
+    function brew.root {
         local msg="isn't supported '$JOSH_OS': $(uname -srv)"
 
         if [ "$JOSH_OS" = "BSD" ]; then
@@ -59,8 +59,8 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         return 0
     }
 
-    function brew_bin {
-        local root="$(brew_root)"
+    function brew.bin {
+        local root="$(brew.root)"
         [ -z "$root" ] && return 1
 
         local bin="$root/bin/brew"
@@ -73,8 +73,8 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         return 0
     }
 
-    function brew_deploy {
-        local root="$(brew_root)"
+    function brew.deploy {
+        local root="$(brew.root)"
         [ -z "$root" ] && return 1
 
         if [ -d "$root" ]; then
@@ -90,34 +90,34 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         eval $($root/bin/brew shellenv) && \
         rehash
 
-        local bin="$(brew_bin)"
+        local bin="$(brew.bin)"
         [ ! -x "$bin" ] && return 4
         $bin update --force
 
         return "$?"
     }
 
-    function brew_init {
-        local root="$(brew_root)"
+    function brew.init {
+        local root="$(brew.root)"
         [ -z "$root" ] && return 1
 
         if [ ! -x "$root/bin/brew" ]; then
             fail $0 "brew binary '$root/bin/brew' isn't found, deploy now"
-            brew_deploy || return 2
+            brew.deploy || return 2
         fi
 
-        brew_env
+        brew.env
     }
 
-    function brew_install {
-        brew_init || return 1
+    function brew.install {
+        brew.init || return 1
 
         if [ -z "$*" ]; then
             fail $0 "nothing to do"
             return 2
         fi
 
-        local brew="$(brew_bin)"
+        local brew="$(brew.bin)"
         [ ! -x "$brew" ] && return 3
 
         for row in $*; do
@@ -139,21 +139,21 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         done
     }
 
-    function brew_extras {
-        run_show "brew_install $BREW_REС_PACKAGES"
+    function brew.extras {
+        run_show "brew.install $BREW_REС_PACKAGES"
         return 0
     }
 
-    function brew_update {
-        brew_env || return 1
+    function brew.update {
+        brew.env || return 1
 
-        local bin="$(brew_bin)"
+        local bin="$(brew.bin)"
         [ ! -x "$bin" ] && return 2
         $bin update && $bin upgrade
     }
 
-    function brew_env {
-        local root="$(brew_root 2>/dev/null)"
+    function brew.env {
+        local root="$(brew.root 2>/dev/null)"
         [ -z "$root" ] && return 1
         [ ! -x "$root/bin/brew" ] && return 2
 
