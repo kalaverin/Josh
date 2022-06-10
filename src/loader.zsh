@@ -32,6 +32,6 @@ plugins_autoload
 
 if [ -n "$JOSH_DEPRECATIONS" ]; then
     for deprecated func in ${(kv)JOSH_DEPRECATIONS}; do
-        eval {"$deprecated() { warn \$0 \"deprecated, use: $func\"; $func \$* }"}
+        eval {"$deprecated() { depr \$0 \"deprecated and must be removed, use '$func' instead\"; $func \$* }"}
     done
 fi
