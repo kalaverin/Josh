@@ -534,3 +534,4 @@ JOSH_DEPRECATIONS[git_set_branch_tag]=git.branch.tag
 JOSH_DEPRECATIONS[git_set_tag]=git.tag.set
 JOSH_DEPRECATIONS[git_squash_already_pushed]=git.squash.pushed
 JOSH_DEPRECATIONS[git_unset_tag]=git.tag.unset
+JOSH_DEPRECATIONS[is_repository_clean]=git.is_clean

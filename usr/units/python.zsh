@@ -18,22 +18,22 @@ function venv.path.activate {
         return 1
 
     elif [ "$VIRTUAL_ENV" = "$venv" ]; then
-        source $venv/bin/activate
+        source "$venv/bin/activate"
 
     elif [ "$VIRTUAL_ENV" ]; then
-        venv.off 2>/dev/null; source $venv/bin/activate
+        venv.off 2>/dev/null; source "$venv/bin/activate"
 
     else
-        source $venv/bin/activate
+        source "$venv/bin/activate"
     fi
-    josh_source run/boot.sh && path.rehash
+    josh_source "run/boot.sh" && path.rehash
 }
 
 function venv.off {
     if [ "$VIRTUAL_ENV" != "" ]; then
-        source $VIRTUAL_ENV/bin/activate && deactivate
+        source "$VIRTUAL_ENV/bin/activate" && deactivate
     fi
-    josh_source run/boot.sh && path.rehash
+    josh_source "run/boot.sh" && path.rehash
 }
 
 function venv.temp.dir {
@@ -48,7 +48,7 @@ function venv.temp.dir {
 }
 
 function venv.node {
-    josh_source lib/python.sh
+    josh_source "lib/python.sh"
     pip.exe >/dev/null || return 1
 
     local venv="${VIRTUAL_ENV:-''}"
@@ -138,7 +138,7 @@ function py.venv.path {
 }
 
 function py.from.version {
-    source "$JOSH/lib/python.sh" && python.home >/dev/null
+    josh_source "lib/python.sh" && python.home >/dev/null
 
     if [ $? -gt 0 ]; then
         fail $0 "python3 import something wrong, stop"
@@ -204,13 +204,13 @@ function venv.make {
 
     if [ -z "$using" ]; then
         fail $0 "'$python'"
-        [ -n "$venv" ] && source $venv/bin/activate
+        [ -n "$venv" ] && source "$venv/bin/activate"
         return 1
     fi
 
     python.set "$python"
     if [ "$?" -gt 0 ]; then
-        [ -n "$venv" ] && source $venv/bin/activate
+        [ -n "$venv" ] && source "$venv/bin/activate"
         return 1
     fi
 
@@ -221,7 +221,7 @@ function venv.make {
         if ! python.library.is 'virtualenv' "$python"; then
             fail $0 "something went wrong"
             python.set "$using"
-            [ -n "$venv" ] && source $venv/bin/activate
+            [ -n "$venv" ] && source "$venv/bin/activate"
             return 2
         fi
     fi
@@ -239,11 +239,11 @@ function venv.make {
 
     info $0 "$message"
 
-    run_show "builtin cd "$root" && $(python.exe) -m virtualenv --python=$python $args_env "$full" && source $full/bin/activate && pip install --compile --no-input --prefer-binary --upgrade --upgrade-strategy=eager pipdeptree $args_pip $packages && builtin cd $cwd"
+    run_show "builtin cd "$root" && $(python.exe) -m virtualenv --python=$python $args_env "$full" && source "$full/bin/activate" && pip install --compile --no-input --prefer-binary --upgrade --upgrade-strategy=eager pipdeptree $args_pip $packages && builtin cd $cwd"
 
     local venv="$(venv.deactivate)"
     python.set "$using"
-    [ -n "$venv" ] && source $venv/bin/activate
+    [ -n "$venv" ] && source "$venv/bin/activate"
     rehash
 }
 
@@ -279,7 +279,7 @@ function venv.site {
 function venv.on {
     local venv="$(py.venv.path $*)"
     if [ -n "$venv" ] && [ -d "$venv" ]; then
-        venv.off && source "$venv/bin/activate"
+        venv.off; source "$venv/bin/activate"
         rehash
     fi
 }
