@@ -695,6 +695,7 @@ JOSH_DEPRECATIONS[josh_pull]=ash.pull
 JOSH_DEPRECATIONS[josh_source]=ash.eval
 JOSH_DEPRECATIONS[josh_update]=ash.update
 JOSH_DEPRECATIONS[josh_upgrade]=ash.upgrade
+JOSH_DEPRECATIONS[path_last_modified]=fs.lm.many
 
 
 autoload znt-history-widget
