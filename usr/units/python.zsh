@@ -69,7 +69,7 @@ function venv.node {
     info $0 "using pip: $pip"
 
     local pip="$pip --no-python-version-warning --disable-pip-version-check --no-input --quiet"
-    if [ `$SHELL -c "$pip freeze | grep nodeenv | wc -l"` -eq 0 ]; then
+    if [ $($SHELL -c "$pip freeze | grep nodeenv | wc -l") -eq 0 ]; then
         run_show "$pip install nodeenv" && venv.path.activate "$venv"
     fi
 
@@ -162,7 +162,7 @@ function py.from.version {
     echo "$exe"
 }
 
-function virtualenv_create {
+function venv.make {
     local cwd="$CWD"
 
     if [ -z "$1" ]; then
@@ -240,19 +240,19 @@ function virtualenv_create {
 
     info $0 "$message"
 
-    run_show "builtin cd "$root" && `python.exe` -m virtualenv --python=$python $args_env "$full" && source $full/bin/activate && pip install --compile --no-input --prefer-binary --upgrade --upgrade-strategy=eager pipdeptree $args_pip $packages && builtin cd $cwd"
+    run_show "builtin cd "$root" && $(python.exe) -m virtualenv --python=$python $args_env "$full" && source $full/bin/activate && pip install --compile --no-input --prefer-binary --upgrade --upgrade-strategy=eager pipdeptree $args_pip $packages && builtin cd $cwd"
 
     local venv="$(venv.deactivate)"
     python.set "$using"
     [ -n "$venv" ] && source $venv/bin/activate
 }
 
-function venv.temp.make {
+function venv.temp {
     local venv="$(temp.dir)/$(fs.basename "$JOSH_PY_ENVS_ROOT")/$(get.name)"
-    virtualenv_create "$venv" $@
+    venv.make "$venv" $@
 }
 
-function py.cd.venv {
+function venv.cd {
     local venv="$(py.venv.path $*)"
     if [ -n "$venv" ] && [ -d "$venv" ]; then
         builtin cd "$venv"
@@ -261,9 +261,9 @@ function py.cd.venv {
     fi
 }
 
-function py.cd.site {
+function venv.site {
     local cwd="$PWD"
-    py.cd.venv $* || ([ $? -gt 0 ] && return 1)
+    venv.cd $* || ([ $? -gt 0 ] && return 1)
 
     local env_site="$(find lib/ -maxdepth 1 -type d -name 'python*')"
 
@@ -278,14 +278,14 @@ function py.cd.site {
 
 function venv.on {
     local venv="$(py.venv.path $*)"
-    if [ "$venv" ] && [ -d "$venv" ]; then
+    if [ -n "$venv" ] && [ -d "$venv" ]; then
         venv.off && source "$venv/bin/activate"
     fi
 }
 
 function venv.temp.remove {
     local cwd="$PWD"
-    py.cd.venv $* || ([ "$?" -gt 0 ] && return 1)
+    venv.cd $* || ([ "$?" -gt 0 ] && return 1)
 
     local vwd="$PWD"
     local temp="$(venv.temp.dir)"
@@ -344,9 +344,9 @@ if [ -d "$VIRTUAL_ENV" ]; then
     venv.path.activate "$VIRTUAL_ENV"
 fi
 
-JOSH_DEPRECATIONS[chdir_to_virtualenv]=py.cd.venv
-JOSH_DEPRECATIONS[chdir_to_virtualenv_stdlib]=py.cd.site
-JOSH_DEPRECATIONS[venv.temp.dir]=venv.temp.dir
+JOSH_DEPRECATIONS[chdir_to_virtualenv]=venv.cd
+JOSH_DEPRECATIONS[chdir_to_virtualenv_stdlib]=venv.site
+JOSH_DEPRECATIONS[get_temporary_envs_directory]=venv.temp.dir
 JOSH_DEPRECATIONS[get_virtualenv_path]=py.venv.path
 JOSH_DEPRECATIONS[python_from_version]=py.from.version
 JOSH_DEPRECATIONS[virtualenv_activate]=venv.on
@@ -354,5 +354,5 @@ JOSH_DEPRECATIONS[virtualenv_create]=venv.make
 JOSH_DEPRECATIONS[virtualenv_deactivate]=venv.off
 JOSH_DEPRECATIONS[virtualenv_node_deploy]=venv.node
 JOSH_DEPRECATIONS[virtualenv_path_activate]=venv.path.activate
-JOSH_DEPRECATIONS[virtualenv_temporary_create]=venv.temp.make
+JOSH_DEPRECATIONS[virtualenv_temporary_create]=venv.temp
 JOSH_DEPRECATIONS[virtualenv_temporary_destroy]=venv.temp.remove
