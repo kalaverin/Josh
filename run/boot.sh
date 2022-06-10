@@ -96,7 +96,6 @@ function fs.readlink {
     echo "$result"
 }
 
-
 function fs.basename {
     [ -z "$1" ] && return 1
     [[ "$1" -regex-match '[^/]+/?$' ]] && echo "$MATCH"
@@ -231,7 +230,6 @@ function fs.realpath {
     fi
 }
 
-
 function fs.home.eval {
     local home
     local login="${1:-\$USER}"
@@ -263,7 +261,6 @@ function fs.home.eval {
     return 1
 }
 
-
 function fs.home {
     local home="$(fs.home.eval)"
     local real="$(fs.realpath $home)"
@@ -275,7 +272,6 @@ function fs.home {
         echo "$home"
     fi
 }
-
 
 function fs.link {
     [ -z "$ZSH" ] || [ -z "$1" ] && return 1
@@ -317,13 +313,42 @@ function fs.link {
     return 0
 }
 
+function fs.link.remove {
+    [ -z "$ZSH" ] || [ -z "$1" ] && return 1
+
+    local dir="$JOSH/bin"
+
+    if [[ "$1" =~ "/" ]]; then
+        fail $0 "fs.link '$1' couldn't contains slashes"
+        return 1
+    fi
+
+    local src="$dir/$1"
+
+    if [ ! -h "$src" ]; then
+        fail $0 "fs.link '$src' isn't symbolic link"
+        return 2
+    else
+
+        local dst="$(fs.readlink "$src")"
+        unlink "$src"
+        local ret="$?"
+
+        if [ "$ret" -eq 0 ]; then
+            warn $0 "unlink fs.link '$src' -> '$dst'"
+        else
+            fail $0 "unlink fs.link '$src' -> '$dst' failed: $ret"
+            return "$ret"
+        fi
+    fi
+}
+
 function function_exists {
     declare -f "$1" >/dev/null
     if [ "$?" -gt 0 ]; then
         return 1
     fi
 }
-
 
 function which {
     local src="$*"
