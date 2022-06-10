@@ -76,13 +76,13 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
     function update_internals {
         source "$JOSH/run/units/configs.sh" && \
-        zero_configuration
+        __setup.cfg.zero_configuration
 
         source "$JOSH/run/units/binaries.sh" && \
-        deploy_binaries
+        __setup.bin.deploy_binaries
 
         source "$JOSH/run/units/oh-my-zsh.sh" &&
-        deploy_extensions
+        __setup.omz.deploy_extensions
 
         source "$JOSH/lib/python.sh" && \
         pip.install "$PIP_REQ_PACKAGES"

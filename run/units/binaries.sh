@@ -17,7 +17,7 @@ fi
 
 # ——— ondir events runner
 
-function compile_ondir {
+function __setup.bin.compile_ondir {
     if [ -x "$BINARY_DEST/ondir" ]; then
         return 0
     fi
@@ -43,7 +43,7 @@ function compile_ondir {
 
 # ——— fzf search
 
-function compile_fzf {
+function __setup.bin.compile_fzf {
     local url='https://github.com/junegunn/fzf.git'
     local clone="$(which git) clone --depth 1"
 
@@ -81,7 +81,7 @@ function compile_fzf {
 
 # ——— micro editor
 
-function deploy_micro {
+function __setup.bin.deploy_micro {
     local url='https://getmic.ro'
 
     [ ! -d "$BINARY_DEST" ] && mkdir -p "$BINARY_DEST"
@@ -101,13 +101,13 @@ function deploy_micro {
         builtin cd "$cwd"
     fi
     source "$BASE/run/units/configs.sh"
-    copy_config "$CONFIG_ROOT/micro_config.json" "$CONFIG_DIR/micro/settings.json"
-    copy_config "$CONFIG_ROOT/micro_binds.json" "$CONFIG_DIR/micro/bindings.json"
+    __setup.cfg.copy_config "$CONFIG_ROOT/micro_config.json" "$CONFIG_DIR/micro/settings.json"
+    __setup.cfg.copy_config "$CONFIG_ROOT/micro_binds.json" "$CONFIG_DIR/micro/bindings.json"
 }
 
 # ——— tmux plugin manager
 
-function deploy_tmux_plugins {
+function __setup.bin.deploy_tmux_plugins {
     local TMUX_DEST="$HOME/.tmux/plugins"
 
     [ ! -d "$TMUX_DEST" ] && mkdir -p "$TMUX_DEST"
@@ -132,7 +132,7 @@ function deploy_tmux_plugins {
 }
 
 
-function link_fpp {
+function __setup.bin.link_fpp {
     local src="$OMZ_PLUGIN_DIR/fpp"
 
     if [ -z "$OMZ_PLUGIN_DIR" ]; then
@@ -158,7 +158,7 @@ function link_fpp {
     return "$retval"
 }
 
-function link_git_tools {
+function __setup.bin.link_git_tools {
     local src="$OMZ_PLUGIN_DIR/git-tools"
 
     if [ -z "$OMZ_PLUGIN_DIR" ]; then
@@ -189,11 +189,11 @@ function link_git_tools {
     return "$retval"
 }
 
-function deploy_binaries {
-    compile_fzf && \
-    deploy_micro && \
-    deploy_tmux_plugins && \
-    compile_ondir && \
-    link_fpp && \
-    link_git_tools || return "$?"
+function __setup.bin.deploy_binaries {
+    __setup.bin.compile_fzf && \
+    __setup.bin.deploy_micro && \
+    __setup.bin.deploy_tmux_plugins && \
+    __setup.bin.compile_ondir && \
+    __setup.bin.link_fpp && \
+    __setup.bin.link_git_tools || return "$?"
 }

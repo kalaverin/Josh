@@ -55,7 +55,7 @@ PACKAGES=(
 
 # ——- first, clone oh-my-zsh as core
 
-function deploy_ohmyzsh {
+function __setup.omz.deploy_ohmyzsh {
     local cwd="$PWD"
     local url='https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh'
 
@@ -82,7 +82,7 @@ function deploy_ohmyzsh {
 
 # ——- then clone git-based extensions
 
-function deploy_extensions {
+function __setup.omz.deploy_extensions {
     if [ -z "$OMZ_PLUGIN_DIR" ]; then
         info $0 "plugins dir isn't set"
         return 1
@@ -140,7 +140,7 @@ function deploy_extensions {
 
 # ——— after install all required dependencies — finalize installation
 
-function merge_josh_ohmyzsh {
+function __setup.omz.merge_josh_ohmyzsh {
     if [ -d "$JOSH_BASE" ]; then
         info $0 "'$JOSH_BASE' move into '$JOSH_DEST/custom/plugins/'"
         mv $JOSH_BASE $JOSH_DEST/custom/plugins/josh
@@ -157,7 +157,7 @@ function merge_josh_ohmyzsh {
 
 # ——— backup previous installation and configs
 
-function save_previous_installation {
+function __setup.omz.save_previous_installation {
     if [ -d "$ZSH" ]; then
         # another josh installation found, move backup
 
@@ -189,7 +189,7 @@ function save_previous_installation {
 
 # ——— set current installation as main and link config
 
-function rename_and_link {
+function __setup.omz.rename_and_link {
     if [ "$JOSH_DEST" = "$ZSH" ]; then
         return 1
     fi

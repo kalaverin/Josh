@@ -19,7 +19,7 @@ function __stream_unpak {
 }
 
 
-function backup_file_get {
+function __setup.cfg.backup_file_get {
     local backup="$BAK_RESTORE"
     if [ "$backup" = "" ]; then
         echo " - $0 fatal: BAK_RESTORE isn't set" 1>&2
@@ -94,7 +94,7 @@ function bakf {
 
 
 function kab {
-    local backup="`backup_file_get 2>/dev/null`"
+    local backup="`__setup.cfg.backup_file_get 2>/dev/null`"
     [ -z "$backup" ] && return "$?"
 
     git.is_clean || return "$?"
@@ -104,7 +104,7 @@ function kab {
 }
 
 function kabf {
-    local backup="`backup_file_get 2>/dev/null`"
+    local backup="`__setup.cfg.backup_file_get 2>/dev/null`"
     [ -z "$backup" ] && return "$?"
 
     run_show "cat $backup | $JOSH_QAP | $(__stream_unpak)" && return 0
@@ -112,7 +112,7 @@ function kabf {
 }
 
 function bakrm {
-    local backup="`backup_file_get 2>/dev/null`"
+    local backup="`__setup.cfg.backup_file_get 2>/dev/null`"
     [ -z "$backup" ] && return "$?"
 
     if [ -x "$(which rip)" ]; then

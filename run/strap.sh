@@ -50,14 +50,14 @@ function prepare_and_deploy {
     fi
 
     pip.install $PIP_REQ_PACKAGES
-    deploy_ohmyzsh && \
-    deploy_extensions && \
-    zero_configuration && \
-    deploy_binaries && \
+    __setup.omz.deploy_ohmyzsh && \
+    __setup.omz.deploy_extensions && \
+    __setup.cfg.zero_configuration && \
+    __setup.bin.deploy_binaries && \
     cargo.deploy $CARGO_REQ_PACKAGES
     local retval="$?"
 
-    zero_configuration
+    __setup.cfg.zero_configuration
     builtin cd "$cwd"
     return "$retval"
 }
@@ -65,9 +65,9 @@ function prepare_and_deploy {
 function replace_existing_installation {
     if [ ! -z "$JOSH_DEST" ] && [ -d "$JOSH_DEST" ] && [ "$ZSH" != "$JOSH_DEST" ]; then
         source $JOSH_BASE/run/units/oh-my-zsh.sh && \
-        merge_josh_ohmyzsh && \
-        save_previous_installation && \
-        rename_and_link
+        __setup.omz.merge_josh_ohmyzsh && \
+        __setup.omz.save_previous_installation && \
+        __setup.omz.rename_and_link
 
         [ "$?" -gt 0 ] && return 3
 

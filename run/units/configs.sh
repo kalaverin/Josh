@@ -20,7 +20,7 @@ fi
 
 CONFIG_ROOT="$BASE/usr/share"
 
-function backup_file {
+function __setup.cfg.backup_file {
     if [ -f "$1" ]; then
         local dst="$1+`date "+%Y%m%d%H%M%S"`"
         if [ ! -f "$dst" ]; then
@@ -31,7 +31,7 @@ function backup_file {
     fi
 }
 
-function copy_config {
+function __setup.cfg.copy_config {
     local dst="$2"
     if [ -f "$dst" ] && [ ! "$JOSH_RENEW_CONFIGS" ] && [ ! "$JOSH_FORCE_CONFIGS" ]; then
         return 0
@@ -50,7 +50,7 @@ function copy_config {
         fi
     fi
 
-    [ -f "$dst" ] && backup_file "$dst" && unlink "$dst"
+    [ -f "$dst" ] && __setup.cfg.backup_file "$dst" && unlink "$dst"
     [ ! -d "$(fs_dirname $dst)" ] && mkdir -p "$(fs_dirname $dst)";
 
     if [ "$JOSH_RENEW_CONFIGS" ] && [ "$JOSH_OS" != "BSD" ]; then
@@ -63,8 +63,8 @@ function copy_config {
     return $?
 }
 
-function config_git {
-    copy_config "$BASE/usr/share/.gitignore" "$HOME/.gitignore"
+function __setup.cfg.config_git {
+    __setup.cfg.copy_config "$BASE/usr/share/.gitignore" "$HOME/.gitignore"
 
     if [ -f "$HOME/.gitignore" ] && [ ! -e "$HOME/.agignore" ] && [ ! -L "$HOME/.agignore" ]; then
         ln -s "$HOME/.gitignore" "$HOME/.agignore"
@@ -79,7 +79,7 @@ function config_git {
     }
 
     if [ -z "`git config --global core.pager | grep -P '^(delta)'`" ]; then
-        backup_file "$HOME/.gitconfig" && \
+        __setup.cfg.backup_file "$HOME/.gitconfig" && \
         git config --global color.branch auto && \
         git config --global color.decorate auto && \
         git config --global color.diff auto && \
@@ -97,12 +97,12 @@ function config_git {
     fi
 
     if [ -z "$(git config --global sequence.editor)" ] && [ -x "$(which interactive-rebase-tool)" ]; then
-        backup_file "$HOME/.gitconfig" && \
+        __setup.cfg.backup_file "$HOME/.gitconfig" && \
         git config --global sequence.editor interactive-rebase-tool
     fi
 }
 
-function nano_syntax_compile {
+function __setup.cfg.nano_syntax_compile {
     if [ ! -f "$HOME/.nanorc" ]; then
         # https://github.com/scopatz/nanorc
 
@@ -120,17 +120,17 @@ function nano_syntax_compile {
     return 0
 }
 
-function zero_configuration {
-    config_git
-    nano_syntax_compile
+function __setup.cfg.zero_configuration {
+    __setup.cfg.config_git
+    __setup.cfg.nano_syntax_compile
 
-    copy_config "$CONFIG_ROOT/cargo.toml" "$HOME/.cargo/config.toml"
-    copy_config "$CONFIG_ROOT/lsd.yaml" "$CONFIG_DIR/lsd/config.yaml"
-    copy_config "$CONFIG_ROOT/mycli.conf" "$HOME/.myclirc"
-    copy_config "$CONFIG_ROOT/nodeenv.conf" "$HOME/.nodeenvrc"
-    copy_config "$CONFIG_ROOT/ondir.rc" "$HOME/.ondirrc"
-    copy_config "$CONFIG_ROOT/pgcli.conf" "$CONFIG_DIR/pgcli/config"
-    copy_config "$CONFIG_ROOT/pip.conf" "$CONFIG_DIR/pip/pip.conf"
-    copy_config "$CONFIG_ROOT/tmux.conf" "$HOME/.tmux.conf"
-    copy_config "$CONFIG_ROOT/logout.zsh" "$HOME/.zlogout"
+    __setup.cfg.copy_config "$CONFIG_ROOT/cargo.toml" "$HOME/.cargo/config.toml"
+    __setup.cfg.copy_config "$CONFIG_ROOT/lsd.yaml" "$CONFIG_DIR/lsd/config.yaml"
+    __setup.cfg.copy_config "$CONFIG_ROOT/mycli.conf" "$HOME/.myclirc"
+    __setup.cfg.copy_config "$CONFIG_ROOT/nodeenv.conf" "$HOME/.nodeenvrc"
+    __setup.cfg.copy_config "$CONFIG_ROOT/ondir.rc" "$HOME/.ondirrc"
+    __setup.cfg.copy_config "$CONFIG_ROOT/pgcli.conf" "$CONFIG_DIR/pgcli/config"
+    __setup.cfg.copy_config "$CONFIG_ROOT/pip.conf" "$CONFIG_DIR/pip/pip.conf"
+    __setup.cfg.copy_config "$CONFIG_ROOT/tmux.conf" "$HOME/.tmux.conf"
+    __setup.cfg.copy_config "$CONFIG_ROOT/logout.zsh" "$HOME/.zlogout"
 }
