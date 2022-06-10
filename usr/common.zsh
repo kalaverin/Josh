@@ -624,30 +624,30 @@ function __ash.update.pre {
 }
 function __ash.update.post {
     builtin cd "$1"
-    source "$JOSH/lib/python.sh" && pip.compliance.check
+    ash.eval "lib/python.sh" && pip.compliance.check
     py.set "$version"
     return "$2"
 }
 function ash.pull {
     local cwd; cwd="$(__ash.update.pre)" || return "$?"
 
-    source "$JOSH/run/update.sh" && pull_update $@
+    ash.eval "run/update.sh" && pull_update $@
 
     __ash.update.post "$cwd" "$?"
 }
 function ash.update {
     local cwd; cwd="$(__ash.update.pre)" || return "$?"
 
-    ash_pull $@ && \
-    source "$JOSH/run/update.sh" && post_update $@
+    ash.pull $@ && \
+    ash.eval "run/update.sh" && post_update $@
 
     __ash.update.post "$cwd" "$?"
 }
 function ash.upgrade {
     local cwd; cwd="$(__ash.update.pre)" || return "$?"
 
-    ash_pull $@ && \
-    source "$JOSH/run/update.sh" && post_upgrade $@
+    ash.pull $@ && \
+    ash.eval "run/update.sh" && post_upgrade $@
 
     __ash.update.post "$cwd" "$?"
 }
