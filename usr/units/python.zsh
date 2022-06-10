@@ -14,7 +14,7 @@ local PIP_PKG_INFO="$INCLUDE_DIR/pip_pkg_info.sh"
 function venv.on {
     local venv="$(venv.path $*)"
     if [ -n "$venv" ] && [ -d "$venv" ]; then
-        venv.off >dev/null; source "$venv/bin/activate"
+        venv.off >/dev/null; source "$venv/bin/activate"
         path.rehash
     fi
 }
