@@ -140,25 +140,25 @@ function py.venv.path {
 function py.from.version {
     ash.eval "lib/python.sh" && python.home >/dev/null
 
-    if [ $? -gt 0 ]; then
+    if [ "$?" -gt 0 ]; then
         fail $0 "python3 import something wrong, stop"
         return 1
     fi
 
+    rehash
     if [[ "$1" =~ ^[0-9]\.[0-9]+$ ]]; then
-        local exe="`which python$1`"
+        local python="$(which "python$1")"
 
     elif [ "$1" = "3" ]; then
-        rehash
         if [ -x "$commands[python]" ]; then
-            local exe="$commands[python]"
+            local python="$commands[python]"
         else
-            local exe="$(which python3)"
+            local python="$(which "python3")"
         fi
     elif [ -z "$1" ]; then
-        local exe="$(which python2.7)"
+        local python="$(which "python2.7")"
     fi
-    echo "$exe"
+    echo "$python"
 }
 
 function venv.make {

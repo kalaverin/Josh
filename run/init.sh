@@ -23,10 +23,10 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             printf "$(eval "draw $2 ' $1 $4 ($5):'")$(eval "draw $3 \" $msg\"")"
             __log.spaces "${POST:-1}"
         }
-        function depr { __log.draw '--' 'indigo' 'deeppink' $0 $* >&2 }
-        function info { __log.draw '==' 'limegreen' 'gray' $0 $* >&2 }
-        function warn { __log.draw '~~' 'yellow' 'gray' $0 $* >&2 }
-        function fail { __log.draw '++' 'red --bold' 'white --bold' $0 $* >&2 }
+        function depr { __log.draw '~~' 'indigo' 'deeppink' $0 $* >&2 }
+        function info { __log.draw '--' 'limegreen' 'gray' $0 $* >&2 }
+        function warn { __log.draw '++' 'yellow' 'gray' $0 $* >&2 }
+        function fail { __log.draw '==' 'red --bold' 'white --bold' $0 $* >&2 }
         function term { __log.draw '**' 'white --on red --bold' 'white --bold' $0 $* >&2 }
 
     else
@@ -36,10 +36,10 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             printf "$2 $1 $4 ($5):$3 $msg\033[0m" >&2
             __log.spaces "${POST:-1}"
         }
-        function depr { __log.draw '--' '\033[0;35m' '\033[0;34m' $0 $* >&2 }
-        function info { __log.draw '==' '\033[0;32m' '\033[0m' $0 $* >&2 }
-        function warn { __log.draw '~~' '\033[0;33m' '\033[0m' $0 $* >&2 }
-        function fail { __log.draw '++' '\033[1;31m' '\033[0m' $0 $* >&2 }
+        function depr { __log.draw '~~' '\033[0;35m' '\033[0;34m' $0 $* >&2 }
+        function info { __log.draw '--' '\033[0;32m' '\033[0m' $0 $* >&2 }
+        function warn { __log.draw '++' '\033[0;33m' '\033[0m' $0 $* >&2 }
+        function fail { __log.draw '==' '\033[1;31m' '\033[0m' $0 $* >&2 }
         function term { __log.draw '**' '\033[42m\033[0;101m' '\033[0m' $0 $* >&2 }
     fi
 

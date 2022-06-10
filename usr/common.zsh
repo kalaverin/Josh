@@ -659,7 +659,7 @@ function ash.eval {
         return 1
 
     elif [ -z "$2" ]; then
-        if [ -e "$1" ]; then
+        if [ -e "$JOSH/$1" ]; then
             source "$JOSH/$1"
             return "$?"
         else
