@@ -17,7 +17,7 @@ bindkey "^a"   __widget.git.select_commit_then_files_checkout
 bindkey "\e^a" __widget.git.select_branch_then_commit_then_file_checkout
 
 #              alt-s, go to branch
-bindkey "\es"  __widget.git.checkout_branch
+bindkey "\es"  __widget.git.switch_branch
 #              shift-alt-a, fetch another and merge branch
 bindkey "^[S"  __widget.git.rebase_branch
 #              ctrl-s, go to commit

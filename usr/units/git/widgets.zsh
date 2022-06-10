@@ -510,13 +510,15 @@ function __widget.git.checkout_tag {
 zle -N __widget.git.checkout_tag
 
 
-function __widget.git.checkout_branch {
+function __widget.git.switch_branch {
     # нужен нормальный просмотровщик диффа между хешами
     # git rev-list --first-parent develop...master --pretty=oneline | sd "(.{8})(.{32}) (.+)" "\$1 \$3" | pipe_numerate | sort -hr
-    local branch="`git.this.branch`"
-    [ ! "$branch" ] && return 1
+    local branch
+    branch="$(git.this.branch)" || return "$?"
+    [ -z "$branch" ] && return 1
 
-    git.is_clean 2>/dev/null || local state='(dirty!) '
+    git.is_clean 2>/dev/null || local state='DIRTY '
+
     local select='git for-each-ref \
                     --sort=-committerdate refs/heads/ \
                     --color=always \
@@ -532,11 +534,11 @@ function __widget.git.checkout_branch {
             | cut -d ' ' -f 1
         ")"
 
-        if [ ! "$BUFFER" ]; then
+        if [ -z "$BUFFER" ]; then
             run_show "git switch $value 2>/dev/null 1>/dev/null"
-            local retval=$?
+            local retval="$?"
 
-        elif [ "$value" ]; then
+        elif [ -n "$value" ]; then
             LBUFFER="$BUFFER && git switch $value"
         fi
 
@@ -546,7 +548,7 @@ function __widget.git.checkout_branch {
     zle reset-prompt
     return "$retval"
 }
-zle -N __widget.git.checkout_branch
+zle -N __widget.git.switch_branch
 
 
 function __widget.git.fetch_branch {
