@@ -54,7 +54,7 @@ function prepare_and_deploy {
     deploy_extensions && \
     zero_configuration && \
     deploy_binaries && \
-    cargo_deploy $CARGO_REQ_PACKAGES
+    cargo.deploy $CARGO_REQ_PACKAGES
     local retval="$?"
 
     zero_configuration

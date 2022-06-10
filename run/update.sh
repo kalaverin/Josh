@@ -93,8 +93,8 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
     function update_packages {
         source "$JOSH/lib/rust.sh" && \
-        cargo_install "$CARGO_REQ_PACKAGES"
-        cargo_update
+        cargo.install "$CARGO_REQ_PACKAGES"
+        cargo.update
 
         source "$JOSH/lib/brew.sh"
         brew.update
@@ -103,7 +103,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     function deploy_extras {
         local cwd="$PWD"
         (source "$JOSH/lib/python.sh" && pip.extras || warn $0 "(python) something went wrong") && \
-        (source "$JOSH/lib/rust.sh" && cargo_extras || warn $0 "(rust) something went wrong")
+        (source "$JOSH/lib/rust.sh" && cargo.extras || warn $0 "(rust) something went wrong")
         (source "$JOSH/lib/brew.sh" && brew.env && (brew.extras || warn $0 "(brew) something went wrong"))
         builtin cd "$cwd"
     }

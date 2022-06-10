@@ -14,7 +14,7 @@ fi
 # init optional environment
 
 source "$JOSH/lib/python.sh" && python.env
-source "$JOSH/lib/rust.sh" && rust_env
+source "$JOSH/lib/rust.sh" && cargo.env
 
 path_prune
 

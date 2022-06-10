@@ -180,7 +180,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
     CARGO_BIN="$CARGO_BINARIES/cargo"
 
-    function cargo_init {
+    function cargo.init {
         local cache_exe="$CARGO_BINARIES/sccache"
 
         if [ ! -x "$CARGO_BIN" ]; then
@@ -233,8 +233,8 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         return 0
     }
 
-    function cargo_deploy {
-        cargo_init || return $?
+    function cargo.deploy {
+        cargo.init || return $?
         if [ ! -x "$CARGO_BIN" ]; then
             fail $0 "cargo '$CARGO_BIN' isn't found"
             return 1
@@ -252,18 +252,18 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         return "$retval"
     }
 
-    function cargo_extras {
-        cargo_install "$CARGO_REQ_PACKAGES $CARGO_REC_PACKAGES"
+    function cargo.extras {
+        cargo.install "$CARGO_REQ_PACKAGES $CARGO_REC_PACKAGES"
         return 0
     }
 
-    function cargo_all {
-        cargo_install "$CARGO_REQ_PACKAGES $CARGO_REC_PACKAGES $CARGO_OPT_PACKAGES"
+    function cargo.install.all {
+        cargo.install "$CARGO_REQ_PACKAGES $CARGO_REC_PACKAGES $CARGO_OPT_PACKAGES"
         return 0
     }
 
-    function cargo_list_installed {
-        cargo_init || return "$?"
+    function cargo.install.list {
+        cargo.init || return "$?"
 
         if [ ! -x "$CARGO_BIN" ]; then
             fail $0 "cargo exe $CARGO_BIN isn't found!"
@@ -272,8 +272,8 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         echo "$($CARGO_BIN install --list | egrep '^[a-z0-9_-]+ v[0-9.]+:$' | cut -f1 -d' ')"
     }
 
-    function cargo_install {
-        cargo_init || return $?
+    function cargo.install {
+        cargo.init || return $?
         if [ ! -x "$CARGO_BIN" ]; then
             fail $0 "cargo exe $CARGO_BIN isn't found!"
             return 1
@@ -286,7 +286,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
 
         local installed_regex="($(
-            cargo_list_installed | sed -z 's:\n: :g' | \
+            cargo.install.list | sed -z 's:\n: :g' | \
             sed 's/ *$//' | sd '\b +\b' '|'))"
 
         local missing_packages="$(
@@ -323,8 +323,8 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
     }
 
-    function cargo_uninstall {
-        cargo_init || return $?
+    function cargo.remove {
+        cargo.init || return $?
 
         if [ ! -x "$CARGO_BIN" ]; then
             fail $0 "cargo exe $CARGO_BIN isn't found!"
@@ -340,7 +340,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
 
         local installed_regex="($(
-            cargo_list_installed | sed -z 's:\n: :g' | sed 's/ *$//' | sd '\b +\b' '|'))"
+            cargo.install.list | sed -z 's:\n: :g' | sed 's/ *$//' | sd '\b +\b' '|'))"
 
         local installed_packages="$(
             echo "$selected" | sd '\s+' '\n' | \
@@ -380,15 +380,15 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
     }
 
-    function cargo_recompile {
-        local packages="$(cargo_list_installed | sed -z 's:\n: :g' | sed 's/ *$//')"
+    function cargo.update.all {
+        local packages="$(cargo.install.list | sed -z 's:\n: :g' | sed 's/ *$//')"
         if [ -n "$packages" ]; then
             $SHELL -c "$CARGO_BIN install --force $packages"
         fi
     }
 
-    function cargo_update {
-        cargo_init || return "$?"
+    function cargo.update {
+        cargo.init || return "$?"
 
         if [ ! -x "$CARGO_BIN" ]; then
             fail $0 "cargo exe $CARGO_BIN isn't found!"
@@ -406,7 +406,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         return "$?"
     }
 
-    function rust_env {
-        cargo_init
+    function cargo.env {
+        cargo.init
     }
 fi
