@@ -11,7 +11,7 @@ local PIP_PKG_INFO="$INCLUDE_DIR/pip_pkg_info.sh"
 
 # ———
 
-function virtualenv_path_activate {
+function venv.path.activate {
     local venv="$(fs.realpath ${1:-$VIRTUAL_ENV})"
 
     if [ ! -d "$venv" ]; then
@@ -21,7 +21,7 @@ function virtualenv_path_activate {
         source $venv/bin/activate
 
     elif [ "$VIRTUAL_ENV" ]; then
-        virtualenv_deactivate 2>/dev/null; source $venv/bin/activate
+        venv.off 2>/dev/null; source $venv/bin/activate
 
     else
         source $venv/bin/activate
@@ -29,14 +29,14 @@ function virtualenv_path_activate {
     josh_source run/boot.sh && path.rehash && rehash
 }
 
-function virtualenv_deactivate {
+function venv.off {
     if [ "$VIRTUAL_ENV" != "" ]; then
         source $VIRTUAL_ENV/bin/activate && deactivate
     fi
     josh_source run/boot.sh && path.rehash && rehash
 }
 
-function get_temporary_envs_directory {
+function venv.temp.dir {
     if [ -z "$JOSH_PY_TEMP_ENVS_ROOT" ]; then
         local directory="$(temp.dir)/$(fs.basename "$JOSH_PY_ENVS_ROOT")"
         if [ ! -d "$directory" ]; then
@@ -47,7 +47,7 @@ function get_temporary_envs_directory {
     echo "$JOSH_PY_TEMP_ENVS_ROOT"
 }
 
-function virtualenv_node_deploy {
+function venv.node {
     josh_source lib/python.sh
     pip.exe || return 1
 
@@ -59,7 +59,7 @@ function virtualenv_node_deploy {
     local venvname=`fs.basename "$venv"`
 
     info $0 "using venv: $venvname ($venv)"
-    virtualenv_path_activate "$venv"
+    venv.path.activate "$venv"
 
     local pip="$(which pip)"
     if [ ! -x "$pip" ]; then
@@ -70,7 +70,7 @@ function virtualenv_node_deploy {
 
     local pip="$pip --no-python-version-warning --disable-pip-version-check --no-input --quiet"
     if [ `$SHELL -c "$pip freeze | grep nodeenv | wc -l"` -eq 0 ]; then
-        run_show "$pip install nodeenv" && virtualenv_path_activate "$venv"
+        run_show "$pip install nodeenv" && venv.path.activate "$venv"
     fi
 
     local nodeenv="$(which nodeenv)"
@@ -116,7 +116,7 @@ function virtualenv_node_deploy {
     return 0
 }
 
-function get_virtualenv_path {
+function py.venv.path {
     if [ "$1" ]; then
         if [ -d "$1" ] && [ -f "$1/bin/activate" ]; then
             echo "$1"
@@ -125,7 +125,7 @@ function get_virtualenv_path {
             echo "$JOSH_PY_ENVS_ROOT/$1"
 
         else
-            local temp="$(get_temporary_envs_directory)"
+            local temp="$(venv.temp.dir)"
             if [ -f "$temp/$1/bin/activate" ]; then
                 echo "$temp/$1"
             else
@@ -138,7 +138,7 @@ function get_virtualenv_path {
     fi
 }
 
-function python_from_version {
+function py.from.version {
     source "$JOSH/lib/python.sh" && python.home >/dev/null
 
     if [ $? -gt 0 ]; then
@@ -187,7 +187,7 @@ function virtualenv_create {
         return 1
     fi
 
-    local python="`python_from_version $2`"
+    local python="`py.from.version $2`"
     if [ ! -x "$python" ]; then
         fail $0 "couldn't autodetect python for '$2'"
         return 1
@@ -247,13 +247,13 @@ function virtualenv_create {
     [ -n "$venv" ] && source $venv/bin/activate
 }
 
-function virtualenv_temporary_create {
+function venv.temp.make {
     local venv="$(temp.dir)/$(fs.basename "$JOSH_PY_ENVS_ROOT")/$(get.name)"
     virtualenv_create "$venv" $@
 }
 
-function chdir_to_virtualenv {
-    local venv="$(get_virtualenv_path $*)"
+function py.cd.venv {
+    local venv="$(py.venv.path $*)"
     if [ -n "$venv" ] && [ -d "$venv" ]; then
         builtin cd "$venv"
     else
@@ -261,9 +261,9 @@ function chdir_to_virtualenv {
     fi
 }
 
-function chdir_to_virtualenv_stdlib {
+function py.cd.site {
     local cwd="$PWD"
-    chdir_to_virtualenv $* || ([ $? -gt 0 ] && return 1)
+    py.cd.venv $* || ([ $? -gt 0 ] && return 1)
 
     local env_site="$(find lib/ -maxdepth 1 -type d -name 'python*')"
 
@@ -276,19 +276,19 @@ function chdir_to_virtualenv_stdlib {
     fi
 }
 
-function virtualenv_activate {
-    local venv="$(get_virtualenv_path $*)"
+function venv.on {
+    local venv="$(py.venv.path $*)"
     if [ "$venv" ] && [ -d "$venv" ]; then
-        virtualenv_deactivate && source "$venv/bin/activate"
+        venv.off && source "$venv/bin/activate"
     fi
 }
 
-function virtualenv_temporary_destroy {
+function venv.temp.remove {
     local cwd="$PWD"
-    chdir_to_virtualenv $* || ([ "$?" -gt 0 ] && return 1)
+    py.cd.venv $* || ([ "$?" -gt 0 ] && return 1)
 
     local vwd="$PWD"
-    local temp="$(get_temporary_envs_directory)"
+    local temp="$(venv.temp.dir)"
 
     if [[ ! $vwd =~ "^$temp" ]]; then
         fail $0 "DO NOT remove '$vwd' because isn't temporary"
@@ -304,7 +304,7 @@ function virtualenv_temporary_destroy {
 
 # ———
 
-function pip_visual_freeze {
+function __widget.pip.freeze {
     source "$JOSH/lib/python.sh"
     pip.exe || return 1
 
@@ -336,10 +336,23 @@ function pip_visual_freeze {
 
     zle reset-prompt
 }
-zle -N pip_visual_freeze
+zle -N __widget.pip.freeze
 
 # ———
 
 if [ -d "$VIRTUAL_ENV" ]; then
-    virtualenv_path_activate "$VIRTUAL_ENV"
+    venv.path.activate "$VIRTUAL_ENV"
 fi
+
+JOSH_DEPRECATIONS[chdir_to_virtualenv]=py.cd.venv
+JOSH_DEPRECATIONS[chdir_to_virtualenv_stdlib]=py.cd.site
+JOSH_DEPRECATIONS[venv.temp.dir]=venv.temp.dir
+JOSH_DEPRECATIONS[get_virtualenv_path]=py.venv.path
+JOSH_DEPRECATIONS[python_from_version]=py.from.version
+JOSH_DEPRECATIONS[virtualenv_activate]=venv.on
+JOSH_DEPRECATIONS[virtualenv_create]=venv.make
+JOSH_DEPRECATIONS[virtualenv_deactivate]=venv.off
+JOSH_DEPRECATIONS[virtualenv_node_deploy]=venv.node
+JOSH_DEPRECATIONS[virtualenv_path_activate]=venv.path.activate
+JOSH_DEPRECATIONS[virtualenv_temporary_create]=venv.temp.make
+JOSH_DEPRECATIONS[virtualenv_temporary_destroy]=venv.temp.remove

@@ -1,4 +1,4 @@
-function git_widget_add {
+function __widget.git.add {
     local branch="`git.this.branch`"
     [ -z "$branch" ] && return 1
 
@@ -43,10 +43,10 @@ function git_widget_add {
     done
     return "$retval"
 }
-zle -N git_widget_add
+zle -N __widget.git.add
 
 
-function git_widget_checkout_modified {
+function __widget.git.checkout_modified {
     local branch="`git.this.branch`"
     [ ! "$branch" ] && return 1
 
@@ -83,10 +83,10 @@ function git_widget_checkout_modified {
     done
     return "$retval"
 }
-zle -N git_widget_checkout_modified
+zle -N __widget.git.checkout_modified
 
 
-function git_auto_skip_or_continue {
+function __widget.git.auto_skip_or_continue {
     local state="`git.this.state`"  # merging, rebase or cherry-pick
     if [ "$state" ]; then
         # nothing to resolve, just skip
@@ -112,11 +112,11 @@ function git_auto_skip_or_continue {
 }
 
 
-function git_widget_conflict_solver {
+function __widget.git.conflict_solver {
     local branch="`git.this.branch`"
     [ ! "$branch" ] && return 1
 
-    git_auto_skip_or_continue
+    __widget.git.auto_skip_or_continue
     local state="$?"
     [ "$state" -eq 0 ] && return 2
 
@@ -176,7 +176,7 @@ function git_widget_conflict_solver {
 
         [ "$need_quit" -gt 0 ] && break
 
-        git_auto_skip_or_continue
+        __widget.git.auto_skip_or_continue
         [ ! $? -gt 0 ] && break
     done
 
@@ -193,10 +193,10 @@ function git_widget_conflict_solver {
     zle redisplay
     return 0
 }
-zle -N git_widget_conflict_solver
+zle -N __widget.git.conflict_solver
 
 
-function git_widget_select_commit_then_files_checkout {
+function __widget.git.select_commit_then_files_checkout {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local branch=${1:-$(echo "$GET_BRANCH" | $SHELL)}
         local commit="$(git_list_commits "$branch" \
@@ -268,16 +268,16 @@ function git_widget_select_commit_then_files_checkout {
         done
     fi
 }
-zle -N git_widget_select_commit_then_files_checkout
+zle -N __widget.git.select_commit_then_files_checkout
 
 
-function git_widget_select_branch_then_commit_then_file_checkout {
-    git_widget_select_branch_with_callback git_widget_select_commit_then_files_checkout
+function __widget.git.select_branch_then_commit_then_file_checkout {
+    __widget.git.select_branch_with_callback __widget.git.select_commit_then_files_checkout
 }
-zle -N git_widget_select_branch_then_commit_then_file_checkout
+zle -N __widget.git.select_branch_then_commit_then_file_checkout
 
 
-function git_widget_show_commits {
+function __widget.git.show_commits {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local branch=${1:-$(echo "$GET_BRANCH" | $SHELL)}
         eval "git_list_commits $branch" | pipe_remove_dots_and_spaces | pipe_numerate | \
@@ -310,10 +310,10 @@ function git_widget_show_commits {
         fi
     fi
 }
-zle -N git_widget_show_commits
+zle -N __widget.git.show_commits
 
 
-function git_widget_select_branch_with_callback {
+function __widget.git.select_branch_with_callback {
     local branch="`git.this.branch`"
     [ ! "$branch" ] && return 1
 
@@ -347,7 +347,7 @@ function git_widget_select_branch_with_callback {
             return 0
         fi
 
-        ${1:-git_widget_show_commits} $branch
+        ${1:-__widget.git.show_commits} $branch
         local ret=$?
         if [[ "$ret" == "130" ]]; then
             zle redisplay
@@ -356,10 +356,10 @@ function git_widget_select_branch_with_callback {
         fi
     done
 }
-zle -N git_widget_select_branch_with_callback
+zle -N __widget.git.select_branch_with_callback
 
 
-function git_show_branch_file_commits {
+function __widget.git.show_branch_file_commits {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local file="$2"
         local branch="$1"
@@ -397,10 +397,10 @@ function git_show_branch_file_commits {
                 --bind="enter:execute($file_view)"
     fi
 }
-zle -N git_show_branch_file_commits
+zle -N __widget.git.show_branch_file_commits
 
 
-function git_widget_select_file_show_commits {
+function __widget.git.select_file_show_commits {
     # diff full creeen at alt-bs
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local branch=${1:-$(echo "$GET_BRANCH" | $SHELL)}
@@ -439,7 +439,7 @@ function git_widget_select_file_show_commits {
                 return 0
             fi
 
-            git_show_branch_file_commits $branch $file
+            __widget.git.show_branch_file_commits $branch $file
             local ret=$?
             if [[ "$ret" != "130" ]]; then
                 zle redisplay
@@ -449,16 +449,16 @@ function git_widget_select_file_show_commits {
         done
     fi
 }
-zle -N git_widget_select_file_show_commits
+zle -N __widget.git.select_file_show_commits
 
 
-function git_widget_select_branch_then_file_show_commits {
-    git_widget_select_branch_with_callback git_widget_select_file_show_commits
+function __widget.git.select_branch_then_file_show_commits {
+    __widget.git.select_branch_with_callback __widget.git.select_file_show_commits
 }
-zle -N git_widget_select_branch_then_file_show_commits
+zle -N __widget.git.select_branch_then_file_show_commits
 
 
-function git_widget_checkout_tag {
+function __widget.git.checkout_tag {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local current="$(echo "$GET_BRANCH" | $SHELL)"
 
@@ -507,10 +507,10 @@ function git_widget_checkout_tag {
         fi
     fi
 }
-zle -N git_widget_checkout_tag
+zle -N __widget.git.checkout_tag
 
 
-function git_widget_checkout_branch {
+function __widget.git.checkout_branch {
     # нужен нормальный просмотровщик диффа между хешами
     # git rev-list --first-parent develop...master --pretty=oneline | sd "(.{8})(.{32}) (.+)" "\$1 \$3" | pipe_numerate | sort -hr
     local branch="`git.this.branch`"
@@ -546,10 +546,10 @@ function git_widget_checkout_branch {
     zle reset-prompt
     return "$retval"
 }
-zle -N git_widget_checkout_branch
+zle -N __widget.git.checkout_branch
 
 
-function git_widget_fetch_branch {
+function __widget.git.fetch_branch {
     local root="`git.this.root`"
     [ ! "$root" ] && return 1
     local branch="`git.this.branch`"
@@ -593,10 +593,10 @@ function git_widget_fetch_branch {
     zle reset-prompt
     return $?
 }
-zle -N git_widget_fetch_branch
+zle -N __widget.git.fetch_branch
 
 
-function git_widget_delete_branch {
+function __widget.git.delete_branch {
     local root="`git.this.root`"
     [ ! "$root" ] && return 1
     local branch="`git.this.branch`"
@@ -631,10 +631,10 @@ function git_widget_delete_branch {
     zle reset-prompt
     return 0
 }
-zle -N git_widget_delete_branch
+zle -N __widget.git.delete_branch
 
 
-function git_widget_delete_local_branch {
+function __widget.git.delete_local_branch {
     local branch="`git.this.branch`"
     [ ! "$branch" ] && return 1
 
@@ -668,10 +668,10 @@ function git_widget_delete_local_branch {
     zle reset-prompt
     return 0
 }
-zle -N git_widget_delete_local_branch
+zle -N __widget.git.delete_local_branch
 
 
-function git_widget_delete_remote_branch {
+function __widget.git.delete_remote_branch {
     local root="`git.this.root`"
     [ ! "$root" ] && return 1
     local branch="`git.this.branch`"
@@ -706,10 +706,10 @@ function git_widget_delete_remote_branch {
     zle reset-prompt
     return 0
 }
-zle -N git_widget_delete_remote_branch
+zle -N __widget.git.delete_remote_branch
 
 
-function git_widget_checkout_commit {
+function __widget.git.checkout_commit {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local branch="$(echo "$GET_BRANCH" | $SHELL)"
         local differ="echo {} | head -1 | grep -o '[a-f0-9]\{7\}' | cut -d ' ' -f 1 | xargs -I% git diff --color=always --stat=\$FZF_PREVIEW_COLUMNS --patch --diff-algorithm=histogram $branch % | $DELTA"
@@ -754,10 +754,10 @@ function git_widget_checkout_commit {
         fi
     fi
 }
-zle -N git_widget_checkout_commit
+zle -N __widget.git.checkout_commit
 
 
-function git_widget_merge_branch {
+function __widget.git.merge_branch {
     local branch="`git.this.branch`"
     [ ! "$branch" ] && return 1
 
@@ -784,7 +784,7 @@ function git_widget_merge_branch {
         elif [ ! "$BUFFER" ]; then
             run_show "git.fetch \"$value\" && git merge --no-commit \"origin/$value\""
             local retval=$?
-            git_widget_conflict_solver
+            __widget.git.conflict_solver
 
         elif [ "$value" ]; then
             LBUFFER="$BUFFER && git fetch origin \"$value\":\"$value\" && git merge --no-commit \"origin/$value\""
@@ -795,10 +795,10 @@ function git_widget_merge_branch {
     zle reset-prompt
     return 0
 }
-zle -N git_widget_merge_branch
+zle -N __widget.git.merge_branch
 
 
-function git_widget_rebase_branch {
+function __widget.git.rebase_branch {
     local branch="`git.this.branch`"
     [ ! "$branch" ] && return 1
 
@@ -833,10 +833,10 @@ function git_widget_rebase_branch {
     zle reset-prompt
     return 0
 }
-zle -N git_widget_rebase_branch
+zle -N __widget.git.rebase_branch
 
 
-function git_replace_all_commits_with_one {
+function __widget.git.replace_all_commits_with_one {
     local branch="${1:-`git.this.branch`}"
     [ ! "$branch" ] && return 1
 
@@ -861,4 +861,4 @@ function git_replace_all_commits_with_one {
     zle reset-prompt
     return 0
 }
-zle -N  git_replace_all_commits_with_one
+zle -N  __widget.git.replace_all_commits_with_one
