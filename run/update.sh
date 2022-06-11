@@ -72,6 +72,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         update_internals
         update_packages
         source "$JOSH/run/units/compat.sh" && compat.compliance
+        post.install
     }
 
     function post.install {
