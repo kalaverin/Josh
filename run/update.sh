@@ -60,21 +60,30 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             git-restore-mtime --skip-missing --quiet
         fi
         builtin cd "$cwd"
+        post.install
         return "$retval"
     }
 
     function post_update {
         update_internals
-        source "$JOSH/run/units/compat.sh" && compat.compliance
+        post.install
     }
 
     function post_upgrade {
         update_internals
         update_packages
-        source "$JOSH/run/units/compat.sh" && compat.compliance
+        post.install
     }
 
     function post.install {
+        source "$JOSH/lib/python.sh" && pip.compliance.check
+        source "$JOSH/run/units/compat.sh" && compat.compliance
+
+        if [ -n "$ASH_POST_INSTALL_PYTHON" ]; then
+            source "$JOSH/usr/units/python.zsh" && py.set "$ASH_POST_INSTALL_PYTHON"
+            unset ASH_POST_INSTALL_PYTHON
+        fi
+
         if [ -x "$commands[cfonts]" ]; then
             local msg='type exec zsh and have the fun'
             let enabled="$COLUMNS >= 177"

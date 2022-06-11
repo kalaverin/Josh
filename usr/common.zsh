@@ -619,45 +619,30 @@ function __ash.update.pre {
     py.set || return "$?"
     echo "$cwd"
 }
-function __ash.update.post {
-    echo 'invoke4'
-    ash.eval "lib/python.sh" && pip.compliance.check
-    py.set "$2"
-    echo 'invoke3'
-    post.install
-    echo 'invoke2'
-    return "$3"
-}
 function ash.pull {
     local version; version="$(py.ver)" || return "$?"
+    export ASH_POST_INSTALL_PYTHON="$version"
+
     local cwd; cwd="$(__ash.update.pre)" || return "$?"
-
     ash.eval "run/update.sh" && pull_update $*
-
-    ash.eval "usr/common.sh" && \
-    __ash.update.post "$cwd" "$version" "$?"
     builtin cd "$cwd"
 }
 function ash.update {
     local version; version="$(py.ver)" || return "$?"
-    local cwd; cwd="$(__ash.update.pre)" || return "$?"
+    export ASH_POST_INSTALL_PYTHON="$version"
 
+    local cwd; cwd="$(__ash.update.pre)" || return "$?"
     ash.eval "run/update.sh" && pull_update $* && \
     ash.eval "run/update.sh" && post_update $*
-
-    ash.eval "usr/common.sh" && \
-    __ash.update.post "$cwd" "$version" "$?"
     builtin cd "$cwd"
 }
 function ash.upgrade {
     local version; version="$(py.ver)" || return "$?"
-    local cwd; cwd="$(__ash.update.pre)" || return "$?"
+    export ASH_POST_INSTALL_PYTHON="$version"
 
+    local cwd; cwd="$(__ash.update.pre)" || return "$?"
     ash.eval "run/update.sh" && pull_update $* && \
     ash.eval "run/update.sh" && post_upgrade $*
-
-    ash.eval "usr/common.sh" && \
-    __ash.update.post "$cwd" "$version" "$?"
     builtin cd "$cwd"
 }
 function ash.extras {
