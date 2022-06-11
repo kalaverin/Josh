@@ -620,9 +620,12 @@ function __ash.update.pre {
     echo "$cwd"
 }
 function __ash.update.post {
+    echo 'invoke4'
     ash.eval "lib/python.sh" && pip.compliance.check
     py.set "$2"
+    echo 'invoke3'
     post.install
+    echo 'invoke2'
     return "$3"
 }
 function ash.pull {
