@@ -36,29 +36,26 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
     PIP_REQ_PACKAGES=(
         pip        # python package manager, first
-        httpie     # super http client, just try: http head anything.com
         pipdeptree # simple, but powerful tool to manage python requirements
         setuptools
-        sshuttle   # swiss knife for ssh tunneling & management
-        thefuck    # misspelling everyday helper
         virtualenv # virtual environments for python packaging
         wheel
     )
-
     PIP_OPT_PACKAGES=(
         asciinema  # shell movies recorder and player
         clickhouse-cli
         crudini    # ini configs parser
+        httpie     # super http client, just try: http head anything.com
         mycli      # python-driver MySQL client
         nodeenv    # virtual environments for node packaging
         paramiko   # for ssh tunnels with mycli & pgcli
         sshtunnel  # too
         pgcli      # python-driver PostgreSQL client
+        sshuttle   # swiss knife for ssh tunneling & management
         termtosvg  # write shell movie to animated SVG
+        thefuck    # misspelling everyday helper
         tmuxp      # tmux session manager
     )
-
-
     PIP_DEFAULT_KEYS=(
         --compile
         --disable-pip-version-check
@@ -68,8 +65,6 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         --no-warn-script-location
         --prefer-binary
     )
-
-
     function py.lib.exists {
         if [ -z "$1" ]; then
             fail $0 "call without args, I need to do — what?"

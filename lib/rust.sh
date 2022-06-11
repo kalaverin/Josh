@@ -35,19 +35,13 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     CARGO_REQ_PACKAGES=(
         bat              # modern replace for cat with syntax highlight
         cargo-update     # packages for auto-update installed crates
-        cfonts           # colored terminal text with fonts
-        chit             # crates info, just type: chit <any>
-        csview           # for commas, tabs, etc
         fd-find          # fd, fast replace for find for humans
         git-delta        # fast replace for git delta with steroids
         git-interactive-rebase-tool
-        hgrep            # wonderful grep with syntax highlight
         lsd              # fast ls replacement
-        pastel           # color logging
         petname          # generate human readable strings
         proximity-sort   # path sorter
         ripgrep          # rg, fast replace for grep -ri for humans
-        rm-improved      # rip, powerful rm replacement with trashcan
         runiq            # fast uniq replacement
         scotty           # directory crawling statistics with search
         sd               # fast sed replacement for humans
@@ -60,7 +54,10 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         broot            # console file manager
         bump-bin         # versions with semver specification
         cargo-whatis     # fast chit replacement
+        cfonts           # colored terminal text with fonts
+        chit             # crates info, just type: chit <any>
         cork             # repl hex calculator
+        csview           # for commas, tabs, etc
         ctv              # fast tree
         diffsitter       # AST based diff
         dirstat-rs       # ds, du replace, summary tree
@@ -84,6 +81,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         git-trim         # remove local branches when remote merged
         git-who          # list branches with date, author and merge status
         hexyl            # hex viewer
+        hgrep            # wonderful grep with syntax highlight
         hj               # http response into json
         ignoreit         # powerful .gitignore for any languages
         igrep            # interactive ripgrep
@@ -100,6 +98,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         miniserve        # directory serving over http
         parallel-disk-usage # pdu, parallel and fast du
         parallel-sh      # shell commands parallizer
+        pastel           # color logging
         pgen             # password generator
         pipr             # shell pipelines tui helper with partial execution
         pouf             # many data formats faker
@@ -111,6 +110,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         readable-name-generator
         rhit             # very fast nginx log analyzer with graphical stats
         rjo              # JSON generator by key->value
+        rm-improved      # rip, powerful rm replacement with trashcan
         ruplacer         # refactoring tool, like sed for directory
         ry               # jq for yamls
         sbyte            # hexeditor

@@ -74,6 +74,24 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         source "$JOSH/run/units/compat.sh" && compat.compliance
     }
 
+    function post.install {
+        if [ -x "$commands[cfonts]" ]; then
+            local msg='type exec zsh and have the fun'
+            let enabled="$COLUMNS >= 177"
+            if [ "$enabled" -eq "1" ]; then
+                cfonts "$msg" -f slick -c yellow,blue
+                return
+            fi
+
+            let enabled="$COLUMNS >= 142"
+            if [ "$enabled" -eq "1" ]; then
+                cfonts "$msg" -f shade -c yellow,blue
+                return
+            fi
+        fi
+        warn $0 "type 'exec zsh' for apply changes and have the fun!"
+    }
+
     function update_internals {
         source "$JOSH/run/units/configs.sh" && \
         __setup.cfg.zero_configuration
