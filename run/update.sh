@@ -136,7 +136,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     }
 
 
-    typeset -Agx JOSH_DEPRECATIONS=()
+    typeset -Agx DEPRECATIONS=()
     DEPRECATIONS[pull_update]=pull.update
     DEPRECATIONS[post_update]=post.update
     DEPRECATIONS[post_upgrade]=post.upgrade
