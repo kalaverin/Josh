@@ -624,7 +624,7 @@ function ash.pull {
     export ASH_POST_INSTALL_PYTHON="$version"
 
     local cwd; cwd="$(__ash.update.pre)" || return "$?"
-    ash.eval "run/update.sh" && pull_update $*
+    ash.eval "run/update.sh" && pull.update $*
     builtin cd "$cwd"
 }
 function ash.update {
@@ -632,8 +632,8 @@ function ash.update {
     export ASH_POST_INSTALL_PYTHON="$version"
 
     local cwd; cwd="$(__ash.update.pre)" || return "$?"
-    ash.eval "run/update.sh" && pull_update $* && \
-    ash.eval "run/update.sh" && post_update $*
+    ash.eval "run/update.sh" && pull.update $* && \
+    ash.eval "run/update.sh" && post.update $*
     builtin cd "$cwd"
 }
 function ash.upgrade {
@@ -641,12 +641,12 @@ function ash.upgrade {
     export ASH_POST_INSTALL_PYTHON="$version"
 
     local cwd; cwd="$(__ash.update.pre)" || return "$?"
-    ash.eval "run/update.sh" && pull_update $* && \
-    ash.eval "run/update.sh" && post_upgrade $*
+    ash.eval "run/update.sh" && pull.update $* && \
+    ash.eval "run/update.sh" && post.upgrade $*
     builtin cd "$cwd"
 }
 function ash.extras {
-    ash.eval "run/update.sh" && deploy_extras
+    ash.eval "run/update.sh" && deploy.extras
 }
 function ash.eval {
     if [ -z "$1" ]; then

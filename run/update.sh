@@ -12,7 +12,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
     fi
 
-    function pull_update {
+    function pull.update {
         local cwd="$PWD"
         builtin cd "$JOSH"
 
@@ -64,14 +64,14 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         return "$retval"
     }
 
-    function post_update {
-        update_internals
+    function post.update {
+        update.internals
         post.install
     }
 
-    function post_upgrade {
-        update_internals
-        update_packages
+    function post.upgrade {
+        update.internals
+        update.packages
         post.install
     }
 
@@ -101,7 +101,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         warn $0 "type 'exec zsh' for apply changes and have the fun!"
     }
 
-    function update_internals {
+    function update.internals {
         source "$JOSH/run/units/configs.sh" && \
         __setup.cfg.zero_configuration
 
@@ -118,7 +118,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         git.nested "$JOSH/usr/local"
     }
 
-    function update_packages {
+    function update.packages {
         source "$JOSH/lib/rust.sh" && \
         cargo.install "$CARGO_REQ_PACKAGES"
         cargo.update
@@ -127,11 +127,24 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         brew.update
     }
 
-    function deploy_extras {
+    function deploy.extras {
         local cwd="$PWD"
         (source "$JOSH/lib/python.sh" && pip.extras || warn $0 "(python) something went wrong") && \
         (source "$JOSH/lib/rust.sh" && cargo.extras || warn $0 "(rust) something went wrong")
         (source "$JOSH/lib/brew.sh" && brew.env && (brew.extras || warn $0 "(brew) something went wrong"))
         builtin cd "$cwd"
     }
+
+
+    typeset -Agx JOSH_DEPRECATIONS=()
+    DEPRECATIONS[pull_update]=pull.update
+    DEPRECATIONS[post_update]=post.update
+    DEPRECATIONS[post_upgrade]=post.upgrade
+    DEPRECATIONS[update_internals]=update.internals
+    DEPRECATIONS[update_packages]=update.packages
+    DEPRECATIONS[deploy_extras]=deploy.extras
+
+    for deprecated func in ${(kv)DEPRECATIONS}; do
+        eval {"$deprecated() { warn \$0 \"deprecated and must be removed, use '$func' instead\"; $func \$* }"}
+    done
 fi
