@@ -85,7 +85,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
 
         if [ -x "$commands[cfonts]" ]; then
-            local msg='type exec zsh and have the fun'
+            local msg='type exec zsh and enjoy!'
             let enabled="$COLUMNS >= 177"
             if [ "$enabled" -eq "1" ]; then
                 cfonts "$msg" -f slick -c yellow,blue
@@ -98,7 +98,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
                 return
             fi
         fi
-        warn $0 "type 'exec zsh' for apply changes and have the fun!"
+        warn $0 "type 'exec zsh' for apply changes and enjoy!"
     }
 
     function update.internals {
