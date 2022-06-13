@@ -86,13 +86,13 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
         if [ -x "$commands[cfonts]" ]; then
             local msg='type exec zsh and enjoy!'
-            let enabled="$COLUMNS >= 177"
+            let enabled="$COLUMNS >= 140"
             if [ "$enabled" -eq "1" ]; then
                 cfonts "$msg" -f slick -c yellow,blue
                 return
             fi
 
-            let enabled="$COLUMNS >= 142"
+            let enabled="$COLUMNS >= 114"
             if [ "$enabled" -eq "1" ]; then
                 cfonts "$msg" -f shade -c yellow,blue
                 return
