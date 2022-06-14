@@ -309,7 +309,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             ln -s "$target" "$PYTHON_BINARIES/default"
             info $0 "make default $python ($(py.ver.full "$python"))"
         fi
-        rehash
+        path.rehash
 
         echo "$target"
     }
@@ -520,7 +520,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
                 ln -s "$packages/dist-packages" "$packages/site-packages"
             fi
 
-            rehash
+            path.rehash
             pip.install "$PIP_REQ_PACKAGES"
 
         fi
@@ -655,7 +655,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             fi
             printf "\n" >&2
         done
-        rehash
+        path.rehash
 
         local result=''
         if [ -n "$complete" ]; then
@@ -723,7 +723,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         pip.install "$PIP_REQ_PACKAGES"
         local retval="$?"
         run_show "pip.install $PIP_OPT_PACKAGES"
-        rehash
+        path.rehash
 
         if [ "$?" -gt 0 ] || [ "$retval" -gt 0 ]; then
             return 1

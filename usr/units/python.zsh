@@ -108,7 +108,7 @@ function venv.node {
     if [ -n "$version" ]; then
         info $0 "deploy node v$version"
         run_show "nodeenv --python-virtualenv --node=$version"
-        rehash
+        path.rehash
     fi
 }
 
@@ -142,7 +142,7 @@ function py.from.version {
         return 1
     fi
 
-    rehash
+    path.rehash
     if [[ "$1" =~ ^[0-9]\.[0-9]+$ ]]; then
         local python="$(which "python$1")"
 
@@ -241,7 +241,7 @@ function venv.make {
     local venv="$(venv.off)"
     py.set "$using"
     [ -n "$venv" ] && source "$venv/bin/activate"
-    rehash
+    path.rehash
 }
 
 function venv.temp {
@@ -333,7 +333,7 @@ zle -N __widget.pip.freeze
 
 if [ -d "$VIRTUAL_ENV" ]; then
     venv.path.activate "$VIRTUAL_ENV"
-    rehash
+    path.rehash
 fi
 
 JOSH_DEPRECATIONS[chdir_to_virtualenv]=venv.cd

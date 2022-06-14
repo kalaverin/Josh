@@ -88,7 +88,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
         git clone --depth 1 "https://github.com/Homebrew/brew" "$root" && \
         eval $($root/bin/brew shellenv) && \
-        rehash
+        path.rehash
 
         local bin="$(brew.bin)"
         [ ! -x "$bin" ] && return 4

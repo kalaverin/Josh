@@ -172,7 +172,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
         if [ "$retval" -eq 0 ] || [ -n "$result" ]; then
             export PATH="$JOSH/bin:$result"
-            rehash
+            fs.path.rehash
         fi
         return "$retval"
     }
@@ -355,26 +355,32 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
     }
 
-    function fs.hier.check {
+    function fs.path.rehash {
+        if [ ! -x "$JOSH" ]; then
+            fail $0 "something went wrong, JOSH path empty"
+            return 1
+        fi
+
+        rehash
         for key link in ${(kv)commands}; do
             if [ ! -x "$link" ]; then
-                local dir="$(fs.dirname $link)"
-
-                if [ -w "$dir" ]; then
-                    local bin="$(builtin which -p "$key")"
-                    if [ -x "$bin" ]; then
-                        warn $0 "broken link '$link', relink '$key' -> '$bin'"
-                        unlink "$link" && fs.link "$bin" >/dev/null
-                    else
-                        warn $0 "broken link '$link', missing binary '$key', unlink"
-                        unlink "$link"
+                if [[ "$link" -regex-match "^$JOSH" ]]; then
+                    local dir="$(fs.dirname $link)"
+                    if [ -w "$dir" ]; then
+                        local bin="$(builtin which -p "$key")"
+                        if [ -x "$bin" ]; then
+                            warn $0 "broken link '$link', relink '$key' -> '$bin'"
+                            unlink "$link" && fs.link "$bin" >/dev/null
+                        else
+                            warn $0 "broken link '$link', missing binary '$key', unlink"
+                            unlink "$link"
+                            unset "commands[$key]"
+                        fi
                     fi
+                else
+                    unset "commands[$key]"
                 fi
             fi
         done
-    }
-
-    function fs.hier.fix {
-        eval.cached "$(fs.lm.many $path)" fs.hier.check "$path" >/dev/null
     }
 fi
