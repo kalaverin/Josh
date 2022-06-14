@@ -60,6 +60,7 @@ perm_path=(
 path=(
     $perm_path
     $path
+    $HOME/.brew/bin
 )
 
 function fs_size {

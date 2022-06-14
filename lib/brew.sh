@@ -131,10 +131,8 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
             local bin="$HOMEBREW_PREFIX/bin/$exe"
             if [ -x "$bin" ]; then
-                local dst="`fs.link "$bin"`"
-                if [ -n "$dst" ]; then
-                    info $0 "$dst -> $(which $exe)"
-                fi
+                local dst="$(fs.link "$bin")"
+                info $0 "$dst -> $(which $exe)"
             fi
         done
     }
