@@ -24,7 +24,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     function fs.lookup.missing {
         local missing=""
         for bin in $(echo "$*" | sd '\s+' '\n' | sort -u); do
-            if [ ! -x "$commands[$bin]" ] && [ ! -x "$(which $bin 2>/dev/null)" ]; then
+            if [ ! -x "$commands[$bin]" ] && [ ! -x "$(builtin which -p "$bin" 2>/dev/null)" ]; then
                 if [ -z "$missing" ]; then
                     local missing="$bin"
                 else
@@ -275,7 +275,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             fail $0 "something went wrong: '$1' '${@:2}'"
         fi
 
-        if [ ! -f "$cache" ]; then
+        if [ "$DO_NOT_READ" -gt 0 ] || [ ! -f "$cache" ]; then
             let expired="1"
         else
             local last_update="$(fs.mtime $cache 2>/dev/null)"
@@ -353,5 +353,28 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             unlink "$tempfile"
             return "$retval"
         fi
+    }
+
+    function fs.hier.check {
+        for key link in ${(kv)commands}; do
+            if [ ! -x "$link" ]; then
+                local dir="$(fs.dirname $link)"
+
+                if [ -w "$dir" ]; then
+                    local bin="$(builtin which -p "$key")"
+                    if [ -x "$bin" ]; then
+                        warn $0 "broken link '$link', relink '$key' -> '$bin'"
+                        unlink "$link" && fs.link "$bin" >/dev/null
+                    else
+                        warn $0 "broken link '$link', missing binary '$key', unlink"
+                        unlink "$link"
+                    fi
+                fi
+            fi
+        done
+    }
+
+    function fs.hier.fix {
+        eval.cached "$(fs.lm.many $path)" fs.hier.check "$path" >/dev/null
     }
 fi

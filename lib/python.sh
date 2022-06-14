@@ -278,25 +278,39 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         target="$(py.home.from_version "$python")"
         if [ "$?" -eq 0 ] && [ ! -x "$target/bin/python" ]; then
             mkdir -p "$target/bin"
-
-            local version="$(py.ver "$python")"
-            if [ -z "$version" ]; then
-                fail $0 "version not found for $python"
-                return 1
-            fi
             info $0 "link $python ($(py.ver.full "$python")) -> $target/bin/"
-
-            ln -s "$target" "$target/local" \
-            ln -s "$python" "$target/bin/python" \
-            ln -s "$python" "$target/bin/python${version[1]}" \
-            ln -s "$python" "$target/bin/"  # finally /pythonX.Y.Z
-
-            if [ ! -d "$PYTHON_BINARIES/default" ]; then
-                ln -s "$target" "$PYTHON_BINARIES/default"
-                info $0 "make default $python ($(py.ver.full "$python"))"
-            fi
-            rehash
         fi
+
+        local version="$(py.ver "$python")"
+        if [ -z "$version" ]; then
+            fail $0 "version not found for $python"
+            return 1
+        fi
+
+        if [ ! -x "$target/local" ]; then
+            unlink "$target/local" 2>/dev/null
+            ln -s "$target" "$target/local"
+        fi
+
+        if [ ! -x "$target/bin/python" ]; then
+            unlink "$target/bin/python" 2>/dev/null
+            ln -s "$python" "$target/bin/python"
+        fi
+
+        if [ ! -x "$target/bin/python${version[1]}" ]; then
+            unlink "$target/bin/python${version[1]}" 2>/dev/null
+            ln -s "$python" "$target/bin/python${version[1]}"
+        fi
+
+        ln -s "$python" "$target/bin/" 2>/dev/null # finally /pythonX.Y.Z
+
+        if [ ! -x "$PYTHON_BINARIES/default" ]; then
+            unlink "$PYTHON_BINARIES/default" 2>/dev/null
+            ln -s "$target" "$PYTHON_BINARIES/default"
+            info $0 "make default $python ($(py.ver.full "$python"))"
+        fi
+        rehash
+
         echo "$target"
     }
 
@@ -316,8 +330,17 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         local retval="$?"
 
         if [ "$retval" -gt 0 ] || [ ! -d "$target" ]; then
-            fail $0 "python '$python' home directory isn't exist"
-            return 2
+            fail $0 "python '$python' home directory isn't exist, try again"
+
+            target="$(DO_NOT_READ=1 eval.cached "$(fs.mtime $python)" py.home.uncached "$python")"
+            local retval="$?"
+
+            if [ "$retval" -gt 0 ] || [ ! -d "$target" ]; then
+                term $0 "python '$python' home directory isn't exist"
+                return 2
+            else
+                warn $0 "python '$python' recovered with '$target'"
+            fi
         fi
 
         echo "$target"

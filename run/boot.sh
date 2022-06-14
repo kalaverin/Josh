@@ -319,14 +319,14 @@ function fs.link.remove {
     local dir="$JOSH/bin"
 
     if [[ "$1" =~ "/" ]]; then
-        fail $0 "fs.link '$1' couldn't contains slashes"
+        fail $0 "'$1' couldn't contains slashes"
         return 1
     fi
 
     local src="$dir/$1"
 
     if [ ! -h "$src" ]; then
-        fail $0 "fs.link '$src' isn't symbolic link"
+        fail $0 "'$src' isn't symbolic link"
         return 2
     else
 
@@ -335,9 +335,9 @@ function fs.link.remove {
         local ret="$?"
 
         if [ "$ret" -eq 0 ]; then
-            warn $0 "unlink fs.link '$src' -> '$dst'"
+            warn $0 "unlink '$1' -> '$dst'"
         else
-            fail $0 "unlink fs.link '$src' -> '$dst' failed: $ret"
+            fail $0 "unlink '$1' -> '$dst' failed: $ret"
             return "$ret"
         fi
     fi

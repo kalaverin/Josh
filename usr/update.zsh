@@ -63,7 +63,7 @@ function __get_updates_count {
     local branch="$(git.this.branch)"
     if [ -z "$branch" ]; then
         builtin cd "$cwd"
-        fail $0 "branch '$branch' emp"
+        fail $0 "cannot detect branch: '$branch' - empty"
         return 3
     fi
 

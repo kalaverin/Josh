@@ -234,7 +234,7 @@ function git.branch.select {
 
     [ -z "$(git.this.root)" ] && return 3
 
-    local cmd="git fetch origin \"$1\":\"$1\" && git.is_clean && git checkout --force --quiet $1 && git reset --hard $1 && git pull origin $1"
+    local cmd="git fetch origin '$1':'$1' && git.is_clean && git checkout --force --quiet '$1' && git reset --hard '$1' && git pull origin '$1'"
     run_show "$cmd"
     return "$?"
 }
