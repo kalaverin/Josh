@@ -436,41 +436,52 @@ function git.squash.pushed {
 }
 
 function git.nested {
-    local cwd="$PWD"
-    local root="$(fs.realpath "${1:-.}")"
-
-    if [ ! -d "$root" ]; then
+    local branch root
+    root="$(fs.realpath "${1:-.}")"
+    if [ "$?" -gt 0 ] || [ ! -d "$root" ]; then
         fail $0 "working path '$root' isn't accessible"
         return 1
     fi
 
+    local cwd="$PWD"
+
     local header=""
-    local mtime="$(which git-restore-mtime)"
+    local mtime="$(which git-restore-mtime 2>/dev/null)"
 
     find "$root" -maxdepth 2 -type d -name .git | sort | while read git_directory
     do
         current_path="$(fs.dirname "$(fs.realpath $git_directory)")"
 
         if [ -z "$header" ] && [ "$root" != "$current_path" ]; then
-            PRE=1 info $0 "update '$(fs.realpath "$root")'"
-            if [ -x "$(which gfold)" ]; then
-                gfold -d classic
+            builtin cd "$root"
+            if [ -x "$commands[git-summary]" ]; then
+                git-summary --quiet --hidden --parallel "$(misc.cpu.count)"
+            else
+                PRE=1 warn $0 "update '$(fs.realpath "$root")'"
             fi
-            printf "\n" >&2
             local header="1"
         fi
 
+        if [ -x "$commands[realpath]" ]; then
+            local show_path="$(realpath --relative-to="$(fs.dirname "$root")" "$current_path")"
+        else
+            local show_path="$current_path"
+        fi
+
         builtin cd "$current_path"
-        local branch="`$SHELL -c "$GET_BRANCH"`"
+        branch="$(git.this.branch)"
         if [ "$?" -gt 0 ] || [ -z "$branch" ]; then
             warn $0 "something went wrong in '$current_path', skip"
             builtin cd "$cwd"
             continue
+
+        elif [[ "$branch" -regex-match '^(master|develop|stable)' ]]; then
+            POST=0 info $0 "$show_path: $branch.. "
+        else
+            POST=0 warn $0 "$show_path: $branch.. "
         fi
 
-        POST=0 info $0 "$branch in '$current_path'.. "
         local cmd="git fetch origin master && git fetch --tags"
-
         if git.is_clean 2>/dev/null; then
 
             if [ "$branch" != "master" ]; then
