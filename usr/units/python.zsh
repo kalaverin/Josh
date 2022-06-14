@@ -1,7 +1,3 @@
-source "$JOSH/lib/shared.sh"
-
-# ———
-
 local THIS_DIR="$(fs.realdir "$0")"
 local INCLUDE_DIR="$(fs.realpath $THIS_DIR/pip)"
 

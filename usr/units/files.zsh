@@ -1,6 +1,3 @@
-source "$JOSH/lib/shared.sh"
-
-
 function __stream_pak {
     if [ "$JOSH_OS" = 'BSD' ]; then
         echo 'tar -cO --exclude-vcs --numeric-owner --sparse . -f -'

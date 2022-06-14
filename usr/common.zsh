@@ -1,7 +1,3 @@
-source "$JOSH/lib/shared.sh"
-
-# ———
-
 local THIS_DIR="$(fs.realdir "$0")"
 local INCLUDE_DIR="$(fs.realpath $THIS_DIR/src)"
 
@@ -15,6 +11,19 @@ function clear {
     do
         printf "\n"
     done
+}
+
+function cls {
+    clear
+    if [ -z "$JOSH_TMUX_MOTD_DISABLE" ]; then
+        if [ -x "$commands[krabby]" ]; then
+            krabby random | sed 1d | head -n -1
+        fi
+        if [ -x "$commands[dsmsg]" ]; then
+            let color="31 + ($RANDOM % 7)"
+            printf "\033[2;${color}m -- $(dsmsg --ds1 --ds2 --ds3)\033[0m\n"
+        fi
+    fi
 }
 
 function commit_text {

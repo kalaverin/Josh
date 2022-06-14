@@ -193,6 +193,11 @@ fi
 [ -x "$commands[rcrawl]" ]  && alias dtree="rcrawl -Rs"
 [ -x "$commands[rsync]" ]   && alias cpdir="rsync --archive --links --times"
 
+if [ -x "$commands[git-summary]" ] && [ "$(misc.cpu.count)" -gt 0 ]; then
+    alias gs="git-summary --hidden --parallel $(misc.cpu.count)"
+fi
+
+
 # ———
 
 
