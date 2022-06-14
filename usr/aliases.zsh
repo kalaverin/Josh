@@ -251,18 +251,25 @@ if  [ -x "$commands[pgen]" ]; then
     naming_functions+=(__pwd.func.pgen)
 fi
 
-if [ -x "$commands[names]" ]; then
-    function __pwd.func.names {
-        echo "$(names | sed -z 's:-:.:g')"
-    }
-    naming_functions+=(__pwd.func.names)
-fi
-
 if [ -x "$commands[petname]" ]; then
     function __pwd.func.petname {
         echo "$(petname -s "${2:-.}" -w ${1:-2} -a)"
     }
     naming_functions+=(__pwd.func.petname)
+fi
+
+if [ -x "$commands[easypassword]" ]; then
+    function __pwd.func.easypassword {
+        echo "$(easypassword '.' '.' -n ${1:-2} | sd '\.' "${2:-.}" | sd '\.$' '')"
+    }
+    naming_functions+=(__pwd.func.easypassword)
+fi
+
+if [ -x "$commands[names]" ]; then
+    function __pwd.func.names {
+        echo "$(names | sd '-' "${2:-.}")"
+    }
+    naming_functions+=(__pwd.func.names)
 fi
 
 if [ -x "$commands[readable-name-generator]" ]; then
@@ -272,17 +279,17 @@ if [ -x "$commands[readable-name-generator]" ]; then
     naming_functions+=(__pwd.func.readablenamegenerator)
 fi
 
-if [ -x "$commands[easypassword]" ]; then
-    function __pwd.func.easypassword {
-        echo "$(easypassword "${2:-.}" '' -n ${1:-2})"
-    }
-    naming_functions+=(__pwd.func.easypassword)
-fi
-
 local count=${#naming_functions[@]}
 if [ "$count" -gt 0 ]; then
     function get.name {
-        let select="($RANDOM % $count) + 1"
+        local amount select
+        if [ -z "$1" ] || [ "$1" -eq 2 ]; then
+            let amount="$count"
+        else
+            let amount="$count - 2"
+        fi
+
+        let select="($RANDOM % $amount) + 1"
         local result="$(${naming_functions[$select]} $*)"
         printf "${result:l}"
     }
