@@ -46,7 +46,6 @@ fi
 
 perm_path=(
     $perm_path
-    $HOME/.brew/bin
     $HOME/.local/bin
     $HOME/bin
     /usr/local/bin
