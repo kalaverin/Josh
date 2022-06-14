@@ -171,22 +171,18 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
         rehash
         for key link in ${(kv)commands}; do
-            if [ ! -x "$link" ]; then
-                if [[ "$link" -regex-match "^$JOSH" ]]; then
-                    local dir="$(fs.dirname $link)"
-                    if [ -w "$dir" ]; then
-                        local bin="$(builtin which -p "$key")"
-                        if [ -x "$bin" ]; then
-                            warn $0 "broken link '$link', relink '$key' -> '$bin'"
-                            unlink "$link" && fs.link "$bin" >/dev/null
-                        else
-                            warn $0 "broken link '$link', missing binary '$key', unlink"
-                            unlink "$link"
-                            unset "commands[$key]"
-                        fi
+            if [[ "$link" -regex-match "^$JOSH" ]] && [ ! -x "$link" ]; then
+                local dir="$(fs.dirname $link)"
+                if [ -w "$dir" ]; then
+                    local bin="$(builtin which -p "$key")"
+                    if [ -x "$bin" ]; then
+                        warn $0 "broken link '$link', relink '$key' -> '$bin'"
+                        unlink "$link" && fs.link "$bin" >/dev/null
+                    else
+                        warn $0 "broken link '$link', missing binary '$key', unlink"
+                        unlink "$link"
+                        unset "commands[$key]"
                     fi
-                else
-                    unset "commands[$key]"
                 fi
             fi
         done
