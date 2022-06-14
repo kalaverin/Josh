@@ -1,6 +1,6 @@
 typeset -Agx JOSH_DEPRECATIONS=()
 
-fs.hier.fix
+# fs.hier.fix
 source "$JOSH/lib/shared.sh"
 source "$JOSH/usr/aliases.zsh"
 source "$JOSH/usr/common.zsh"

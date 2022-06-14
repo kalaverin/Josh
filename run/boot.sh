@@ -301,7 +301,7 @@ function fs.link {
         fi
     fi
 
-    if [ -L "$src" ] && [ ! "$dst" = "`fs.realpath "$src"`" ]; then
+    if [ -L "$src" ] && [ ! "$dst" = "$(fs.realpath "$src")" ]; then
         unlink "$src"
     fi
 
