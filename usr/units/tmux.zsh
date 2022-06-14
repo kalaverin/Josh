@@ -26,7 +26,7 @@ function tmx {
             return 1
 
         else
-            if [ -n "`tmux.exists "$session"`" ]; then
+            if [ -n "$(tmux.exists "$session")" ]; then
                 tmux attach-session -t "$session"
             else
                 tmux new-session -s "$session"
