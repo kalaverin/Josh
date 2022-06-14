@@ -43,19 +43,6 @@ function open_editor_on_conflict {
     fi
 }
 
-function chdir_to_setupcfg {
-    if [ ! -f 'setup.cfg' ]; then
-        local root="$(cat "$SETUPCFG_LOOKUP" | $SHELL)"
-        if [ -z "$root" ]; then
-            fail $0 "setup.cfg not found in $cwd"
-            return 1
-        fi
-        builtin cd "$root"
-    fi
-    return 0
-}
-
-
 function git_autoaccept {
     local state
     if [ "$1" = 'theirs' ] || [ "$1" = 'ours' ]; then
