@@ -4,7 +4,7 @@ fi
 
 
 function tml {
-    echo "--- Current: ${LINES}x${COLUMNS}"
+    echo "   ${LINES}x${COLUMNS} current"
     tmux list-sessions -F ' #{?session_attached,+,-} #{window_height}x#{window_width} #{session_name}' | sort
 }
 
