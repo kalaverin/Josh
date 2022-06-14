@@ -5,7 +5,7 @@ fi
 
 function tml {
     echo "--- Current: ${COLUMNS}x${LINES}"
-    tmux list-sessions -F ' #{?session_attached,+,-} #{window_width}x#{window_height} #{session_name}'
+    tmux list-sessions -F ' #{?session_attached,+,-} #{window_height}x#{window_width} #{session_name}'
 }
 
 function tmx {
