@@ -235,7 +235,6 @@ else
     fi
 fi
 
-
 naming_functions=()
 if [ -x "$commands[xkpwgen]" ]; then
     function __pwd.func.xkpwgen {
@@ -280,13 +279,29 @@ if [ -x "$commands[readable-name-generator]" ]; then
 fi
 
 local count=${#naming_functions[@]}
-if [ "$count" -gt 0 ]; then
+if [ "$count" -eq 0 ]; then
+    function get.name {
+        warn "$0" 'cannod detect any generation function'
+        return 1
+    }
+
+else
     function get.name {
         local amount select
         if [ -z "$1" ] || [ "$1" -eq 2 ]; then
             let amount="$count"
         else
             let amount="$count - 2"
+        fi
+
+        let amount="$count"
+        if [ -n "$1" ] && [ ! "$1" -eq 2 ]; then
+            if [ -x "$commands[names]" ]; then
+                let amount="$count - 1"
+            fi
+            if [ -x "$commands[readable-name-generator]" ]; then
+                let amount="$count - 1"
+            fi
         fi
 
         let select="($RANDOM % $amount) + 1"
@@ -298,8 +313,6 @@ fi
 function mktp {
     mkcd "$(temp.dir)/pet/$(get.name)"
 }
-
-
 
 function brew {
     source "$JOSH/lib/brew.sh" && brew.env

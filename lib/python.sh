@@ -301,14 +301,24 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     }
 
     function py.home {
-        local target
+        local python target
         if [ -z "$1" ]; then
-            local python="$(py.exe)"
+            python="$(py.exe)"
         else
-            local python="$(which "$1")"
+            python="$(which "$1")"
+            if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
+                fail $0 "python binary '$python' doesn't exists or something wrong"
+                return 1
+            fi
         fi
+
         target="$(eval.cached "$(fs.mtime $python)" py.home.uncached "$python")"
         local retval="$?"
+
+        if [ "$retval" -gt 0 ] || [ ! -d "$target" ]; then
+            fail $0 "python '$python' home directory isn't exist"
+            return 2
+        fi
 
         echo "$target"
         if [ -z "$1" ]; then
@@ -497,28 +507,36 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     }
 
     function pip.exe.uncached {
+        local python target
         if [ -z "$1" ]; then
-            local python="$(py.exe)"
+            python="$(py.exe)"
         else
-            local python="$(which "$1")"
+            python="$(which "$1")"
             if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
                 fail $0 "python binary '$python' doesn't exists or something wrong"
                 return 1
             fi
         fi
 
-        local target="$(py.home "$python")"
-        if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
+        target="$(py.home "$python")"
+        local retval="$?"
+
+        if [ "$retval" -gt 0 ] || [ ! -d "$target" ]; then
             fail $0 "python '$python' home directory isn't exist"
             return 2
         fi
+
         pip.deploy $*
         local retval="$?"
-        echo "$target"
+
+        if [ -x "$target/bin/pip" ]; then
+            echo "$target/bin/pip"
+        fi
         return "$retval"
     }
 
     function pip.exe {
+        local result retval
         local gsed="$commands[gsed]"
         if [ ! -x "$gsed" ]; then
             local gsed="$(which sed)"
@@ -533,16 +551,19 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             local dirs="$PATH"
         fi
 
-        local result="$(
+        result="$(
             eval.cached "`fs.lm.many $dirs $PYTHON_BINARIES`" pip.exe.uncached $*)"
-
-        local retval="$?"
-        if [ -x "$target/bin/pip" ]; then
-            echo "$target/bin/pip"
-        fi
+        retval="$?"
 
         [ -z "$PYTHON" ] && export PYTHON="$target"
         [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
+
+        if [ -x "$result" ]; then
+            echo "$result"
+
+        elif [ "$retval" -eq 0 ]; then
+            return 127
+        fi
         return "$retval"
     }
 
