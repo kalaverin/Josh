@@ -164,6 +164,8 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     }
 
     function path.rehash {
+        source "$JOSH/run/boot.sh"
+
         local result
         result="$(eval.cached "$(fs.lm.many $path)" path.clean.uncached "$path")"
         local retval="$?"
