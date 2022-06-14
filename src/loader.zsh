@@ -1,5 +1,7 @@
 typeset -Agx JOSH_DEPRECATIONS=()
 
+path.rehash
+
 source "$JOSH/lib/shared.sh"
 source "$JOSH/usr/aliases.zsh"
 source "$JOSH/usr/common.zsh"

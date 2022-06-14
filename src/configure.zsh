@@ -19,8 +19,6 @@ pip.exe >/dev/null
 
 source "$JOSH/lib/rust.sh" && cargo.init
 
-path.rehash
-
 if [ ! -f "$HOME/.config/starship.toml" ]; then
     export STARSHIP_CONFIG="$JOSH/usr/share/starship.toml"
 fi
