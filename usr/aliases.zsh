@@ -202,8 +202,12 @@ fi
 
 
 if [ -x "$commands[tree]" ]; then
-    lst() {
-        tree -F -f -i | grep -v '[/]$' I $*
+    function lst {
+        if [ -n "$*" ]; then
+            tree -F -f -i | grep -v '[/]$' I $*
+        else
+            tree -F -f -i | grep -v '[/]$'
+        fi
     }
 fi
 
