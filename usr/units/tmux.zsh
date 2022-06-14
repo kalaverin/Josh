@@ -5,25 +5,25 @@ fi
 
 function tml {
     echo "--- Current: ${COLUMNS}x${LINES}"
-    tmux list-sessions -F ' #{?session_attached,+,-} #{window_height}x#{window_width} #{session_name}'
+    tmux list-sessions -F ' #{?session_attached,+,-} #{window_height}x#{window_width} #{session_name}' | sort
 }
 
 function tmx {
     if [ -n "$1"  ]; then
         if [ "$1" = 'any' ]; then
             local session="$(
-                __tmux.get_matching_detached_session ||
-                __tmux.get_detached_session ||
-                __tmux.get_any_session)"
+                tmux.matching ||
+                tmux.detached ||
+                tmux.first)"
 
         elif [ "$1" = 'last' ]; then
             local session="$(
-                __tmux.get_matching_detached_session ||
-                __tmux.get_detached_session)"
+                tmux.matching ||
+                tmux.detached)"
 
         elif [ "$1" = 'lost' ]; then
             local session="$(
-                __tmux.get_matching_detached_session)"
+                tmux.matching)"
         else
             local session="$1"
         fi
@@ -32,7 +32,7 @@ function tmx {
             return 1
 
         else
-            if [ -n "`__tmux.is_session_exists "$session"`" ]; then
+            if [ -n "`tmux.exists "$session"`" ]; then
                 tmux attach-session -t "$session"
             else
                 tmux new-session -s "$session"
@@ -45,7 +45,7 @@ function tmx {
     fi
 }
 
-function __tmux.is_session_exists {
+function tmux.exists {
     [ -z "$1" ] && return 2
     local result=$(
         tmux list-sessions -F '#{session_name}' 2>/dev/null |
@@ -54,7 +54,7 @@ function __tmux.is_session_exists {
     [ -z "$result" ] && return 1 || echo "$result"
 }
 
-function __tmux.get_any_session {
+function tmux.first {
     local result=$(
         tmux list-sessions -F '#{session_name}' 2>/dev/null |
         timeout -s 2 0.25 cat | head -n 1
@@ -62,7 +62,7 @@ function __tmux.get_any_session {
     [ -z "$result" ] && return 1 || echo "$result"
 }
 
-function __tmux.get_detached_session {
+function tmux.detached {
     local result=$(
         tmux list-sessions -f "#{?session_attached,,1}" -F '#{session_name}' 2>/dev/null |
         timeout -s 2 0.25 cat | tabulate -d ':' -i 1 | head -n 1
@@ -70,7 +70,7 @@ function __tmux.get_detached_session {
     [ -z "$result" ] && return 1 || echo "$result"
 }
 
-function __tmux.get_matching_detached_session {
+function tmux.matching {
     local maxdiff="${JOSH_TMUX_AUTORETACH_MAX_DIFF:-9}"
     local query='zmodload zsh/mathfunc && echo "$((abs(#{window_width} - $COLUMNS) + abs(#{window_height} - $LINES))) #{session_name}"'
 
