@@ -11,19 +11,13 @@ function tml {
 function tmx {
     if [ -n "$1"  ]; then
         if [ "$1" = 'any' ]; then
-            local session="$(
-                tmux.matching ||
-                tmux.detached ||
-                tmux.first)"
+            local session="$(tmux.matching || tmux.detached || tmux.first)"
 
         elif [ "$1" = 'last' ]; then
-            local session="$(
-                tmux.matching ||
-                tmux.detached)"
+            local session="$(tmux.matching || tmux.detached)"
 
         elif [ "$1" = 'lost' ]; then
-            local session="$(
-                tmux.matching)"
+            local session="$(tmux.matching)"
         else
             local session="$1"
         fi
