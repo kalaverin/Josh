@@ -155,16 +155,13 @@ fi
 # git-delta: beatiful git differ with many settings, fast and cool
 #
 if [ -x "$commands[delta]" ]; then
-    export DELTA_OPTIONS="--commit-style='yellow ul' --commit-decoration-style='' --file-style='cyan ul' --file-decoration-style='' --hunk-header-decoration-style='' --dark --zero-style='dim syntax' --24-bit-color='always' --minus-style='syntax #330000' --plus-style='syntax #002200' --file-modified-label='M' --file-removed-label='D' --file-added-label='A' --file-renamed-label='R' --line-numbers-left-format='{nm:^4}' --line-numbers-right-format='{nm:^4}' --line-numbers-minus-style='#aa2222' --line-numbers-zero-style='#505055' --line-numbers-plus-style='#229922' --line-numbers --navigate --relative-paths --diff-so-fancy"
-
-    # --width=143
-
+    export DELTA_OPTIONS="--commit-style='yellow ul' --commit-decoration-style='' --file-style='cyan ul' --file-decoration-style='' --hunk-header-decoration-style='' --zero-style='dim syntax' --24-bit-color='always' --minus-style='syntax #330000' --plus-style='syntax #002200' --file-modified-label='M' --file-removed-label='D' --file-added-label='A' --file-renamed-label='R' --line-numbers-left-format='{nm:^4}' --line-numbers-right-format='{np:^4}' --line-numbers-minus-style='#aa2222' --line-numbers-zero-style='#505055' --line-numbers-plus-style='#229922' --merge-conflict-ours-diff-header-decoration-style='' --merge-conflict-ours-diff-header-style='dim cyan' --merge-conflict-theirs-diff-header-decoration-style='' --merge-conflict-theirs-diff-header-style='dim cyan' --line-numbers --navigate --diff-so-fancy --line-fill-method='spaces'"
 
     let width="$(misc.preview.width)"
     if [ "$width" -ge 158 ]; then
-        let width="$width + 4"
         export DELTA_OPTIONS="$DELTA_OPTIONS --side-by-side"
     fi
+    let width="$width + 4"
     export DELTA_OPTIONS="$DELTA_OPTIONS --width=$width"
 
     export DELTA="delta $DELTA_OPTIONS"

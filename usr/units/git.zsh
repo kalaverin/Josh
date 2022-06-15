@@ -7,7 +7,8 @@ local SETUPCFG_LOOKUP="$INCLUDE_DIR/git_search_setupcfg.sh"
 local TAG_FROM_STRING="$INCLUDE_DIR/git_tag_from_str.sh"
 local LIST_TO_ADD="git status --short --verbose --no-ahead-behind --ignore-submodules --untracked-file"
 local ESCAPE_STATUS='sd "^( )" "." | sd "^(.)( )" "$1." | sd "^(. )" "++ "'
-local GIT_DIFF="git diff --color=always --stat --patch --diff-algorithm=histogram"
+local GIT_DIFF="git diff --color=always --patch --stat --diff-algorithm=histogram"
+
 
 # ———
 

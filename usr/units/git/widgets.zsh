@@ -1,9 +1,7 @@
 function __widget.git.add {
-    local branch="`git.this.branch`"
-    [ -z "$branch" ] && return 1
-
-    local cwd="`pwd`"
-    # local select='git ls-files --deleted --others --exclude-standard'
+    local branch
+    local cwd="$PWD"
+    branch="$(git.this.branch)" || return "$?"
 
     while true; do
         local value="$(
@@ -11,7 +9,7 @@ function __widget.git.add {
             | $FZF \
             --filepath-word --tac \
             --multi --nth=2.. --with-nth=1.. \
-            --preview=\"$GIT_DIFF $branch -- {2} | $DELTA\" \
+            --preview=\"$GIT_DIFF -- {2} | $DELTA\" \
             --preview-window=\"left:`misc.preview.width`:noborder\" \
             --prompt='git add >  ' \
             | tabulate -i 2 | sort --human-numeric-sort | $UNIQUE_SORT \

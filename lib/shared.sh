@@ -29,9 +29,9 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     function misc.preview.width {
         local width
 
-        local python=80
+        local python=79
         local line_numbers=4
-        local preview_minimum=40
+        local preview_minimum=35
 
         let one_page_limit="$line_numbers + $python + $preview_minimum"
         let two_page_limit="2 * ($line_numbers + $python) + $preview_minimum"
