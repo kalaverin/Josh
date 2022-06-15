@@ -32,35 +32,54 @@ function __setup.cfg.backup_file {
 }
 
 function __setup.cfg.copy_config {
-    local dst="$2"
-    if [ -f "$dst" ] && [ ! "$JOSH_RENEW_CONFIGS" ] && [ ! "$JOSH_FORCE_CONFIGS" ]; then
-        return 0
-    fi
+    local cfg_modified count src_sum dst_sum
 
     local src="$1"
     if [ ! -f "$src" ]; then
-        fail $0 "copy config failed, source '$src' doesn't exists"
+        fail $0 "copy config failed, source '$src' doesn't exist"
         return 1
     fi
 
+    local dst="$2"
+    [ ! -d "$(fs.dirname $dst)" ] && mkdir -p "$(fs.dirname $dst)"
+
     if [ -f "$dst" ]; then
-        diff --ignore-blank-lines --strip-trailing-cr --brief "$src" "$dst" 1>/dev/null
-        if [ $? -eq 0 ]; then
+        src_sum="$(git hash-object "$src")" && dst_sum="$(git hash-object "$dst")"
+
+        if [ "$?" -eq 0 ] && [[ "$src_sum" != "$dst_sum" ]]; then
+            cfg_modified="$(fs.lm "$JOSH/usr/share" | tabulate -i 1)" || return "$?"
+
+            local cwd="$PWD"
+            builtin cd "$JOSH"
+            local cfg_history=$(
+                eval.cached "$cfg_modified" git \
+                'rev-list --objects --all | grep usr/share | grep -Pv "usr/share$"')
+            builtin cd "$PWD"
+
+            count="$(echo $cfg_history | grep "$dst_sum" | wc -l)"
+            if [ "$?" -eq 0 ] && [ "$count" -gt 0 ]; then
+                __setup.cfg.backup_file "$dst"
+                unlink "$dst" && cp -n "$src" "$dst" && \
+                info $0 "$src -> $dst (because in commits history)"
+                return 0
+            fi
+        fi
+
+        if [ ! "$JOSH_FORCE_CONFIGS" ]; then
             return 0
         fi
+
+        diff --ignore-blank-lines --strip-trailing-cr --brief "$src" "$dst" 1>/dev/null
+        if [ "$?" -eq 0 ]; then
+            return 0
+        fi
+
+        __setup.cfg.backup_file "$dst" && unlink "$dst"
     fi
 
-    [ -f "$dst" ] && __setup.cfg.backup_file "$dst" && unlink "$dst"
-    [ ! -d "$(fs.dirname $dst)" ] && mkdir -p "$(fs.dirname $dst)";
-
-    if [ "$JOSH_RENEW_CONFIGS" ] && [ "$JOSH_OS" != "BSD" ]; then
-        info $0 "${3:-"renew: $src -> $dst"}"
-        cp -nu "$src" "$dst"
-    else
-        info $0 "${3:-"copy: $src -> $dst"}"
-        cp -n "$src" "$dst"
-    fi
-    return $?
+    info $0 "$src -> $dst"
+    cp -n "$src" "$dst"
+    return "$?"
 }
 
 function __setup.cfg.config_git {
@@ -124,13 +143,13 @@ function __setup.cfg.zero_configuration {
     __setup.cfg.config_git
     __setup.cfg.nano_syntax_compile
 
-    __setup.cfg.copy_config "$CONFIG_ROOT/cargo.toml" "$HOME/.cargo/config.toml"
-    __setup.cfg.copy_config "$CONFIG_ROOT/lsd.yaml" "$CONFIG_DIR/lsd/config.yaml"
-    __setup.cfg.copy_config "$CONFIG_ROOT/mycli.conf" "$HOME/.myclirc"
-    __setup.cfg.copy_config "$CONFIG_ROOT/nodeenv.conf" "$HOME/.nodeenvrc"
-    __setup.cfg.copy_config "$CONFIG_ROOT/ondir.rc" "$HOME/.ondirrc"
-    __setup.cfg.copy_config "$CONFIG_ROOT/pgcli.conf" "$CONFIG_DIR/pgcli/config"
-    __setup.cfg.copy_config "$CONFIG_ROOT/pip.conf" "$CONFIG_DIR/pip/pip.conf"
-    __setup.cfg.copy_config "$CONFIG_ROOT/tmux.conf" "$HOME/.tmux.conf"
-    __setup.cfg.copy_config "$CONFIG_ROOT/logout.zsh" "$HOME/.zlogout"
+    __setup.cfg.copy_config "$CONFIG_ROOT/cargo.toml"    "$HOME/.cargo/config.toml"
+    __setup.cfg.copy_config "$CONFIG_ROOT/lsd.yaml"      "$CONFIG_DIR/lsd/config.yaml"
+    __setup.cfg.copy_config "$CONFIG_ROOT/mycli.conf"    "$HOME/.myclirc"
+    __setup.cfg.copy_config "$CONFIG_ROOT/nodeenv.conf"  "$HOME/.nodeenvrc"
+    __setup.cfg.copy_config "$CONFIG_ROOT/ondir.rc"      "$HOME/.ondirrc"
+    __setup.cfg.copy_config "$CONFIG_ROOT/pgcli.conf"    "$CONFIG_DIR/pgcli/config"
+    __setup.cfg.copy_config "$CONFIG_ROOT/pip.conf"      "$CONFIG_DIR/pip/pip.conf"
+    __setup.cfg.copy_config "$CONFIG_ROOT/tmux.conf"     "$HOME/.tmux.conf"
+    __setup.cfg.copy_config "$CONFIG_ROOT/logout.zsh"    "$HOME/.zlogout"
 }
