@@ -163,7 +163,6 @@ if [ -x "$commands[delta]" ]; then
     fi
     let width="$width + 4"
     export DELTA_OPTIONS="$DELTA_OPTIONS --width=$width"
-
     export DELTA="delta $DELTA_OPTIONS"
     if [ -x "$commands[bat]" ]; then
         export DELTA="$DELTA --pager bat"

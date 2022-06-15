@@ -30,32 +30,33 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         local width
 
         local python=79
-        local line_numbers=4
+        local line_numbers=8
+        local preview_target=25  # 35 + 45 = 80
         local preview_minimum=35
 
-        let one_page_limit="$line_numbers + $python + $preview_minimum"
-        let two_page_limit="2 * ($line_numbers + $python) + $preview_minimum"
+        let one_page_limit="$line_numbers + $preview_minimum + $python"
+        let two_page_limit="$line_numbers + $preview_minimum + $python * 2"
 
-        if [ "$COLUMNS" -ge "$one_page_limit" ]; then
-            if [ "$COLUMNS" -ge "$two_page_limit" ]; then
-                local limit="$two_page_limit"
-            else
-                local limit="$one_page_limit"
-            fi
+        if [ "$COLUMNS" -ge "$two_page_limit" ]; then
+            let target="$python * 2"
+            let free="($COLUMNS - $two_page_limit)"
 
-            let left="$COLUMNS - $limit"
-            if [ "$left" -le 0 ]; then
-                let left=0
-            elif [ "$left" -gt 4 ]; then
-                let left="$left / 3 * 2"
-            fi
-
-            let result="$limit + $left - $preview_minimum"
-            echo $result
-            return 0
         else
-            let result="$COLUMNS - ($COLUMNS / 4.5 + 10)"
-            let result=${result%.*}
+            let free="($COLUMNS - $one_page_limit)"
+            if [ "$free" -le 0 ]; then
+                let result="$COLUMNS - $preview_minimum"
+                echo $result
+                return 0
+            fi
+            let target="$python"
+        fi
+
+        let for_list="$preview_target - $free"
+        if [ "$for_list" -gt 0 ]; then
+            let result="$line_numbers + $target - $for_list"
+        else
+            let for_list="$free - $preview_target"
+            let result="$line_numbers + $target + ($for_list / 2)"
         fi
 
         [ "$result" -lt 84 ] && local result=84
