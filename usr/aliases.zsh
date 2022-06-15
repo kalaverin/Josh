@@ -155,7 +155,18 @@ fi
 # git-delta: beatiful git differ with many settings, fast and cool
 #
 if [ -x "$commands[delta]" ]; then
-    DELTA_OPTIONS=${DELTA_OPTIONS:-"--commit-style='yellow ul' --commit-decoration-style='' --file-style='cyan ul' --file-decoration-style='' --hunk-header-decoration-style='' --zero-style='dim syntax' --24-bit-color='always' --minus-style='syntax #330000' --plus-style='syntax #002200' --file-modified-label='M' --file-removed-label='D' --file-added-label='A' --file-renamed-label='R' --line-numbers-left-format='{nm:^4}' --line-numbers-minus-style='#aa2222' --line-numbers-zero-style='#505055' --line-numbers-plus-style='#229922' --line-numbers --navigate --relative-paths"}
+    export DELTA_OPTIONS="--commit-style='yellow ul' --commit-decoration-style='' --file-style='cyan ul' --file-decoration-style='' --hunk-header-decoration-style='' --dark --zero-style='dim syntax' --24-bit-color='always' --minus-style='syntax #330000' --plus-style='syntax #002200' --file-modified-label='M' --file-removed-label='D' --file-added-label='A' --file-renamed-label='R' --line-numbers-left-format='{nm:^4}' --line-numbers-right-format='{nm:^4}' --line-numbers-minus-style='#aa2222' --line-numbers-zero-style='#505055' --line-numbers-plus-style='#229922' --line-numbers --navigate --relative-paths --diff-so-fancy"
+
+    # --width=143
+
+
+    let width="$(misc.preview.width)"
+    if [ "$width" -ge 158 ]; then
+        let width="$width + 4"
+        export DELTA_OPTIONS="$DELTA_OPTIONS --side-by-side"
+    fi
+    export DELTA_OPTIONS="$DELTA_OPTIONS --width=$width"
+
     export DELTA="delta $DELTA_OPTIONS"
     if [ -x "$commands[bat]" ]; then
         export DELTA="$DELTA --pager bat"
