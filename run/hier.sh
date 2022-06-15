@@ -233,150 +233,153 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         return "$retval"
     }
 
-    function eval.cached {
-        local result
+fi
 
-        if [ -z "$1" ]; then
-            fail $0 "\$1 expire must be: '$1' '${@:2}'"
-            return 1
+function eval.cached {
+    local result
 
-        elif [ -z "$2" ]; then
-            fail $0 "\$2.. command line empty: '$1' '${@:2}'"
-            return 2
+    if [ -z "$1" ]; then
+        fail $0 "\$1 expire must be: '$1' '${@:2}'"
+        return 1
 
-        elif [ -z "$JOSH_MD5_PIPE" ] || [ -z "$JOSH_PAQ" ] || [ -z "$JOSH_QAP" ]; then
-            warn $0 "cache doesnt't works, check JOSH_MD5_PIPE '$JOSH_MD5_PIPE', JOSH_PAQ '$JOSH_PAQ', JOSH_QAP '$JOSH_QAP'"
-            local command="${@:2}"
-            eval ${command}
-            local retval="$?"
-            return "$retval"
+    elif [ -z "$2" ]; then
+        fail $0 "\$2.. command line empty: '$1' '${@:2}'"
+        return 2
+
+    elif [ -z "$JOSH_MD5_PIPE" ] || [ -z "$JOSH_PAQ" ] || [ -z "$JOSH_QAP" ]; then
+        warn $0 "cache doesnt't works, check JOSH_MD5_PIPE '$JOSH_MD5_PIPE', JOSH_PAQ '$JOSH_PAQ', JOSH_QAP '$JOSH_QAP'"
+        local command="${@:2}"
+        eval ${command}
+        local retval="$?"
+        return "$retval"
+    fi
+
+    let expires="$1"
+    if [ "$expires" -eq 0 ]; then
+        let expires="1"
+    fi
+
+    let relative="$expires < 1000000000"
+    if [ "$relative" -gt 0 ]; then
+        let expires="$EPOCHSECONDS - $expires"
+    fi
+
+    unset cache
+    local body="$(builtin which "$2")"
+
+    if [[ ! "$body" -regex-match 'not found$' ]] && [[ "$body" -regex-match "$2 \(\) \{" ]]; then
+        local body="$(eval "builtin which '$2' | $JOSH_MD5_PIPE" | cut -c -16)"
+        local args="$(eval "echo '${@:3}' | $JOSH_MD5_PIPE" | cut -c -16)"
+        local cache="$JOSH_CACHE_DIR/$body/$args"
+
+        if [ -z "$args" ] || [ -z "$body" ]; then
+            fail $0 "something went wrong for cache file '$cache', check JOSH_MD5_PIPE '$JOSH_MD5_PIPE'"
+            return 3
         fi
+    fi
 
-        let expires="$1"
-        if [ "$expires" -eq 0 ]; then
-            let expires="1"
-        fi
+    if [ -z "$cache" ]; then
+        local func="$(builtin which -p "$2" 2>/dev/null)"
 
-        let relative="$expires < 1000000000"
-        if [ "$relative" -gt 0 ]; then
-            let expires="$EPOCHSECONDS - $expires"
-        fi
-
-        unset cache
-        local body="$(builtin which "$2")"
-
-        if [[ ! "$body" -regex-match 'not found$' ]] && [[ "$body" -regex-match "$2 \(\) \{" ]]; then
-            local args="$(eval "echo "${@:3}" | $JOSH_MD5_PIPE | cut -c -16")"
-            local body="$(eval "builtin which "$2" | $JOSH_MD5_PIPE | cut -c -16")"
+        if [ -x "$func" ]; then
+            local body="$(eval "cat '$func' | $JOSH_MD5_PIPE" | cut -c -16)"
+            local args="$(eval "echo '${@:3}' | $JOSH_MD5_PIPE" | cut -c -16)"
             local cache="$JOSH_CACHE_DIR/$body/$args"
-
-            if [ -z "$args" ] || [ -z "$body" ]; then
-                fail $0 "something went wrong for cache file '$cache', check JOSH_MD5_PIPE '$JOSH_MD5_PIPE'"
-                return 3
-            fi
+            echo $cache >&2
         fi
+    fi
 
-        if [ -z "$cache" ]; then
-            local func="$(builtin which -p "$2" 2>/dev/null)"
+    if [ -z "$cache" ]; then
+        local args="$(eval "echo '${@:2}' | $JOSH_MD5_PIPE" | cut -c -32)"
+        local cache="$JOSH_CACHE_DIR/.pipelines/$args"
 
-            if [ -x "$func" ]; then
-                local args="$(eval "echo "${@:3}" | $JOSH_MD5_PIPE | cut -c -16")"
-                local body="$(eval "cat "$func" | $JOSH_MD5_PIPE | cut -c -16")"
-                local cache="$JOSH_CACHE_DIR/$body/$args"
-            fi
+        if [ -z "$args" ]; then
+            fail $0 "something went wrong for cache file '$cache', check JOSH_MD5_PIPE '$JOSH_MD5_PIPE'"
+            return 4
         fi
+    fi
 
-        if [ -z "$cache" ]; then
-            local args="$(eval "echo "${@:2}" | $JOSH_MD5_PIPE | cut -c -16")"
-            local cache="$JOSH_CACHE_DIR/.pipelines/$args"
 
-            if [ -z "$args" ]; then
-                fail $0 "something went wrong for cache file '$cache', check JOSH_MD5_PIPE '$JOSH_MD5_PIPE'"
-                return 4
-            fi
-        fi
+    if [ -z "$cache" ]; then
+        fail $0 "something went wrong: '$1' '${@:2}'"
+    fi
 
-        if [ -z "$cache" ]; then
-            fail $0 "something went wrong: '$1' '${@:2}'"
-        fi
+    if [ "$DO_NOT_READ" -gt 0 ] || [ ! -f "$cache" ]; then
+        let expired="1"
+    else
+        local last_update="$(fs.mtime $cache 2>/dev/null)"
+        [ -z "$last_update" ] && local last_update="0"
+        let expired="$expires > $last_update"
+    fi
 
-        if [ "$DO_NOT_READ" -gt 0 ] || [ ! -f "$cache" ]; then
-            let expired="1"
-        else
-            local last_update="$(fs.mtime $cache 2>/dev/null)"
-            [ -z "$last_update" ] && local last_update="0"
-            let expired="$expires > $last_update"
-        fi
+    local subdir="$(fs.dirname "$cache")"
+    if [ ! -d "$subdir" ]; then
+        mkdir -p "$subdir"
+    fi
 
-        local subdir="$(fs.dirname "$cache")"
-        if [ ! -d "$subdir" ]; then
-            mkdir -p "$subdir"
-        fi
-
-        if [ -z "$BINARY_SAFE" ]; then
-            if [ "$expired" -eq 0 ]; then
-                result="$(eval.run "cat '$cache' | $JOSH_QAP 2>/dev/null")"
-                local retval="$?"
-
-                if [ "$retval" -eq 0 ]; then
-                    echo "$result"
-                    return 0
-                fi
-            fi
-
-            if [ "$DO_NOT_RUN" -gt 0 ]; then
-                return 255
-            fi
-
-            result="$(eval.run ${@:2})"
+    if [ -z "$BINARY_SAFE" ]; then
+        if [ "$expired" -eq 0 ]; then
+            result="$(eval.run "cat '$cache' | $JOSH_QAP 2>/dev/null")"
             local retval="$?"
 
             if [ "$retval" -eq 0 ]; then
-                eval {"echo '$result' | $JOSH_PAQ > '$cache'"}
                 echo "$result"
+                return 0
             fi
-            return "$retval"
-        else
+        fi
 
-            local dir="$(temp.dir)"
-            if [ ! -x "$dir" ]; then
-                return 1
-            elif [ -z "$JOSH_MD5_PIPE" ]; then
-                return 2
-            fi
+        if [ "$DO_NOT_RUN" -gt 0 ]; then
+            return 255
+        fi
 
-            local tempfile
-            tempfile="$(temp.file "$*")"
-            if [ "$?" -gt 0 ] || [ -z "$tempfile" ]; then
-                return 3
-            fi
+        result="$(eval.run ${@:2})"
+        local retval="$?"
 
-            if [ "$expired" -eq 0 ]; then
-                local cmd="cat '$cache' | $JOSH_QAP 2>/dev/null >'$tempfile'"
-                eval ${cmd} >/dev/null
-                local retval="$?"
-                if [ "$retval" -eq 0 ]; then
-                    cat "$tempfile"
-                    unlink "$tempfile"
-                    return 0
-                fi
-            fi
+        if [ "$retval" -eq 0 ]; then
+            eval {"echo '$result' | $JOSH_PAQ > '$cache'"}
+            echo "$result"
+        fi
+        return "$retval"
+    else
 
-            if [ "$DO_NOT_RUN" -gt 0 ]; then
-                unlink "$tempfile" 2>/dev/null
-                return 255
-            fi
+        local dir="$(temp.dir)"
+        if [ ! -x "$dir" ]; then
+            return 1
+        elif [ -z "$JOSH_MD5_PIPE" ]; then
+            return 2
+        fi
 
-            eval.run ${@:2} >$tempfile
+        local tempfile
+        tempfile="$(temp.file "$*")"
+        if [ "$?" -gt 0 ] || [ -z "$tempfile" ]; then
+            return 3
+        fi
+
+        if [ "$expired" -eq 0 ]; then
+            local cmd="cat '$cache' | $JOSH_QAP 2>/dev/null >'$tempfile'"
+            eval ${cmd} >/dev/null
             local retval="$?"
-
             if [ "$retval" -eq 0 ]; then
                 cat "$tempfile"
-                local cmd="cat '$tempfile' | $JOSH_PAQ >'$cache'"
-                eval ${cmd}
+                unlink "$tempfile"
+                return 0
             fi
-            unlink "$tempfile"
-            return "$retval"
         fi
-    }
-fi
+
+        if [ "$DO_NOT_RUN" -gt 0 ]; then
+            unlink "$tempfile" 2>/dev/null
+            return 255
+        fi
+
+        eval.run ${@:2} >$tempfile
+        local retval="$?"
+
+        if [ "$retval" -eq 0 ]; then
+            cat "$tempfile"
+            local cmd="cat '$tempfile' | $JOSH_PAQ >'$cache'"
+            eval ${cmd}
+        fi
+        unlink "$tempfile"
+        return "$retval"
+    fi
+}
