@@ -657,6 +657,11 @@ function ash.upgrade {
 function ash.extras {
     ash.eval "run/update.sh" && deploy.extras
 }
+
+function ash.cache.drop {
+    rm -rf "$HOME/.cache/josh/"
+}
+
 function ash.eval {
     if [ -z "$1" ]; then
         return 1
