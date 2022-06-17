@@ -1,7 +1,7 @@
 alias cp='cp -iR'  # prompt on overwrite and use recurse for directories
 alias mv='mv -i'
 alias tt='tail --retry --quiet --sleep-interval=0.5 -f -n 50'
-alias sudo='sudo -H'  # this is Ubuntu behavior: never send user env to sudo context!
+alias sudo='sudo -H --preserve-env=PATH'  # this is Ubuntu behavior: never send user env to sudo context!
 alias svc='sudo service'
 
 # ———
