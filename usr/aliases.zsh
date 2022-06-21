@@ -67,13 +67,13 @@ alias ri="grep --line-buffered -rnH --exclude '*.js' --exclude '*.min.css' --exc
 #
 if [ -x "$commands[http]" ]; then
     # run `http --help` to select theme to HTTPIE_THEME
-    HTTPIE_OPTIONS=${HTTPIE_OPTIONS:-"--verify no --default-scheme http --follow --all --format-options json.indent:2 --compress --style ${HTTPIE_THEME:-"gruvbox-dark"}"}
+    HTTPIE_OPTIONS=${HTTPIE_OPTIONS:-"--verify no --default-scheme http --follow --all --format-options json.indent:2 --style ${HTTPIE_THEME:-"gruvbox-dark"}"}
     alias http="http $HTTPIE_OPTIONS"
 fi
 
 if [ -x "$commands[xh]" ]; then
     XH_OPTIONS=${XH_OPTIONS:-"--verify no --default-scheme http --follow --all --style monokai"}
-    alias htt="xh $XH_OPTIONS"
+    alias www="xh $XH_OPTIONS"
 fi
 
 # ag: silver searcher, ripgrep like golang tools with many settings
