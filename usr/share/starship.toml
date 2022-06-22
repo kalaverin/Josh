@@ -20,6 +20,9 @@ format = '$symbol'
 success_symbol = '[λ](bold green) '
 error_symbol = '[λ](bold red) '
 vicmd_symbol = '[λ](bold blue) '
+vimcmd_visual_symbol = '[λ](bold yellow)'
+vimcmd_replace_symbol = '[λ](bold purple)'
+vimcmd_replace_one_symbol = '[λ](bold purple)'
 disabled = false
 
 [cmake]
@@ -30,8 +33,9 @@ min_time = 250
 format = '[$duration]($style)'
 style = 'blue'
 show_milliseconds = true
+disabled = false
 show_notifications = true
-min_time_to_notify = 0
+min_time_to_notify = 30000
 
 [cobol]
 format = ' [$symbol($version)]($style)'
@@ -39,8 +43,14 @@ format = ' [$symbol($version)]($style)'
 [conda]
 format = ' [$symbol$environment]($style)'
 
+[container]
+format = ' [$symbol \[$name\]]($style)'
+
 [crystal]
 format = ' [$symbol($version)]($style)'
+
+[daml]
+format = ' [$symbol($version )]($style)'
 
 [dart]
 format = ' [$symbol($version)]($style)'
@@ -49,14 +59,19 @@ format = ' [$symbol($version)]($style)'
 format = ' [$symbol($version)]($style)'
 
 [directory]
+truncation_length = 3
 truncate_to_repo = false
 fish_style_pwd_dir_length = 2
+use_logical_path = true
 format = '[$path]($style)[/](black bold)[$read_only]($read_only_style)'
+repo_root_format = '[$before_root_path]($style)[$repo_root]($repo_root_style)[$path]($style)[$read_only]($read_only_style)[/](black bold)'
 style = 'white'
+disabled = false
 read_only = 'ro'
 read_only_style = 'fg:white bold bg:red'
-repo_root_style = 'yellow'
-repo_root_format = '[$before_root_path]($style)[$repo_root]($repo_root_style)[$path]($style)[$read_only]($read_only_style)[/](black bold)'
+truncation_symbol = ''
+home_symbol = '~'
+use_os_path_sep = true
 
 [directory.substitutions]
 
@@ -64,7 +79,7 @@ repo_root_format = '[$before_root_path]($style)[$repo_root]($repo_root_style)[$p
 format = ' [$symbol$context]($style)'
 
 [dotnet]
-format = ' [$symbol($version)(🎯 $tfm )]($style)'
+format = ' [$symbol($version)($tfm)]($style)'
 
 [elixir]
 format = ' [$symbol($version\(OTP $otp_version\) )]($style)'
@@ -72,8 +87,15 @@ format = ' [$symbol($version\(OTP $otp_version\) )]($style)'
 [elm]
 format = ' [$symbol($version)]($style)'
 
+[env_var]
+
 [erlang]
 format = ' [$symbol($version)]($style)'
+
+[fill]
+style = 'bold black'
+symbol = '.'
+disabled = false
 
 [gcloud]
 format = ' [$symbol$account(@$domain)(\($region\))]($style)'
@@ -150,6 +172,13 @@ format = ' [$symbol($version)]($style)'
 [kotlin]
 format = ' [$symbol($version)]($style)'
 
+[kubernetes]
+format = ' [$symbol$context( \($namespace\))]($style)'
+
+[kubernetes.context_aliases]
+
+[kubernetes.user_aliases]
+
 [line_break]
 disabled = false
 
@@ -206,6 +235,18 @@ format = ' [$symbol($version)]($style)'
 [scala]
 format = ' [$symbol($version)]($style)'
 
+[shell]
+format = '[$indicator]($style) '
+style = 'dark'
+disabled = true
+
+[shlvl]
+threshold = 2
+symbol = ''
+repeat = false
+style = 'blue'
+disabled = false
+
 [singularity]
 format = '[$symbol\[$env\]]($style) '
 
@@ -217,12 +258,13 @@ format = ' [$status]($style)'
 symbol = ''
 success_symbol = ''
 style = 'bg:purple fg:white bold'
+recognize_signal_code = false
 disabled = false
 
 [sudo]
 format = ' [$symbol]($style)'
-style = 'fg:white bold bg:red'
 symbol = 'root'
+style = 'fg:white bold bg:red'
 disabled = false
 
 [swift]
@@ -251,3 +293,5 @@ format = ' [$symbol($version)]($style)'
 
 [zig]
 format = ' [$symbol($version)]($style)'
+
+[custom]
