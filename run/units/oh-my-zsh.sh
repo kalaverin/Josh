@@ -33,15 +33,17 @@ fi
 
 OMZ_PLUGIN_DIR="$DEST/custom/plugins"
 PACKAGES=(
+    "https://github.com/MestreLion/git-tools.git $OMZ_PLUGIN_DIR/git-tools"
+    "https://github.com/TamCore/autoupdate-oh-my-zsh-plugins $OMZ_PLUGIN_DIR/autoupdate"
     "https://github.com/alecthomas/ondir.git $OMZ_PLUGIN_DIR/ondir"
     "https://github.com/chrissicool/zsh-256color $OMZ_PLUGIN_DIR/zsh-256color"
+    "https://github.com/djui/alias-tips.git $OMZ_PLUGIN_DIR/alias-tips"
     "https://github.com/facebook/PathPicker.git $OMZ_PLUGIN_DIR/fpp"
     "https://github.com/hlissner/zsh-autopair.git $OMZ_PLUGIN_DIR/zsh-autopair"
     "https://github.com/leophys/zsh-plugin-fzf-finder.git $OMZ_PLUGIN_DIR/zsh-plugin-fzf-finder"
     "https://github.com/mafredri/zsh-async.git $OMZ_PLUGIN_DIR/zsh-async"
     "https://github.com/mollifier/anyframe.git $OMZ_PLUGIN_DIR/anyframe"
     "https://github.com/seletskiy/zsh-fuzzy-search-and-edit.git $OMZ_PLUGIN_DIR/zsh-fuzzy-search-and-edit"
-    "https://github.com/TamCore/autoupdate-oh-my-zsh-plugins $OMZ_PLUGIN_DIR/autoupdate"
     "https://github.com/trapd00r/zsh-syntax-highlighting-filetypes.git $OMZ_PLUGIN_DIR/zsh-syntax-highlighting-filetypes"
     "https://github.com/wfxr/forgit.git $OMZ_PLUGIN_DIR/forgit"
     "https://github.com/zdharma-continuum/history-search-multi-word.git $OMZ_PLUGIN_DIR/history-search-multi-word"
@@ -49,7 +51,6 @@ PACKAGES=(
     "https://github.com/zsh-users/zsh-autosuggestions $OMZ_PLUGIN_DIR/zsh-autosuggestions"
     "https://github.com/zsh-users/zsh-completions $OMZ_PLUGIN_DIR/zsh-completions"
     "https://github.com/zsh-users/zsh-syntax-highlighting.git $OMZ_PLUGIN_DIR/zsh-syntax-highlighting"
-    "https://github.com/MestreLion/git-tools.git $OMZ_PLUGIN_DIR/git-tools"
 )
 
 
@@ -104,7 +105,7 @@ function __setup.omz.deploy_extensions {
 
         else
             let fetch_every="${UPDATE_ZSH_DAYS:-1} * 86400"
-            local last_fetch="`fs.mtime "$dst/.git/FETCH_HEAD" 2>/dev/null`"
+            local last_fetch="$(fs.mtime "$dst/.git/FETCH_HEAD" 2>/dev/null)"
             [ -z "$last_fetch" ] && local last_fetch=0
 
             let need_fetch="$EPOCHSECONDS - $fetch_every > $last_fetch"

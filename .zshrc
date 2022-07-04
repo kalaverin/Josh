@@ -9,7 +9,7 @@ path=(
 SAVEHIST=50000
 HISTSIZE=55000
 
-export UPDATE_ZSH_DAYS=60
+export UPDATE_ZSH_DAYS=7
 
 ZSH_THEME="fishy"
 HISTFILE="$HOME/.histfile"
@@ -17,6 +17,7 @@ HIST_STAMPS="yyyy-mm-dd"
 
 plugins=(
     # autoupdate   # autoupdate Josh # TODO: temporary disable
+    alias-tips
     colored-man-pages
     dircycle     # for fast move thru directories with alt-up/down
     docker       # suggestions
