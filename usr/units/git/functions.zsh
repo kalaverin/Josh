@@ -59,7 +59,7 @@ function git.cmd.pull {
     if [ "$?" -gt 0 ] || [ -z "$branch" ]; then
         return 1
     fi
-    echo "git pull --ff-only --no-edit --no-commit origin $branch"
+    echo "git pull --ff-only --no-edit --no-commit --autostash origin $branch"
 }
 
 function git.cmd.pullmerge {
@@ -68,7 +68,7 @@ function git.cmd.pullmerge {
     if [ "$?" -gt 0 ] || [ -z "$branch" ]; then
         return 1
     fi
-    echo "git pull --no-edit --no-commit origin $branch"
+    echo "git pull --no-edit --no-commit --autostash origin $branch"
 }
 
 # core functions
@@ -342,14 +342,14 @@ function git.mtime.set {
 }
 
 function git.is_clean {
-    local result
+    local root
     if [ -z "$1" ]; then
-        result="$(git.this.root)"
+        root="$(git.this.root)"
     else
-        result="$(git.this.root "$1")"
+        root="$(git.this.root "$1")"
     fi
 
-    if [ "$?" -eq 2 ] && [ -z "$result" ]; then
+    if [ "$?" -eq 2 ] && [ -z "$root" ]; then
         return 0
     fi
 
