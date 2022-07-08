@@ -498,7 +498,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             fi
             local command="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false $python $pip_file $flags pip"
 
-            warn $0 ": $command"
+            warn $0 "$command"
 
             $SHELL -c "$HTTP_GET $url > $pip_file" && eval ${command} >&2
 
