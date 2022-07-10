@@ -4,6 +4,14 @@
 
 local THIS_SOURCE="$(fs.gethash "$0")"
 if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; then
+
+    PYTHON_BINARIES="$HOME/.python"
+    [ ! -d "$PYTHON_BINARIES" ] && mkdir -p "$PYTHON_BINARIES"
+
+    if [ ! -d "$PYTHON_BINARIES" ]; then
+        mkdir -p "$PYTHON_BINARIES"
+    fi
+
     SOURCES_CACHE+=("$THIS_SOURCE")
 
     MIN_PYTHON_VERSION=3.6  # minimal version for modern pip

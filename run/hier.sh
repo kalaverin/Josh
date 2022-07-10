@@ -262,6 +262,11 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             return "$retval"
         fi
 
+        if [ -z "$ASH_CACHE" ]; then
+            term $0 "\$ASH_CACHE:'$ASH_CACHE' - what a fuck?"
+            return 127
+        fi
+
         if [[ "$1" -regex-match '^[0-9]+' ]]; then
             local expires="$MATCH"
         else
