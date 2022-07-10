@@ -17,7 +17,7 @@ HISTFILE="$HOME/.histfile"
 HIST_STAMPS="yyyy-mm-dd"
 
 plugins=(
-    # autoupdate   # autoupdate Josh # TODO: temporary disable
+    autoupdate
     alias-tips
     colored-man-pages
     dircycle     # for fast move thru directories with alt-up/down

@@ -128,7 +128,7 @@ function cfg.nano_syntax {
     fi
 }
 
-function cfg.zero_configuration {
+function cfg.install {
     if [ ! -x "$ASH" ]; then
         term $0 "something went wrong, ASH path empty"
         return 1

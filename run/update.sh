@@ -65,13 +65,11 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     }
 
     function post.update {
-        omz update
         update.internals
         post.install
     }
 
     function post.upgrade {
-        omz update
         update.internals
         update.packages
         post.install
@@ -105,13 +103,14 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
     function update.internals {
         source "$ASH/run/units/configs.sh" && \
-        cfg.zero_configuration
+        cfg.install
 
         source "$ASH/run/units/binaries.sh" && \
-        bin.deploy_binaries
+        bin.install
 
+        omz update
         source "$ASH/run/units/oh-my-zsh.sh" &&
-        omz.deploy_extensions
+        omz.plugins
 
         source "$ASH/lib/python.sh" && \
         pip.install "$PIP_REQ_PACKAGES"
