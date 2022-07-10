@@ -8,7 +8,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
     if [[ -n ${(M)zsh_eval_context:#file} ]]; then
         if [ -z "$ASH" ]; then
-            source "$(dirname $0)/../run/boot.sh"
+            source "$(dirname $0)/core.sh"
         fi
     fi
 
@@ -65,11 +65,13 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     }
 
     function post.update {
+        omz update
         update.internals
         post.install
     }
 
     function post.upgrade {
+        omz update
         update.internals
         update.packages
         post.install
@@ -103,13 +105,13 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
     function update.internals {
         source "$ASH/run/units/configs.sh" && \
-        __setup.cfg.zero_configuration
+        cfg.zero_configuration
 
         source "$ASH/run/units/binaries.sh" && \
-        __setup.bin.deploy_binaries
+        bin.deploy_binaries
 
         source "$ASH/run/units/oh-my-zsh.sh" &&
-        __setup.omz.deploy_extensions
+        omz.deploy_extensions
 
         source "$ASH/lib/python.sh" && \
         pip.install "$PIP_REQ_PACKAGES"
