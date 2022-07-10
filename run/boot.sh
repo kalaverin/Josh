@@ -269,7 +269,7 @@ function fs.home {
 }
 
 function fs.link {
-    [ -z "$ZSH" ] || [ -z "$1" ] && return 1
+    [ -z "$ASH" ] || [ -z "$1" ] && return 1
 
     local dir="$ASH/bin"
 
@@ -309,7 +309,7 @@ function fs.link {
 }
 
 function fs.link.remove {
-    [ -z "$ZSH" ] || [ -z "$1" ] && return 1
+    [ -z "$ASH" ] || [ -z "$1" ] && return 1
 
     local dir="$ASH/bin"
 
@@ -401,6 +401,15 @@ if [ -z "$ASH" ] || [ -z "$ZSH" ]; then
     fi
 
     export ZSH="${ZSH:-$HOME/.oh-my-zsh}"
+
+    if [ ! -x "$ZSH" ]; then
+        printf " ** fail ($0): oh-my-zsh dir \$ZSH:'$ZSH' isn't acessible, fallback to default\n" >&2
+        export ZSH="$HOME/.oh-my-zsh"
+        if [ ! -x "$ZSH" ]; then
+            printf " == term ($0): oh-my-zsh dir \$ZSH:'$ZSH' isn't acessible, it's fatal\n" >&2
+        fi
+    fi
+
     export ASH="${ASH:-$HOME/.ash}"
     export PATH="$ASH/bin:$PATH"
 
