@@ -128,7 +128,12 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     }
 
     function py.exe.lookup {
-        source $BASE/run/units/compat.sh
+        if [ -z "$ASH" ]; then
+            fail $0 "\$ASH:'$ASH' isn't accessible"
+            return 1
+        fi
+
+        source "$ASH/run/units/compat.sh"
 
         if [ -n "$*" ]; then
             local dirs="$*"
@@ -187,12 +192,11 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
 
         if ! function_exists "compat.executables"; then
-            source "$BASE/run/units/compat.sh"
-
-            if [ "$?" -gt 0 ]; then
-                fail $0 "something wrong, BASE:'$BASE'"
+            if [ ! -x "$ASH" ]; then
+                fail $0 "\$ASH:'$ASH' isn't accessible"
                 return 1
             fi
+            source "$ASH/run/units/compat.sh"
         fi
 
         local link="$PYTHON_BINARIES/default/bin/python"
