@@ -77,24 +77,24 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
 
     if [ -x "$commands[zstd]" ]; then
-        export JOSH_PAQ="$commands[zstd] -0 -T0"
-        export JOSH_QAP="$commands[zstd] -qd"
+        export ASH_PAQ="$commands[zstd] -0 -T0"
+        export ASH_QAP="$commands[zstd] -qd"
 
     elif [ -x "$commands[lz4]" ]; then
-        export JOSH_PAQ="$commands[lz4] -1 - -"
-        export JOSH_QAP="$commands[lz4] -d - -"
+        export ASH_PAQ="$commands[lz4] -1 - -"
+        export ASH_QAP="$commands[lz4] -d - -"
 
     elif [ -x "$commands[xz]" ] && [ -x "$commands[xzcat]" ]; then
-        export JOSH_PAQ="$commands[xz] -0 -T0"
-        export JOSH_QAP="$commands[xzcat]"
+        export ASH_PAQ="$commands[xz] -0 -T0"
+        export ASH_QAP="$commands[xzcat]"
 
     elif [ -x "$commands[gzip]" ] && [ -x "$commands[zcat]" ]; then
-        export JOSH_PAQ="$commands[gzip] -1"
-        export JOSH_QAP="$commands[zcat]"
+        export ASH_PAQ="$commands[gzip] -1"
+        export ASH_QAP="$commands[zcat]"
 
     else
-        unset JOSH_PAQ
-        unset JOSH_QAP
+        unset ASH_PAQ
+        unset ASH_QAP
     fi
 
     local osname="$(uname)"
@@ -102,12 +102,12 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     setopt no_case_match
 
     if [[ "$osname" -regex-match 'freebsd' ]]; then
-        export JOSH_OS="BSD"
+        export ASH_OS="BSD"
         fs.link 'ls'    '/usr/local/bin/gnuls' >/dev/null
         fs.link 'grep'  '/usr/local/bin/grep'  >/dev/null
 
     elif [[ "$osname" -regex-match 'darwin' ]]; then
-        export JOSH_OS="MAC"
+        export ASH_OS="MAC"
         fs.link 'ls'    '/usr/local/bin/gls'   >/dev/null
         fs.link 'grep'  '/usr/local/bin/ggrep' >/dev/null
 
@@ -128,10 +128,10 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
     else
         if [[ "$osname" -regex-match 'linux' ]]; then
-            export JOSH_OS="LINUX"
+            export ASH_OS="LINUX"
         else
             fail $0 "unsupported OS '$(uname -srv)'"
-            export JOSH_OS="UNKNOWN"
+            export ASH_OS="UNKNOWN"
         fi
 
         dirs=(
@@ -150,7 +150,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         done
     fi
 
-    if [ "$JOSH_OS" = 'BSD' ] || [ "$JOSH_OS" = 'MAC' ]; then
+    if [ "$ASH_OS" = 'BSD' ] || [ "$ASH_OS" = 'MAC' ]; then
         fs.link 'cut'       '/usr/local/bin/gcut'      >/dev/null
         fs.link 'find'      '/usr/local/bin/gfind'     >/dev/null
         fs.link 'head'      '/usr/local/bin/ghead'     >/dev/null
@@ -160,9 +160,9 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fs.link 'tail'      '/usr/local/bin/gtail'     >/dev/null
         fs.link 'tar'       '/usr/local/bin/gtar'      >/dev/null
         fs.link 'xargs'     '/usr/local/bin/gxargs'    >/dev/null
-        export JOSH_MD5_PIPE="$(which md5)"
+        export ASH_MD5_PIPE="$(which md5)"
     else
-        export JOSH_MD5_PIPE="$(which md5sum) | $(which cut) -c -32"
+        export ASH_MD5_PIPE="$(which md5sum) | $(which cut) -c -32"
     fi
 
     source "$(fs.dirname $0)/hier.sh"

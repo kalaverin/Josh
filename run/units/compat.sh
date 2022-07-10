@@ -46,13 +46,13 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             if [ "$?" -gt 0 ]; then
                 if [ "$lib" = "openssl" ]; then
 
-                    if [ "$JOSH_OS" = "MAC" ]; then
+                    if [ "$ASH_OS" = "MAC" ]; then
                         local lookup_path="/usr/local/opt/"
 
-                    elif [ "$JOSH_OS" = "LINUX" ]; then
+                    elif [ "$ASH_OS" = "LINUX" ]; then
                         local lookup_path="/usr/lib/"
 
-                    elif [ "$JOSH_OS" = "BSD" ]; then
+                    elif [ "$ASH_OS" = "BSD" ]; then
                         local lookup_path="/usr/local/"
 
                     else
@@ -105,7 +105,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         local osname="$(uname -srv)"
         if [ -n "$(echo "$osname" | grep -i freebsd)" ]; then
             info $0 "os freebsd: $osname"
-            export JOSH_OS="BSD"
+            export ASH_OS="BSD"
 
             local cmd="sudo pkg install -y"
             local pkg="bash coreutils findutils git gnugrep gnuls gsed gtar openssl pkgconf python310 zsh"
@@ -124,7 +124,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
         elif [ -n "$(echo "$osname" | grep -i darwin)" ]; then
             info $0 "os macos: $osname"
-            export JOSH_OS="MAC"
+            export ASH_OS="MAC"
 
             if [ ! -x "$(builtin which -p brew 2>/dev/null)" ]; then
                 info $0 "brew for MacOS strictly required, just run: curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | zsh"
@@ -147,7 +147,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
 
         elif [ -n "$(echo "$osname" | grep -i linux)" ]; then
-            export JOSH_OS="LINUX"
+            export ASH_OS="LINUX"
             REQ_SYS_LIBS=(
                 # python
             )
@@ -179,7 +179,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             fi
         else
             info $0 "os unknown: $osname"
-            export JOSH_OS="UNKNOWN"
+            export ASH_OS="UNKNOWN"
         fi
 
         # local binaries=( xargs realpath awk grep test2 )
@@ -196,7 +196,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             [ "$cmd" ] && local msg="$msg: $cmd $pkg"
 
             warn $0 "$msg"
-            if [ -z "$JOSH_SKIP_REQUIREMENTS_CHECK" ]; then
+            if [ -z "$ASH_SKIP_REQUIREMENTS_CHECK" ]; then
                 return 1
             fi
         else

@@ -15,7 +15,7 @@ function clear {
 
 function cls {
     clear
-    if [ -z "$JOSH_TMUX_MOTD_DISABLE" ]; then
+    if [ -z "$ASH_TMUX_MOTD_DISABLE" ]; then
         if [ -x "$commands[krabby]" ]; then
             krabby random | sed 1d | head -n -1
         fi
@@ -87,7 +87,7 @@ function insert_directory {
         --reverse --min-height='11' --height='11' \
         --preview-window="right:`misc.preview.width`:noborder" \
         --prompt="dir >  " \
-        --preview="$SHELL $JOSH/usr/src/viewer.sh {}" \
+        --preview="$SHELL $ASH/usr/src/viewer.sh {}" \
         -i --filepath-word \
     )
 
@@ -161,7 +161,7 @@ function insert_endpoint {
         --reverse --min-height='11' --height='11' \
         --preview-window="right:`misc.preview.width`:noborder" \
         --prompt="file >  " \
-        --preview="$SHELL $JOSH/usr/src/viewer.sh {}" \
+        --preview="$SHELL $ASH/usr/src/viewer.sh {}" \
         -i --filepath-word \
     )
 
@@ -206,7 +206,7 @@ function visual_chdir {
                 --bind='enter:accept' \
                 --reverse --min-height='11' --height='11' \
                 --preview-window="right:`misc.preview.width`:noborder" \
-                --preview="$SHELL $JOSH/usr/src/viewer.sh {}" \
+                --preview="$SHELL $ASH/usr/src/viewer.sh {}" \
                 --filepath-word --tiebreak=begin,length,end,index \
                 --bind="alt-bs:execute(echo \`realpath {}\` > $temp/.lastdir.tmp)+abort" \
                 --ansi --extended --info='inline' \
@@ -259,7 +259,7 @@ function visual_recent_chdir {
             --bind='enter:accept' \
             --reverse --min-height='11' --height='11' \
             --preview-window="right:`misc.preview.width`:noborder" \
-            --preview="$SHELL $JOSH/usr/src/viewer.sh {}" \
+            --preview="$SHELL $ASH/usr/src/viewer.sh {}" \
             --filepath-word --tiebreak=index \
             --ansi --extended --info='inline' \
             --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
@@ -294,7 +294,7 @@ function visual_warp_chdir {
             --bind='enter:accept' \
             --reverse --min-height='11' --height='11' \
             --preview-window="right:`misc.preview.width`:noborder" \
-            --preview="$SHELL $JOSH/usr/src/viewer.sh {2}" \
+            --preview="$SHELL $ASH/usr/src/viewer.sh {2}" \
             --filepath-word --tiebreak=index \
             --ansi --extended --info='inline' \
             --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
@@ -386,11 +386,11 @@ zle -N chdir_home
 
 function visual_grep {
     local execute="$INCLUDE_DIR/ripgrep_query_name_to_micro.sh"
-    local search_one="$JOSH/usr/src/ripgrep_spaced_words.sh"
+    local search_one="$ASH/usr/src/ripgrep_spaced_words.sh"
 
     local query=""
     while true; do
-        local ripgrep="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS --smart-case"
+        local ripgrep="$ASH_RIPGREP $ASH_RIPGREP_OPTS --smart-case"
         local preview="echo {2} | grep -Pv '^:' | sd '(^\d+|(?::)\d+)' ' -H\$1' | sd ':' '' | sd '(^\s+|\s+$)' '' | sd '^-H(\d+)' ' -r\$1: -H\$1 ' | sd '(.)$' '\$1 {1}' | xargs bat --terminal-width \$FZF_PREVIEW_COLUMNS --color=always"
 
         local query=$(
@@ -425,7 +425,7 @@ function visual_grep {
 
 
         while true; do
-            local ripgrep="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS --smart-case --word-regexp"
+            local ripgrep="$ASH_RIPGREP $ASH_RIPGREP_OPTS --smart-case --word-regexp"
             local preview="echo {2}:$query | grep -Pv '^:' | sed -r 's#(.+?):(.+?)#>>\2<<//\1#g' | sd '>>(\s*)(.*?)(\s*)<<//(.+)' '$ripgrep --vimgrep --context 0 \"\$2\" \$4' | $SHELL | tabulate -d ':' -i 2 | runiq - | sort -V | tr '\n' ' ' | sd '^([^\s]+)(.*)$' ' -r\$1: \$1\$2' | sd '(\s+)(\d+)' ' -H\$2' | xargs -I@ echo 'bat --terminal-width \$FZF_PREVIEW_COLUMNS --color=always @ {2}' | $SHELL"
 
             # $SHELL -c "$ripgrep --color=always --count -- \"$query\" | sd '^(.+):(\d+)$' '\$2 \$1' | sort -grk 1" \
@@ -454,7 +454,7 @@ function visual_grep {
                 --color="$FZF_THEME" | sd '^(\d+\s+)' '' \
             )
             [ ! "$value" ] && break
-            micro $value $($SHELL -c "$JOSH_RIPGREP --smart-case --fixed-strings --no-heading --column --with-filename --max-count=1 --color=never \"$query\" \"$value\" | tabulate -d ':' -i 1,2,3 | sd '(.+?)\s+(\d+)\s+(\d+)' '+\$2:\$3'")
+            micro $value $($SHELL -c "$ASH_RIPGREP --smart-case --fixed-strings --no-heading --column --with-filename --max-count=1 --color=never \"$query\" \"$value\" | tabulate -d ':' -i 1,2,3 | sd '(.+?)\s+(\d+)\s+(\d+)' '+\$2:\$3'")
         done
     done
 
@@ -609,12 +609,12 @@ zle -N sudoize
 
 function __ash.branch {
     echo "$(
-        git --git-dir="$JOSH/.git" --work-tree="$JOSH/" \
+        git --git-dir="$ASH/.git" --work-tree="$ASH/" \
         rev-parse --quiet --abbrev-ref HEAD 2>/dev/null
     )"
 }
 function ash.branch {
-    if [ -n "$JOSH" ] && [ -d "$JOSH" ]; then
+    if [ -n "$ASH" ] && [ -d "$ASH" ]; then
         local branch="$(__ash.branch)"
         if [ "$?" -eq 0 ]; then
             echo "$branch"
@@ -667,8 +667,8 @@ function ash.eval {
         return 1
 
     elif [ -z "$2" ]; then
-        if [ -e "$JOSH/$1" ]; then
-            source "$JOSH/$1"
+        if [ -e "$ASH/$1" ]; then
+            source "$ASH/$1"
             return "$?"
         else
             return 127
@@ -677,7 +677,7 @@ function ash.eval {
 
     local result=''
     for file in $*; do
-        if [ ! -f "$JOSH/$file" ]; then
+        if [ ! -f "$ASH/$file" ]; then
             if [ -z "$result" ]; then
                 local result="$file"
             else
@@ -692,18 +692,18 @@ function ash.eval {
     fi
 
     for file in $*; do
-        source "$JOSH/$file"
+        source "$ASH/$file"
     done
 }
 
 
-JOSH_DEPRECATIONS[josh_branch]=ash.branch
-JOSH_DEPRECATIONS[josh_extras]=ash.extras
-JOSH_DEPRECATIONS[josh_pull]=ash.pull
-JOSH_DEPRECATIONS[josh_source]=ash.eval
-JOSH_DEPRECATIONS[josh_update]=ash.update
-JOSH_DEPRECATIONS[josh_upgrade]=ash.upgrade
-JOSH_DEPRECATIONS[path_last_modified]=fs.lm.many
+ASH_DEPRECATIONS[josh_branch]=ash.branch
+ASH_DEPRECATIONS[josh_extras]=ash.extras
+ASH_DEPRECATIONS[josh_pull]=ash.pull
+ASH_DEPRECATIONS[josh_source]=ash.eval
+ASH_DEPRECATIONS[josh_update]=ash.update
+ASH_DEPRECATIONS[josh_upgrade]=ash.upgrade
+ASH_DEPRECATIONS[path_last_modified]=fs.lm.many
 
 
 autoload znt-history-widget

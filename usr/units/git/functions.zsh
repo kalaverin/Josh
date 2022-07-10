@@ -10,8 +10,8 @@ function git.cmd.checkout {
         return 1
 
     elif [[ "$1" =~ '^[0-9]+' ]]; then
-        if [ -n "$JOSH_BRANCH_PREFIX" ]; then
-            local branch="$JOSH_BRANCH_PREFIX-$1"
+        if [ -n "$ASH_BRANCH_PREFIX" ]; then
+            local branch="$ASH_BRANCH_PREFIX-$1"
         else
             fail $0 "branch name can't starts by digit"
             return 2

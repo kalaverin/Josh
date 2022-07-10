@@ -65,7 +65,7 @@ function tmux.detached {
 }
 
 function tmux.matching {
-    local maxdiff="${JOSH_TMUX_AUTORETACH_MAX_DIFF:-9}"
+    local maxdiff="${ASH_TMUX_AUTORETACH_MAX_DIFF:-9}"
     local query='zmodload zsh/mathfunc && echo "$((abs(#{window_width} - $COLUMNS) + abs(#{window_height} - $LINES))) #{session_name}"'
 
     local result="$(
@@ -77,10 +77,10 @@ function tmux.matching {
     [ -z "$result" ] && return 1 || echo "$result"
 }
 
-if [ -z "$JOSH_TMUX_AUTORETACH_DISABLE" ] && [ -n "$PS1" ] && [ -z "$TMUX" ] && [ -n "$SSH_CONNECTION" ]; then
+if [ -z "$ASH_TMUX_AUTORETACH_DISABLE" ] && [ -n "$PS1" ] && [ -z "$TMUX" ] && [ -n "$SSH_CONNECTION" ]; then
     tmx lost
 
-elif [ -z "$JOSH_TMUX_SPACES_FILL_DISABLE" ] && [ -n "$PS1" ] && [ -n "$TMUX" ]; then
+elif [ -z "$ASH_TMUX_SPACES_FILL_DISABLE" ] && [ -n "$PS1" ] && [ -n "$TMUX" ]; then
     local branch="$(ash.branch)"
     if [ "$branch" = "master" ] || [ "$branch" = "stable" ]; then
         cls

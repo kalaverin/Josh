@@ -153,7 +153,7 @@ function fs.gethash {
 }
 
 function fs.resolver {
-    if [ -n "$JOSH_REALPATH" ]; then
+    if [ -n "$ASH_REALPATH" ]; then
         return 0
     fi
 
@@ -170,7 +170,7 @@ function fs.resolver {
     fi
 
     if [ -n "$result" ]; then
-        export JOSH_REALPATH="$result"
+        export ASH_REALPATH="$result"
         return 0
     fi
     printf " ** fail ($0): resolver isn't configured, need realpath or readlink\n" >&2
@@ -212,12 +212,12 @@ function fs.realpath {
         fi
 
         fs.resolver
-        if [ -z "$JOSH_REALPATH" ]; then
+        if [ -z "$ASH_REALPATH" ]; then
             echo "$link"
             return 3
         fi
 
-        local cmd="$JOSH_REALPATH $link"
+        local cmd="$ASH_REALPATH $link"
         eval "${cmd}"
     else
         printf " ** fail ($0): '$link' doesn't exist\n" >&2

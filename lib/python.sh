@@ -5,10 +5,10 @@ if [[ -n ${(M)zsh_eval_context:#file} ]]; then
         source "$(dirname $0)/../run/boot.sh"
     fi
 
-    JOSH_CACHE_DIR="$HOME/.cache/josh"
-    if [ ! -d "$JOSH_CACHE_DIR" ]; then
-        mkdir -p "$JOSH_CACHE_DIR"
-        info $0 "make Josh cache directory '$JOSH_CACHE_DIR'"
+    ASH_CACHE_DIR="$HOME/.cache/josh"
+    if [ ! -d "$ASH_CACHE_DIR" ]; then
+        mkdir -p "$ASH_CACHE_DIR"
+        info $0 "make Josh cache directory '$ASH_CACHE_DIR'"
     fi
 
     PYTHON_BINARIES="$HOME/.python"
@@ -19,10 +19,10 @@ if [[ -n ${(M)zsh_eval_context:#file} ]]; then
         info $0 "make Python default directory '$PYTHON_BINARIES'"
     fi
 
-    if [ -n "$JOSH_DEST" ]; then
-        BASE="$JOSH_BASE"
+    if [ -n "$ASH_DEST" ]; then
+        BASE="$ASH_BASE"
     else
-        BASE="$JOSH"
+        BASE="$ASH"
     fi
 fi
 
@@ -241,7 +241,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         if [ ! -x "$gsed" ]; then
             local gsed="$(which sed)"
             if [ ! -x "$gsed" ]; then
-                fail $0 "GNU sed for '$JOSH_OS' don't found"
+                fail $0 "GNU sed for '$ASH_OS' don't found"
                 return 2
             fi
         fi
@@ -493,7 +493,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
                 local flags="$flags -vv"
             fi
 
-            if [ "$USER" = 'root' ] || [ "$JOSH_OS" = 'BSD' ] || [ "$JOSH_OS" = 'MAC' ]; then
+            if [ "$USER" = 'root' ] || [ "$ASH_OS" = 'BSD' ] || [ "$ASH_OS" = 'MAC' ]; then
                 local flags="--root='/' --prefix='$target' $flags"
             fi
             local command="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false $python $pip_file $flags pip"
@@ -564,7 +564,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         if [ ! -x "$gsed" ]; then
             local gsed="$(which sed)"
             if [ ! -x "$gsed" ]; then
-                fail $0 "GNU sed for '$JOSH_OS' don't found"
+                fail $0 "GNU sed for '$ASH_OS' don't found"
                 return 2
             fi
         fi
@@ -628,7 +628,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             local flags="$flags -v"
         fi
 
-        if [ "$USER" = 'root' ] || [ "$JOSH_OS" = 'BSD' ] || [ "$JOSH_OS" = 'MAC' ]; then
+        if [ "$USER" = 'root' ] || [ "$ASH_OS" = 'BSD' ] || [ "$ASH_OS" = 'MAC' ]; then
             local flags="--root='/' --prefix='$target' $flags"
         fi
         local command="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false $(py.exe) -m pip install $flags $PIP_DEFAULT_KEYS"
@@ -766,9 +766,9 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
                         local dst_size="$(fs_size "$dst")"
 
                         local msg="$src ($src_size bytes) -> $dst ($dst_size bytes)"
-                        if [ -n "$JOSH_MD5_PIPE" ] && [ "$src_size" = "$dst_size" ]; then
-                            local src_md5="$(cat "$src" | sh -c "$JOSH_MD5_PIPE")"
-                            local dst_md5="$(cat "$dst" | sh -c "$JOSH_MD5_PIPE")"
+                        if [ -n "$ASH_MD5_PIPE" ] && [ "$src_size" = "$dst_size" ]; then
+                            local src_md5="$(cat "$src" | sh -c "$ASH_MD5_PIPE")"
+                            local dst_md5="$(cat "$dst" | sh -c "$ASH_MD5_PIPE")"
                             if [ "$src_md5" = "$dst_md5" ]; then
                                 local msg="$src ($src_size bytes) -> $dst (absolutely same, unlink last)"
                             fi

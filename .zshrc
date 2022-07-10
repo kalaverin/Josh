@@ -50,9 +50,9 @@ zstyle ":anyframe:selector:" use fzf
 # user can configure some variables for configure Josh and other plugins
 [ -f ~/.zshrclocal ] && source ~/.zshrclocal
 
-source "$JOSH/src/configure.zsh"
+source "$ASH/src/configure.zsh"
 source "$ZSH/oh-my-zsh.sh"
-source "$JOSH/src/loader.zsh"
+source "$ASH/src/loader.zsh"
 
 # user can override anything after load
 [ -f ~/.zshrcbinds ] && source ~/.zshrcbinds

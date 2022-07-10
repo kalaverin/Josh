@@ -95,8 +95,8 @@ if [ -x "$commands[rg]" ]; then
     local ripgrep_fine='--max-columns $COLUMNS --case-sensitive --fixed-strings --word-regexp'
     local ripgrep_interactive="--no-stats --text --context 1 --colors 'match:fg:yellow' --colors 'path:fg:red' --context-separator ''"
 
-    export JOSH_RIPGREP="rg"
-    export JOSH_RIPGREP_OPTS="--require-git --hidden --max-columns-preview --max-filesize=1M --ignore-file=$($realpath --quiet ~/.gitignore)"
+    export ASH_RIPGREP="rg"
+    export ASH_RIPGREP_OPTS="--require-git --hidden --max-columns-preview --max-filesize=1M --ignore-file=$($realpath --quiet ~/.gitignore)"
 
     # if [ -x "$commands[hgrep]" ]; then
     #     function rt {
@@ -104,10 +104,10 @@ if [ -x "$commands[rg]" ]; then
     #     }
     # fi
 
-    alias rr="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS $ripgrep_interactive $ripgrep_fast"
-    alias rrs="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS $ripgrep_interactive $ripgrep_fast --sort path"
-    alias rf="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS $ripgrep_interactive $ripgrep_fine"
-    alias rfs="$JOSH_RIPGREP $JOSH_RIPGREP_OPTS $ripgrep_interactive $ripgrep_fine --sort path"
+    alias rr="$ASH_RIPGREP $ASH_RIPGREP_OPTS $ripgrep_interactive $ripgrep_fast"
+    alias rrs="$ASH_RIPGREP $ASH_RIPGREP_OPTS $ripgrep_interactive $ripgrep_fast --sort path"
+    alias rf="$ASH_RIPGREP $ASH_RIPGREP_OPTS $ripgrep_interactive $ripgrep_fine"
+    alias rfs="$ASH_RIPGREP $ASH_RIPGREP_OPTS $ripgrep_interactive $ripgrep_fine --sort path"
 fi
 
 
@@ -331,7 +331,7 @@ function mktp {
 }
 
 function brew {
-    source "$JOSH/lib/brew.sh" && brew.env
+    source "$ASH/lib/brew.sh" && brew.env
 
     local bin="$(brew.bin 2>/dev/null)"
     if [ ! -x "$bin" ]; then

@@ -1,5 +1,5 @@
 function plugins_autoload {
-    fd --no-ignore-vcs autoload.zsh$ "$JOSH/usr/local/" | while read loader
+    fd --no-ignore-vcs autoload.zsh$ "$ASH/usr/local/" | while read loader
     do
         local loader="$(fs.realpath $loader)"
         source "$loader"

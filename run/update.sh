@@ -7,14 +7,14 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     source "$(dirname $0)/init.sh"
 
     if [[ -n ${(M)zsh_eval_context:#file} ]]; then
-        if [ -z "$JOSH" ]; then
+        if [ -z "$ASH" ]; then
             source "$(dirname $0)/../run/boot.sh"
         fi
     fi
 
     function pull.update {
         local cwd="$PWD"
-        builtin cd "$JOSH"
+        builtin cd "$ASH"
 
         local detected="$(git rev-parse --quiet --abbrev-ref HEAD)"
 
@@ -22,14 +22,14 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
             if [ -n "$1" ]; then
                 local branch="$1"
-            elif [ -n "$JOSH_BRANCH" ]; then
-                local branch="$JOSH_BRANCH"
+            elif [ -n "$ASH_BRANCH" ]; then
+                local branch="$ASH_BRANCH"
             else
                 local branch="$detected"
             fi
 
             if [ "$branch" != "$detected" ]; then
-                source "$JOSH/usr/units/git.zsh" && git.branch.select "$branch"
+                source "$ASH/usr/units/git.zsh" && git.branch.select "$branch"
                 local retval=$?
             else
                 local retval="0"
@@ -76,11 +76,11 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     }
 
     function post.install {
-        source "$JOSH/lib/python.sh" && pip.compliance.check
-        source "$JOSH/run/units/compat.sh" && compat.compliance
+        source "$ASH/lib/python.sh" && pip.compliance.check
+        source "$ASH/run/units/compat.sh" && compat.compliance
 
         if [ -n "$ASH_POST_INSTALL_PYTHON" ]; then
-            source "$JOSH/usr/units/python.zsh" && py.set "$ASH_POST_INSTALL_PYTHON"
+            source "$ASH/usr/units/python.zsh" && py.set "$ASH_POST_INSTALL_PYTHON"
             unset ASH_POST_INSTALL_PYTHON
         fi
 
@@ -102,36 +102,36 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     }
 
     function update.internals {
-        source "$JOSH/run/units/configs.sh" && \
+        source "$ASH/run/units/configs.sh" && \
         __setup.cfg.zero_configuration
 
-        source "$JOSH/run/units/binaries.sh" && \
+        source "$ASH/run/units/binaries.sh" && \
         __setup.bin.deploy_binaries
 
-        source "$JOSH/run/units/oh-my-zsh.sh" &&
+        source "$ASH/run/units/oh-my-zsh.sh" &&
         __setup.omz.deploy_extensions
 
-        source "$JOSH/lib/python.sh" && \
+        source "$ASH/lib/python.sh" && \
         pip.install "$PIP_REQ_PACKAGES"
         pip.update
 
-        git.nested "$JOSH/usr/local"
+        git.nested "$ASH/usr/local"
     }
 
     function update.packages {
-        source "$JOSH/lib/rust.sh" && \
+        source "$ASH/lib/rust.sh" && \
         cargo.install "$CARGO_REQ_PACKAGES"
         cargo.update
 
-        source "$JOSH/lib/brew.sh"
+        source "$ASH/lib/brew.sh"
         brew.update
     }
 
     function deploy.extras {
         local cwd="$PWD"
-        (source "$JOSH/lib/python.sh" && pip.extras || warn $0 "(python) something went wrong") && \
-        (source "$JOSH/lib/rust.sh" && cargo.extras || warn $0 "(rust) something went wrong")
-        (source "$JOSH/lib/brew.sh" && brew.env && (brew.extras || warn $0 "(brew) something went wrong"))
+        (source "$ASH/lib/python.sh" && pip.extras || warn $0 "(python) something went wrong") && \
+        (source "$ASH/lib/rust.sh" && cargo.extras || warn $0 "(rust) something went wrong")
+        (source "$ASH/lib/brew.sh" && brew.env && (brew.extras || warn $0 "(brew) something went wrong"))
         builtin cd "$cwd"
     }
 

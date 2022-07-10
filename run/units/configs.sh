@@ -50,7 +50,7 @@ function cfg.copy {
             fi
         fi
 
-        if [ ! "$JOSH_FORCE_CONFIGS" ]; then
+        if [ ! "$ASH_FORCE_CONFIGS" ]; then
             return 0
         fi
 

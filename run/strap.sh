@@ -63,8 +63,8 @@ function prepare_and_deploy {
 }
 
 function replace_existing_installation {
-    if [ ! -z "$JOSH_DEST" ] && [ -d "$JOSH_DEST" ] && [ "$ZSH" != "$JOSH_DEST" ]; then
-        source $JOSH_BASE/run/units/oh-my-zsh.sh && \
+    if [ ! -z "$ASH_DEST" ] && [ -d "$ASH_DEST" ] && [ "$ZSH" != "$ASH_DEST" ]; then
+        source $ASH_BASE/run/units/oh-my-zsh.sh && \
         __setup.omz.merge_ash_ohmyzsh && \
         __setup.omz.save_previous_installation && \
         __setup.omz.rename_and_link
@@ -77,13 +77,13 @@ function replace_existing_installation {
 }
 
 if [[ -n ${(M)zsh_eval_context:#file} ]]; then
-    if [ -n "$JOSH_BASE" ]; then
-        printf " -- info ($0): bootstrap from '$JOSH_BASE'\n" >&2
-        BASE="$JOSH_BASE"
+    if [ -n "$ASH_BASE" ]; then
+        printf " -- info ($0): bootstrap from '$ASH_BASE'\n" >&2
+        BASE="$ASH_BASE"
 
-    elif [ -z "$JOSH" ]; then
+    elif [ -z "$ASH" ]; then
         source "$(dirname $0)/boot.sh"
-        BASE="$JOSH"
+        BASE="$ASH"
 
     fi
 fi

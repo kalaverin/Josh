@@ -13,7 +13,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
 
     function misc.cpu.count {
-        if [ "$JOSH_OS" = 'BSD' ]; then
+        if [ "$ASH_OS" = 'BSD' ]; then
             local cores="$(sysctl kern.smp.cores | grep -Po '\d$')"
         else
             local cores="$(grep --count -Po 'processor\s+:\s*\d+\s*$' /proc/cpuinfo)"
@@ -62,7 +62,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         [ "$result" -lt 84 ] && local result=84
 
         echo "$result"
-        export JOSH_WIDTH="$result"
+        export ASH_WIDTH="$result"
     }
 
     function mkcd {

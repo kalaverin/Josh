@@ -34,14 +34,14 @@ function venv.path.activate {
 }
 
 function venv.temp.dir {
-    if [ -z "$JOSH_PY_TEMP_ENVS_ROOT" ]; then
-        local directory="$(temp.dir)/$(fs.basename "$JOSH_PY_ENVS_ROOT")"
+    if [ -z "$ASH_PY_TEMP_ENVS_ROOT" ]; then
+        local directory="$(temp.dir)/$(fs.basename "$ASH_PY_ENVS_ROOT")"
         if [ ! -d "$directory" ]; then
             mkdir -p "$directory"
         fi
-        export JOSH_PY_TEMP_ENVS_ROOT="$directory"
+        export ASH_PY_TEMP_ENVS_ROOT="$directory"
     fi
-    echo "$JOSH_PY_TEMP_ENVS_ROOT"
+    echo "$ASH_PY_TEMP_ENVS_ROOT"
 }
 
 function venv.node {
@@ -117,8 +117,8 @@ function venv.path {
         if [ -d "$1" ] && [ -f "$1/bin/activate" ]; then
             echo "$1"
 
-        elif [ -f "$JOSH_PY_ENVS_ROOT/$1/bin/activate" ]; then
-            echo "$JOSH_PY_ENVS_ROOT/$1"
+        elif [ -f "$ASH_PY_ENVS_ROOT/$1/bin/activate" ]; then
+            echo "$ASH_PY_ENVS_ROOT/$1"
 
         else
             local temp="$(venv.temp.dir)"
@@ -167,7 +167,7 @@ function venv.make {
 
     elif [[ "$1" =~ ^[0-9a-z]+[0-9a-z\.-]*[0-9a-z]+$ ]]; then
         local name="$1"
-        local full="$JOSH_PY_ENVS_ROOT/$name"
+        local full="$ASH_PY_ENVS_ROOT/$name"
 
     elif [[ "$1" =~ ^/.+/[0-9a-z]+[0-9a-z\.-]*[0-9a-z]+$ ]]; then
         local name="$(fs.basename "$1")"
@@ -245,7 +245,7 @@ function venv.make {
 }
 
 function venv.temp {
-    local venv="$(temp.dir)/$(fs.basename "$JOSH_PY_ENVS_ROOT")/$(get.name)"
+    local venv="$(temp.dir)/$(fs.basename "$ASH_PY_ENVS_ROOT")/$(get.name)"
     venv.make "$venv" $@
 }
 
@@ -296,7 +296,7 @@ function venv.temp.remove {
 # ———
 
 function __widget.pip.freeze {
-    source "$JOSH/lib/python.sh"
+    source "$ASH/lib/python.sh"
     pip.exe || return 1
 
     local venv="$(fs.basename ${VIRTUAL_ENV:-''})"
@@ -336,15 +336,15 @@ if [ -d "$VIRTUAL_ENV" ]; then
     path.rehash
 fi
 
-JOSH_DEPRECATIONS[chdir_to_virtualenv]=venv.cd
-JOSH_DEPRECATIONS[chdir_to_virtualenv_stdlib]=venv.site
-JOSH_DEPRECATIONS[get_temporary_envs_directory]=venv.temp.dir
-JOSH_DEPRECATIONS[get_virtualenv_path]=venv.path
-JOSH_DEPRECATIONS[python_from_version]=py.from.version
-JOSH_DEPRECATIONS[virtualenv_activate]=venv.on
-JOSH_DEPRECATIONS[virtualenv_create]=venv.make
-JOSH_DEPRECATIONS[virtualenv_deactivate]=venv.off
-JOSH_DEPRECATIONS[virtualenv_node_deploy]=venv.node
-JOSH_DEPRECATIONS[virtualenv_path_activate]=venv.path.activate
-JOSH_DEPRECATIONS[virtualenv_temporary_create]=venv.temp
-JOSH_DEPRECATIONS[virtualenv_temporary_destroy]=venv.temp.remove
+ASH_DEPRECATIONS[chdir_to_virtualenv]=venv.cd
+ASH_DEPRECATIONS[chdir_to_virtualenv_stdlib]=venv.site
+ASH_DEPRECATIONS[get_temporary_envs_directory]=venv.temp.dir
+ASH_DEPRECATIONS[get_virtualenv_path]=venv.path
+ASH_DEPRECATIONS[python_from_version]=py.from.version
+ASH_DEPRECATIONS[virtualenv_activate]=venv.on
+ASH_DEPRECATIONS[virtualenv_create]=venv.make
+ASH_DEPRECATIONS[virtualenv_deactivate]=venv.off
+ASH_DEPRECATIONS[virtualenv_node_deploy]=venv.node
+ASH_DEPRECATIONS[virtualenv_path_activate]=venv.path.activate
+ASH_DEPRECATIONS[virtualenv_temporary_create]=venv.temp
+ASH_DEPRECATIONS[virtualenv_temporary_destroy]=venv.temp.remove

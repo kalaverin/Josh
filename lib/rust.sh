@@ -5,10 +5,10 @@ if [[ -n ${(M)zsh_eval_context:#file} ]]; then
         source "$(dirname $0)/../run/boot.sh"
     fi
 
-    JOSH_CACHE_DIR="$HOME/.cache/josh"
-    if [ ! -d "$JOSH_CACHE_DIR" ]; then
-        mkdir -p "$JOSH_CACHE_DIR"
-        echo " * make Josh cache directory \`$JOSH_CACHE_DIR\`"
+    ASH_CACHE_DIR="$HOME/.cache/josh"
+    if [ ! -d "$ASH_CACHE_DIR" ]; then
+        mkdir -p "$ASH_CACHE_DIR"
+        echo " * make Josh cache directory \`$ASH_CACHE_DIR\`"
     fi
 
     CARGO_BINARIES="$HOME/.cargo/bin"
@@ -19,10 +19,10 @@ if [[ -n ${(M)zsh_eval_context:#file} ]]; then
         echo " * make Cargo goods directory \`$CARGO_BINARIES\`"
     fi
 
-    if [ -n "$JOSH_DEST" ]; then
-        BASE="$JOSH_BASE"
+    if [ -n "$ASH_DEST" ]; then
+        BASE="$ASH_BASE"
     else
-        BASE="$JOSH"
+        BASE="$ASH"
     fi
 fi
 

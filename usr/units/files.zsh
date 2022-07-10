@@ -5,7 +5,7 @@ function __stream_pak {
     fi
 
     local result="tar -cO $1 --numeric-owner --sparse ."
-    if [ "$JOSH_OS" = 'BSD' ]; then
+    if [ "$ASH_OS" = 'BSD' ]; then
         local result="$result -f -"
     fi
     echo "$result"
@@ -14,7 +14,7 @@ function __stream_pak {
 
 function __stream_unpak {
     local result='tar -x --numeric-owner --preserve-permissions'
-    if [ "$JOSH_OS" = 'BSD' ]; then
+    if [ "$ASH_OS" = 'BSD' ]; then
         local result="$result -f -"
     fi
     echo "$result"
@@ -27,7 +27,7 @@ function __setup.cfg.backup_file_get {
         fail $0 "BAK_RESTORE isn't set" >&2
         return 1
 
-    elif [ -z "$JOSH_PAQ" ] || [ -z "$JOSH_QAP" ]; then
+    elif [ -z "$ASH_PAQ" ] || [ -z "$ASH_QAP" ]; then
         fail $0 "zstd, xz, lz4 and gzip doesn't exists" >&2
         return 2
     fi
@@ -39,7 +39,7 @@ function bak {
     if [ -f "$BAK_RESTORE" ]; then
         warn $0 "already found: $BAK_RESTORE"
 
-    elif [ -z "$JOSH_PAQ" ] || [ -z "$JOSH_QAP" ]; then
+    elif [ -z "$ASH_PAQ" ] || [ -z "$ASH_QAP" ]; then
         fail $0 "zstd, xz, lz4 and gzip doesn't exists" >&2
         return 127
     fi
@@ -59,8 +59,8 @@ function bak {
     local backup="$target/$timemark-$(get.name).tar"
     [ "$?" -gt 0 ] && return 4
 
-    run_show "mkdir -p \"$target\" 2>/dev/null; $(__stream_pak --exclude-vcs) | $JOSH_PAQ > $backup"
-    info $0 "cat $backup | $JOSH_QAP | $(__stream_unpak)"
+    run_show "mkdir -p \"$target\" 2>/dev/null; $(__stream_pak --exclude-vcs) | $ASH_PAQ > $backup"
+    info $0 "cat $backup | $ASH_QAP | $(__stream_unpak)"
     export BAK_RESTORE="$backup"
 }
 
@@ -69,7 +69,7 @@ function bakf {
     if [ -f "$BAK_RESTORE" ]; then
         warn $0 "already found: $BAK_RESTORE"
 
-    elif [ -z "$JOSH_PAQ" ] || [ -z "$JOSH_QAP" ]; then
+    elif [ -z "$ASH_PAQ" ] || [ -z "$ASH_QAP" ]; then
         fail $0 " - fatal: zstd, xz, lz4 and gzip doesn't exists" >&2
         return 127
     fi
@@ -89,8 +89,8 @@ function bakf {
     local backup="$target/$timemark-$(get.name).tar"
     [ "$?" -gt 0 ] && return 4
 
-    run_show "mkdir -p \"$target\" 2>/dev/null; $(__stream_pak --exclude-vcs-ignores) | $JOSH_PAQ > $backup"
-    info $0 "cat $backup | $JOSH_QAP | $(__stream_unpak)"
+    run_show "mkdir -p \"$target\" 2>/dev/null; $(__stream_pak --exclude-vcs-ignores) | $ASH_PAQ > $backup"
+    info $0 "cat $backup | $ASH_QAP | $(__stream_unpak)"
     export BAK_RESTORE="$backup"
 }
 
@@ -101,7 +101,7 @@ function kab {
 
     git.is_clean || return "$?"
 
-    run_show "cat $backup | $JOSH_QAP | $(__stream_unpak)" && return 0
+    run_show "cat $backup | $ASH_QAP | $(__stream_unpak)" && return 0
     return "$?"
 }
 
@@ -109,7 +109,7 @@ function kabf {
     local backup="$(__setup.cfg.backup_file_get 2>/dev/null)"
     [ -z "$backup" ] && return "$?"
 
-    run_show "cat $backup | $JOSH_QAP | $(__stream_unpak)" && return 0
+    run_show "cat $backup | $ASH_QAP | $(__stream_unpak)" && return 0
     return "$?"
 }
 

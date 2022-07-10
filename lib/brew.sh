@@ -5,16 +5,16 @@ if [[ -n ${(M)zsh_eval_context:#file} ]]; then
         source "$(dirname $0)/../run/boot.sh"
     fi
 
-    JOSH_CACHE_DIR="$HOME/.cache/josh"
-    if [ ! -d "$JOSH_CACHE_DIR" ]; then
-        mkdir -p "$JOSH_CACHE_DIR"
-        echo " * make Josh cache directory '$JOSH_CACHE_DIR'"
+    ASH_CACHE_DIR="$HOME/.cache/josh"
+    if [ ! -d "$ASH_CACHE_DIR" ]; then
+        mkdir -p "$ASH_CACHE_DIR"
+        echo " * make Josh cache directory '$ASH_CACHE_DIR'"
     fi
 
-    if [ -n "$JOSH_DEST" ]; then
-        BASE="$JOSH_BASE"
+    if [ -n "$ASH_DEST" ]; then
+        BASE="$ASH_BASE"
     else
-        BASE="$JOSH"
+        BASE="$ASH"
     fi
 fi
 
@@ -44,13 +44,13 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     )
 
     function brew.root {
-        local msg="isn't supported '$JOSH_OS': $(uname -srv)"
+        local msg="isn't supported '$ASH_OS': $(uname -srv)"
 
-        if [ "$JOSH_OS" = "BSD" ]; then
+        if [ "$ASH_OS" = "BSD" ]; then
             fail $0 "$msg"
             return 1
 
-        elif [ "$JOSH_OS" = "MAC" ]; then
+        elif [ "$ASH_OS" = "MAC" ]; then
             fail $0 "$msg"
             return 1
         fi

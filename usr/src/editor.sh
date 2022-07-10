@@ -3,7 +3,7 @@ if [ -d "$1" ]; then
 
 elif [ -f "$1" ]; then
 
-    if [ -f "$JOSH_VIU" ] && [[ "$1" =~ "\.(jpe?g|png|gif|ico)$" ]]; then
+    if [ -f "$ASH_VIU" ] && [[ "$1" =~ "\.(jpe?g|png|gif|ico)$" ]]; then
         viu --static --transparent $1
 
     else

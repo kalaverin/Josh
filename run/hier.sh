@@ -222,11 +222,11 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         local dir="$(temp.dir)"
         if [ ! -x "$dir" ]; then
             return 1
-        elif [ -z "$JOSH_MD5_PIPE" ]; then
+        elif [ -z "$ASH_MD5_PIPE" ]; then
             return 2
         fi
 
-        local dst="$dir/$(echo "$USER $HOME $EPOCHSECONDS $$ $*" | sh -c "$JOSH_MD5_PIPE").$USER.$$.tmp"
+        local dst="$dir/$(echo "$USER $HOME $EPOCHSECONDS $$ $*" | sh -c "$ASH_MD5_PIPE").$USER.$$.tmp"
         touch "$dst" 2>/dev/null
         if [ "$?" -gt 0 ]; then
             return 3
@@ -254,8 +254,8 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             fail $0 "\$2.. command line empty: '$1' '${@:2}'"
             return 2
 
-        elif [ -z "$JOSH_MD5_PIPE" ] || [ -z "$JOSH_PAQ" ] || [ -z "$JOSH_QAP" ]; then
-            warn $0 "cache doesnt't works, check JOSH_MD5_PIPE '$JOSH_MD5_PIPE', JOSH_PAQ '$JOSH_PAQ', JOSH_QAP '$JOSH_QAP'"
+        elif [ -z "$ASH_MD5_PIPE" ] || [ -z "$ASH_PAQ" ] || [ -z "$ASH_QAP" ]; then
+            warn $0 "cache doesnt't works, check ASH_MD5_PIPE '$ASH_MD5_PIPE', ASH_PAQ '$ASH_PAQ', ASH_QAP '$ASH_QAP'"
             local command="${@:2}"
             eval ${command}
             local retval="$?"
@@ -282,12 +282,12 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         local body="$(builtin which "$2")"
 
         if [[ ! "$body" -regex-match 'not found$' ]] && [[ "$body" -regex-match "$2 \(\) \{" ]]; then
-            local body="$(eval "builtin which '$2' | $JOSH_MD5_PIPE" | cut -c -16)"
-            local args="$(eval "echo '${@:3}' | $JOSH_MD5_PIPE" | cut -c -16)"
-            local cache="$JOSH_CACHE_DIR/$body/$args"
+            local body="$(eval "builtin which '$2' | $ASH_MD5_PIPE" | cut -c -16)"
+            local args="$(eval "echo '${@:3}' | $ASH_MD5_PIPE" | cut -c -16)"
+            local cache="$ASH_CACHE_DIR/$body/$args"
 
             if [ -z "$args" ] || [ -z "$body" ]; then
-                fail $0 "something went wrong for cache file '$cache', check JOSH_MD5_PIPE '$JOSH_MD5_PIPE'"
+                fail $0 "something went wrong for cache file '$cache', check ASH_MD5_PIPE '$ASH_MD5_PIPE'"
                 return 3
             fi
         fi
@@ -296,18 +296,18 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             local func="$(builtin which -p "$2" 2>/dev/null)"
 
             if [ -x "$func" ]; then
-                local body="$(eval "cat '$func' | $JOSH_MD5_PIPE" | cut -c -16)"
-                local args="$(eval "echo '${@:3}' | $JOSH_MD5_PIPE" | cut -c -16)"
-                local cache="$JOSH_CACHE_DIR/$body/$args"
+                local body="$(eval "cat '$func' | $ASH_MD5_PIPE" | cut -c -16)"
+                local args="$(eval "echo '${@:3}' | $ASH_MD5_PIPE" | cut -c -16)"
+                local cache="$ASH_CACHE_DIR/$body/$args"
             fi
         fi
 
         if [ -z "$cache" ]; then
-            local args="$(eval "echo '${@:2}' | $JOSH_MD5_PIPE" | cut -c -32)"
-            local cache="$JOSH_CACHE_DIR/.pipelines/$args"
+            local args="$(eval "echo '${@:2}' | $ASH_MD5_PIPE" | cut -c -32)"
+            local cache="$ASH_CACHE_DIR/.pipelines/$args"
 
             if [ -z "$args" ]; then
-                fail $0 "something went wrong for cache file '$cache', check JOSH_MD5_PIPE '$JOSH_MD5_PIPE'"
+                fail $0 "something went wrong for cache file '$cache', check ASH_MD5_PIPE '$ASH_MD5_PIPE'"
                 return 4
             fi
         fi
@@ -332,7 +332,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
         if [ -z "$BINARY_SAFE" ]; then
             if [ "$expired" -eq 0 ]; then
-                result="$(eval.run "cat '$cache' | $JOSH_QAP 2>/dev/null")"
+                result="$(eval.run "cat '$cache' | $ASH_QAP 2>/dev/null")"
                 local retval="$?"
 
                 if [ "$retval" -eq 0 ]; then
@@ -349,7 +349,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             local retval="$?"
 
             if [ "$retval" -eq 0 ]; then
-                eval {"echo '$result' | $JOSH_PAQ > '$cache'"}
+                eval {"echo '$result' | $ASH_PAQ > '$cache'"}
                 echo "$result"
             fi
             return "$retval"
@@ -358,7 +358,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             local dir="$(temp.dir)"
             if [ ! -x "$dir" ]; then
                 return 1
-            elif [ -z "$JOSH_MD5_PIPE" ]; then
+            elif [ -z "$ASH_MD5_PIPE" ]; then
                 return 2
             fi
 
@@ -369,7 +369,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             fi
 
             if [ "$expired" -eq 0 ]; then
-                local cmd="cat '$cache' | $JOSH_QAP 2>/dev/null >'$tempfile'"
+                local cmd="cat '$cache' | $ASH_QAP 2>/dev/null >'$tempfile'"
                 eval ${cmd} >/dev/null
                 local retval="$?"
                 if [ "$retval" -eq 0 ]; then
@@ -389,7 +389,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
             if [ "$retval" -eq 0 ]; then
                 cat "$tempfile"
-                local cmd="cat '$tempfile' | $JOSH_PAQ >'$cache'"
+                local cmd="cat '$tempfile' | $ASH_PAQ >'$cache'"
                 eval ${cmd}
             fi
             unlink "$tempfile"
