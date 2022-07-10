@@ -413,7 +413,7 @@ if [ -z "$ASH" ] || [ -z "$ZSH" ]; then
     export ASH="${ASH:-$HOME/.ash}"
     export PATH="$ASH/bin:$PATH"
 
-    export ASH_CACHE="$HOME/.cache/josh"
+    export ASH_CACHE="$HOME/.cache/ash"
     [ ! -d "$ASH_CACHE" ] && mkdir -p "$ASH_CACHE"
 fi
 

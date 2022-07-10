@@ -36,12 +36,12 @@ function __get_updates_count {
         fail $0 "ASH:'$ASH' isn't accessible"
         return 1
 
-    elif [ -z "$ASH_CACHE_DIR" ]; then
-        fail $0 "ASH_CACHE_DIR:'$ASH_CACHE_DIR' isn't accessible"
+    elif [ -z "$ASH_CACHE" ]; then
+        fail $0 "ASH_CACHE:'$ASH_CACHE' isn't accessible"
         return 2
     fi
 
-    local file="$ASH_CACHE_DIR/last-fetch"
+    local file="$ASH_CACHE/last-fetch"
 
     local last_check="$(cat $file 2>/dev/null)"
     [ -z "$last_check" ] && local last_check="0"
@@ -93,8 +93,8 @@ function check_updates {
         fail $0 "ASH:'$ASH' isn't accessible"
         return 1
 
-    elif [ -z "$ASH_CACHE_DIR" ]; then
-        fail $0 "ASH_CACHE_DIR:'$ASH_CACHE_DIR' isn't accessible"
+    elif [ -z "$ASH_CACHE" ]; then
+        fail $0 "ASH_CACHE:'$ASH_CACHE' isn't accessible"
         return 2
     fi
     unset ASH_UPDATES_COUNT
@@ -103,7 +103,7 @@ function check_updates {
     [ "$?" -gt 0 ] && return 1
     [ "$updates" -eq 0 ] && return 0
 
-    local file="$ASH_CACHE_DIR/last-update"
+    local file="$ASH_CACHE/last-update"
     local last_check="$(cat $file 2>/dev/null)"
     [ -z "$last_check" ] && local last_check="0"
 
@@ -132,7 +132,7 @@ function check_updates {
     fi
 
     ASH_UPDATES_COUNT="$updates"
-    [ ! -d "$ASH_CACHE_DIR" ] && mkdir -p "$ASH_CACHE_DIR"
+    [ ! -d "$ASH_CACHE" ] && mkdir -p "$ASH_CACHE"
     echo "$EPOCHSECONDS" > "$file"
     echo "$branch"
 }

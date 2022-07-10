@@ -284,7 +284,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         if [[ ! "$body" -regex-match 'not found$' ]] && [[ "$body" -regex-match "$2 \(\) \{" ]]; then
             local body="$(eval "builtin which '$2' | $ASH_MD5_PIPE" | cut -c -16)"
             local args="$(eval "echo '${@:3}' | $ASH_MD5_PIPE" | cut -c -16)"
-            local cache="$ASH_CACHE_DIR/$body/$args"
+            local cache="$ASH_CACHE/$body/$args"
 
             if [ -z "$args" ] || [ -z "$body" ]; then
                 fail $0 "something went wrong for cache file '$cache', check ASH_MD5_PIPE '$ASH_MD5_PIPE'"
@@ -298,13 +298,13 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             if [ -x "$func" ]; then
                 local body="$(eval "cat '$func' | $ASH_MD5_PIPE" | cut -c -16)"
                 local args="$(eval "echo '${@:3}' | $ASH_MD5_PIPE" | cut -c -16)"
-                local cache="$ASH_CACHE_DIR/$body/$args"
+                local cache="$ASH_CACHE/$body/$args"
             fi
         fi
 
         if [ -z "$cache" ]; then
             local args="$(eval "echo '${@:2}' | $ASH_MD5_PIPE" | cut -c -32)"
-            local cache="$ASH_CACHE_DIR/.pipelines/$args"
+            local cache="$ASH_CACHE/.pipelines/$args"
 
             if [ -z "$args" ]; then
                 fail $0 "something went wrong for cache file '$cache', check ASH_MD5_PIPE '$ASH_MD5_PIPE'"
