@@ -16,11 +16,6 @@ zmodload zsh/stat
 zmodload zsh/datetime
 zmodload zsh/parameter
 
-
-JOSH_URL='https://github.com/YaakovTooth/Josh.git'
-JOSH_PATH='custom/plugins/josh'
-JOSH_SUBDIR_NAME='.josh'
-
 perm_path=(
     $HOME/.cargo/bin
 )
@@ -124,7 +119,7 @@ function fs.realdir {
 }
 
 function fs.joshpath {
-    if [ -z "$1" ] || [ -z "$JOSH" ]; then
+    if [ -z "$1" ] || [ -z "$ASH" ]; then
         return 1
     fi
 
@@ -133,12 +128,12 @@ function fs.joshpath {
         return 2
     fi
 
-    let length="${#result} - ${#JOSH} - 2"
+    let length="${#result} - ${#ASH} - 2"
     echo "${result[${#result} - $length,${#result}]}"
 }
 
 function fs.gethash {
-    if [ -z "$1" ] || [ -z "$JOSH" ]; then
+    if [ -z "$1" ] || [ -z "$ASH" ]; then
         return 1
     fi
 
@@ -153,7 +148,7 @@ function fs.gethash {
         return 3
     fi
 
-    let length="${#result} - ${#JOSH} - 2"
+    let length="${#result} - ${#ASH} - 2"
     echo "${result[${#result} - $length,${#result}]}:$meta[8]:$meta[10]"
 }
 
@@ -276,7 +271,7 @@ function fs.home {
 function fs.link {
     [ -z "$ZSH" ] || [ -z "$1" ] && return 1
 
-    local dir="$JOSH/bin"
+    local dir="$ASH/bin"
 
     if [ -z "$2" ]; then
         local src="$dir/$(fs.basename "$1")"
@@ -316,7 +311,7 @@ function fs.link {
 function fs.link.remove {
     [ -z "$ZSH" ] || [ -z "$1" ] && return 1
 
-    local dir="$JOSH/bin"
+    local dir="$ASH/bin"
 
     if [[ "$1" =~ "/" ]]; then
         fail $0 "'$1' couldn't contains slashes"
@@ -365,12 +360,12 @@ function which {
         printf " ** fail ($0): link name '$src' couldn't contains slashes\n" >&2
         return 3
 
-    elif [ -z "$JOSH" ]; then
-        printf " ++ warn ($0): root '$JOSH' isn't defined\n" >&2
+    elif [ -z "$ASH" ]; then
+        printf " ++ warn ($0): root '$ASH' isn't defined\n" >&2
     fi
 
-    if [ -n "$JOSH" ] && [ -L "$JOSH/bin/$src" ]; then
-        local dst="$JOSH/bin/$src"
+    if [ -n "$ASH" ] && [ -L "$ASH/bin/$src" ]; then
+        local dst="$ASH/bin/$src"
 
     elif [ -n "$PYTHON_BINARIES" ] && [[ "$src" -regex-match '[0-9]+\.[0-9]+' ]] && [ -x "$PYTHON_BINARIES/$MATCH/bin/python" ]; then
         local dst="$PYTHON_BINARIES/$MATCH/bin/python"
@@ -396,7 +391,7 @@ function which {
 }
 
 
-if [ -z "$JOSH" ]; then
+if [ -z "$ASH" ] || [ -z "$ZSH" ]; then
     local redirect="$(fs.home)"
     if [ -x "$redirect" ] && [ ! "$redirect" = "$HOME" ]; then
         if [ "$(fs.realpath "$redirect")" != "$(fs.realpath "$HOME")" ]; then
@@ -405,49 +400,23 @@ if [ -z "$JOSH" ]; then
         export HOME="$redirect"
     fi
 
-    export ZSH="$HOME/$JOSH_SUBDIR_NAME"
-    export JOSH="$ZSH/$JOSH_PATH"
-    export PATH="$JOSH/bin:$PATH"
+    export ZSH="${ZSH:-$HOME/.oh-my-zsh}"
+    export ASH="${ASH:-$HOME/.ash}"
+    export PATH="$ASH/bin:$PATH"
+
+    export ASH_CACHE="$HOME/.cache/josh"
+    [ ! -d "$ASH_CACHE" ] && mkdir -p "$ASH_CACHE"
 fi
 
 
-if [[ -z ${(M)zsh_eval_context:#file} ]]; then
-    if [ ! -x "$(builtin which git)" ]; then
-        printf " ++ warn ($0): 'git' is required, but doesn't exist\n" >&2
-
-    else
-        JOSH_DEST="$HOME/$JOSH_SUBDIR_NAME.engine"  && [ -d "$JOSH_DEST" ] && rm -rf "$JOSH_DEST"
-        JOSH_BASE="$HOME/$JOSH_SUBDIR_NAME.wrapper" && [ -d "$JOSH_BASE" ] && rm -rf "$JOSH_BASE"
-
-        printf " -- info ($0): initial deploy to $JOSH_DEST, Josh to $JOSH_BASE\n" >&2
-        git clone "$JOSH_URL" "$JOSH_BASE"
-        [ "$?" -gt 0 ] && return 2
-
-        if [ -n "$JOSH_BRANCH" ]; then
-            builtin cd "$JOSH_BASE/run/"
-            [ $? -gt 0 ] && return 3
-
-            printf " -- info ($0): fetch Josh from '$JOSH_BRANCH'\n" >&2
-            cmd="git fetch origin "$JOSH_BRANCH":"$JOSH_BRANCH" && git checkout --force --quiet $JOSH_BRANCH && git reset --hard $JOSH_BRANCH && git pull --ff-only --no-edit --no-commit --verbose origin $JOSH_BRANCH"
-
-            printf " -- info ($0): -> $cmd\n" >&2
-            $SHELL -c "$cmd"
-            [ "$?" -gt 0 ] && return 4
-        fi
-
-        source $JOSH_BASE/run/strap.sh && \
-        check_requirements && \
-        prepare_and_deploy && \
-        replace_existing_installation
-
-        builtin cd "$HOME" && exec zsh
-    fi
-
-
-else
+if [[ -n ${(M)zsh_eval_context:#file} ]]; then
     local THIS_SOURCE="$(fs.gethash "$0")"
     if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; then
         SOURCES_CACHE+=("$THIS_SOURCE")
         source "$(fs.dirname $0)/init.sh"
     fi
+else
+
+    printf " ** fail ($0): do not run or eval, just source it\n" >&2
+    return 2
 fi

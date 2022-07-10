@@ -69,44 +69,4 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         [ -z "$1" ] && return 1
         mkdir -p "$*" && cd "$*"
     }
-
-    function run_show {
-        local cmd="$*"
-        [ -z "$cmd" ] && return 1
-        echo " -> $cmd" 1>&2
-        eval ${cmd} 1>&2
-    }
-
-    function run_silent {
-        local cmd="$*"
-        [ -z "$cmd" ] && return 1
-        echo " -> $cmd" 1>&2
-        eval ${cmd} 1>/dev/null 2>/dev/null
-    }
-
-    function run_to_stdout {
-        local cmd="$*"
-        [ -z "$cmd" ] && return 1
-        eval ${cmd} 2>&1
-    }
-
-    function run_hide {
-        local cmd="$*"
-        [ -z "$cmd" ] && return 1
-        eval ${cmd} 1>/dev/null 2>/dev/null
-    }
-
-    function fs.lm {
-        local args="$*"
-        [ -x "$1" ] && local args="$(fs.realpath "$1") ${@:2}"
-        local cmd="find $args -printf \"%T@ %p\n\" | sort -n | tail -n 1"
-        eval ${cmd}
-    }
-
-    function fs.lm.dirs {
-        local args="$*"
-        [ -x "$1" ] && local args="$(fs.realpath "$1") ${@:2}"
-        local cmd="find $args -type d -not -path '*/.git*' -printf \"%T@ %p\n\" | sort -n | tail -n 1 | grep -Po '\d+' | head -n 1"
-        eval ${cmd}
-    }
 fi

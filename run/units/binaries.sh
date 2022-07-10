@@ -1,38 +1,29 @@
 #!/bin/zsh
 
-if [[ -n ${(M)zsh_eval_context:#file} ]]; then
-    [ -z "$HTTP_GET" ] && source "$(dirname $0)/../boot.sh"
-    [ -z "$OMZ_PLUGIN_DIR" ] && source "$(fs.dirname $0)/oh-my-zsh.sh"
 
-    BINARY_DEST="$HOME/.local/bin"
-    [ ! -d "$BINARY_DEST" ] && mkdir -p "$BINARY_DEST"
+export LOCAL_BIN="$HOME/.local/bin"
+[ ! -d "$LOCAL_BIN" ] && mkdir -p "$LOCAL_BIN"
+[ -z "$PLUGINS_ROOT" ] && source "$(fs.dirname $0)/oh-my-zsh.sh"
 
-    if [ -n "$JOSH_DEST" ]; then
-        info $0 "compile binaries to '$BINARY_DEST'"
-        BASE="$JOSH_BASE"
-    else
-        BASE="$JOSH"
-    fi
-fi
 
 # ——— ondir events runner
 
-function __setup.bin.compile_ondir {
-    if [ -x "$BINARY_DEST/ondir" ]; then
+function bin.compile_ondir {
+    if [ -x "$LOCAL_BIN/ondir" ]; then
         return 0
     fi
 
-    if [ -z "$OMZ_PLUGIN_DIR" ]; then
+    if [ -z "$PLUGINS_ROOT" ]; then
         info $0 "plugins dir isn't set"
         return 1
 
-    elif [ ! -d "$OMZ_PLUGIN_DIR/ondir" ]; then
-        git clone --depth 1 "https://github.com/alecthomas/ondir.git" "$OMZ_PLUGIN_DIR/ondir"
+    elif [ ! -d "$PLUGINS_ROOT/ondir" ]; then
+        git clone --depth 1 "https://github.com/alecthomas/ondir.git" "$PLUGINS_ROOT/ondir"
     fi
 
     local cwd="$PWD"
-    info $0 "compile ondir in '$OMZ_PLUGIN_DIR' -> '$BINARY_DEST'"
-    builtin cd "$OMZ_PLUGIN_DIR/ondir" && make clean && make && mv ondir "$BINARY_DEST/ondir" && make clean
+    info $0 "compile ondir in '$PLUGINS_ROOT' -> '$LOCAL_BIN'"
+    builtin cd "$PLUGINS_ROOT/ondir" && make clean && make && mv ondir "$LOCAL_BIN/ondir" && make clean
 
     local retval="$?"
     [ "$retval" -gt 0 ] && fail $0 "something went wrong"
@@ -43,71 +34,70 @@ function __setup.bin.compile_ondir {
 
 # ——— fzf search
 
-function __setup.bin.compile_fzf {
+function bin.compile_fzf {
     local url='https://github.com/junegunn/fzf.git'
     local clone="$(which git) clone --depth 1"
 
-    [ ! -d "$BINARY_DEST" ] && mkdir -p "$BINARY_DEST"
-    if [ ! -d "$BINARY_DEST" ]; then
-        fail $0 "binary dir doesn't exist, BINARY_DEST '$BINARY_DEST'"
+    [ ! -d "$LOCAL_BIN" ] && mkdir -p "$LOCAL_BIN"
+    if [ ! -d "$LOCAL_BIN" ]; then
+        fail $0 "binary dir doesn't exist, LOCAL_BIN '$LOCAL_BIN'"
         return 1
 
-    elif [ -x "$BINARY_DEST/fzf" ]; then
-        [ -f "$BINARY_DEST/fzf.bak" ] && rm "$BINARY_DEST/fzf.bak"
+    elif [ -x "$LOCAL_BIN/fzf" ]; then
+        [ -f "$LOCAL_BIN/fzf.bak" ] && rm "$LOCAL_BIN/fzf.bak"
 
-        if [ "$(find $BINARY_DEST/fzf -mmin +129600 2>/dev/null | grep fzf)" ]; then
-            mv "$BINARY_DEST/fzf" "$BINARY_DEST/fzf.bak"
+        if [ "$(find $LOCAL_BIN/fzf -mmin +129600 2>/dev/null | grep fzf)" ]; then
+            mv "$LOCAL_BIN/fzf" "$LOCAL_BIN/fzf.bak"
         fi
     fi
 
-    if [ ! -f "$BINARY_DEST/fzf" ]; then
-        info $0 "deploy fzf to $BINARY_DEST/fzf"
+    if [ ! -f "$LOCAL_BIN/fzf" ]; then
+        info $0 "deploy fzf to $LOCAL_BIN/fzf"
 
         local tempdir="$(fs.dirname `mktemp -duq`)/fzf"
         [ -d "$tempdir" ] && rm -rf "$tempdir"
 
-        $SHELL -c "$clone $url $tempdir && $tempdir/install --completion --key-bindings --update-rc --bin && cp -f $tempdir/bin/fzf $BINARY_DEST/fzf && rm -rf $tempdir"
+        $SHELL -c "$clone $url $tempdir && $tempdir/install --completion --key-bindings --update-rc --bin && cp -f $tempdir/bin/fzf $LOCAL_BIN/fzf && rm -rf $tempdir"
         [ "$?" -gt 0 ] && fail $0 "something went wrong"
     fi
 
-    if [ -f "$BINARY_DEST/fzf.bak" ]; then
-        if [ -f "$BINARY_DEST/fzf" ]; then
-            rm "$BINARY_DEST/fzf.bak"
+    if [ -f "$LOCAL_BIN/fzf.bak" ]; then
+        if [ -f "$LOCAL_BIN/fzf" ]; then
+            rm "$LOCAL_BIN/fzf.bak"
         else
-            mv "$BINARY_DEST/fzf.bak" "$BINARY_DEST/fzf"
+            mv "$LOCAL_BIN/fzf.bak" "$LOCAL_BIN/fzf"
         fi
     fi
 }
 
 # ——— micro editor
 
-function __setup.bin.deploy_micro {
+function bin.deploy_micro {
     local url='https://getmic.ro'
 
-    [ ! -d "$BINARY_DEST" ] && mkdir -p "$BINARY_DEST"
-    if [ ! -d "$BINARY_DEST" ]; then
-        fail $0 "binary dir doesn't exist, BINARY_DEST '$BINARY_DEST'"
+    if [ -z "$HTTP_GET" ]; then
+        fail $0 "HTTP_GET isn't set"
         return 1
 
-    elif [ ! -x "$BINARY_DEST/micro" ]; then
-        # $BINARY_DEST/micro --version | head -n 1 | awk '{print $2}'
+    elif [ ! -x "$LOCAL_BIN/micro" ]; then
+        # $LOCAL_BIN/micro --version | head -n 1 | awk '{print $2}'
 
         local cwd="$PWD"
-        info $0 "deploy micro: $BINARY_DEST/micro"
-        builtin cd "$BINARY_DEST" && $SHELL -c "$HTTP_GET $url | $SHELL"
+        info $0 "deploy micro: $LOCAL_BIN/micro"
+        builtin cd "$LOCAL_BIN" && $SHELL -c "$HTTP_GET $url | $SHELL"
 
         [ "$?" -gt 0 ] && fail $0 "something went wrong"
-        $SHELL -c "$BINARY_DEST/micro -plugin install fzf wc detectindent bounce editorconfig quickfix"
+        $SHELL -c "$LOCAL_BIN/micro -plugin install fzf wc detectindent bounce editorconfig quickfix"
         builtin cd "$cwd"
     fi
-    source "$BASE/run/units/configs.sh"
-    __setup.cfg.copy_config "$CONFIG_ROOT/micro_config.json" "$CONFIG_DIR/micro/settings.json"
-    __setup.cfg.copy_config "$CONFIG_ROOT/micro_binds.json" "$CONFIG_DIR/micro/bindings.json"
+    source "$ASH/run/units/configs.sh"
+    cfg.copy "$ASH/usr/share/micro_config.json" "$CONFIG_DIR/micro/settings.json"
+    cfg.copy "$ASH/usr/share/micro_binds.json" "$CONFIG_DIR/micro/bindings.json"
 }
 
 # ——— tmux plugin manager
 
-function __setup.bin.deploy_tmux_plugins {
+function bin.deploy_tmux_plugins {
     local TMUX_DEST="$HOME/.tmux/plugins"
 
     [ ! -d "$TMUX_DEST" ] && mkdir -p "$TMUX_DEST"
@@ -132,15 +122,15 @@ function __setup.bin.deploy_tmux_plugins {
 }
 
 
-function __setup.bin.link_fpp {
-    local src="$OMZ_PLUGIN_DIR/fpp"
+function bin.link_fpp {
+    local src="$PLUGINS_ROOT/fpp"
 
-    if [ -z "$OMZ_PLUGIN_DIR" ]; then
+    if [ -z "$PLUGINS_ROOT" ]; then
         fail $0 "plugins dir isn't set"
         return 1
 
     elif [ ! -d "$src" ]; then
-        info $0 "deploy to '$OMZ_PLUGIN_DIR'"
+        info $0 "deploy to '$PLUGINS_ROOT'"
         git clone --depth 1 "https://github.com/facebook/PathPicker.git" "$src"
         local retval="$?"
     fi
@@ -158,15 +148,15 @@ function __setup.bin.link_fpp {
     return "$retval"
 }
 
-function __setup.bin.link_git_tools {
-    local src="$OMZ_PLUGIN_DIR/git-tools"
+function bin.link_git_tools {
+    local src="$PLUGINS_ROOT/git-tools"
 
-    if [ -z "$OMZ_PLUGIN_DIR" ]; then
+    if [ -z "$PLUGINS_ROOT" ]; then
         fail $0 "plugins dir isn't set"
         return 1
 
     elif [ ! -d "$src" ]; then
-        info $0 "deploy '$OMZ_PLUGIN_DIR'"
+        info $0 "deploy '$PLUGINS_ROOT'"
         git clone --depth 1 "https://github.com/MestreLion/git-tools.git" "$src"
         local retval="$?"
     fi
@@ -189,11 +179,16 @@ function __setup.bin.link_git_tools {
     return "$retval"
 }
 
-function __setup.bin.deploy_binaries {
-    __setup.bin.compile_fzf && \
-    __setup.bin.deploy_micro && \
-    __setup.bin.deploy_tmux_plugins && \
-    __setup.bin.compile_ondir && \
-    __setup.bin.link_fpp && \
-    __setup.bin.link_git_tools || return "$?"
+function bin.install {
+    if [ ! -x "$ASH" ]; then
+        term $0 "something went wrong, ASH path empty"
+        return 1
+    fi
+
+    bin.compile_fzf
+    bin.deploy_micro
+    bin.deploy_tmux_plugins
+    bin.compile_ondir
+    bin.link_fpp
+    bin.link_git_tools
 }

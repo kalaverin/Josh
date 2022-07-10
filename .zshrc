@@ -1,4 +1,4 @@
-source "$HOME/.josh/custom/plugins/josh/run/boot.sh"
+source "$HOME/.ash/core.sh"
 
 path=(
     $path

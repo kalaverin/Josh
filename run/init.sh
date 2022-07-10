@@ -32,7 +32,13 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     else
         function __log.draw {
             __log.spaces "$PRE"
-            local msg="$(echo "${@:6}" | sd '[\$"]' '\\$0')"
+
+            if [ -x "$commands[sd]" ]; then
+                local msg="$(echo "${@:6}" | sd '[\$"]' '\\$0')"
+            else
+                local msg="${@:6}"
+            fi
+
             printf "$2 $1 $4 ($5):$3 $msg\033[0m" >&2
             __log.spaces "${POST:-1}"
         }

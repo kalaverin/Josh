@@ -149,7 +149,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         elif [ -n "$(echo "$osname" | grep -i linux)" ]; then
             export JOSH_OS="LINUX"
             REQ_SYS_LIBS=(
-                python
+                # python
             )
 
             if [ -f "/etc/debian_version" ] || [ -n "$(uname -v | grep -Pi '(debian|ubuntu)')" ]; then
@@ -158,7 +158,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
                 [ -x "$(builtin which -p apt 2>/dev/null)" ] && local bin="apt" || local bin="apt-get"
 
                 local cmd="(sudo $bin update --yes --quiet || true) && sudo $bin install --yes --quiet --no-remove"
-                local pkg="build-essential clang git libevent-dev libpq-dev libssl-dev make pkg-config python-dev python3 python3-distutils zsh"
+                local pkg="build-essential clang git libevent-dev libpq-dev libssl-dev make tmux pkg-config python3 python3-distutils zsh"
 
 
             elif [ -f "/etc/arch-release" ] || [ -n "$(uname -v | grep -Pi '(arch|manjaro)')" ]; then
@@ -181,6 +181,12 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             info $0 "os unknown: $osname"
             export JOSH_OS="UNKNOWN"
         fi
+
+        # local binaries=( xargs realpath awk grep test2 )
+        # if local missing="$(fs.lookup.missing "$binaries")" && [ -n "$missing" ]; then
+        #     fail $0 "missing binaries: $missing"
+        #     return 1
+        # fi
 
         compat.libraries $REQ_LIBS $REQ_SYS_LIBS && \
         compat.executables $REQ_BINS $REQ_SYS_BINS

@@ -23,7 +23,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
     function fs.lookup.missing {
         local missing=""
-        for bin in $(echo "$*" | sd '\s+' '\n' | sort -u); do
+        for bin in $(echo "$*" | sed -re 's#\s+#\n#g' | sort -u); do
             if [ ! -x "$commands[$bin]" ] && [ ! -x "$(builtin which -p "$bin" 2>/dev/null)" ]; then
                 if [ -z "$missing" ]; then
                     local missing="$bin"
@@ -116,7 +116,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     function fs.lm.many {
         if [ -n "$*" ]; then
             local result="$(
-                builtin zstat -L `echo "$*" | sd ':' ' ' | sd '\n+' ' '` 2>/dev/null | \
+                builtin zstat -L `echo "$*" | sed -re 's#:# #g' | sed -re 's#\n# #g'` 2>/dev/null | \
                 grep mtime | awk -F ' ' '{print $2}' | sort -n | tail -n 1 \
             )"
             echo "$result"
@@ -124,12 +124,17 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     }
 
     function path.clean.uncached {
+        if [ ! -x "$ASH" ]; then
+            term $0 "something went wrong, ASH path empty"
+            return 1
+        fi
+
         local unified_path
 
         unified_path="$(
             echo "$*" | sed 's#:#\n#g' | sed "s:^~/:$HOME/:" | \
             xargs -n 1 realpath 2>/dev/null | awk '!x[$0]++' | \
-            grep -v "$JOSH" | \
+            grep -v "$ASH" | \
             sed -z 's#\n#:#g' | sed 's#:$##g')" || return "$?"
 
         if [ -z "$unified_path" ]; then
@@ -164,14 +169,14 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     }
 
     function fs.path.fix {
-        if [ ! -x "$JOSH" ]; then
-            fail $0 "something went wrong, JOSH path empty"
+        if [ ! -x "$ASH" ]; then
+            term $0 "something went wrong, ASH path empty"
             return 1
         fi
 
         rehash
         for key link in ${(kv)commands}; do
-            if [[ "$link" -regex-match "^$JOSH" ]] && [ ! -x "$link" ]; then
+            if [[ "$link" -regex-match "^$ASH" ]] && [ ! -x "$link" ]; then
                 local dir="$(fs.dirname $link)"
                 if [ -w "$dir" ]; then
                     local bin="$(builtin which -p "$key")"
@@ -189,14 +194,19 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     }
 
     function path.rehash {
-        source "$JOSH/run/boot.sh"
+        if [ ! -x "$ASH" ]; then
+            term $0 "something went wrong, ASH path empty"
+            return 1
+        fi
+
+        source "$ASH/run/boot.sh"
 
         local result
         result="$(eval.cached "$(fs.lm.many $path)" path.clean.uncached "$path")"
         local retval="$?"
 
         if [ "$retval" -eq 0 ] || [ -n "$result" ]; then
-            export PATH="$JOSH/bin:$result"
+            export PATH="$ASH/bin:$result"
             fs.path.fix
         fi
         return "$retval"
@@ -385,5 +395,45 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             unlink "$tempfile"
             return "$retval"
         fi
+    }
+
+    function run_show {
+        local cmd="$*"
+        [ -z "$cmd" ] && return 1
+        echo " -> $cmd" 1>&2
+        eval ${cmd} 1>&2
+    }
+
+    function run_silent {
+        local cmd="$*"
+        [ -z "$cmd" ] && return 1
+        echo " -> $cmd" 1>&2
+        eval ${cmd} 1>/dev/null 2>/dev/null
+    }
+
+    function run_to_stdout {
+        local cmd="$*"
+        [ -z "$cmd" ] && return 1
+        eval ${cmd} 2>&1
+    }
+
+    function run_hide {
+        local cmd="$*"
+        [ -z "$cmd" ] && return 1
+        eval ${cmd} 1>/dev/null 2>/dev/null
+    }
+
+    function fs.lm {
+        local args="$*"
+        [ -x "$1" ] && local args="$(fs.realpath "$1") ${@:2}"
+        local cmd="find $args -printf \"%T@ %p\n\" | sort -n | tail -n 1"
+        eval ${cmd}
+    }
+
+    function fs.lm.dirs {
+        local args="$*"
+        [ -x "$1" ] && local args="$(fs.realpath "$1") ${@:2}"
+        local cmd="find $args -type d -not -path '*/.git*' -printf \"%T@ %p\n\" | sort -n | tail -n 1 | grep -Po '\d+' | head -n 1"
+        eval ${cmd}
     }
 fi
