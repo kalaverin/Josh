@@ -1,4 +1,4 @@
-source "$HOME/.ash/core.sh"
+source "$HOME/.ash/run/core.sh"
 
 path=(
     $path
