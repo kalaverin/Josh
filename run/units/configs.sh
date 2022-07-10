@@ -20,7 +20,7 @@ function cfg.copy {
     local cfg_modified count src_sum dst_sum
 
     local src="$1"
-    if [ ! -f "$src" ]; then
+    if [ ! -e "$src" ]; then
         fail $0 "copy config failed, source '$src' doesn't exist"
         return 1
     fi
