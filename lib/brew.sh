@@ -83,7 +83,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         [ -z "$root" ] && return 1
 
         if [ ! -x "$root/bin/brew" ]; then
-            fail $0 "brew binary '$root/bin/brew' isn't found, deploy now"
+            warn $0 "brew binary '$root/bin/brew' isn't found, deploy now"
             brew.deploy || return 2
         fi
 
