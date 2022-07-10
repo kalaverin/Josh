@@ -1,31 +1,5 @@
 #!/bin/sh
 
-if [[ -n ${(M)zsh_eval_context:#file} ]]; then
-    if [ -z "$HTTP_GET" ]; then
-        source "$(dirname $0)/../run/boot.sh"
-    fi
-
-    ASH_CACHE_DIR="$HOME/.cache/josh"
-    if [ ! -d "$ASH_CACHE_DIR" ]; then
-        mkdir -p "$ASH_CACHE_DIR"
-        info $0 "make Josh cache directory '$ASH_CACHE_DIR'"
-    fi
-
-    PYTHON_BINARIES="$HOME/.python"
-    [ ! -d "$PYTHON_BINARIES" ] && mkdir -p "$PYTHON_BINARIES"
-
-    if [ ! -d "$PYTHON_BINARIES" ]; then
-        mkdir -p "$PYTHON_BINARIES"
-        info $0 "make Python default directory '$PYTHON_BINARIES'"
-    fi
-
-    if [ -n "$ASH_DEST" ]; then
-        BASE="$ASH_BASE"
-    else
-        BASE="$ASH"
-    fi
-fi
-
 [ -z "$SOURCES_CACHE" ] && declare -aUg SOURCES_CACHE=() && SOURCES_CACHE+=($0)
 
 local THIS_SOURCE="$(fs.gethash "$0")"
@@ -451,6 +425,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     function pip.deploy {
         if [ -z "$1" ]; then
             local python="$(py.exe)"
+
         else
             local python="$(which "$1")"
             if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
@@ -465,7 +440,11 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             return 2
         fi
 
-        if [ ! -x "$(pip.lookup)" ]; then
+        if [ -z "$HTTP_GET" ]; then
+            fail $0 "HTTP_GET isn't set"
+            return 1
+
+        elif [ ! -x "$(pip.lookup)" ]; then
             local version="$(py.ver "$python")"
             if [ -z "$version" ]; then
                 fail $0 "python $py.ver fetch"

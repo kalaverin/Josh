@@ -1,24 +1,5 @@
 #!/bin/zsh
 
-if [[ -n ${(M)zsh_eval_context:#file} ]]; then
-    if [ -z "$HTTP_GET" ]; then
-        source "$(dirname $0)/../run/boot.sh"
-    fi
-
-    ASH_CACHE_DIR="$HOME/.cache/josh"
-    if [ ! -d "$ASH_CACHE_DIR" ]; then
-        mkdir -p "$ASH_CACHE_DIR"
-        echo " * make Josh cache directory '$ASH_CACHE_DIR'"
-    fi
-
-    if [ -n "$ASH_DEST" ]; then
-        BASE="$ASH_BASE"
-    else
-        BASE="$ASH"
-    fi
-fi
-
-
 [ -z "$SOURCES_CACHE" ] && declare -aUg SOURCES_CACHE=() && SOURCES_CACHE+=($0)
 
 local THIS_SOURCE="$(fs.gethash "$0")"

@@ -1,30 +1,7 @@
 #!/bin/zsh
 
-if [[ -n ${(M)zsh_eval_context:#file} ]]; then
-    if [ -z "$HTTP_GET" ]; then
-        source "$(dirname $0)/../run/boot.sh"
-    fi
-
-    ASH_CACHE_DIR="$HOME/.cache/josh"
-    if [ ! -d "$ASH_CACHE_DIR" ]; then
-        mkdir -p "$ASH_CACHE_DIR"
-        echo " * make Josh cache directory \`$ASH_CACHE_DIR\`"
-    fi
-
-    CARGO_BINARIES="$HOME/.cargo/bin"
-    [ ! -d "$CARGO_BINARIES" ] && mkdir -p "$CARGO_BINARIES"
-
-    if [ ! -d "$CARGO_BINARIES" ]; then
-        mkdir -p "$CARGO_BINARIES"
-        echo " * make Cargo goods directory \`$CARGO_BINARIES\`"
-    fi
-
-    if [ -n "$ASH_DEST" ]; then
-        BASE="$ASH_BASE"
-    else
-        BASE="$ASH"
-    fi
-fi
+CARGO_BINARIES="$HOME/.cargo/bin"
+[ ! -d "$CARGO_BINARIES" ] && mkdir -p "$CARGO_BINARIES"
 
 [ -z "$SOURCES_CACHE" ] && declare -aUg SOURCES_CACHE=() && SOURCES_CACHE+=($0)
 
@@ -183,7 +160,11 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     function cargo.init {
         local cache_exe="$CARGO_BINARIES/sccache"
 
-        if [ ! -x "$CARGO_BIN" ]; then
+        if [ -z "$HTTP_GET" ]; then
+            fail $0 "HTTP_GET isn't set"
+            return 1
+
+        elif [ ! -x "$CARGO_BIN" ]; then
             export RUSTC_WRAPPER=""
             unset RUSTC_WRAPPER
 
