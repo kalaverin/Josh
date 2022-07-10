@@ -391,31 +391,31 @@ function which {
 }
 
 
-if [ -z "$ASH" ] || [ -z "$ZSH" ]; then
-    local redirect="$(fs.home)"
-    if [ -x "$redirect" ] && [ ! "$redirect" = "$HOME" ]; then
-        if [ "$(fs.realpath "$redirect")" != "$(fs.realpath "$HOME")" ]; then
-            printf " ++ warn ($0): HOME:'$HOME' -> '$redirect'\n" >&2
-        fi
-        export HOME="$redirect"
+# if [ -z "$ASH" ] || [ -z "$ZSH" ]; then
+local redirect="$(fs.home)"
+if [ -x "$redirect" ] && [ ! "$redirect" = "$HOME" ]; then
+    if [ "$(fs.realpath "$redirect")" != "$(fs.realpath "$HOME")" ]; then
+        printf " ++ warn ($0): HOME:'$HOME' -> '$redirect'\n" >&2
     fi
-
-    export ZSH="${ZSH:-$HOME/.oh-my-zsh}"
-
-    if [ ! -x "$ZSH" ]; then
-        printf " ** fail ($0): oh-my-zsh dir \$ZSH:'$ZSH' isn't acessible, fallback to default\n" >&2
-        export ZSH="$HOME/.oh-my-zsh"
-        if [ ! -x "$ZSH" ]; then
-            printf " == term ($0): oh-my-zsh dir \$ZSH:'$ZSH' isn't acessible, it's fatal\n" >&2
-        fi
-    fi
-
-    export ASH="${ASH:-$HOME/.ash}"
-    export PATH="$ASH/bin:$PATH"
-
-    export ASH_CACHE="$HOME/.cache/ash"
-    [ ! -d "$ASH_CACHE" ] && mkdir -p "$ASH_CACHE"
+    export HOME="$redirect"
 fi
+
+export ZSH="${ZSH:-$HOME/.oh-my-zsh}"
+
+if [ ! -x "$ZSH" ]; then
+    printf " ** fail ($0): oh-my-zsh dir \$ZSH:'$ZSH' isn't acessible, fallback to default\n" >&2
+    export ZSH="$HOME/.oh-my-zsh"
+    if [ ! -x "$ZSH" ]; then
+        printf " == term ($0): oh-my-zsh dir \$ZSH:'$ZSH' isn't acessible, it's fatal\n" >&2
+    fi
+fi
+
+export ASH="${ASH:-$HOME/.ash}"
+export PATH="$ASH/bin:$PATH"
+
+export ASH_CACHE="$HOME/.cache/ash"
+[ ! -d "$ASH_CACHE" ] && mkdir -p "$ASH_CACHE"
+# fi
 
 
 if [[ -n ${(M)zsh_eval_context:#file} ]]; then
