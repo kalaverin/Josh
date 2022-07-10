@@ -6,7 +6,7 @@ export CONFIG_DIR="$HOME/.config"
 
 
 function cfg.backup {
-    if [ -f "$1" ]; then
+    if [ -e "$1" ]; then
         local dst="$1+`date "+%Y%m%d%H%M%S"`"
         if [ ! -f "$dst" ]; then
             info $0 "backup $1 -> $dst"
@@ -28,7 +28,7 @@ function cfg.copy {
     local dst="$2"
     [ ! -d "$(fs.dirname $dst)" ] && mkdir -p "$(fs.dirname $dst)"
 
-    if [ -f "$dst" ]; then
+    if [ -e "$dst" ]; then
         src_sum="$(git hash-object "$src")" && dst_sum="$(git hash-object "$dst")"
 
         if [ "$?" -eq 0 ] && [[ "$src_sum" != "$dst_sum" ]]; then
