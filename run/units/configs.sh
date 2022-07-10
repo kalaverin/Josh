@@ -7,7 +7,7 @@ export CONFIG_DIR="$HOME/.config"
 
 function cfg.backup {
     if [ -e "$1" ]; then
-        local dst="$1+`date "+%Y%m%d%H%M%S"`"
+        local dst="$1.$(date "+%Y%m%d%H%M%S").bak"
         if [ ! -f "$dst" ]; then
             info $0 "backup $1 -> $dst"
             cp -fa "$1" "$dst"
