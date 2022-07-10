@@ -140,7 +140,7 @@ function cfg.zero_configuration {
 
     cfg.copy "$ASH/.zshrc"         "$HOME/.zshrc"
     cfg.copy "$root/cargo.toml"    "$HOME/.cargo/config.toml"
-    cfg.copy "$root/htop.rc"       "$HOME/htoprc"
+    cfg.copy "$root/htop.rc"       "$CONFIG_DIR/htoprc"
     cfg.copy "$root/logout.zsh"    "$HOME/.zlogout"
     cfg.copy "$root/lsd.yaml"      "$CONFIG_DIR/lsd/config.yaml"
     cfg.copy "$root/mycli.conf"    "$HOME/.myclirc"
