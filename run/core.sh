@@ -67,15 +67,12 @@ function ash.install {
     # TODO: export ASH_VERBOSITY="1"
 
     pip.install $PIP_REQ_PACKAGES && \
-    cfg.install && \
-    bin.install && \
-    omz.install && omz.plugins
+    cfg.install && bin.install && \
+    omz.install && omz.plugins || return "$?"
     cargo.deploy $CARGO_REQ_PACKAGES
-    local result="$?"
 
     cfg.install
     builtin cd "$cwd"
-    return "$result"
 }
 
 
