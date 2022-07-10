@@ -56,7 +56,7 @@ function bak {
     local target="$(temp.dir)/bak/$source"
     [ "$?" -gt 0 ] && return 3
 
-    local backup="$target/$timemark-$(get.name).tar"
+    local backup="$target/$target-$timemark-$(get.name).tar"
     [ "$?" -gt 0 ] && return 4
 
     run_show "mkdir -p \"$target\" 2>/dev/null; $(__stream_pak --exclude-vcs) | $ASH_PAQ > $backup"
@@ -86,7 +86,7 @@ function bakf {
     local target="$(temp.dir)/bak/$source"
     [ "$?" -gt 0 ] && return 3
 
-    local backup="$target/$timemark-$(get.name).tar"
+    local backup="$target/$target-$timemark-$(get.name).tar"
     [ "$?" -gt 0 ] && return 4
 
     run_show "mkdir -p \"$target\" 2>/dev/null; $(__stream_pak --exclude-vcs-ignores) | $ASH_PAQ > $backup"
