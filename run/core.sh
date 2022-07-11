@@ -1012,6 +1012,12 @@ else
         local THIS_SOURCE="$(fs.gethash "$0")"
         if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; then
             SOURCES_CACHE+=("$THIS_SOURCE")
+
+            if [ -n "$ASH" ] && [ ! -d "$ASH" ]; then
+                fail "$0" "running Ash in old Josh context, force redeploy"
+                git clone --branch develop --single-branch 'https://github.com/kalaverin/Josh.git' "$ASH" && \
+                INSTALL=1 zsh "$ASH/run/init.sh"
+            fi
         fi
     else
 
