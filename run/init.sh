@@ -26,9 +26,10 @@ else
         export ASH="$(fs.realpath "$root/../")"
     }
 
+
     function ash.obsolete {
-        if [ -n "$HOME" ] && [ -d "$ZSH" ] && [[ ! "$ZSH" =~ '/.josh$' ]] && [ -d "$HOME/.josh" ]; then
-            info $0 "you can remove old and unused installation, justrun : rm -rf $HOME/.josh/"
+        if [ -d "$HOME/.josh" ] && [ -n "$HOME" ] && [ -d "$ZSH" ] && [[ ! "$ZSH" =~ '/.josh$' ]]; then
+            info $0 "you can remove old and unused installation, just run : rm -rf $HOME/.josh/"
         fi
     }
 
