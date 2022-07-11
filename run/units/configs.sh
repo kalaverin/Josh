@@ -28,7 +28,7 @@ function cfg.copy {
     local dst="$2"
     [ ! -d "$(fs.dirname $dst)" ] && mkdir -p "$(fs.dirname $dst)"
 
-    if [ -e "$dst" ]; then
+    if [ ! -L "$dst" ] && [ -e "$dst" ]; then
         src_sum="$(git hash-object "$src")" && dst_sum="$(git hash-object "$dst")"
 
         if [ "$?" -eq 0 ] && [[ "$src_sum" != "$dst_sum" ]]; then
