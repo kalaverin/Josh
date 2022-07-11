@@ -50,12 +50,12 @@ function cfg.copy {
             fi
         fi
 
-        if [ ! "$ASH_FORCE_CONFIGS" ]; then
+        diff --ignore-blank-lines --strip-trailing-cr --brief "$src" "$dst" 1>/dev/null
+        if [ "$?" -eq 0 ]; then
             return 0
         fi
 
-        diff --ignore-blank-lines --strip-trailing-cr --brief "$src" "$dst" 1>/dev/null
-        if [ "$?" -eq 0 ]; then
+        if [ ! "$ASH_FORCE_CONFIGS" ]; then
             return 0
         fi
 
