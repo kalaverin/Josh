@@ -423,7 +423,7 @@ else
     }
 
 
-    if [ -z "$ASH" ] || [ -z "$ZSH" ] || [ -z "$ASH_CACHE" ]; then
+    if [ -z "$ASH" ] || [ -z "$ZSH" ] || [ -z "$ASH_CACHE" ] || [ "$INSTALL" -gt 0 ]; then
         local redirect="$(fs.home)"
         if [ -x "$redirect" ] && [ ! "$redirect" = "$HOME" ]; then
             if [ "$(fs.realpath "$redirect")" != "$(fs.realpath "$HOME")" ]; then
@@ -438,7 +438,7 @@ else
         export ASH_CACHE="$HOME/.cache/ash"
 
         [ ! -d "$ASH_CACHE" ] && mkdir -p "$ASH_CACHE"
-        [ ! -d "$ZSH" ] && fail $0 "oh-my-zsh dir \$ZSH:'$ZSH' isn't acessible"
+        [ ! -d "$ZSH" ] && fail $0 "oh-my-zsh dir \$ZSH:'$ZSH' doesn't exists"
 
     fi
 
