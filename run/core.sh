@@ -438,6 +438,11 @@ else
 
         [ ! -d "$ASH_CACHE" ] && mkdir -p "$ASH_CACHE"
 
+        if [[ "$ASH" =~ '/.josh/custom/plugins/josh$' ]]; then
+            warn $0 "Ash need to move from $ASH to new location"
+            export ASH="$HOME/.ash"
+        fi
+
         if [[ "$ZSH" =~ '/.josh$' ]] && [ -d "$HOME/.oh-my-zsh" ]; then
             export ZSH="$HOME/.oh-my-zsh"
 
@@ -448,7 +453,6 @@ else
             export ZSH="${ZSH:-$HOME/.oh-my-zsh}"
             [ ! -d "$ZSH" ] && fail $0 "oh-my-zsh dir \$ZSH:'$ZSH' doesn't exists"
         fi
-
     fi
 
     function fs.lookup.missing {
