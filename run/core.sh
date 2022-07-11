@@ -438,8 +438,8 @@ else
 
         [ ! -d "$ASH_CACHE" ] && mkdir -p "$ASH_CACHE"
 
-        if [ "$INSTALL" -gt 0 ]; then
-            unset ZSH
+        if [ "$INSTALL" -gt 0 ] && [[ "$ZSH" =~ '/.josh$' ]]; then
+            export ZSH="$HOME/.oh-my-zsh"
         else
             export ZSH="${ZSH:-$HOME/.oh-my-zsh}"
             [ ! -d "$ZSH" ] && fail $0 "oh-my-zsh dir \$ZSH:'$ZSH' doesn't exists"
