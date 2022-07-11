@@ -26,6 +26,12 @@ else
         export ASH="$(fs.realpath "$root/../")"
     }
 
+    function ash.obsolete {
+        if [ -n "$HOME" ] && [ -d "$ZSH" ] && [[ ! "$ZSH" =~ '/.josh$' ]] && [ -d "$HOME/.josh" ]; then
+            info $0 "you can remove old and unused installation, justrun : rm -rf $HOME/.josh/"
+        fi
+    }
+
 
     function ash.install {
         local branch cwd changes
@@ -92,6 +98,7 @@ else
 
     if [[ -n ${(M)zsh_eval_context:#file} ]]; then
         ash.core
+        ash.obsolete
     else
         ash.install
     fi
