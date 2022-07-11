@@ -30,7 +30,7 @@ function cfg.copy {
 
     if [ -L "$dst" ]; then
         warn $0 "$dst is symlink to $(fs.realpath "$dst"), unlink"
-        unlink "$dst"
+        cfg.backup "$dst" && unlink "$dst"
 
     elif [ -e "$dst" ]; then
         src_sum="$(git hash-object "$src")" && dst_sum="$(git hash-object "$dst")"
