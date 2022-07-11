@@ -423,7 +423,7 @@ else
     }
 
 
-    if [ -z "$ASH" ] || [ -z "$ZSH" ] || [ -z "$ASH_CACHE" ] || [ "$INSTALL" -gt 0 ]; then
+    if [ -z "$ASH" ] || [ -z "$ZSH" ] || [ -z "$ASH_CACHE" ] || [ "$INSTALL" -gt 0 ] || [[ "$ASH" =~ '/.josh/custom/plugins/josh$' ]]; then
         local redirect="$(fs.home)"
         if [ -x "$redirect" ] && [ ! "$redirect" = "$HOME" ]; then
             if [ "$(fs.realpath "$redirect")" != "$(fs.realpath "$HOME")" ]; then
