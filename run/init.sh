@@ -81,6 +81,8 @@ else
         cargo.deploy $CARGO_REQ_PACKAGES
 
         cfg.install
+        ASH_FORCE_CONFIGS=1 cfg.copy "$ASH/.zshrc" "$HOME/.zshrc"
+
         builtin cd "$cwd"
     }
 
