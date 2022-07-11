@@ -423,7 +423,7 @@ else
     }
 
 
-    if [ -z "$ASH" ] || [ -z "$ZSH" ] || [ -z "$ASH_CACHE" ] || [ "$INSTALL" -gt 0 ] || [[ "$ASH" =~ '/.josh/custom/plugins/josh$' ]]; then
+    if [ -z "$ASH" ] || [ -z "$ZSH" ] || [ -z "$ASH_CACHE" ] || [ "$INSTALL" -gt 0 ]; then
         local redirect="$(fs.home)"
         if [ -x "$redirect" ] && [ ! "$redirect" = "$HOME" ]; then
             if [ "$(fs.realpath "$redirect")" != "$(fs.realpath "$HOME")" ]; then
@@ -437,11 +437,6 @@ else
         export ASH_CACHE="$HOME/.cache/ash"
 
         [ ! -d "$ASH_CACHE" ] && mkdir -p "$ASH_CACHE"
-
-        if [[ "$ASH" =~ '/.josh/custom/plugins/josh$' ]]; then
-            warn $0 "Ash need to move from $ASH to new location"
-            export ASH="$HOME/.ash"
-        fi
 
         if [[ "$ZSH" =~ '/.josh$' ]] && [ -d "$HOME/.oh-my-zsh" ]; then
             export ZSH="$HOME/.oh-my-zsh"
@@ -1016,12 +1011,6 @@ else
         local THIS_SOURCE="$(fs.gethash "$0")"
         if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; then
             SOURCES_CACHE+=("$THIS_SOURCE")
-
-            if [ -n "$ASH" ] && [ ! -d "$ASH" ]; then
-                fail "$0" "running Ash in old Josh context, force redeploy"
-                git clone --branch develop --single-branch 'https://github.com/kalaverin/Josh.git' "$ASH" && \
-                INSTALL=1 zsh "$ASH/run/init.sh"
-            fi
         fi
     else
 
