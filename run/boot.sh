@@ -57,9 +57,94 @@ path=(
     $HOME/.brew/bin
 )
 
-function fs_size {
+
+function __log.spaces {
+    if [ -z "$1" ] || [ ! "$1" -gt 0 ]; then
+        return
+
+    elif [ "$1" -gt 0 ]; then
+        for i in {1..$1}; do
+            printf "\n"
+        done
+    fi
+}
+
+if [ "$commands[pastel]" ]; then
+    alias draw="pastel -m 8bit paint -n"
+    function __log.draw {
+        __log.spaces "$PRE"
+        local msg="$(echo "${@:6}" | sd '[\$"]' '\\$0')"
+        printf "$(eval "draw $2 ' $1 $4 ($5):'")$(eval "draw $3 \" $msg\"")"
+        __log.spaces "${POST:-1}"
+    }
+    function depr { __log.draw '~~' 'indigo' 'deeppink' $0 $* >&2 }
+    function info { __log.draw '--' 'limegreen' 'gray' $0 $* >&2 }
+    function warn { __log.draw '++' 'yellow' 'gray' $0 $* >&2 }
+    function fail { __log.draw '==' 'red --bold' 'white --bold' $0 $* >&2 }
+    function term { __log.draw '**' 'white --on red --bold' 'white --bold' $0 $* >&2 }
+
+else
+    function __log.draw {
+        __log.spaces "$PRE"
+
+        if [ -x "$commands[sd]" ]; then
+            local msg="$(echo "${@:6}" | sd '[\$"]' '\\$0')"
+        else
+            local msg="${@:6}"
+        fi
+
+        printf "$2 $1 $4 ($5):$3 $msg\033[0m" >&2
+        __log.spaces "${POST:-1}"
+    }
+    function depr { __log.draw '~~' '\033[0;35m' '\033[0;34m' $0 $* >&2 }
+    function info { __log.draw '--' '\033[0;32m' '\033[0m' $0 $* >&2 }
+    function warn { __log.draw '++' '\033[0;33m' '\033[0m' $0 $* >&2 }
+    function fail { __log.draw '==' '\033[1;31m' '\033[0m' $0 $* >&2 }
+    function term { __log.draw '**' '\033[42m\033[0;101m' '\033[0m' $0 $* >&2 }
+fi
+
+
+if [ -x "$commands[fetch]" ]; then
+    export HTTP_GET="$commands[fetch] -qo - "
+
+elif [ -x "$commands[wget]" ]; then
+    export HTTP_GET="$commands[wget] -qO -"
+
+elif [ -x "$commands[http]" ]; then
+    export HTTP_GET="$commands[http] -FISb"
+
+elif [ -x "$commands[curl]" ]; then
+    export HTTP_GET="$commands[curl] -fsSL"
+else
+    fail $0 "curl, wget, fetch or httpie isn't exists"
+fi
+
+
+if [ -x "$commands[zstd]" ]; then
+    export ASH_PAQ="$commands[zstd] -0 -T0"
+    export ASH_QAP="$commands[zstd] -qd"
+
+elif [ -x "$commands[lz4]" ]; then
+    export ASH_PAQ="$commands[lz4] -1 - -"
+    export ASH_QAP="$commands[lz4] -d - -"
+
+elif [ -x "$commands[xz]" ] && [ -x "$commands[xzcat]" ]; then
+    export ASH_PAQ="$commands[xz] -0 -T0"
+    export ASH_QAP="$commands[xzcat]"
+
+elif [ -x "$commands[gzip]" ] && [ -x "$commands[zcat]" ]; then
+    export ASH_PAQ="$commands[gzip] -1"
+    export ASH_QAP="$commands[zcat]"
+
+else
+    unset ASH_PAQ
+    unset ASH_QAP
+fi
+
+
+function fs.size {
     if [ -z "$1" ]; then
-        printf " ** fail ($0): call without args, I need to do — what?\n" >&2
+        fail $0 "call without args, I need to do — what?"
         return 1
     fi
 
@@ -69,7 +154,7 @@ function fs_size {
 
 function fs.mtime {
     if [ -z "$1" ]; then
-        printf " ** fail ($0): call without args, I need to do — what?\n" >&2
+        fail $0 "call without args, I need to do — what?"
         return 1
     fi
 
@@ -79,7 +164,7 @@ function fs.mtime {
 
 function fs.readlink {
     if [ -z "$1" ]; then
-        printf " ** fail ($0): call without args, I need to do — what?\n" >&2
+        fail $0 "call without args, I need to do — what?"
         return 1
     fi
 
@@ -173,7 +258,7 @@ function fs.resolver {
         export ASH_REALPATH="$result"
         return 0
     fi
-    printf " ** fail ($0): resolver isn't configured, need realpath or readlink\n" >&2
+    fail $0 "resolver isn't configured, need realpath or readlink"
     return 1
 }
 
@@ -220,7 +305,7 @@ function fs.realpath {
         local cmd="$ASH_REALPATH $link"
         eval "${cmd}"
     else
-        printf " ** fail ($0): '$link' doesn't exist\n" >&2
+        fail $0 "'$link' doesn't exist"
         return 1
     fi
 }
@@ -263,7 +348,7 @@ function fs.home {
     if [ -x "$real" ]; then
         echo "$real"
     else
-        printf " -- $0 warning: can't make real home path for HOME '$home', REAL '$(which realpath)', READLINK '$(which readlink)', fallback '$(fs.dirname "$home")/$(fs.basename "$home")'\n" >&2
+        warn $0 "can't make real home path for HOME '$home', REAL '$(which realpath)', READLINK '$(which readlink)', fallback '$(fs.dirname "$home")/$(fs.basename "$home")'"
         echo "$home"
     fi
 }
@@ -278,20 +363,20 @@ function fs.link {
         local dst="$1"
 
         if [ ! -x "$dst" ]; then
-            printf " ** fail ($0): link source '$1' -> '$dst' isn't executable (exists?)\n" >&2
+            fail $0 "link source '$1' -> '$dst' isn't executable (exists?)"
             return 2
         fi
 
     else
         if [[ "$1" =~ "/" ]]; then
-            printf " ** fail ($0): link source '$1' couldn't contains slashes\n" >&2
+            fail $0 "link source '$1' couldn't contains slashes"
             return 1
         fi
         local src="$dir/$1"
         local dst="$2"
 
         if [ ! -x "$dst" ]; then
-            printf " ** fail ($0): link source '$2' -> '$dst' isn't executable (exists?)\n" >&2
+            fail $0 "link source '$2' -> '$dst' isn't executable (exists?)"
             return 2
         fi
     fi
@@ -349,7 +434,7 @@ function which {
     local src="$*"
 
     if [ -z "$src" ]; then
-        printf " ** fail ($0): call without args, I need to do — what?\n" >&2
+        fail $0 "call without args, I need to do — what?"
         return 2
 
     elif [[ "$src" =~ "/" ]]; then
@@ -357,11 +442,11 @@ function which {
             echo "$src"
             return 0
         fi
-        printf " ** fail ($0): link name '$src' couldn't contains slashes\n" >&2
+        fail $0 "link name '$src' couldn't contains slashes"
         return 3
 
     elif [ -z "$ASH" ]; then
-        printf " ++ warn ($0): root '$ASH' isn't defined\n" >&2
+        warn $0 "root '$ASH' isn't defined"
     fi
 
     if [ -n "$ASH" ] && [ -L "$ASH/bin/$src" ]; then
@@ -381,7 +466,7 @@ function which {
         local dst="$(eval "builtin which $src")"
         if [ ! -x "$dst" ]; then
             if [ -n "$dst" ] && [ ! $dst = "$src not found" ]; then
-                printf " ++ warn ($0): '$src' isn't found, but $dst\n" >&2
+                warn $0 "'$src' isn't found, but $dst"
                 return 0
             fi
             return 1
@@ -395,26 +480,19 @@ if [ -z "$ASH" ] || [ -z "$ZSH" ] || [ -z "$ASH_CACHE" ]; then
     local redirect="$(fs.home)"
     if [ -x "$redirect" ] && [ ! "$redirect" = "$HOME" ]; then
         if [ "$(fs.realpath "$redirect")" != "$(fs.realpath "$HOME")" ]; then
-            printf " ++ warn ($0): HOME:'$HOME' -> '$redirect'\n" >&2
+            warn $0 "HOME:'$HOME' -> '$redirect'"
         fi
         export HOME="$redirect"
     fi
 
-    export ZSH="${ZSH:-$HOME/.oh-my-zsh}"
-
-    if [ ! -x "$ZSH" ]; then
-        printf " ** fail ($0): oh-my-zsh dir \$ZSH:'$ZSH' isn't acessible, fallback to default\n" >&2
-        export ZSH="$HOME/.oh-my-zsh"
-        if [ ! -x "$ZSH" ]; then
-            printf " == term ($0): oh-my-zsh dir \$ZSH:'$ZSH' isn't acessible, it's fatal\n" >&2
-        fi
-    fi
-
     export ASH="${ASH:-$HOME/.ash}"
+    export ZSH="${ZSH:-$HOME/.oh-my-zsh}"
     export PATH="$ASH/bin:$PATH"
-
     export ASH_CACHE="$HOME/.cache/ash"
+
     [ ! -d "$ASH_CACHE" ] && mkdir -p "$ASH_CACHE"
+    [ ! -d "$ZSH" ] && fail $0 "oh-my-zsh dir \$ZSH:'$ZSH' isn't acessible"
+
 fi
 
 
@@ -426,6 +504,6 @@ if [[ -n ${(M)zsh_eval_context:#file} ]]; then
     fi
 else
 
-    printf " ** fail ($0): do not run or eval, just source it\n" >&2
+    fail $0 "do not run or eval, just source it"
     return 2
 fi

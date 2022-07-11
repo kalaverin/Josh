@@ -748,13 +748,13 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             local short="$(basename "$bin")"
 
             local src="$target/bin/$short"
-            local src_size="$(fs_size "$src")"
+            local src_size="$(fs.size "$src")"
 
             if [ -n "$short" ] && [ -x "$src" ]; then
                 local shadows="$(lookup.copies.cached "$short" "$expire" "$target/bin" $system "$VIRTUAL_ENV")"
                 if [ -n "$shadows" ]; then
                     for dst in $(echo "$shadows" | sed 's#:#\n#g'); do
-                        local dst_size="$(fs_size "$dst")"
+                        local dst_size="$(fs.size "$dst")"
 
                         local msg="$src ($src_size bytes) -> $dst ($dst_size bytes)"
                         if [ -n "$ASH_MD5_PIPE" ] && [ "$src_size" = "$dst_size" ]; then
