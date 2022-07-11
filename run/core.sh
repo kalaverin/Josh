@@ -432,13 +432,18 @@ else
             export HOME="$redirect"
         fi
 
-        export ASH="${ASH:-$HOME/.ash}"
         export ZSH="${ZSH:-$HOME/.oh-my-zsh}"
         export PATH="$ASH/bin:$PATH"
         export ASH_CACHE="$HOME/.cache/ash"
 
         [ ! -d "$ASH_CACHE" ] && mkdir -p "$ASH_CACHE"
-        [ ! -d "$ZSH" ] && [ ! "$INSTALL" -gt 0 ] && fail $0 "oh-my-zsh dir \$ZSH:'$ZSH' doesn't exists"
+
+        if [ "$INSTALL" -eq 0 ]; then
+            unset ZSH
+        else
+            export ASH="${ASH:-$HOME/.ash}"
+            [ ! -d "$ZSH" ] && fail $0 "oh-my-zsh dir \$ZSH:'$ZSH' doesn't exists"
+        fi
 
     fi
 
