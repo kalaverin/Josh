@@ -438,7 +438,7 @@ else
         export ASH_CACHE="$HOME/.cache/ash"
 
         [ ! -d "$ASH_CACHE" ] && mkdir -p "$ASH_CACHE"
-        [ ! -d "$ZSH" ] && fail $0 "oh-my-zsh dir \$ZSH:'$ZSH' doesn't exists"
+        [ ! -d "$ZSH" ] && [ ! "$INSTALL" -gt 0 ] && fail $0 "oh-my-zsh dir \$ZSH:'$ZSH' doesn't exists"
 
     fi
 

@@ -75,7 +75,7 @@ else
 
         # TODO: export ASH_VERBOSITY="1"
 
-        pip.install $PIP_REQ_PACKAGES && \
+        pip.install $PIP_REQ_PACKAGES
         cfg.install && bin.install && \
         omz.install && omz.plugins || return "$?"
         cargo.deploy $CARGO_REQ_PACKAGES
