@@ -385,7 +385,14 @@ else
         fi
 
         if [ ! -L "$src" ]; then
-            [ ! -d "$dir" ] && mkdir -p "$dir"
+            if [ ! -d "$ASH" ]; then
+                fail $0 "$ASH doesn't exists, need force redeploy"
+                return 3
+
+            elif [ ! -d "$dir" ]; then
+                mkdir -p "$dir"
+            fi
+
             ln -s "$dst" "$src"
         fi
         echo "$dst"
