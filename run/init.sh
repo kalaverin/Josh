@@ -71,5 +71,20 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         export ASH_MD5_PIPE="$(which md5sum) | $(which cut) -c -32"
     fi
 
-    source "$(fs.dirname $0)/hier.sh"
+    local gsed="$(which gsed)"
+    if [ ! -x "$gsed" ]; then
+        local gsed="$(which sed)"
+    fi
+    alias sed="$gsed"
+
+    local perm_path_regex="$(echo "$perm_path" | sed 's:^:^:' | sed 's: *$:/:' | sed 's: :/|^:g')"
+
+    function lookup {
+        for sub in $path; do
+            if [ -x "$sub/$1" ]; then
+                echo "$sub/$1"
+                [ -z "$2" ] && return 0
+            fi
+        done
+    }
 fi
