@@ -59,7 +59,7 @@ function bak {
     local backup="$target/$source-$timemark-$(get.name).tar"
     [ "$?" -gt 0 ] && return 4
 
-    run_show "mkdir -p \"$target\" 2>/dev/null; $(__stream_pak --exclude-vcs) | $ASH_PAQ > $backup"
+    run.show "mkdir -p \"$target\" 2>/dev/null; $(__stream_pak --exclude-vcs) | $ASH_PAQ > $backup"
     info $0 "cat $backup | $ASH_QAP | $(__stream_unpak)"
     export BAK_RESTORE="$backup"
 }
@@ -89,7 +89,7 @@ function bakf {
     local backup="$target/$source-$timemark-$(get.name).tar"
     [ "$?" -gt 0 ] && return 4
 
-    run_show "mkdir -p \"$target\" 2>/dev/null; $(__stream_pak --exclude-vcs-ignores) | $ASH_PAQ > $backup"
+    run.show "mkdir -p \"$target\" 2>/dev/null; $(__stream_pak --exclude-vcs-ignores) | $ASH_PAQ > $backup"
     info $0 "cat $backup | $ASH_QAP | $(__stream_unpak)"
     export BAK_RESTORE="$backup"
 }
@@ -101,7 +101,7 @@ function kab {
 
     git.is_clean || return "$?"
 
-    run_show "cat $backup | $ASH_QAP | $(__stream_unpak)" && return 0
+    run.show "cat $backup | $ASH_QAP | $(__stream_unpak)" && return 0
     return "$?"
 }
 
@@ -109,7 +109,7 @@ function kabf {
     local backup="$(__setup.cfg.backup_file_get 2>/dev/null)"
     [ -z "$backup" ] && return "$?"
 
-    run_show "cat $backup | $ASH_QAP | $(__stream_unpak)" && return 0
+    run.show "cat $backup | $ASH_QAP | $(__stream_unpak)" && return 0
     return "$?"
 }
 
@@ -124,6 +124,6 @@ function bakrm {
         local cmd="rm $backup"
     fi
 
-    run_show "$cmd"
+    run.show "$cmd"
     unset BAK_RESTORE
 }

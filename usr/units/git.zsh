@@ -50,7 +50,7 @@ function git_autoaccept {
         state="$(git.this.state)"  # merge, rebase or cherry-pick
         [ "$?" -gt 0 ] && return 0
 
-        run_show "git checkout --$1 . && git $state --skip"
+        run.show "git checkout --$1 . && git $state --skip"
         if [ "$?" -eq 128 ]; then
             git_autoaccept "$1"
         else

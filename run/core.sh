@@ -836,27 +836,27 @@ else
         fi
     }
 
-    function run_show {
+    function run.show {
         local cmd="$*"
         [ -z "$cmd" ] && return 1
         echo " -> $cmd" 1>&2
         eval ${cmd} 1>&2
     }
 
-    function run_silent {
+    function run.quiet {
         local cmd="$*"
         [ -z "$cmd" ] && return 1
         echo " -> $cmd" 1>&2
         eval ${cmd} 1>/dev/null 2>/dev/null
     }
 
-    function run_to_stdout {
+    function run.out {
         local cmd="$*"
         [ -z "$cmd" ] && return 1
         eval ${cmd} 2>&1
     }
 
-    function run_hide {
+    function run.hide {
         local cmd="$*"
         [ -z "$cmd" ] && return 1
         eval ${cmd} 1>/dev/null 2>/dev/null
@@ -876,7 +876,7 @@ else
         eval ${cmd}
     }
 
-    function function_exists {
+    function is.function {
         declare -f "$1" >/dev/null
         if [ "$?" -gt 0 ]; then
             return 1
@@ -911,7 +911,7 @@ else
         elif [ "$commands[$src]" ]; then
             local dst="$commands[$src]"
 
-        elif function_exists 'lookup'; then
+        elif is.function 'lookup'; then
             local dst="$(lookup "$src")"
         fi
 

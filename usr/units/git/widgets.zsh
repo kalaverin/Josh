@@ -91,9 +91,9 @@ function __widget.git.auto_skip_or_continue {
         local files=$($SHELL -c "$LIST_TO_ADD | wc -l")
         if [ "$files" -eq 0 ]; then
             if [ "$state" != "merge" ]; then
-                run_show " git $state --skip"
+                run.show " git $state --skip"
             else
-                run_show " git merge --continue"
+                run.show " git merge --continue"
             fi
             return 1
         fi
@@ -101,7 +101,7 @@ function __widget.git.auto_skip_or_continue {
         # all files resolved and no more changes, then — continue
         local files=$($SHELL -c "$LIST_TO_ADD | grep -Pv '^([AMD] )' | wc -l")
         if [ "$files" -eq 0 ]; then
-            run_show " git $state --continue"
+            run.show " git $state --continue"
             return 2
         fi
         return 3
@@ -162,7 +162,7 @@ function __widget.git.conflict_solver {
 
             local conflits_count=$($SHELL -c "echo \"$value\" | $conflicted | wc -l")
             if [ ! "$conflits_count" -gt 0 ]; then
-                run_show " git add $value"
+                run.show " git add $value"
             fi
 
             local files="$($SHELL -c "$select | $conflicted | $UNIQUE_SORT")"
@@ -257,7 +257,7 @@ function __widget.git.select_commit_then_files_checkout {
 
             if [[ "$files" != "" ]]; then
                 # TODO: filter files for exists
-                run_show "git checkout $commit -- $files && git reset $files > /dev/null && git diff HEAD --stat --diff-algorithm=histogram --color=always | xargs -I$ echo $"
+                run.show "git checkout $commit -- $files && git reset $files > /dev/null && git diff HEAD --stat --diff-algorithm=histogram --color=always | xargs -I$ echo $"
                 zle reset-prompt
                 return 130
             else
@@ -533,7 +533,7 @@ function __widget.git.switch_branch {
         ")"
 
         if [ -z "$BUFFER" ]; then
-            run_show "git switch $value 2>/dev/null 1>/dev/null"
+            run.show "git switch $value 2>/dev/null 1>/dev/null"
             local retval="$?"
 
         elif [ -n "$value" ]; then
@@ -782,7 +782,7 @@ function __widget.git.merge_branch {
             break
 
         elif [ ! "$BUFFER" ]; then
-            run_show "git.fetch \"$value\" && git merge --no-commit \"origin/$value\""
+            run.show "git.fetch \"$value\" && git merge --no-commit \"origin/$value\""
             local retval=$?
             __widget.git.conflict_solver
 

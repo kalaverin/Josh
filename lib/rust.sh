@@ -300,7 +300,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
 
         if [ -n "$packages" ]; then
-            run_show "$CARGO_BIN install $packages"
+            run.show "$CARGO_BIN install $packages"
         fi
     }
 
@@ -357,7 +357,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
 
         if [ -n "$packages" ]; then
-            run_show "$CARGO_BIN uninstall $packages"
+            run.show "$CARGO_BIN uninstall $packages"
         fi
     }
 

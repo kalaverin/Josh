@@ -199,7 +199,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             unset PYTHON
         fi
 
-        if ! function_exists "compat.executables"; then
+        if ! is.function "compat.executables"; then
             if [ ! -x "$ASH" ]; then
                 fail $0 "\$ASH:'$ASH' isn't accessible"
                 return 1
@@ -713,7 +713,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     function pip.extras {
         pip.install "$PIP_REQ_PACKAGES"
         local retval="$?"
-        run_show "pip.install $PIP_OPT_PACKAGES"
+        run.show "pip.install $PIP_OPT_PACKAGES"
         path.rehash
 
         if [ "$?" -gt 0 ] || [ "$retval" -gt 0 ]; then

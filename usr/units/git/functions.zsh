@@ -193,7 +193,7 @@ function git.checkout.current {
     if [ "$?" -gt 0 ] || [ -z "$result" ]; then
         return 1
     fi
-    run_show "$result"
+    run.show "$result"
     return "$?"
 }
 
@@ -203,7 +203,7 @@ function git.fetch {
     if [ "$?" -gt 0 ] || [ -z "$result" ]; then
         return 1
     fi
-    run_show "$result" 2>&1 | grep -v 'up to date'
+    run.show "$result" 2>&1 | grep -v 'up to date'
     return "$?"
 }
 
@@ -217,7 +217,7 @@ function git.fetch.merge {
     git.fetch "$result"
     [ "$?" -gt 0 ] && return 2
 
-    run_show "git merge origin/$result"
+    run.show "git merge origin/$result"
     return "$?"
 }
 
@@ -235,7 +235,7 @@ function git.branch.select {
     [ -z "$(git.this.root)" ] && return 3
 
     local cmd="git fetch origin '$1':'$1' && git.is_clean && git checkout --force --quiet '$1' && git reset --hard '$1' && git pull origin '$1'"
-    run_show "$cmd"
+    run.show "$cmd"
     return "$?"
 }
 
@@ -274,7 +274,7 @@ function git.pull {
         return 1
     fi
 
-    run_show "$result" 2>&1 | grep -v 'up to date'
+    run.show "$result" 2>&1 | grep -v 'up to date'
     local retval="$?"
     git.mtime.set 2>&1
     return "$retval"
@@ -287,7 +287,7 @@ function git.pull.merge {
         return 1
     fi
 
-    run_show "$result" 2>&1 | grep -v 'up to date'
+    run.show "$result" 2>&1 | grep -v 'up to date'
     local retval="$?"
     git.mtime.set 2>&1
     return "$retval"
@@ -302,7 +302,7 @@ function git.pull.reset {
 
     git.is_clean                               || return "$?"
     git.fetch "$result"                        || return "$?"
-    run_show "git reset --hard origin/$result" || return "$?"
+    run.show "git reset --hard origin/$result" || return "$?"
     git.pull $result
     return "$?"
 }
@@ -313,7 +313,7 @@ function git.push {
     if [ "$?" -gt 0 ] || [ -z "$result" ]; then
         return 1
     fi
-    run_show "git push origin $result"
+    run.show "git push origin $result"
     return "$?"
 }
 
@@ -323,7 +323,7 @@ function git.push.force {
     if [ "$?" -gt 0 ] || [ -z "$result" ]; then
         return 1
     fi
-    run_show "git push --force origin $result"
+    run.show "git push --force origin $result"
     return $?
 }
 
@@ -365,7 +365,7 @@ function git.tag.set {
         fail $0 "\$1 - tag required"
         return 1
     fi
-    run_show "git tag -a $1 -m \"$1\" && git push --tags && git fetch --tags"
+    run.show "git tag -a $1 -m \"$1\" && git push --tags && git fetch --tags"
     return "$?"
 }
 
@@ -374,7 +374,7 @@ function git.tag.unset {
         fail $0 "\$1 - tag required"
         return 1
     fi
-    run_show "git tag -d \"$1\" && git push --delete origin \"$1\""
+    run.show "git tag -d \"$1\" && git push --delete origin \"$1\""
     return "$?"
 }
 
@@ -394,7 +394,7 @@ function git.branch.delete {
 
     git.is_clean || return "$?"
 
-    run_show "git reset --hard && (git checkout develop 2>/dev/null 1>/dev/null 2> /dev/null || git checkout master 2>/dev/null 1>/dev/null) && git branch -D \"$result\" && git remote prune origin"
+    run.show "git reset --hard && (git checkout develop 2>/dev/null 1>/dev/null 2> /dev/null || git checkout master 2>/dev/null 1>/dev/null) && git branch -D \"$result\" && git remote prune origin"
     printf " => git push origin --delete $result\n" >&2
     return "$?"
 }
@@ -413,7 +413,7 @@ function git.branch.DELETE.REMOTE {
 
     git.is_clean || return "$?"
 
-    run_show "git reset --hard && (git checkout develop 2>/dev/null 1>/dev/null 2> /dev/null || git checkout master 2>/dev/null 1>/dev/null) && git branch -D \"$result\" && git push origin --delete \"$result\" || true && git remote prune origin"
+    run.show "git reset --hard && (git checkout develop 2>/dev/null 1>/dev/null 2> /dev/null || git checkout master 2>/dev/null 1>/dev/null) && git branch -D \"$result\" && git push origin --delete \"$result\" || true && git remote prune origin"
     return "$?"
 }
 
@@ -432,7 +432,7 @@ function git.squash.pushed {
     if [ "$?" -gt 0 ] || [ -z "$result" ]; then
         return 2
     fi
-    run_show "git rebase --interactive --no-autosquash --no-autostash --strategy=recursive --strategy-option=ours --strategy-option=diff-algorithm=histogram \"$result\""
+    run.show "git rebase --interactive --no-autosquash --no-autostash --strategy=recursive --strategy-option=ours --strategy-option=diff-algorithm=histogram \"$result\""
 }
 
 function git.nested {

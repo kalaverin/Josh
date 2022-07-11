@@ -343,7 +343,7 @@ function brew {
 
 
     if [ "$1" = 'install' ]; then
-        run_show "brew.install ${@:2}"
+        run.show "brew.install ${@:2}"
 
     elif [ "$1" = 'env' ]; then
         brew.env
@@ -353,7 +353,7 @@ function brew {
         brew.extras
 
     else
-        run_show "$bin $*"
+        run.show "$bin $*"
     fi
 }
 

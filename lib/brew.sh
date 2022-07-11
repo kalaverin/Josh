@@ -102,7 +102,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         [ ! -x "$brew" ] && return 3
 
         for row in $*; do
-            run_show "$brew install $row"
+            run.show "$brew install $row"
 
             local exe="$(fs.basename $row)"
             if [ -z "$exe" ]; then
@@ -119,7 +119,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     }
 
     function brew.extras {
-        run_show "brew.install $BREW_REС_PACKAGES"
+        run.show "brew.install $BREW_REС_PACKAGES"
         return 0
     }
 

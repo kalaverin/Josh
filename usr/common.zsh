@@ -516,7 +516,7 @@ function term_widget {
     )"
     while true; do
         if [[ "$pids" != "" ]]; then
-            run_show "kill -15 $pids"
+            run.show "kill -15 $pids"
             echo ""
             zle redisplay
             return "$?"
@@ -543,7 +543,7 @@ function kill_widget {
     )"
     while true; do
         if [[ "$pids" != "" ]]; then
-            run_show "kill -9 $pids"
+            run.show "kill -9 $pids"
             echo ""
             zle redisplay
             return "$?"

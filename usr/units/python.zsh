@@ -67,7 +67,7 @@ function venv.node {
 
     local pip="$pip --no-python-version-warning --disable-pip-version-check --no-input --quiet"
     if [ $($SHELL -c "$pip freeze | grep nodeenv | wc -l") -eq 0 ]; then
-        run_show "$pip install nodeenv" && venv.path.activate "$venv"
+        run.show "$pip install nodeenv" && venv.path.activate "$venv"
     fi
 
     local nodeenv="$(which nodeenv)"
@@ -107,7 +107,7 @@ function venv.node {
 
     if [ -n "$version" ]; then
         info $0 "deploy node v$version"
-        run_show "nodeenv --python-virtualenv --node=$version"
+        run.show "nodeenv --python-virtualenv --node=$version"
         path.rehash
     fi
 }
@@ -236,7 +236,7 @@ function venv.make {
 
     info $0 "$message"
 
-    run_show "builtin cd "$root" && $(py.exe) -m virtualenv --python=$python $args_env "$full" && source "$full/bin/activate" && pip install --compile --no-input --prefer-binary --upgrade --upgrade-strategy=eager pipdeptree $args_pip $packages && builtin cd $cwd"
+    run.show "builtin cd "$root" && $(py.exe) -m virtualenv --python=$python $args_env "$full" && source "$full/bin/activate" && pip install --compile --no-input --prefer-binary --upgrade --upgrade-strategy=eager pipdeptree $args_pip $packages && builtin cd $cwd"
 
     local venv="$(venv.off)"
     py.set "$using"
@@ -287,9 +287,9 @@ function venv.temp.remove {
     fi
 
     if [ "$VIRTUAL_ENV" = "$vwd" ]; then
-        run_show "builtin cd $VIRTUAL_ENV/bin && source activate && deactivate && builtin cd .."
+        run.show "builtin cd $VIRTUAL_ENV/bin && source activate && deactivate && builtin cd .."
     fi
-    run_show "rm -rf $vwd 2>/dev/null; builtin cd $cwd || builtin cd ~"
+    run.show "rm -rf $vwd 2>/dev/null; builtin cd $cwd || builtin cd ~"
     path.rehash
 }
 
