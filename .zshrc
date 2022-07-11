@@ -1,4 +1,10 @@
-source "$HOME/.ash/run/init.sh"
+if [ -f "$HOME/.ash/run/init.sh" ]; then
+    source "$HOME/.ash/run/init.sh"
+
+elif [ -f "$HOME/.josh/custom/plugins/josh/run/boot.sh" ]; then
+    source "$HOME/.josh/custom/plugins/josh/run/boot.sh"
+fi
+
 
 path=(
     $path
