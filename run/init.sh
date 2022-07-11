@@ -29,7 +29,7 @@ else
 
     function ash.obsolete {
         if [ -d "$HOME/.josh" ] && [ -n "$HOME" ] && [ -d "$ZSH" ] && [[ ! "$ZSH" =~ '/.josh$' ]]; then
-            info $0 "you can remove old and unused installation, just run : rm -rf $HOME/.josh/"
+            info $0 "you can remove old and unused installation, just run: rm -rf $HOME/.josh/"
         fi
     }
 
