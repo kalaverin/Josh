@@ -78,8 +78,8 @@ else
         pip.install $PIP_REQ_PACKAGES
 
         cfg.install && \
-        omz.install && omz.plugins &&\
-        bin.install && || return "$?"
+        omz.install && omz.plugins && \
+        bin.install || return "$?"
 
         cargo.deploy $CARGO_REQ_PACKAGES
 
