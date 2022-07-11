@@ -1,90 +1,93 @@
-[ -z "$SOURCES_CACHE" ] && declare -aUg SOURCES_CACHE=() && SOURCES_CACHE+=($0)
-
-local THIS_SOURCE="$(fs.gethash "$0")"
-if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; then
-    SOURCES_CACHE+=("$THIS_SOURCE")
-    local osname="$(uname)"
-
-    setopt no_case_match
-
-    if [[ "$osname" -regex-match 'freebsd' ]]; then
-        export ASH_OS="BSD"
-        fs.link 'ls'    '/usr/local/bin/gnuls' >/dev/null
-        fs.link 'grep'  '/usr/local/bin/grep'  >/dev/null
-
-    elif [[ "$osname" -regex-match 'darwin' ]]; then
-        export ASH_OS="MAC"
-        fs.link 'ls'    '/usr/local/bin/gls'   >/dev/null
-        fs.link 'grep'  '/usr/local/bin/ggrep' >/dev/null
-
-        dirs=(
-            bin
-            sbin
-            usr/bin
-            usr/sbin
-            usr/local/bin
-            usr/local/sbin
-        )
-
-        for dir in $dirs; do
-            if [ -d "/Library/Apple/$dir" ]; then
-                export PATH="$PATH:/Library/Apple/$dir"
-            fi
-        done
-
+if [[ ! "$SHELL" =~ "/zsh$" ]]; then
+    if [ -x "$(which zsh)" ]; then
+        printf " ** fail ($0): current shell must be zsh, but SHELL '$SHELL', zsh found '$(which zsh)', change shell to zsh and repeat: sudo chsh -s /usr/bin/zsh $USER" >&2
     else
-        if [[ "$osname" -regex-match 'linux' ]]; then
-            export ASH_OS="LINUX"
-        else
-            fail $0 "unsupported OS '$(uname -srv)'"
-            export ASH_OS="UNKNOWN"
+        printf " ** fail ($0): current shell must be zsh, but SHELL '$SHELL' and zsh not detected" >&2
+    fi
+    return 1
+else
+
+    SELF="$0"
+
+    function ash.core {
+        local root
+        root="$(dirname "$SELF")" || return "$?"
+        if [ -z "$root" ] || [ ! -x "$root" ]; then
+            printf " ** fail ($0): something went wrong: root isn't detected\n" >&2
+            return 1
         fi
 
-        dirs=(
-            bin
-            sbin
-            usr/bin
-            usr/sbin
-            usr/local/bin
-            usr/local/sbin
-        )
-
-        for dir in $dirs; do
-            if [ -d "/snap/$dir" ]; then
-                export PATH="$PATH:/snap/$dir"
-            fi
-        done
-    fi
-
-    if [ "$ASH_OS" = 'BSD' ] || [ "$ASH_OS" = 'MAC' ]; then
-        fs.link 'cut'       '/usr/local/bin/gcut'      >/dev/null
-        fs.link 'find'      '/usr/local/bin/gfind'     >/dev/null
-        fs.link 'head'      '/usr/local/bin/ghead'     >/dev/null
-        fs.link 'readlink'  '/usr/local/bin/greadlink' >/dev/null
-        fs.link 'realpath'  '/usr/local/bin/grealpath' >/dev/null
-        fs.link 'sed'       '/usr/local/bin/gsed'      >/dev/null
-        fs.link 'tail'      '/usr/local/bin/gtail'     >/dev/null
-        fs.link 'tar'       '/usr/local/bin/gtar'      >/dev/null
-        fs.link 'xargs'     '/usr/local/bin/gxargs'    >/dev/null
-        export ASH_MD5_PIPE="$(which md5)"
-    else
-        export ASH_MD5_PIPE="$(which md5sum) | $(which cut) -c -32"
-    fi
-
-    local gsed="$(which gsed)"
-    if [ ! -x "$gsed" ]; then
-        local gsed="$(which sed)"
-    fi
-    alias sed="$gsed"
-
-    local perm_path_regex="$(echo "$perm_path" | sed 's:^:^:' | sed 's: *$:/:' | sed 's: :/|^:g')"
-
-    function lookup {
-        for sub in $path; do
-            if [ -x "$sub/$1" ]; then
-                echo "$sub/$1"
-                [ -z "$2" ] && return 0
-            fi
-        done
+        source "$root/core.sh"
+        local retval="$?"
+        if [ "$retval" -gt 0 ]; then
+            printf " ** fail ($0): something went wrong: boot state=$retval\n" >&2
+            return 1
+        fi
+        export ASH="$(fs.realpath "$root/../")"
     }
+
+
+    function ash.install {
+        local branch cwd changes
+
+        cwd="$PWD"
+        function rollback() {
+            builtin cd "$cwd"
+            term "$1" "something went wrong, state=$2"
+            return "$2"
+        }
+
+        ash.core || return "$?"
+        [ ! -x "$ASH" ] && return 1
+        source "$ASH/run/units/compat.sh" && compat.compliance || return "$(rollback "$0" "$?")"
+
+        builtin cd "$ASH"
+
+        changes="$(git status --porcelain=v1 &>>/dev/null | wc -l)" || return "$(rollback "$0" "$?")"
+        if [ "$changes" -gt 0 ]; then
+            warn "$0" "we have changes in $changes files, skip fetch & pull"
+
+        else
+
+            branch="$(git rev-parse --quiet --abbrev-ref HEAD)" || return "$(rollback "$0" "$?")"
+            if [ "$branch" = "HEAD" ] || [ -z "$branch" ]; then
+                warn "$0" "can't update from '$branch'"
+            else
+                info "$0" "update '$branch' into '$ASH'"
+
+                git pull --ff-only --no-edit --no-commit origin "$branch" || return "$(rollback "$0" "$?")"
+
+                git update-index --refresh 1>/dev/null 2>/dev/null || return "$(rollback "$0" "$?")"
+            fi
+        fi
+
+        if [ -x "$(which git-restore-mtime)" ]; then
+            git-restore-mtime --skip-missing --quiet 2>/dev/null
+        fi
+
+        info "$0" "our home directory is '$PWD'"
+
+        source "$ASH/run/units/oh-my-zsh.sh" && \
+        source "$ASH/run/units/binaries.sh" && \
+        source "$ASH/run/units/configs.sh" && \
+        source "$ASH/lib/python.sh" && \
+        source "$ASH/lib/rust.sh" || rollback "$0" "$?"
+
+        # TODO: export ASH_VERBOSITY="1"
+
+        pip.install $PIP_REQ_PACKAGES && \
+        cfg.install && bin.install && \
+        omz.install && omz.plugins || return "$?"
+        cargo.deploy $CARGO_REQ_PACKAGES
+
+        cfg.install
+        builtin cd "$cwd"
+    }
+
+
+    if [[ -n ${(M)zsh_eval_context:#file} ]]; then
+        ash.core
+    else
+        ash.install
+    fi
 fi
