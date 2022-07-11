@@ -76,6 +76,7 @@ else
         source "$ASH/run/units/oh-my-zsh.sh" && \
         source "$ASH/run/units/binaries.sh" && \
         source "$ASH/run/units/configs.sh" && \
+        source "$ASH/run/update.sh" && \
         source "$ASH/lib/python.sh" && \
         source "$ASH/lib/rust.sh" || rollback "$0" "$?"
 
@@ -91,6 +92,7 @@ else
 
         cfg.install
         ASH_FORCE_CONFIGS=1 cfg.copy "$ASH/.zshrc" "$HOME/.zshrc"
+        post.install.message
 
         builtin cd "$cwd"
     }

@@ -83,7 +83,10 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             source "$ASH/usr/units/python.zsh" && py.set "$ASH_POST_INSTALL_PYTHON"
             unset ASH_POST_INSTALL_PYTHON
         fi
+        post.install.message
+    }
 
+    function post.install.message {
         if [ -x "$commands[cfonts]" ]; then
             local msg='type exec zsh and enjoy!'
             let enabled="$COLUMNS >= 140"
