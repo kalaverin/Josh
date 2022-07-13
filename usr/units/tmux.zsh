@@ -66,7 +66,7 @@ function tmux.detached {
 
 function tmux.matching {
     local maxdiff="${ASH_TMUX_AUTORETACH_MAX_DIFF:-9}"
-    local query='zmodload zsh/mathfunc && echo "$((abs(#{window_width} - $COLUMNS) + abs(#{window_height} - $LINES))) #{session_name}"'
+    local query='echo "$((abs(#{window_width} - $COLUMNS) + abs(#{window_height} - $LINES))) #{session_name}"'
 
     local result="$(
         tmux list-sessions -f "#{?session_attached,0,1}" -F $query 2>/dev/null |

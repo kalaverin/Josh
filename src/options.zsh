@@ -14,9 +14,6 @@ unsetopt correct
 unsetopt correct_all
 unsetopt interactive_comments
 
-zmodload zsh/terminfo
-
-
 WORDCHARS='_'
 
 ZSH_HIGHLIGHT_MAXLENGTH=512

@@ -8,12 +8,14 @@ if [[ ! "$SHELL" =~ "/zsh$" ]]; then
     fi
     return 1
 else
-
+    [ -z "$ASH_DEPRECATIONS" ] && typeset -Agx ASH_DEPRECATIONS=()
     [ -z "$SOURCES_CACHE" ] && declare -aUg SOURCES_CACHE=() && SOURCES_CACHE+=($0)
 
-    zmodload zsh/stat
     zmodload zsh/datetime
+    zmodload zsh/mathfunc
     zmodload zsh/parameter
+    zmodload zsh/stat
+    zmodload zsh/terminfo
 
     perm_path=(
         $HOME/.cargo/bin
@@ -1014,7 +1016,6 @@ else
         done
     }
 
-    typeset -Agx ASH_DEPRECATIONS=()
     ASH_DEPRECATIONS[function_exists]=is.function
     ASH_DEPRECATIONS[run_hide]=run.hide
     ASH_DEPRECATIONS[run_show]=run.show

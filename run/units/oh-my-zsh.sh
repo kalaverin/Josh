@@ -1,7 +1,5 @@
 #!/bin/zsh
 
-zmodload zsh/datetime
-
 
 export PLUGINS_ROOT="$ZSH/custom/plugins"
 ZSH_PACKAGES=(

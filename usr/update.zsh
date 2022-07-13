@@ -1,4 +1,3 @@
-zmodload zsh/datetime
 autoload -Uz async && async
 
 

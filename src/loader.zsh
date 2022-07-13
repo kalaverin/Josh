@@ -1,4 +1,6 @@
-typeset -Agx ASH_DEPRECATIONS=()
+if [ -z "$ASH_DEPRECATIONS" ]; then
+    typeset -Agx ASH_DEPRECATIONS=()
+fi
 
 path.rehash
 

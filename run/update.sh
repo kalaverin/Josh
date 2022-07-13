@@ -140,19 +140,15 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     }
 
 
-    typeset -Agx ASH_DEPRECATIONS=()
-    ASH_DEPRECATIONS[deploy_extras]=deploy.extras
-    ASH_DEPRECATIONS[function_exists]=is.function
-    ASH_DEPRECATIONS[post_update]=post.update
-    ASH_DEPRECATIONS[post_upgrade]=post.upgrade
-    ASH_DEPRECATIONS[pull_update]=pull.update
-    ASH_DEPRECATIONS[run_hide]=run.hide
-    ASH_DEPRECATIONS[run_show]=run.show
-    ASH_DEPRECATIONS[run_to_stdout]=run.out
-    ASH_DEPRECATIONS[update_internals]=update.internals
-    ASH_DEPRECATIONS[update_packages]=update.packages
+    typeset -Agx DEPRECATIONS=()
+    DEPRECATIONS[pull_update]=pull.update
+    DEPRECATIONS[post_update]=post.update
+    DEPRECATIONS[post_upgrade]=post.upgrade
+    DEPRECATIONS[update_internals]=update.internals
+    DEPRECATIONS[update_packages]=update.packages
+    DEPRECATIONS[deploy_extras]=deploy.extras
 
-    for deprecated func in ${(kv)ASH_DEPRECATIONS}; do
+    for deprecated func in ${(kv)DEPRECATIONS}; do
         eval {"$deprecated() { warn \$0 \"deprecated and must be removed, use '$func' instead\"; $func \$* }"}
     done
 fi

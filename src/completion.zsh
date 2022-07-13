@@ -1,5 +1,3 @@
-zmodload zsh/datetime
-
 setopt extendedglob notify
 
 zstyle ':completion:*' completer _expand _complete _oldlist _ignored _approximate
