@@ -1014,6 +1014,12 @@ else
         done
     }
 
+    typeset -Agx ASH_DEPRECATIONS=()
+    ASH_DEPRECATIONS[function_exists]=is.function
+    ASH_DEPRECATIONS[run_hide]=run.hide
+    ASH_DEPRECATIONS[run_show]=run.show
+    ASH_DEPRECATIONS[run_to_stdout]=run.out
+
     if [[ -n ${(M)zsh_eval_context:#file} ]]; then
         local THIS_SOURCE="$(fs.gethash "$0")"
         if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; then
