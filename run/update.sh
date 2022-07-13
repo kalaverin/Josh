@@ -141,12 +141,16 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
 
     typeset -Agx DEPRECATIONS=()
-    DEPRECATIONS[pull_update]=pull.update
+    DEPRECATIONS[deploy_extras]=deploy.extras
+    DEPRECATIONS[function_exists]=is.function
     DEPRECATIONS[post_update]=post.update
     DEPRECATIONS[post_upgrade]=post.upgrade
+    DEPRECATIONS[pull_update]=pull.update
+    DEPRECATIONS[run_hide]=run.hide
+    DEPRECATIONS[run_show]=run.show
+    DEPRECATIONS[run_to_stdout]=run.out
     DEPRECATIONS[update_internals]=update.internals
     DEPRECATIONS[update_packages]=update.packages
-    DEPRECATIONS[deploy_extras]=deploy.extras
 
     for deprecated func in ${(kv)DEPRECATIONS}; do
         eval {"$deprecated() { warn \$0 \"deprecated and must be removed, use '$func' instead\"; $func \$* }"}
