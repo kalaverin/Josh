@@ -142,7 +142,6 @@ function cfg.install {
     cfg.git_configure
     cfg.nano_syntax
 
-    cfg.copy "$ASH/.zshrc"         "$HOME/.zshrc"
     cfg.copy "$root/cargo.toml"    "$HOME/.cargo/config.toml"
     cfg.copy "$root/htop.rc"       "$CONFIG_DIR/htop/htoprc"
     cfg.copy "$root/logout.zsh"    "$HOME/.zlogout"
