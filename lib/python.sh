@@ -569,7 +569,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             eval.cached "`fs.lm.many $dirs $PYTHON_BINARIES`" pip.exe.uncached $*)"
         retval="$?"
 
-        [ -z "$PYTHON" ] && export PYTHON="$target"
+        [ -z "$PYTHON" ] && export PYTHON="$result"
         [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
 
         if [ -x "$result" ]; then
