@@ -522,16 +522,8 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
     function pip.exe.uncached {
         local python target
-        if [ -z "$1" ]; then
-            python="$(py.exe)"
-        else
-            python="$(which "$1")"
-            if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
-                fail $0 "python binary '$python' doesn't exists or something wrong"
-                return 1
-            fi
-        fi
 
+        python="$(py.exe)"
         target="$(py.home "$python")"
         local retval="$?"
 
@@ -540,7 +532,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             return 2
         fi
 
-        pip.deploy $*
+        pip.deploy
         local retval="$?"
 
         if [ -x "$target/bin/pip" ]; then
