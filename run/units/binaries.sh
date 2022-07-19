@@ -138,10 +138,12 @@ function bin.deploy_tmux_plugins {
         export TMUX_PLUGIN_MANAGER_PATH="$HOME/.tmux/plugins"
     fi
 
-    if [ -x "$(which bash)" ]; then
-        timeout -s 9 5.0 bash "$HOME/.tmux/plugins/tpm/scripts/install_plugins.sh"
-    else
-        warn $0 "it's funny, but tmux plugin manager required bash for installation bootstrap"
+    if [ -n "$PS1" ] && [ -z "$TMUX" ] && [ -n "$SSH_CONNECTION" ]; then
+        if [ -x "$(which bash)" ]; then
+            timeout -s 9 5.0 bash "$HOME/.tmux/plugins/tpm/scripts/install_plugins.sh"
+        else
+            warn $0 "it's funny, but tmux plugin manager required bash for installation bootstrap"
+        fi
     fi
 }
 
