@@ -879,7 +879,7 @@ else
         fi
 
         find="$(which gfind)"; [ ! -x "$find" ] && find="$(which find)"
-        local cmd="find $args -printf \"%T@ %p\n\" | sort -n | tail -n 1"
+        local cmd="$find $args -printf \"%T@ %p\n\" | sort -n | tail -n 1"
         eval ${cmd}
     }
 
@@ -893,7 +893,7 @@ else
         fi
 
         find="$(which gfind)"; [ ! -x "$find" ] && find="$(which find)"
-        local cmd="find $args -type d -not -path '*/.git*' -printf \"%T@ %p\n\" | sort -n | tail -n 1 | grep -Po '\d+' | head -n 1"
+        local cmd="$find $args -type d -not -path '*/.git*' -printf \"%T@ %p\n\" | sort -n | tail -n 1 | grep -Po '\d+' | head -n 1"
         eval ${cmd}
     }
 
