@@ -77,17 +77,18 @@ else
         info "$0" "our home directory is '$PWD'"
 
         source "$ASH/run/units/oh-my-zsh.sh" && \
-        source "$ASH/run/units/binaries.sh" && \
-        source "$ASH/run/units/configs.sh" && \
-        source "$ASH/run/update.sh" && \
-        source "$ASH/lib/python.sh" && \
+        source "$ASH/run/units/binaries.sh"  && \
+        source "$ASH/run/units/configs.sh"   && \
+        source "$ASH/run/update.sh"          && \
+        source "$ASH/lib/python.sh"          && \
         source "$ASH/lib/rust.sh"        || return "$(rollback "$0" "$?")"
         pip.install $PIP_REQ_PACKAGES    || return "$(rollback "$0" "$?")"
         cfg.install
-        omz.install                      || return "$(rollback "$0" "$?")"
-        omz.plugins                      || return "$(rollback "$0" "$?")"
+        omz.install && omz.plugins       || return "$(rollback "$0" "$?")"
         bin.install                      || return "$(rollback "$0" "$?")"
         cargo.deploy $CARGO_REQ_PACKAGES || return "$(rollback "$0" "$?")"
+
+        info "$0" "all ok, finally: replace ~/.zshrc with Ash loader"
 
         cfg.install
         ASH_FORCE_CONFIGS=1 cfg.copy "$ASH/.zshrc" "$HOME/.zshrc"
