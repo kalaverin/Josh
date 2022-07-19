@@ -67,7 +67,7 @@ function bin.compile_fzf {
     fi
 
     if [ -f "$LOCAL_BIN/fzf.bak" ]; then
-        if [ -f "$LOCAL_BIN/fzf" ]; then
+        if [ -x "$LOCAL_BIN/fzf" ]; then
             rm -f "$LOCAL_BIN/fzf.bak"
         else
             mv "$LOCAL_BIN/fzf.bak" "$LOCAL_BIN/fzf"
@@ -85,9 +85,15 @@ function bin.deploy_micro {
         fail $0 "HTTP_GET isn't set"
         return 1
 
-    elif [ ! -x "$LOCAL_BIN/micro" ]; then
-        # $LOCAL_BIN/micro --version | head -n 1 | awk '{print $2}'
+    elif [ -x "$LOCAL_BIN/micro" ]; then
+        [ -f "$LOCAL_BIN/micro.bak" ] && rm -f "$LOCAL_BIN/micro.bak"
 
+        if [ "$(find $LOCAL_BIN/micro -mmin +129600 2>/dev/null | grep micro)" ]; then
+            mv "$LOCAL_BIN/micro" "$LOCAL_BIN/micro.bak"
+        fi
+    fi
+
+    if [ ! -x "$LOCAL_BIN/micro" ]; then
         local cwd="$PWD"
         info $0 "deploy micro: $LOCAL_BIN/micro"
         builtin cd "$LOCAL_BIN" && $SHELL -c "$HTTP_GET $url | $SHELL"
@@ -96,6 +102,16 @@ function bin.deploy_micro {
         $SHELL -c "$LOCAL_BIN/micro -plugin install fzf wc detectindent bounce editorconfig quickfix"
         builtin cd "$cwd"
     fi
+
+    if [ -f "$LOCAL_BIN/micro.bak" ]; then
+        if [ -x "$LOCAL_BIN/micro" ]; then
+            rm -f "$LOCAL_BIN/micro.bak"
+        else
+            mv "$LOCAL_BIN/micro.bak" "$LOCAL_BIN/micro"
+        fi
+    fi
+    chmod a+x "$LOCAL_BIN/micro"
+
     source "$ASH/run/units/configs.sh"
     cfg.copy "$ASH/usr/share/micro_config.json" "$CONFIG_DIR/micro/settings.json"
     cfg.copy "$ASH/usr/share/micro_binds.json" "$CONFIG_DIR/micro/bindings.json"
