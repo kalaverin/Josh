@@ -1,8 +1,10 @@
+#!/bin/zsh
+
 if [[ ! "$SHELL" =~ "/zsh$" ]]; then
     if [ -x "$(which zsh)" ]; then
-        printf " ** fail ($0): current shell must be zsh, but SHELL '$SHELL', zsh found '$(which zsh)', change shell to zsh and repeat: sudo chsh -s /usr/bin/zsh $USER" >&2
+        printf " ** fail ($0): current shell must be zsh, but SHELL '$SHELL', zsh found '$(which zsh)', change shell to zsh and repeat: chsh -s '$(which zsh)' $USER\n" >&2
     else
-        printf " ** fail ($0): current shell must be zsh, but SHELL '$SHELL' and zsh not detected" >&2
+        printf " ** fail ($0): current shell must be zsh, but SHELL '$SHELL' and zsh not detected\n" >&2
     fi
     return 1
 else
