@@ -60,7 +60,6 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             git-restore-mtime --skip-missing --quiet
         fi
         builtin cd "$cwd"
-        post.install
         return "$retval"
     }
 

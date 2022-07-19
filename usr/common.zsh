@@ -633,7 +633,8 @@ function ash.pull {
     export ASH_POST_INSTALL_PYTHON="$version"
 
     local cwd; cwd="$(__ash.update.pre)" || return "$?"
-    ash.eval "run/update.sh" && pull.update $*
+    ash.eval "run/update.sh" && pull.update $* && \
+    ash.eval "run/update.sh" && post.install
     builtin cd "$cwd"
 }
 function ash.update {
