@@ -44,7 +44,7 @@ function bin.compile_fzf {
         return 1
 
     elif [ -x "$LOCAL_BIN/fzf" ]; then
-        [ -f "$LOCAL_BIN/fzf.bak" ] && rm "$LOCAL_BIN/fzf.bak"
+        [ -f "$LOCAL_BIN/fzf.bak" ] && rm -f "$LOCAL_BIN/fzf.bak"
 
         if [ "$(find $LOCAL_BIN/fzf -mmin +129600 2>/dev/null | grep fzf)" ]; then
             mv "$LOCAL_BIN/fzf" "$LOCAL_BIN/fzf.bak"
@@ -68,7 +68,7 @@ function bin.compile_fzf {
 
     if [ -f "$LOCAL_BIN/fzf.bak" ]; then
         if [ -f "$LOCAL_BIN/fzf" ]; then
-            rm "$LOCAL_BIN/fzf.bak"
+            rm -f "$LOCAL_BIN/fzf.bak"
         else
             mv "$LOCAL_BIN/fzf.bak" "$LOCAL_BIN/fzf"
         fi
