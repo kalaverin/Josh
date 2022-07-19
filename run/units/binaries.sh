@@ -149,6 +149,7 @@ function bin.link_fpp {
 }
 
 function bin.link_git_tools {
+    local find
     local src="$PLUGINS_ROOT/git-tools"
 
     if [ -z "$PLUGINS_ROOT" ]; then
@@ -161,12 +162,8 @@ function bin.link_git_tools {
         local retval="$?"
     fi
 
-    local find="$(which gfind)"
-    if [ ! -x "$find" ]; then
-        local find="$(which find)"
-    fi
-
     if [ -d "$src" ]; then
+        find="$(which gfind)"; [ ! -x "$find" ] && find="$(which find)"
         $find "$src" -maxdepth 1 -type f -executable | while read exe
         do
             if [ -x "$exe" ]; then

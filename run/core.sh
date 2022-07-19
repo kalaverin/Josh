@@ -865,15 +865,29 @@ else
     }
 
     function fs.lm {
-        local args="$*"
-        [ -x "$1" ] && local args="$(fs.realpath "$1") ${@:2}"
+        local args find
+
+        if [ ! -x "$1" ]; then
+            args="$*"
+        else
+            args="$(fs.realpath "$1") ${@:2}"
+        fi
+
+        find="$(which gfind)"; [ ! -x "$find" ] && find="$(which find)"
         local cmd="find $args -printf \"%T@ %p\n\" | sort -n | tail -n 1"
         eval ${cmd}
     }
 
     function fs.lm.dirs {
-        local args="$*"
-        [ -x "$1" ] && local args="$(fs.realpath "$1") ${@:2}"
+        local args find
+
+        if [ ! -x "$1" ]; then
+            args="$*"
+        else
+            args="$(fs.realpath "$1") ${@:2}"
+        fi
+
+        find="$(which gfind)"; [ ! -x "$find" ] && find="$(which find)"
         local cmd="find $args -type d -not -path '*/.git*' -printf \"%T@ %p\n\" | sort -n | tail -n 1 | grep -Po '\d+' | head -n 1"
         eval ${cmd}
     }
