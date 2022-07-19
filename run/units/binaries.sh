@@ -58,7 +58,12 @@ function bin.compile_fzf {
         [ -d "$tempdir" ] && rm -rf "$tempdir"
 
         $SHELL -c "$clone $url $tempdir && $tempdir/install --completion --key-bindings --update-rc --bin && cp -f $tempdir/bin/fzf $LOCAL_BIN/fzf && rm -rf $tempdir"
-        [ "$?" -gt 0 ] && fail $0 "something went wrong"
+
+        if [ "$?" -gt 0 ]; then
+            fail $0 "something went wrong"
+        elif [ -x "$LOCAL_BIN/fzf" ]; then
+            fs.link "$LOCAL_BIN/fzf" >/dev/null
+        fi
     fi
 
     if [ -f "$LOCAL_BIN/fzf.bak" ]; then
@@ -68,6 +73,7 @@ function bin.compile_fzf {
             mv "$LOCAL_BIN/fzf.bak" "$LOCAL_BIN/fzf"
         fi
     fi
+    chmod a+x "$LOCAL_BIN/fzf"
 }
 
 # ——— micro editor
