@@ -660,7 +660,11 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         [ -n "$venv" ] && source $venv/bin/activate
 
         if [ -n "$failed" ]; then
-            return 1
+            if [ -n "$complete" ]; then
+                return 4
+            else
+                return 5
+            fi
         else
             return 0
         fi
