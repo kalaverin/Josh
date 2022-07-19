@@ -137,7 +137,7 @@ function bin.deploy_tmux_plugins {
     fi
 
     if [ -x "$(which bash)" ]; then
-        bash "$HOME/.tmux/plugins/tpm/scripts/install_plugins.sh"
+        timeout -s 9 15.0 bash "$HOME/.tmux/plugins/tpm/scripts/install_plugins.sh"
     else
         warn $0 "it's funny, but tmux plugin manager required bash for installation bootstrap"
     fi
