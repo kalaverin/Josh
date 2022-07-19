@@ -240,14 +240,16 @@ function ssh.agent {
     fi
 }
 
-if [ -z "$SSH_AUTH_SOCK" ]; then
-    ssh.agent
-    ssh-add 2>/dev/null
-else
-    ssh-add 2>/dev/null
-    if [ "$?" -eq 2 ]; then
+if [ ! "$ASH_SSH_AGENT_AUTOSTART_DISABLE" -gt 0 ]; then
+    if [ -z "$SSH_AUTH_SOCK" ]; then
         ssh.agent
         ssh-add 2>/dev/null
+    else
+        ssh-add 2>/dev/null
+        if [ "$?" -eq 2 ]; then
+            ssh.agent
+            ssh-add 2>/dev/null
+        fi
     fi
 fi
 

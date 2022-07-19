@@ -72,7 +72,11 @@ ASH_TMUX_AUTORETACH_MAX_DIFF=9
 # disable default: show random pokemon and Darks Souls phrase
 #
 # ASH_TMUX_MOTD_DISABLE=1
-# ASH_TMUX_MOTD_DISABLE=1
+
+#ASH_SSH_AGENT_AUTOSTART_DISABLE
+# disable default: show random pokemon and Darks Souls phrase
+#
+# ASH_SSH_AGENT_AUTOSTART_DISABLE=1
 
 THEFUCK_EXCLUDE_RULES="fix_file"
 
