@@ -157,7 +157,7 @@ function bin.link_fpp {
         local retval="$?"
     fi
 
-    if [ -x "$src/fpp" ]; then
+    if [ -x "$src/fpp" ] && [ ! -x "$ASH/bin/fpp" ]; then
         local dst="$(fs.link "$src/fpp")"
         if [ -z "$dst" ]; then
             local retval="127"
@@ -188,7 +188,7 @@ function bin.link_git_tools {
         find="$(which gfind)"; [ ! -x "$find" ] && find="$(which find)"
         $find "$src" -maxdepth 1 -type f -executable | while read exe
         do
-            if [ -x "$exe" ]; then
+            if [ -x "$exe" ] && [ ! -x "$ASH/bin/$(fs.basename "$exe")" ]; then
                 local dst="$(fs.link "$exe")"
                 if [ -z "$dst" ]; then
                     local retval="127"
