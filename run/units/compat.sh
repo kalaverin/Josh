@@ -108,10 +108,11 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             export ASH_OS="BSD"
 
             local cmd="sudo pkg install -y"
-            local pkg="bash coreutils findutils git gnugrep gnuls gsed gtar openssl pkgconf python310 zsh"
+            local pkg="bash coreutils findutils git gnugrep gnuls gsed gtar libevent openssl pkgconf python310 rsync sudo tmux zsh"
             REQ_SYS_BINS=(
                 bash
                 pkg
+                sudo 
                 /usr/local/bin/gcut
                 /usr/local/bin/gfind
                 /usr/local/bin/gnuls

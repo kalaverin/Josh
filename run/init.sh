@@ -79,17 +79,15 @@ else
         source "$ASH/run/units/configs.sh" && \
         source "$ASH/run/update.sh" && \
         source "$ASH/lib/python.sh" && \
-        source "$ASH/lib/rust.sh" || rollback "$0" "$?"
+        source "$ASH/lib/rust.sh" || return "$(rollback "$0" "$?")"
 
-        # TODO: export ASH_VERBOSITY="1"
-
-        pip.install $PIP_REQ_PACKAGES
+        pip.install $PIP_REQ_PACKAGES || return "$(rollback "$0" "$?")"
 
         cfg.install && \
         omz.install && omz.plugins && \
-        bin.install || return "$?"
+        bin.install || return "$(rollback "$0" "$?")"
 
-        cargo.deploy $CARGO_REQ_PACKAGES
+        cargo.deploy $CARGO_REQ_PACKAGES || return "$(rollback "$0" "$?")"
 
         cfg.install
         ASH_FORCE_CONFIGS=1 cfg.copy "$ASH/.zshrc" "$HOME/.zshrc"
