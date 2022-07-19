@@ -83,6 +83,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             unset ASH_POST_INSTALL_PYTHON
         fi
         post.install.message
+        omz update
     }
 
     function post.install.message {
@@ -115,8 +116,6 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
         source "$ASH/usr/units/git.zsh" && \
         git.nested "$ASH/usr/local"
-
-        omz update
     }
 
     function update.packages {
