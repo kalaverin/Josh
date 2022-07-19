@@ -644,6 +644,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         if [ -n "$complete" ]; then
             local result="$complete - success!"
         fi
+
         if [ -n "$failed" ]; then
             if [ -z "$result" ]; then
                 local result="failed: $failed"
@@ -657,6 +658,12 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
 
         [ -n "$venv" ] && source $venv/bin/activate
+
+        if [ -n "$failed" ]; then
+            return 1
+        else
+            return 0
+        fi
     }
 
     function pip.update {
