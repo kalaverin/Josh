@@ -110,12 +110,13 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         source "$ASH/run/units/binaries.sh" && \
         bin.install
 
-        omz update
         source "$ASH/run/units/oh-my-zsh.sh" &&
         omz.plugins
 
         source "$ASH/usr/units/git.zsh" && \
         git.nested "$ASH/usr/local"
+
+        omz update
     }
 
     function update.packages {
