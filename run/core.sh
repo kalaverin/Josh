@@ -570,7 +570,7 @@ else
         local unified_path
 
         unified_path="$(
-            echo "$*" | sed 's#:#\n#g' | sed "s:^~/:$HOME/:" | \
+            echo "${@:2}" | sed 's#:#\n#g' | sed "s:^~/:$HOME/:" | \
             xargs -n 1 realpath 2>/dev/null | awk '!x[$0]++' | \
             grep -v "$ASH" | \
             sed -z 's#\n#:#g' | sed 's#:$##g')" || return "$?"
@@ -583,6 +583,11 @@ else
         local result=""
         local pattern="^$HOME/.python"
         for dir in $(echo "$unified_path" | sed 's#:#\n#g'); do
+            if [ -f "$dir/activate_this.py" ]; then
+                if [ -z "$VIRTUAL_ENV" ] || [ ! -d "$VIRTUAL_ENV" ]; then
+                    continue
+                fi
+            fi
 
             if [[ "$dir" -regex-match $pattern ]]; then
                 if [ -z "$found" ]; then
@@ -638,7 +643,7 @@ else
         fi
 
         local result
-        result="$(eval.cached "$(fs.lm.many $path)" path.clean.uncached "$path")"
+        result="$(eval.cached "$(fs.lm.many $path)" path.clean.uncached "$VIRTUAL_ENV" "$path")"
         local retval="$?"
 
         if [ "$retval" -eq 0 ] || [ -n "$result" ]; then
