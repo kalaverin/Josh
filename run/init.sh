@@ -81,14 +81,12 @@ else
         source "$ASH/run/units/configs.sh" && \
         source "$ASH/run/update.sh" && \
         source "$ASH/lib/python.sh" && \
-        source "$ASH/lib/rust.sh" || return "$(rollback "$0" "$?")"
-
-        pip.install $PIP_REQ_PACKAGES || return "$(rollback "$0" "$?")"
-
-        cfg.install && \
-        omz.install && omz.plugins && \
-        bin.install || return "$(rollback "$0" "$?")"
-
+        source "$ASH/lib/rust.sh"        || return "$(rollback "$0" "$?")"
+        pip.install $PIP_REQ_PACKAGES    || return "$(rollback "$0" "$?")"
+        cfg.install
+        omz.install                      || return "$(rollback "$0" "$?")"
+        omz.plugins                      || return "$(rollback "$0" "$?")"
+        bin.install                      || return "$(rollback "$0" "$?")"
         cargo.deploy $CARGO_REQ_PACKAGES || return "$(rollback "$0" "$?")"
 
         cfg.install
