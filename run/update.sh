@@ -117,13 +117,13 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
         source "$ASH/usr/units/git.zsh" && \
         git.nested "$ASH/usr/local"
-    }
 
-    function update.packages {
         source "$ASH/lib/python.sh" && \
         pip.install "$PIP_REQ_PACKAGES"
         pip.update
+    }
 
+    function update.packages {
         source "$ASH/lib/rust.sh" && \
         cargo.install "$CARGO_REQ_PACKAGES"
         cargo.update
