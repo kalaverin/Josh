@@ -161,8 +161,13 @@ function bin.link_git_tools {
         local retval="$?"
     fi
 
+    local find="$(which gfind)"
+    if [ ! -x "$find" ]; then
+        local find="$(which find)"
+    fi
+
     if [ -d "$src" ]; then
-        find "$src" -maxdepth 1 -type f -executable | while read exe
+        $find "$src" -maxdepth 1 -type f -executable | while read exe
         do
             if [ -x "$exe" ]; then
                 local dst="$(fs.link "$exe")"
