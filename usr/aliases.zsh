@@ -240,7 +240,7 @@ function ssh.agent {
     fi
 }
 
-if [ ! "$ASH_SSH_AGENT_AUTOSTART_DISABLE" -gt 0 ]; then
+if [ "$ASH_SSH_AGENT_AUTOSTART" -gt 0 ]; then
     if [ -z "$SSH_AUTH_SOCK" ]; then
         ssh.agent
         ssh-add 2>/dev/null
