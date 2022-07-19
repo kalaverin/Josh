@@ -1,6 +1,6 @@
 source "$(dirname "$0")/init.sh"
 
-if [[ "$ASH" =~ '/.josh/custom/plugins/josh$' ]]; then
+if [[ "$ASH" =~ '/.josh/custom/plugins/josh$' ]] || [ ! -d "$HOME/.oh-my-zsh" ]; then
     fail "$0" "running Ash in old Josh context, force redeploy"
 
     if [ ! -d "$HOME/.ash" ] && [ -d "$HOME/.josh/custom/plugins/josh" ]; then
