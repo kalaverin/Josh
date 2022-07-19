@@ -115,14 +115,15 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         source "$ASH/run/units/oh-my-zsh.sh" &&
         omz.plugins
 
-        source "$ASH/lib/python.sh" && \
-        pip.install "$PIP_REQ_PACKAGES"
-        pip.update
-
+        source "$ASH/usr/units/git.sh" && \
         git.nested "$ASH/usr/local"
     }
 
     function update.packages {
+        source "$ASH/lib/python.sh" && \
+        pip.install "$PIP_REQ_PACKAGES"
+        pip.update
+
         source "$ASH/lib/rust.sh" && \
         cargo.install "$CARGO_REQ_PACKAGES"
         cargo.update
