@@ -74,6 +74,7 @@ function bin.compile_fzf {
         fi
     fi
     chmod a+x "$LOCAL_BIN/fzf"
+    fs.link "$LOCAL_BIN/fzf" >/dev/null
 }
 
 # ——— micro editor
@@ -88,9 +89,9 @@ function bin.deploy_micro {
     elif [ -x "$LOCAL_BIN/micro" ]; then
         [ -f "$LOCAL_BIN/micro.bak" ] && rm -f "$LOCAL_BIN/micro.bak"
 
-        if [ "$(find $LOCAL_BIN/micro -mmin +129600 2>/dev/null | grep micro)" ]; then
-            mv "$LOCAL_BIN/micro" "$LOCAL_BIN/micro.bak"
-        fi
+        # if [ "$(find $LOCAL_BIN/micro -mmin +129600 2>/dev/null | grep micro)" ]; then
+        #     mv "$LOCAL_BIN/micro" "$LOCAL_BIN/micro.bak"
+        # fi
     fi
 
     if [ ! -x "$LOCAL_BIN/micro" ]; then
@@ -111,6 +112,7 @@ function bin.deploy_micro {
         fi
     fi
     chmod a+x "$LOCAL_BIN/micro"
+    fs.link "$LOCAL_BIN/micro" >/dev/null
 
     source "$ASH/run/units/configs.sh"
     cfg.copy "$ASH/usr/share/micro_config.json" "$CONFIG_DIR/micro/settings.json"
