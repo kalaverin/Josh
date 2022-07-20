@@ -593,7 +593,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     function venv.off {
         local name="$VIRTUAL_ENV"
         if [ -z "$name" ] || [ ! -f "$name/bin/activate" ]; then
-            unset name
+            unset VIRTUAL_ENV
         else
             source "$name/bin/activate" && deactivate
             echo "$name"
