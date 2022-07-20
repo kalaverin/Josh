@@ -17,47 +17,18 @@ else
     zmodload zsh/stat
     zmodload zsh/terminfo
 
-    perm_path=(
-        $HOME/.cargo/bin
-    )
+    SELF="$0"
 
-    if [ -n "$VIRTUAL_ENV" ] && [ -d "$VIRTUAL_ENV/bin" ]; then
-        perm_path=(
-            $perm_path
-            $VIRTUAL_ENV/bin
-        )
-    fi
+    function ash.path.source {
+        root="$(dirname "$SELF")" || return "$?"
+        if [ -z "$root" ] || [ ! -x "$root" ]; then
+            printf " ** fail ($0): something went wrong: root isn't detected\n" >&2
+            return 1
+        fi
+        source "$root/path.sh"
+    }
 
-    if [ -n "$PYTHON" ] && [ -d "$PYTHON/bin" ]; then
-        perm_path=(
-            $perm_path
-            $PYTHON/bin
-        )
-    else
-        perm_path=(
-            $perm_path
-            $HOME/.python/default/bin
-        )
-    fi
-
-    perm_path=(
-        $perm_path
-        $HOME/.local/bin
-        $HOME/bin
-        /usr/local/bin
-        /bin
-        /sbin
-        /usr/bin
-        /usr/sbin
-        /usr/local/sbin
-    )
-
-    path=(
-        $perm_path
-        $path
-        $HOME/.brew/bin
-    )
-
+    ash.path.source
 
     function __log.spaces {
         if [ -z "$1" ] || [ ! "$1" -gt 0 ]; then
@@ -576,7 +547,7 @@ else
             sed -z 's#\n#:#g' | sed 's#:$##g')" || return "$?"
 
         if [ -z "$unified_path" ]; then
-            return 255
+            return 2
         fi
 
         local found=""
@@ -590,7 +561,7 @@ else
             fi
 
             if [[ "$dir" -regex-match $pattern ]]; then
-                if [ -z "$found" ]; then
+                if [ -n "$PYTHON" ] && [ "$dir" = "$PYTHON/bin" ] && [ -x "$PYTHON/bin" ] && [ -z "$found" ]; then
                     local found="$dir"
                 else
                     continue
@@ -606,7 +577,7 @@ else
 
         if [ -z "$result" ]; then
             fail $0 "something went wrong: $path"
-            return 127
+            return 3
         fi
         echo "$result"
     }
@@ -637,13 +608,15 @@ else
     }
 
     function path.rehash {
+        local result
         if [ ! -x "$ASH" ]; then
             term $0 "something went wrong, ASH path empty"
             return 1
         fi
 
-        local result
-        result="$(eval.cached "$(fs.lm.many $path)" path.clean.uncached "$VIRTUAL_ENV" "$path")"
+        ash.path.source
+
+        result="$(eval.cached "$(fs.lm.many $path)" path.clean.uncached "$PYTHON:$VIRTUAL_ENV" "$path")"
         local retval="$?"
 
         if [ "$retval" -eq 0 ] || [ -n "$result" ]; then
