@@ -180,17 +180,26 @@ function venv.make {
 
     elif [ -d "$full" ]; then
         fail $0 "full '$name' already exists in '$root'"
-        return 1
+        return 2
     fi
 
-    local python="`py.from.version $2`"
+    if [[ "$2" =~ ^/.+/[0-9a-z]+[0-9a-z\.-]*[0-9a-z]+$ ]]; then
+        if [ ! -x "$2" ]; then
+            fail $0 "\$2 isn't correct (accessible, executable) python path: '$2'"
+            return 3
+        fi
+        local python="$(fs.realpath $2)"
+    else
+        local python="$(py.from.version $2)"
+    fi
+
     if [ ! -x "$python" ]; then
-        fail $0 "couldn't autodetect python for '$2'"
-        return 1
+        fail $0 "\$2 isn't correct (accessible, executable) python path: '$2'"
+        return 4
     fi
 
     local version="$(py.ver $python)"
-    if [[ "$2" =~ ^[0-9]\.[0-9]+$ ]] || [ "$2" = "2" ] || [ "$2" = "3" ]; then
+    if [[ "$2" =~ ^/.+/[0-9a-z]+[0-9a-z\.-]*[0-9a-z]+$ ]] || [[ "$2" =~ ^[0-9]\.[0-9]+$ ]] || [ "$2" = "2" ] || [ "$2" = "3" ]; then
         local packages="${@:3}"
     else
         local packages="${@:2}"
@@ -202,24 +211,24 @@ function venv.make {
     if [ -z "$using" ]; then
         fail $0 "'$python'"
         [ -n "$venv" ] && source "$venv/bin/activate"
-        return 1
+        return 5
     fi
 
     py.set "$python"
     if [ "$?" -gt 0 ]; then
         [ -n "$venv" ] && source "$venv/bin/activate"
-        return 1
+        return 6
     fi
 
     if ! py.lib.exists 'virtualenv' "$python"; then
-        info $0 "virtualenv isn't installed for `py.ver`, proceed"
+        info $0 "virtualenv isn't installed for $(py.ver), proceed"
         pip.install virtualenv
 
         if ! py.lib.exists 'virtualenv' "$python"; then
             fail $0 "something went wrong"
             py.set "$using"
             [ -n "$venv" ] && source "$venv/bin/activate"
-            return 2
+            return 7
         fi
     fi
 

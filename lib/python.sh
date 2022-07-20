@@ -107,11 +107,20 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
     function py.ver {
         if [ -z "$1" ]; then
-            if [ -n "$PYTHON" ] && [ -x "$PYTHON/bin/python" ]; then
+            if [ -n "$PYTHON" ] && [ ! -x "$PYTHON/bin/python" ]; then
+                if [ -x "$PYTHON_BINARIES/default/bin/python" ]; then
+                    local source="$PYTHON_BINARIES/default/bin/python"
+                else
+                    fail $0 "call without args, default python doesn't exists: '$PYTHON_BINARIES/default/bin/python'"
+                    return 1
+                fi
+
+            elif [ -n "$PYTHON" ] && [ -x "$PYTHON/bin/python" ]; then
                 local source="$PYTHON/bin/python"
+
             else
                 fail $0 "call without args, I need to do — what?"
-                return 1
+                return 2
             fi
         else
             local source="$1"
@@ -119,7 +128,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
         if [ ! -x "$source" ]; then
             fail $0 "isn't valid executable '$source'"
-            return 2
+            return 3
         fi
         eval.cached "$(fs.mtime $source)" py.ver.uncached "$source"
     }
@@ -338,14 +347,15 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     }
 
     function py.set {
+        local python source target version
         if [ -z "$1" ]; then
 
             if [ ! -x "$PYTHON_BINARIES/default/bin/python" ]; then
-                fail "$0" "default python isn't installed, you call me without respect and arguments, I need to do— hat?"
+                fail "$0" "default python isn't installed, you call me without respect and arguments, I need to do — what?"
                 return 1
             else
 
-                local source="$(fs.realpath "$PYTHON_BINARIES/default/bin/python")"
+                source="$(fs.realpath "$PYTHON_BINARIES/default/bin/python")"
                 if [ "$?" -gt 0 ] || [ ! -x "$source" ]; then
                     fail $0 "python default binary '$source' ($1) doesn't exists or something wrong"
                     return 2
@@ -353,68 +363,75 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             fi
 
         elif [[ "$1" -regex-match '^[0-9]+\.[0-9]+' ]]; then
-            local source="$(fs.realpath `which "python$MATCH"`)"
+            source="$(fs.realpath `which "python$MATCH"`)"
             if [ "$?" -gt 0 ] || [ ! -x "$source" ]; then
                 fail $0 "python binary '$source' ($1) doesn't exists or something wrong"
                 return 3
             fi
 
         else
-            local source="$(fs.realpath `which "$1"`)"
+            source="$(fs.realpath `which "$1"`)"
             if [ "$?" -gt 0 ] || [ ! -x "$source" ]; then
                 fail $0 "python binary '$source' doesn't exists or something wrong"
                 return 4
             fi
         fi
 
-        local version="$(py.ver.full "$source")"
-        if [ -z "$version" ]; then
-            fail $0 "python $source version fetch"
+        if [ -w "$(fs.dirname "$source")" ]; then
+            fail $0 "python path '$(fs.dirname "$source")' is writable"
             return 5
+        fi
 
-        elif [ -n "$PYTHON" ] && [ "$version" = "$(py.ver.full)" ]; then
+        version="$(py.ver.full "$source")"
+        if [ "$?" -gt 0 ] || [ -z "$version" ]; then
+            fail $0 "python $source version fetch"
+            return 6
+
+        elif [ -n "$PYTHON" ] && [ "$version" = "$(py.ver.full 2>/dev/null)" ]; then
             [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
             return 0
         fi
 
-        local target="$(py.home "$source")"
+        target="$(py.home "$source")"
         if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
             fail $0 "python $source home directory isn't exist"
-            return 6
+            return 7
         fi
 
         local base="$PYTHON"
         export PYTHON="$target"
-        pip.lookup >/dev/null
 
-        local python="$(py.exe)"
-        if [ ! -x "$python" ]; then
+        python="$(py.exe)"
+        if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
             fail $0 "something wrong on setup python '$python' from source $source"
             [ -n "$base" ] && export PYTHON="$base"
             [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
-            return 7
+            return 8
         fi
 
         if [ ! "$version" = "$(py.ver.full "$python")" ]; then
             fail $0 "source python $source ($version) != target $python ($(py.ver.full "$python"))"
             [ -n "$base" ] && export PYTHON="$base"
             [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
-            return 8
+            return 9
         fi
 
         pip.deploy
 
         if [ -n "$1" ] && [ ! "$(py.ver "$PYTHON_BINARIES/default/bin/python" 2>/dev/null)" = "$(py.ver "$python" 2>/dev/null)" ]; then
-            warn $0 "using python $target ($source=$version)"
+            warn $0 "using python linked to $target (realpath $source v$version)"
         fi
 
         [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
+        unset PIP
         path.rehash
+        pip.lookup >/dev/null
+        return 0
     }
 
     function pip.lookup {
-        if [ -x "$PYTHON_PIP" ]; then
-            echo "$PYTHON_PIP"
+        if [ -x "$PIP" ]; then
+            echo "$PIP"
             return 0
         fi
         local target="$(py.home)"
@@ -425,7 +442,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
         local pip="$target/bin/pip"
         if [ -x "$pip" ]; then
-            export PYTHON_PIP="$pip"
+            export PIP="$pip"
             echo "$pip"
             return 0
         fi
@@ -481,7 +498,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             local flags="--disable-pip-version-check --no-input --no-python-version-warning --no-warn-conflicts --no-warn-script-location"
 
             if [ "$(ash.branch 2>/dev/null)" = "develop" ]; then
-                local flags="$flags -vv"
+                local flags="$flags -v"
             fi
 
             if [ "$USER" = 'root' ] || [ "$ASH_OS" = 'BSD' ] || [ "$ASH_OS" = 'MAC' ]; then
