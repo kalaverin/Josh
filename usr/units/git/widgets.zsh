@@ -508,12 +508,28 @@ function __widget.git.checkout_tag {
 zle -N __widget.git.checkout_tag
 
 
+function __widget.git.switch_branch.verb {
+    local result
+    result="$(git switch 2>&1 | grep 'is not a git command' | wc -l)"
+    if [ "$?" -gt 0 ] || [ "$result" -gt 0 ]; then
+        echo 'checkout'
+    else
+        echo 'switch'
+    fi
+}
+
+
 function __widget.git.switch_branch {
     # нужен нормальный просмотровщик диффа между хешами
     # git rev-list --first-parent develop...master --pretty=oneline | sd "(.{8})(.{32}) (.+)" "\$1 \$3" | pipe_numerate | sort -hr
-    local branch
+    local branch verb
     branch="$(git.this.branch)" || return "$?"
     [ -z "$branch" ] && return 1
+
+    verb="$(eval.cached `fs.lm.dirs "$ASH/bin"` __widget.git.switch_branch.verb)"
+    if [ "$?" -gt 0 ] || [ -z "$verb" ]; then
+        verb='checkout'
+    fi
 
     git.is_clean 2>/dev/null || local state='DIRTY '
 
@@ -533,11 +549,11 @@ function __widget.git.switch_branch {
         ")"
 
         if [ -z "$BUFFER" ]; then
-            run.show "git switch $value 2>/dev/null 1>/dev/null"
+            run.show "git $verb $value 2>/dev/null 1>/dev/null"
             local retval="$?"
 
         elif [ -n "$value" ]; then
-            LBUFFER="$BUFFER && git switch $value"
+            LBUFFER="$BUFFER && git $verb $value"
         fi
 
         local retval=0
