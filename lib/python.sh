@@ -86,7 +86,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             fail $0 "isn't valid executable '$source'"
             return 1
         fi
-        echo "$($source --version 2>&1 | grep -Po '(\d+\.\d+\.\d+)')"
+        printf "$($source --version 2>&1 | grep -Po '(\d+\.\d+\.\d+)')"
     }
 
     function py.ver.uncached {
@@ -98,7 +98,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
         local version="$(py.ver.full "$python")"
         if [[ "$version" -regex-match '^[0-9]+\.[0-9]+' ]]; then
-            echo "$MATCH"
+            printf "$MATCH"
         else
             fail $0 "python $python==$version missing minor version"
             return 1
@@ -141,7 +141,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
         local version="$(py.ver "$1")"
         [ -z "$version" ] && return 1
-        echo "$PYTHON_BINARIES/$version"
+        printf "$PYTHON_BINARIES/$version"
     }
 
     function py.exe.lookup {
@@ -189,7 +189,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         done
         if [ -n "$result" ]; then
             info $0 "python binary $result ($version)"
-            echo "$result"
+            printf "$result"
             return 0
         fi
         fail $0 "python binary not found"
@@ -202,7 +202,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         if [ -n "$PYTHON" ]; then
             local link="$PYTHON/bin/python"
             if [ -x "$link" ] && [ -e "$link" ]; then
-                echo "$link"
+                printf "$link"
                 return 0
             fi
             unset PYTHON
@@ -225,7 +225,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
                 if [ "$?" -gt 0 ]; then
                     if py.lib.exists 'distutils' "$link"; then
-                        echo "$link"
+                        printf "$link"
                         return 0
                     fi
                 fi
@@ -253,7 +253,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             local python
             python="$(fs.realpath "$result")"
             if [ "$?" -eq 0 ] && [ -x "$python" ]; then
-                echo "$python"
+                printf "$python"
                 return 0
             fi
         fi
@@ -306,7 +306,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
         path.rehash
 
-        echo "$target"
+        printf "$target"
     }
 
     function py.home {
@@ -338,7 +338,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             fi
         fi
 
-        echo "$target"
+        printf "$target"
         if [ -z "$1" ]; then
             export PYTHON="$target"
         fi
@@ -431,7 +431,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
     function pip.lookup {
         if [ -x "$PIP" ]; then
-            echo "$PIP"
+            printf "$PIP"
             return 0
         fi
         local target="$(py.home)"
@@ -443,7 +443,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         local pip="$target/bin/pip"
         if [ -x "$pip" ]; then
             export PIP="$pip"
-            echo "$pip"
+            printf "$pip"
             return 0
         fi
 
@@ -540,12 +540,12 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     function pip.exe.uncached {
         local python target
 
-        python="$(py.exe)"
+        python="$(py.exe)" || return "$?"
+
         target="$(py.home "$python")"
         local retval="$?"
-
         if [ "$retval" -gt 0 ] || [ ! -d "$target" ]; then
-            fail $0 "python '$python' home directory isn't exist"
+            fail $0 "python '$python' home directory doesn't exist"
             return 2
         fi
 
@@ -553,7 +553,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         local retval="$?"
 
         if [ -x "$target/bin/pip" ]; then
-            echo "$target/bin/pip"
+            printf "$target/bin/pip"
         fi
         return "$retval"
     }
@@ -565,7 +565,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             local gsed="$(which sed)"
             if [ ! -x "$gsed" ]; then
                 fail $0 "GNU sed for '$ASH_OS' don't found"
-                return 2
+                return 1
             fi
         fi
 
@@ -574,18 +574,21 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             local dirs="$PATH"
         fi
 
-        result="$(
-            eval.cached "`fs.lm.many $dirs $PYTHON_BINARIES`" pip.exe.uncached $*)"
+        result="$(eval.cached "`fs.lm.many $dirs $PYTHON_BINARIES`" pip.exe.uncached $*)"
         retval="$?"
+
+        if [ "$retval" -gt 0 ]; then
+            return 2
+        fi
 
         [ -z "$PYTHON" ] && export PYTHON="$result"
         [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
 
         if [ -x "$result" ]; then
-            echo "$result"
+            printf "$result"
 
-        elif [ "$retval" -eq 0 ]; then
-            return 127
+        elif [ "$retval" -gt 0 ]; then
+            return 3
         fi
         return "$retval"
     }
@@ -596,20 +599,20 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             unset VIRTUAL_ENV
         else
             source "$name/bin/activate" && deactivate
-            echo "$name"
+            printf "$name"
         fi
         path.rehash
     }
 
     function pip.install {
+        local pip venv
         if [ -z "$1" ]; then
             fail $0 "call without args, I need to do — what?"
             return 1
         fi
+        venv="$(venv.off)" || return "$?"
 
-        local venv="$(venv.off)"
-
-        local pip="$(pip.exe)"
+        pip="$(pip.exe)"
         if [ "$?" -gt 0 ] || [ ! -x "$pip" ]; then
             [ -n "$venv" ] && source $venv/bin/activate
             return 2
@@ -718,7 +721,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         )"
 
         if [ -n "$1" ] && [ -z "$installed" ]; then
-            echo "$regex"
+            printf "$regex"
             fail $0 "package '$1' isn't installed"
             return 3
         fi
