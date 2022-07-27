@@ -65,24 +65,52 @@ function tmux.detached {
 }
 
 function tmux.matching {
+    local result
     local maxdiff="${ASH_TMUX_AUTORETACH_MAX_DIFF:-9}"
-    local query='echo "$((abs(#{window_width} - $COLUMNS) + abs(#{window_height} - $LINES))) #{session_name}"'
 
-    local result="$(
-        tmux list-sessions -f "#{?session_attached,0,1}" -F $query 2>/dev/null |
-        timeout -s 2 0.25 $SHELL | sort -Vk 1 |
-        sd '(\d+) (.+)' "echo \"\$((\$1 <= $maxdiff)) \$2\"" | $SHELL |
-        grep -P '^1' | head -n 1 | tabulate -i 2
+    result="$(
+        eval.run "tmux list-sessions -f \"#{?session_attached,,1}\" -F 'echo \"\$((abs(#{window_width} - \$COLUMNS) + abs(#{window_height} - \$LINES))) #{session_name}\"' 2>/dev/null"
+    )" || return "$?"
+    [ -z "$result" ] && return 1
+
+
+    result="$(
+        eval.run "$result" | sort -Vk 1 |
+        sd '(\d+) (.+)' "echo \"\$((\$1 <= $maxdiff)) \$2\""
+    )" || return "$?"
+    [ -z "$result" ] && return 1
+
+    result="$(
+        eval.run "$result" | grep -P '^1' | head -n 1 | tabulate -i 2
     )"
     [ -z "$result" ] && return 1 || echo "$result"
 }
 
-if [ -z "$ASH_TMUX_AUTORETACH_DISABLE" ] && [ -n "$PS1" ] && [ -z "$TMUX" ] && [ -n "$SSH_CONNECTION" ]; then
-    tmx lost
 
-elif [ -z "$ASH_TMUX_SPACES_FILL_DISABLE" ] && [ -n "$PS1" ] && [ -n "$TMUX" ]; then
-    local branch="$(ash.branch)"
-    if [ "$branch" = "master" ] || [ "$branch" = "stable" ]; then
-        cls
+function tmx.autoload {
+    local binaries=(
+        grep
+        head
+        sd
+        sed
+        sort
+        tabulate
+        tmux
+    )
+
+    if local missing="$(fs.lookup.missing "$binaries")" && [ -n "$missing" ]; then
+        fail $0 "missing binaries: $missing; just run 'ash.extras' and try again after"
     fi
-fi
+
+    if [ -z "$ASH_TMUX_AUTORETACH_DISABLE" ] && [ -n "$PS1" ] && [ -z "$TMUX" ] && [ -n "$SSH_CONNECTION" ]; then
+        tmx lost
+
+    elif [ -z "$ASH_TMUX_SPACES_FILL_DISABLE" ] && [ -n "$PS1" ] && [ -n "$TMUX" ]; then
+        local branch="$(ash.branch)"
+        if [ "$branch" = "master" ] || [ "$branch" = "stable" ]; then
+            cls
+        fi
+    fi
+}
+
+tmx.autoload
