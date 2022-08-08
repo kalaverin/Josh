@@ -203,7 +203,7 @@ function git.fetch {
     if [ "$?" -gt 0 ] || [ -z "$result" ]; then
         return 1
     fi
-    run.show "$result" 2>&1 | grep -v 'up to date'
+    run.show "$result" 2>&1 | grep -v 'up to date' 1>/dev/null
     return "$?"
 }
 
@@ -234,7 +234,7 @@ function git.branch.select {
 
     [ -z "$(git.this.root)" ] && return 3
 
-    local cmd="git fetch origin '$1':'$1' && git.is_clean && git checkout --force --quiet '$1' && git reset --hard '$1' && git pull origin '$1'"
+    local cmd="git fetch origin '$1':'$1' && git.is_clean && git checkout --force --quiet '$1' && git reset --hard '$1' && git pull origin '$1' && git.mtime.set"
     run.show "$cmd"
     return "$?"
 }
@@ -335,7 +335,7 @@ function git.mtime.set {
             return 1
         fi
 
-        git-restore-mtime --skip-missing --work-tree "$result/" --git-dir "$result/.git/" "$result/"
+        git-restore-mtime --skip-missing --work-tree "$result/" --git-dir "$result/.git/" "$result/" 1>&2
         return "$?"
     fi
     return 2

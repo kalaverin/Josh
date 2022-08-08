@@ -549,11 +549,11 @@ function __widget.git.switch_branch {
         ")"
 
         if [ -z "$BUFFER" ]; then
-            run.show "git $verb $value 2>/dev/null 1>/dev/null"
+            run.show "git $verb $value 2>/dev/null 1>/dev/null && git.mtime.set"
             local retval="$?"
 
         elif [ -n "$value" ]; then
-            LBUFFER="$BUFFER && git $verb $value"
+            LBUFFER="$BUFFER && git $verb $value && git.mtime.set"
         fi
 
         local retval=0
@@ -757,13 +757,13 @@ function __widget.git.checkout_commit {
             return 0
         else
             if [[ "$BUFFER" != "" ]]; then
-                LBUFFER="$BUFFER && git checkout $result"
+                LBUFFER="$BUFFER && git checkout $result && git.mtime.set"
                 local ret=$?
                 zle redisplay
                 typeset -f zle-line-init >/dev/null && zle zle-line-init
                 return $ret
             else
-                git checkout $result 2>/dev/null
+                git checkout $result 2>/dev/null && git.mtime.set
                 zle reset-prompt
                 return 0
             fi
