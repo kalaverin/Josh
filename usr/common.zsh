@@ -724,7 +724,3 @@ zle -N znt-kill-widget
 
 autoload -U edit-command-line
 zle -N edit-command-line
-
-function ash.auto {
-    echo 'success!3'
-}

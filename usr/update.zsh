@@ -173,3 +173,8 @@ function motd {
 
     fi
 }
+
+
+function ash.auto {
+    echo 'success!4'
+}
