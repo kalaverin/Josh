@@ -561,7 +561,7 @@ else
             fi
 
             if [[ "$dir" -regex-match $pattern ]]; then
-                if [ -n "$PYTHON" ] && [ "$dir" = "$PYTHON/bin" ] && [ -x "$PYTHON/bin" ] && [ -z "$found" ]; then
+                if [ -n "$PYTHON" ] && [ -x "$PYTHON/bin" ] && [ -z "$found" ] && [ "$dir" = "$(fs.realpath "$PYTHON/bin")" ]; then
                     local found="$dir"
                 else
                     continue
