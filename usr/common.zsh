@@ -636,6 +636,9 @@ function ash.pull {
     ash.eval "run/update.sh" && pull.update $* && \
     ash.eval "run/update.sh" && post.install
     builtin cd "$cwd"
+
+    local zsh="${ZSH_ARGZERO:-${functrace[-1]%:*}}"
+    [[ "$zsh" = -* || -o login ]] && exec -l "${zsh#-}" || exec "$zsh"
 }
 function ash.update {
     local version; version="$(py.ver)" || return "$?"
@@ -645,6 +648,9 @@ function ash.update {
     ash.eval "run/update.sh" && pull.update $* && \
     ash.eval "run/update.sh" && post.update $*
     builtin cd "$cwd"
+
+    local zsh="${ZSH_ARGZERO:-${functrace[-1]%:*}}"
+    [[ "$zsh" = -* || -o login ]] && exec -l "${zsh#-}" || exec "$zsh"
 }
 function ash.upgrade {
     local version; version="$(py.ver)" || return "$?"
@@ -654,6 +660,9 @@ function ash.upgrade {
     ash.eval "run/update.sh" && pull.update $* && \
     ash.eval "run/update.sh" && post.upgrade $*
     builtin cd "$cwd"
+
+    local zsh="${ZSH_ARGZERO:-${functrace[-1]%:*}}"
+    [[ "$zsh" = -* || -o login ]] && exec -l "${zsh#-}" || exec "$zsh"
 }
 function ash.extras {
     ash.eval "run/update.sh" && deploy.extras
