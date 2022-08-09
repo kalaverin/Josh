@@ -632,7 +632,7 @@ function __ash.update.pre {
 
 function ash.reload {
     local zsh="${ZSH_ARGZERO:-${functrace[-1]%:*}}"
-    [[ "$zsh" = -* || -o login ]] && exec -l "${zsh#-}" || exec "$zsh"
+    [[ "$zsh" = -* || -o login ]] && DO_NOT_CLEAR=1 exec -l "${zsh#-}" || DO_NOT_CLEAR=1 exec "$zsh"
 }
 
 function ash.pull {

@@ -108,7 +108,11 @@ function tmx.autoload {
     elif [ -z "$ASH_TMUX_SPACES_FILL_DISABLE" ] && [ -n "$PS1" ] && [ -n "$TMUX" ]; then
         local branch="$(ash.branch)"
         if [ "$branch" = "master" ] || [ "$branch" = "stable" ]; then
-            cls
+            if [ "$DO_NOT_CLEAR" -eq 1 ]; then
+                cls
+            else
+                echo "lol > $DO_NOT_CLEAR <" >&2
+            fi
         fi
     fi
 }
