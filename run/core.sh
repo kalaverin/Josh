@@ -450,10 +450,16 @@ else
 
     function fs.dirs.normalize {
         local result=''
+
+        local realpath="$(which grealpath)"
+        if [ ! -x "$realpath" ]; then
+            local realpath="$(which realpath)"
+        fi
+
         for dir in $*; do
             local dir="$($SHELL -c "echo $dir" 2>/dev/null)"
             if [ -n "$dir" ] && [ -d "$dir" ]; then
-                local dir="$(realpath "$dir")"
+                local dir="$($realpath "$dir")"
                 if [ -n "$dir" ] && [ -d "$dir" ]; then
                     if [ -z "$result" ]; then
                         local result="$dir"
