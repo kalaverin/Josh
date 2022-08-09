@@ -451,15 +451,10 @@ else
     function fs.dirs.normalize {
         local result=''
 
-        local realpath="$(which grealpath)"
-        if [ ! -x "$realpath" ]; then
-            local realpath="$(which realpath)"
-        fi
-
         for dir in $*; do
             local dir="$($SHELL -c "echo $dir" 2>/dev/null)"
             if [ -n "$dir" ] && [ -d "$dir" ]; then
-                local dir="$($realpath "$dir")"
+                local dir="$(fs.realpath "$dir")"
                 if [ -n "$dir" ] && [ -d "$dir" ]; then
                     if [ -z "$result" ]; then
                         local result="$dir"
@@ -546,9 +541,15 @@ else
 
         local unified_path
 
+
+        local realpath="$(which grealpath)"
+        if [ ! -x "$realpath" ]; then
+            local realpath="$(which realpath)"
+        fi
+
         unified_path="$(
             echo "${@:2}" | sed 's#:#\n#g' | sed "s:^~/:$HOME/:" | \
-            xargs -n 1 realpath 2>/dev/null | awk '!x[$0]++' | \
+            xargs -n 1  2>/dev/null | awk '!x[$0]++' | \
             grep -v "$ASH" | \
             sed -z 's#\n#:#g' | sed 's#:$##g')" || return "$?"
 
