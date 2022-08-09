@@ -726,5 +726,5 @@ autoload -U edit-command-line
 zle -N edit-command-line
 
 function ash.auto {
-    echo 'success!'
+    echo 'success!2'
 }
