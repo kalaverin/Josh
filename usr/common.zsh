@@ -623,11 +623,18 @@ function ash.branch {
     fi
     return 1
 }
+
 function __ash.update.pre {
     local cwd="$PWD"
     py.set || return "$?"
     echo "$cwd"
 }
+
+function ash.reload {
+    local zsh="${ZSH_ARGZERO:-${functrace[-1]%:*}}"
+    [[ "$zsh" = -* || -o login ]] && exec -l "${zsh#-}" || exec "$zsh"
+}
+
 function ash.pull {
     local version; version="$(py.ver)" || return "$?"
     export ASH_POST_INSTALL_PYTHON="$version"
@@ -635,11 +642,9 @@ function ash.pull {
     local cwd; cwd="$(__ash.update.pre)" || return "$?"
     ash.eval "run/update.sh" && pull.update $* && \
     ash.eval "run/update.sh" && post.install
-    builtin cd "$cwd"
-
-    local zsh="${ZSH_ARGZERO:-${functrace[-1]%:*}}"
-    [[ "$zsh" = -* || -o login ]] && exec -l "${zsh#-}" || exec "$zsh"
+    builtin cd "$cwd" && ash.reload
 }
+
 function ash.update {
     local version; version="$(py.ver)" || return "$?"
     export ASH_POST_INSTALL_PYTHON="$version"
@@ -647,11 +652,9 @@ function ash.update {
     local cwd; cwd="$(__ash.update.pre)" || return "$?"
     ash.eval "run/update.sh" && pull.update $* && \
     ash.eval "run/update.sh" && post.update $*
-    builtin cd "$cwd"
-
-    local zsh="${ZSH_ARGZERO:-${functrace[-1]%:*}}"
-    [[ "$zsh" = -* || -o login ]] && exec -l "${zsh#-}" || exec "$zsh"
+    builtin cd "$cwd" && ash.reload
 }
+
 function ash.upgrade {
     local version; version="$(py.ver)" || return "$?"
     export ASH_POST_INSTALL_PYTHON="$version"
@@ -659,11 +662,9 @@ function ash.upgrade {
     local cwd; cwd="$(__ash.update.pre)" || return "$?"
     ash.eval "run/update.sh" && pull.update $* && \
     ash.eval "run/update.sh" && post.upgrade $*
-    builtin cd "$cwd"
-
-    local zsh="${ZSH_ARGZERO:-${functrace[-1]%:*}}"
-    [[ "$zsh" = -* || -o login ]] && exec -l "${zsh#-}" || exec "$zsh"
+    builtin cd "$cwd" && ash.reload
 }
+
 function ash.extras {
     ash.eval "run/update.sh" && deploy.extras
 }
