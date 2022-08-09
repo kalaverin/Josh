@@ -88,7 +88,6 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     }
 
     function post.install.message {
-        return 0
         if [ -x "$commands[cfonts]" ]; then
             local msg='type exec zsh and enjoy!'
             let enabled="$COLUMNS >= 140"
