@@ -105,14 +105,10 @@ function tmx.autoload {
     if [ -z "$ASH_TMUX_AUTORETACH_DISABLE" ] && [ -n "$PS1" ] && [ -z "$TMUX" ] && [ -n "$SSH_CONNECTION" ]; then
         tmx lost
 
-    elif [ -z "$ASH_TMUX_SPACES_FILL_DISABLE" ] && [ -n "$PS1" ] && [ -n "$TMUX" ]; then
+    elif [ -z "$ASH_TMUX_SPACES_FILL_DISABLE" ] && [ -n "$PS1" ] && [ -n "$TMUX" ] && [ ! "$DO_NOT_CLEAR" -eq 1 ]; then
         local branch="$(ash.branch)"
         if [ "$branch" = "master" ] || [ "$branch" = "stable" ]; then
-            if [ ! "$DO_NOT_CLEAR" -eq 1 ]; then
-                cls
-            else
-                echo "lol > $DO_NOT_CLEAR <" >&2
-            fi
+            cls
         fi
     fi
 }
