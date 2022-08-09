@@ -448,6 +448,11 @@ function git.nested {
     local header=""
     local mtime="$(which git-restore-mtime 2>/dev/null)"
 
+    local realpath="$(which grealpath)"
+    if [ ! -x "$realpath" ]; then
+        local realpath="$(which realpath)"
+    fi
+
     find "$root" -maxdepth 2 -type d -name .git | sort | while read git_directory
     do
         current_path="$(fs.dirname "$(fs.realpath $git_directory)")"
@@ -462,8 +467,8 @@ function git.nested {
             local header="1"
         fi
 
-        if [ -x "$commands[realpath]" ]; then
-            local show_path="$(realpath --relative-to="$(fs.dirname "$root")" "$current_path")"
+        if [ -x "$realpath" ]; then
+            local show_path="$($realpath --relative-to="$(fs.dirname "$root")" "$current_path")"
         else
             local show_path="$current_path"
         fi
