@@ -5,11 +5,13 @@
 local THIS_SOURCE="$(fs.gethash "$0")"
 if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; then
 
-    PYTHON_BINARIES="$HOME/.python"
-    [ ! -d "$PYTHON_BINARIES" ] && mkdir -p "$PYTHON_BINARIES"
-
+    PYTHON_BINARIES="$HOME/.py"
     if [ ! -d "$PYTHON_BINARIES" ]; then
-        mkdir -p "$PYTHON_BINARIES"
+        if [ -d "$HOME/.python" ] && [ -d "$HOME/.python/default/bin" ]; then
+            mv "$HOME/.python" "$HOME/.py" && ln -s "$HOME/.py" "$HOME/.python"
+        else
+            mkdir -p "$PYTHON_BINARIES"
+        fi
     fi
 
     SOURCES_CACHE+=("$THIS_SOURCE")
