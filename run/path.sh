@@ -17,7 +17,7 @@ if [ -n "$PYTHON" ] && [ -d "$PYTHON/bin" ]; then
 else
     perm_path=(
         $perm_path
-        $HOME/.python/default/bin
+        $HOME/.py/default/bin
     )
 fi
 

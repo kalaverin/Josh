@@ -552,7 +552,7 @@ else
 
         local found=""
         local result=""
-        local pattern="^$HOME/.python"
+        local pattern="^$HOME/.py/"
         for dir in $(echo "$unified_path" | sed 's#:#\n#g'); do
             if [ -f "$dir/activate_this.py" ]; then
                 if [ -z "$VIRTUAL_ENV" ] || [ ! -d "$VIRTUAL_ENV" ]; then
