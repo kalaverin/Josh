@@ -636,8 +636,11 @@ function ash.reload {
 }
 
 TRAPUSR1() {
-    # _omz::reload
     ash.reload
+}
+
+function ash.reloads {
+    killall -USR1 zsh
 }
 
 function ash.pull {
