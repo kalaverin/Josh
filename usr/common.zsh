@@ -632,7 +632,12 @@ function __ash.update.pre {
 
 function ash.reload {
     local zsh="${ZSH_ARGZERO:-${functrace[-1]%:*}}"
-    [[ "$zsh" = -* || -o login ]] && DO_NOT_CLEAR=1 exec -l "${zsh#-}" || DO_NOT_CLEAR=1 exec "$zsh"
+    [[ "$zsh" = -* || -o login ]] && DO_NOT_CLEAR=1 exec -l "${zsh#-}" || DO_NOT_CLEAR=1 exec -l "$zsh"
+}
+
+TRAPUSR1() {
+    # _omz::reload
+    ash.reload
 }
 
 function ash.pull {
