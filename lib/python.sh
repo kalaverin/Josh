@@ -580,6 +580,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         retval="$?"
 
         if [ "$retval" -gt 0 ]; then
+            fail $0 "evan.cached(pip.exe.uncached) failed too"
             return 2
         fi
 
@@ -590,6 +591,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             printf "$result"
 
         elif [ "$retval" -gt 0 ]; then
+            fail $0 "evan.cached(pip.exe.uncached) nothing"
             return 3
         fi
         return "$retval"
@@ -608,23 +610,28 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
     function pip.install {
         local pip venv
+
+        function rollback() {
+            term "$2:$1" "something went wrong, state=$3"
+            [ -n "$venv" ] && source $venv/bin/activate
+            return "$3"
+        }
+
         if [ -z "$1" ]; then
             fail $0 "call without args, I need to do — what?"
             return 1
         fi
-        venv="$(venv.off)" || return "$?"
+        venv="$(venv.off)" || return "$(rollback "venv.off" "$0" "$?")"
 
         pip="$(pip.exe)"
         if [ "$?" -gt 0 ] || [ ! -x "$pip" ]; then
-            [ -n "$venv" ] && source $venv/bin/activate
-            return 2
+            return "$(rollback "pip.exe" "$0" 2)"
         fi
 
         local target="$(py.home)"
         if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
             fail $0 "python target dir '$target'"
-            [ -n "$venv" ] && source $venv/bin/activate
-            return 3
+            return "$(rollback "py.home" "$0" 3)"
         fi
 
         local flags="--upgrade --upgrade-strategy=eager"
@@ -679,17 +686,16 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             info $0 "$result"
         fi
 
-        [ -n "$venv" ] && source $venv/bin/activate
 
         if [ -n "$failed" ]; then
             if [ -n "$complete" ]; then
-                return 4
+                return "$(rollback "partial" "$0" 4)"
             else
-                return 5
+                return "$(rollback "nothing" "$0" 5)"
             fi
-        else
-            return 0
         fi
+        [ -n "$venv" ] && source $venv/bin/activate
+        return 0
     }
 
     function pip.update {
