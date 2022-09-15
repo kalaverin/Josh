@@ -566,7 +566,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         if [ ! -x "$gsed" ]; then
             local gsed="$(which sed)"
             if [ ! -x "$gsed" ]; then
-                fail $0 "GNU sed for '$ASH_OS' don't found"
+                fail $0 "GNU sed for '$ASH_OS' don't found, return 1"
                 return 1
             fi
         fi
@@ -580,7 +580,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         retval="$?"
 
         if [ "$retval" -gt 0 ]; then
-            fail $0 "evan.cached(pip.exe.uncached) failed too"
+            fail $0 "evan.cached(pip.exe.uncached) failed, state=$retval, return 2"
             return 2
         fi
 
@@ -589,12 +589,11 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
         if [ -x "$result" ]; then
             printf "$result"
-
-        elif [ "$retval" -gt 0 ]; then
-            fail $0 "evan.cached(pip.exe.uncached) nothing"
-            return 3
+            return 0
         fi
-        return "$retval"
+
+        fail $0 "evan.cached(pip.exe.uncached) empty or '$result' isn't exists, state=0, return 3"
+        return 3
     }
 
     function venv.off {
@@ -614,7 +613,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         function rollback() {
             term "$2:$1" "something went wrong, state=$3"
             [ -n "$venv" ] && source $venv/bin/activate
-            return "$3"
+            printf "$3" && return "$3"
         }
 
         if [ -z "$1" ]; then

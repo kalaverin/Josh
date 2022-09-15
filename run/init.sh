@@ -43,7 +43,7 @@ else
         function rollback() {
             builtin cd "$cwd"
             term "$2:$1" "something went wrong, state=$3"
-            return "$3"
+            printf "$3" && return "$3"
         }
 
         ash.core || return "$?"
