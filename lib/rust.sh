@@ -161,19 +161,29 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         local cache_exe="$CARGO_BINARIES/sccache"
 
         if [ -z "$HTTP_GET" ]; then
-            fail $0 "HTTP_GET isn't set"
+            term $0 "HTTP_GET isn't set"
             return 1
 
         elif [ ! -x "$CARGO_BIN" ]; then
             export RUSTC_WRAPPER=""
             unset RUSTC_WRAPPER
 
+            local caller="`which bash`"
+            if [ ! -x "$caller" ]; then
+                warn $0 "bash isn't exists, try default sh"
+                local caller="`which sh`"
+                if [ ! -x "$caller" ]; then
+                    term $0 "sh isn't exists too, halt"
+                    return 2
+                fi
+            fi
+
             url='https://sh.rustup.rs'
 
-            $SHELL -c "$HTTP_GET $url" | RUSTUP_HOME="$HOME/.rustup" CARGO_HOME="`fs.dirname $CARGO_BINARIES`" RUSTUP_INIT_SKIP_PATH_CHECK=yes $SHELL -s - --profile minimal --no-modify-path --quiet -y
+            $SHELL -c "$HTTP_GET $url" | RUSTUP_HOME="$HOME/.rustup" CARGO_HOME="$HOME/.cargo" RUSTUP_INIT_SKIP_PATH_CHECK=yes $caller -s - --profile minimal --no-modify-path -y >&2
 
             if [ "$?" -gt 0 ] || [ ! -x "$CARGO_BIN" ]; then
-                fail $0 "cargo '$CARGO_BIN' isn't installed"
+                term $0 "cargo '$CARGO_BIN' isn't installed"
                 return 127
             else
                 info $0 "$($CARGO_BIN --version) in '$CARGO_BIN'"
@@ -185,7 +195,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         if [ ! -x "$cache_exe" ]; then
             $CARGO_BIN install sccache
             if [ ! -x "$cache_exe" ]; then
-                info $0 "sccache '$cache_exe' isn't compiled"
+                warn $0 "sccache '$cache_exe' isn't compiled"
             fi
         fi
 
@@ -199,15 +209,15 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             else
                 export RUSTC_WRAPPER=""
                 unset RUSTC_WRAPPER
-                info $0 "sccache doesn't exists"
+                warn $0 "sccache doesn't exists"
             fi
         fi
 
         local update_exe="$CARGO_BINARIES/cargo-install-update"
         if [ ! -x "$update_exe" ]; then
-            $CARGO_BIN install cargo-update
+            $CARGO_BIN install cargo-update >&2
             if [ ! -x "$update_exe" ]; then
-                info $0 "cargo-update '$update_exe' isn't compiled"
+                warn $0 "cargo-update '$update_exe' isn't compiled"
             fi
         fi
 
