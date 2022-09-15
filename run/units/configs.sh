@@ -121,11 +121,11 @@ function cfg.nano_syntax {
 
         if [ -d /usr/share/nano/ ]; then
             # linux
-            find /usr/share/nano/ -iname "*.nanorc" -exec ec2ho include {} \; >> $HOME/.nanorc
+            find /usr/share/nano/ -iname "*.nanorc" -exec echo include {} \; >> $HOME/.nanorc
 
         elif [ -d /usr/local/share/nano/ ]; then
             # freebsd
-            find /usr/local/share/nano/ -iname "*.nanorc" -exec ec2ho include {} \; >> $HOME/.nanorc
+            find /usr/local/share/nano/ -iname "*.nanorc" -exec echo include {} \; >> $HOME/.nanorc
 
         fi
         [ -f "$HOME/.nanorc" ] && info $0 "nano syntax highlight profile generated to $HOME/.nanorc"
