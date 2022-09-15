@@ -42,31 +42,38 @@ else
         cwd="$PWD"
         function rollback() {
             builtin cd "$cwd"
-            term "$1" "something went wrong, state=$2"
-            return "$2"
+            term "$2:$1" "something went wrong, state=$3"
+            return "$3"
         }
 
         ash.core || return "$?"
         [ ! -x "$ASH" ] && return 1
-        source "$ASH/run/units/compat.sh" && compat.compliance || return "$(rollback "$0" "$?")"
+        source "$ASH/run/units/compat.sh" && compat.compliance \
+            || return "$(rollback "compat.compliance" "$0" "$?")"
 
         builtin cd "$ASH"
 
-        changes="$(git status --porcelain=v1 &>>/dev/null | wc -l)" || return "$(rollback "$0" "$?")"
+        changes="$(git status --porcelain=v1 &>>/dev/null | wc -l)" \
+            || return "$(rollback "ash.tree.modify" "$0" "$?")"
+
         if [ "$changes" -gt 0 ]; then
             warn "$0" "we have changes in $changes files, skip fetch & pull"
 
         else
 
-            branch="$(git rev-parse --quiet --abbrev-ref HEAD)" || return "$(rollback "$0" "$?")"
+            branch="$(git rev-parse --quiet --abbrev-ref HEAD)" \
+                || return "$(rollback "ash.tree.branch" "$0" "$?")"
+
             if [ "$branch" = "HEAD" ] || [ -z "$branch" ]; then
                 warn "$0" "can't update from '$branch'"
             else
                 info "$0" "update '$branch' into '$ASH'"
 
-                git pull --ff-only --no-edit --no-commit origin "$branch" || return "$(rollback "$0" "$?")"
+                git pull --ff-only --no-edit --no-commit origin "$branch" \
+                    || return "$(rollback "ash.pull" "$0" "$?")"
 
-                git update-index --refresh 1>/dev/null 2>/dev/null || return "$(rollback "$0" "$?")"
+                git update-index --refresh 1>/dev/null 2>/dev/null \
+                    || return "$(rollback "ash.index" "$0" "$?")"
             fi
         fi
 
@@ -81,12 +88,12 @@ else
         source "$ASH/run/units/configs.sh"   && \
         source "$ASH/run/update.sh"          && \
         source "$ASH/lib/python.sh"          && \
-        source "$ASH/lib/rust.sh"        || return "$(rollback "$0" "$?")"
-        pip.install $PIP_REQ_PACKAGES    || return "$(rollback "$0" "$?")"
+        source "$ASH/lib/rust.sh"        || return "$(rollback "init" "$0" "$?")"
+        pip.install $PIP_REQ_PACKAGES    || return "$(rollback "pip.install" "$0" "$?")"
         cfg.install
-        omz.install && omz.plugins       || return "$(rollback "$0" "$?")"
-        bin.install                      || return "$(rollback "$0" "$?")"
-        cargo.deploy $CARGO_REQ_PACKAGES || return "$(rollback "$0" "$?")"
+        omz.install && omz.plugins       || return "$(rollback "omz.install" "$0" "$?")"
+        bin.install                      || return "$(rollback "bin.install" "$0" "$?")"
+        cargo.deploy $CARGO_REQ_PACKAGES || return "$(rollback "cargo.install" "$0" "$?")"
 
         info "$0" "all ok, finally: replace ~/.zshrc with Ash loader"
 
