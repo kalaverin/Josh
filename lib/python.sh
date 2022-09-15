@@ -531,7 +531,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             fi
 
             path.rehash
-            pip.install "$PIP_REQ_PACKAGES"
+            pip.install "$PIP_REQ_PACKAGES" >&2
 
         fi
 
@@ -551,7 +551,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             return 2
         fi
 
-        pip.deploy
+        pip.deploy >&2
         local retval="$?"
 
         if [ -x "$target/bin/pip" ]; then
@@ -649,7 +649,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         local complete=''
         local failed=''
         for row in $@; do
-            $SHELL -c "$command $row"
+            $SHELL -c "$command $row" >&2
             if [ "$?" -eq 0 ]; then
                 if [ -z "$complete" ]; then
                     local complete="$row"
