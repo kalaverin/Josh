@@ -114,7 +114,6 @@ function venv.node {
 
 function venv.path {
     if [ "$1" ]; then
-        echo 1 >&2
         if [ -d "$1" ] && [ -f "$1/bin/activate" ]; then
             echo "$1"
 
