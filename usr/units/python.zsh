@@ -293,9 +293,8 @@ function venv.site {
     fi
 
     if [ -x "$root/site-packages" ]; then
-        echo "$root/site-packages"
         builtin cd "$root/site-packages"
-        [ -x "${@:2}" ] && builtin cd "${@:2}"
+        [ "${@:2}" ] && [ -d "${@:2}" ] && builtin cd "${@:2}"
     else
         fail $0 "something wrong for '$venv', path: '$root'"
         builtin cd "$cwd"
