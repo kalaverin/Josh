@@ -114,6 +114,7 @@ function venv.node {
 
 function venv.path {
     if [ "$1" ]; then
+        echo 1 >&2
         if [ -d "$1" ] && [ -f "$1/bin/activate" ]; then
             echo "$1"
 
@@ -129,7 +130,7 @@ function venv.path {
             fi
         fi
 
-    elif [ "$VIRTUAL_ENV" ]; then
+    elif [ -x "$VIRTUAL_ENV" ]; then
         echo "$VIRTUAL_ENV"
     fi
 }
@@ -269,7 +270,8 @@ function venv.temp {
 }
 
 function venv.cd {
-    local venv="$(venv.path $*)"
+    local venv
+    venv="$(venv.path $*)"
     if [ -n "$venv" ] && [ -d "$venv" ]; then
         builtin cd "$venv"
     else
@@ -278,16 +280,25 @@ function venv.cd {
 }
 
 function venv.site {
+    local env_site venv
     local cwd="$PWD"
-    venv.cd $* || ([ $? -gt 0 ] && return 1)
+    venv="$(venv.path $*)"
 
-    local env_site="$(find lib/ -maxdepth 1 -type d -name 'python*')"
+    if [ "$?" -gt 0 ] || [ ! -x "$venv" ]; then
+        return 1
+    fi
 
-    if [ -d "$env_site/site-packages" ]; then
-        builtin cd "$env_site/site-packages"
-        [ -n "${@:2}" ] && builtin cd "${@:2}"
+    root="$(find "$venv/lib/" -maxdepth 1 -type d -name 'python*')"
+    if [ "$?" -gt 0 ] || [ ! -x "$root" ]; then
+        return 2
+    fi
+
+    if [ -x "$root/site-packages" ]; then
+        echo "$root/site-packages"
+        builtin cd "$root/site-packages"
+        [ -x "${@:2}" ] && builtin cd "${@:2}"
     else
-        fail $0 "something wrong for '$env_path', path: '$env_site'"
+        fail $0 "something wrong for '$venv', path: '$root'"
         builtin cd "$cwd"
     fi
 }
