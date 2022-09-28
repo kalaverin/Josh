@@ -203,7 +203,7 @@ function git.fetch {
     if [ "$?" -gt 0 ] || [ -z "$result" ]; then
         return 1
     fi
-    run.show "$result" 2>&1 | grep -v 'up to date' 1>/dev/null
+    run.show "$result"
     return "$?"
 }
 

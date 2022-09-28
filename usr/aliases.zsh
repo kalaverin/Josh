@@ -3,6 +3,7 @@ alias mv='mv -i'
 alias tt='tail --retry --sleep-interval=0.25 --follow --lines=100'
 alias sudo='sudo -H --preserve-env=PATH'  # this is Ubuntu behavior: never send user env to sudo context!
 alias svc='sudo service'
+alias fd='fd --no-ignore-vcs --hidden --exclude .git/'
 
 # ———
 
@@ -103,7 +104,6 @@ if [ -x "$commands[rg]" ]; then
     #         $(which rg) -nH $* | $(which hgrep) -G -c 2 -C 3 $*
     #     }
     # fi
-
     alias rr="$ASH_RIPGREP $ASH_RIPGREP_OPTS $ripgrep_interactive $ripgrep_fast"
     alias rrs="$ASH_RIPGREP $ASH_RIPGREP_OPTS $ripgrep_interactive $ripgrep_fast --sort path"
     alias rf="$ASH_RIPGREP $ASH_RIPGREP_OPTS $ripgrep_interactive $ripgrep_fine"
