@@ -149,7 +149,6 @@ function __widget.git.conflict_solver {
                 local need_quit=1
                 break
             fi
-
             local file_hash="`md5sum $value | tabulate -i 1`"
             if [ "$last_hash" = "$file_hash" ]; then
                 # prevent infinite loop with select-1
@@ -181,7 +180,7 @@ function __widget.git.conflict_solver {
     zle reset-prompt
     if [ "$state" -eq 3 ]; then
         local state="`git.this.state`"
-        local conflicts_amount="$($SHELL -c "$select | $conflicts_amount | $UNIQUE_SORT | wc -l")"
+        local conflicts_amount="$($SHELL -c "$select | $UNIQUE_SORT | wc -l")"
         if [ "$conflicts_amount" -gt 0 ]; then
             local conflicts_amount=" and $conflicts_amount files with conflicts block auto$state"
         else

@@ -39,7 +39,7 @@ function open_editor_on_conflict {
     local line
     line="$(grep -P --line-number --max-count=1 '^=======' "$1" | tabulate -d ':' -i 1)"
     if [ "$line" -gt 0 ]; then
-        $EDITOR $* +$line
+        run.show "micro $* +$line"
         return "$?"
     fi
 }
