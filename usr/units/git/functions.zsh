@@ -4,6 +4,26 @@ local GET_BRANCH='git rev-parse --quiet --abbrev-ref HEAD 2>/dev/null'
 
 # command line batch generators
 
+function git.cmd.checkout.verb.uncached {
+    local result
+    result="$(git switch 2>&1 | grep 'is not a git command' | wc -l)"
+    if [ "$?" -gt 0 ] || [ "$result" -gt 0 ]; then
+        echo 'checkout'
+    else
+        echo 'switch'
+    fi
+}
+
+
+function git.cmd.checkout.verb {
+    result="$(eval.cached `fs.lm.dirs "$ASH/bin"` git.cmd.checkout.verb.uncached)"
+    if [ "$?" -gt 0 ] || [ -z "$result" ]; then
+        result='checkout'
+    fi
+    printf "$result"
+}
+
+
 function git.cmd.checkout {
     if [ -z "$1" ]; then
         fail $0 "\$1 - branch required"
@@ -19,7 +39,8 @@ function git.cmd.checkout {
     else
         local branch="$1"
     fi
-    echo "git checkout -b \"$branch\" 2>/dev/null || git switch \"$branch\""
+    verb="$(git.cmd.checkout.verb)"
+    echo "git checkout -b \"$branch\" 2>/dev/null || git $verb \"$branch\""
 }
 
 function git.cmd.fetch {
@@ -59,7 +80,7 @@ function git.cmd.pull {
     if [ "$?" -gt 0 ] || [ -z "$branch" ]; then
         return 1
     fi
-    echo "git pull --ff-only --no-edit --no-commit --autostash origin $branch"
+    echo "git pull --ff-only --no-edit --no-commit origin $branch"
 }
 
 function git.cmd.pullmerge {
@@ -68,7 +89,7 @@ function git.cmd.pullmerge {
     if [ "$?" -gt 0 ] || [ -z "$branch" ]; then
         return 1
     fi
-    echo "git pull --no-edit --no-commit --autostash origin $branch"
+    echo "git pull --no-edit --no-commit origin $branch"
 }
 
 # core functions
