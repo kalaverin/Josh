@@ -533,15 +533,19 @@ function __widget.git.switch_branch {
             | cut -d ' ' -f 1
         ")"
 
-        if [ -z "$BUFFER" ]; then
-            run.show "git $verb $value 2>/dev/null 1>/dev/null && git.mtime.set"
-            local retval="$?"
+        if [ -z "$value" ]; then
+            break
+        else
+            local cmd="git $verb $value 2>/dev/null 1>/dev/null && git.mtime.set"
 
-        elif [ -n "$value" ]; then
-            LBUFFER="$BUFFER && git $verb $value && git.mtime.set"
+            if [ -n "$BUFFER" ]; then
+                LBUFFER="$BUFFER && $cmd"
+                local retval=0
+            else
+                run.show "$cmd"
+                local retval="$?"
+            fi
         fi
-
-        local retval=0
         break
     done
     zle reset-prompt
