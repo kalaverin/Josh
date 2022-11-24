@@ -152,6 +152,22 @@ if [ -x "$commands[difft]" ]; then
 fi
 
 
+# tabulate is rust tools for easy split stdout to columns
+#
+if [ -x "$commands[tabulate]" ]; then
+    export TABULATE="$commands[tabulate]"
+    function tabulate() {
+        if [ -x "$TABULATE" ]; then
+            $TABULATE $* 2>/dev/null
+        else
+            term $0 "tabulate tool is defined as '$TABULATE', but isn't accessible"
+        fi
+    }
+else
+    term $0 "rust tabulate tool is required"
+fi
+
+
 # git-delta: beatiful git differ with many settings, fast and cool
 #
 if [ -x "$commands[delta]" ]; then
