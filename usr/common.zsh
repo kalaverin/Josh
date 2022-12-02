@@ -678,7 +678,7 @@ function ash.extras {
 }
 
 function ash.cache.drop {
-    rm -rf "$HOME/.cache/josh/"
+    run.show "rm -rf \"$HOME/.cache/ash/\"; mkdir -p \"$HOME/.cache/ash/\""
 }
 
 function ash.eval {
