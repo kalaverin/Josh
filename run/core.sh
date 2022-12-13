@@ -560,7 +560,7 @@ else
         local result=""
         local pattern="^$HOME/.py/"
 
-        local escaped_path="${unified_path// /*} "
+        local escaped_path="${unified_path// /*}"
         local cmd="printf -- '${(q)escaped_path}' | sed 's#:#\n#g'"
 
         for dir in $(eval "${cmd}"); do
