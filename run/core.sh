@@ -540,15 +540,14 @@ else
         fi
 
         local unified_path
-
-
         local realpath="$(which grealpath)"
         if [ ! -x "$realpath" ]; then
             local realpath="$(which realpath)"
         fi
 
+        local escaped_path="${@:2}"
         unified_path="$(
-            echo "${@:2}" | sed 's#:#\n#g' | sed "s:^~/:$HOME/:" | \
+            print -r -- "${(q)escaped_path}" | sed 's#:#\n#g' | sed "s:^~/:$HOME/:" | \
             xargs -n 1  2>/dev/null | awk '!x[$0]++' | \
             grep -v "$ASH" | \
             sed -z 's#\n#:#g' | sed 's#:$##g')" || return "$?"
@@ -560,7 +559,12 @@ else
         local found=""
         local result=""
         local pattern="^$HOME/.py/"
-        for dir in $(echo "$unified_path" | sed 's#:#\n#g'); do
+
+        local escaped_path="${unified_path// /*} "
+        local cmd="printf -- '${(q)escaped_path}' | sed 's#:#\n#g'"
+
+        for dir in $(eval "${cmd}"); do
+            local dir="${dir//\*/ }"
             if [ -f "$dir/activate_this.py" ]; then
                 if [ -z "$VIRTUAL_ENV" ] || [ ! -d "$VIRTUAL_ENV" ]; then
                     continue
@@ -623,9 +627,8 @@ else
 
         ash.path.source
 
-        result="$(eval.cached "$(fs.lm.many $path)" path.clean.uncached "$PYTHON:$VIRTUAL_ENV" "$path")"
-        local retval="$?"
-
+        local send="$(printf -- ${(q)PATH})"
+        result="$(eval.cached "$(fs.lm.many $path)" path.clean.uncached "$PYTHON:$VIRTUAL_ENV" "$(printf -- ${(qq)send})")"
         if [ "$retval" -eq 0 ] || [ -n "$result" ]; then
             export PATH="$ASH/bin:$result"
             fs.path.fix
