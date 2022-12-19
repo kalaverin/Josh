@@ -261,6 +261,7 @@ function venv.make {
     py.set "$using"
     [ -n "$venv" ] && source "$venv/bin/activate"
     path.rehash
+    builtin cd "$cwd"
 }
 
 function venv.temp {
