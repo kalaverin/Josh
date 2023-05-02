@@ -246,7 +246,7 @@ function venv.make {
 
     info $0 "$message"
 
-    run.show "builtin cd "$root" && $(py.exe) -m virtualenv --python=$python $args_env "$full" && source "$full/bin/activate" && pip install --compile --no-input --prefer-binary --upgrade --upgrade-strategy=eager pipdeptree $args_pip $packages && builtin cd $cwd"
+    run.show "builtin cd "$root" && $(py.exe) -m virtualenv --python=$python $args_env "$full" && source "$full/bin/activate" && pip install --compile --no-input --prefer-binary --upgrade --upgrade-strategy=eager pipdeptree pysnooper $args_pip $packages && builtin cd $cwd"
 
     libdir="$(find "$full/lib/" -maxdepth 1 -type d -name 'python*')"
     if [ "$?" -eq 0 ]; then
