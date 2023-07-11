@@ -160,7 +160,7 @@ function py.from.version {
 
 function venv.make {
     local libdir
-    local cwd="$CWD"
+    local cwd="$PWD"
 
     if [ -z "$1" ]; then
         fail $0 "call without args, I need to do — what?"
