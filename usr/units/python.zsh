@@ -158,6 +158,25 @@ function py.from.version {
     echo "$python"
 }
 
+function __venv.process.packages.args {
+    if [ -z "$1" ]; then
+        fail $0 "empty \$1 workdir"
+        return 1
+
+    elif [ ! -d "$1" ]; then
+        fail $0 "directory '$1' isn't accessible"
+        return 2
+    fi
+
+    for item in $(echo "${@:2}" | sd ' +' '\n'); do
+        if [ -f "$1/$item" ]; then
+            echo "--requirement $1/$item"
+        else
+            echo "$item"
+        fi
+    done
+}
+
 function venv.make {
     local libdir
     local cwd="$PWD"
@@ -205,6 +224,8 @@ function venv.make {
     else
         local packages="${@:2}"
     fi
+
+    local packages="$(__venv.process.packages.args "$cwd" "$packages" | sed -z 's:\n: :g' | sed 's/ *$//' )"
 
     local venv="$(venv.off)"
     local using="$(py.ver)"
