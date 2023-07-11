@@ -43,6 +43,14 @@ else
 
     if [ "$commands[pastel]" ]; then
         alias draw="pastel -m 8bit paint -n"
+
+        function draw.run {
+            __log.spaces "$PRE"
+            local msg="$(echo "${@:1}" | sd '[\$"]' '\\$0')"
+            printf "$(eval "draw pink --bold ' ->'")$(eval "draw violet \" $msg\"")"
+            __log.spaces "${POST:-1}"
+        }
+
         function __log.draw {
             __log.spaces "$PRE"
             local msg="$(echo "${@:6}" | sd '[\$"]' '\\$0')"
@@ -56,6 +64,20 @@ else
         function term { __log.draw '**' 'white --on red --bold' 'white --bold' $0 $* >&2 }
 
     else
+
+        function draw.run {
+            __log.spaces "$PRE"
+
+            if [ -x "$commands[sd]" ]; then
+                local msg="$(echo "${@:1}" | sd '[\$"]' '\\$0')"
+            else
+                local msg="${@:1}"
+            fi
+
+            printf " \033[0;34m-> \033[0;35m$msg\033[0m" >&2
+            __log.spaces "${POST:-1}"
+        }
+
         function __log.draw {
             __log.spaces "$PRE"
 
@@ -829,14 +851,14 @@ else
     function run.show {
         local cmd="$*"
         [ -z "$cmd" ] && return 1
-        echo " -> $cmd" 1>&2
+        draw.run "$cmd" 1>&2
         eval ${cmd} 1>&2
     }
 
     function run.quiet {
         local cmd="$*"
         [ -z "$cmd" ] && return 1
-        echo " -> $cmd" 1>&2
+        draw.run "$cmd" 1>&2
         eval ${cmd} 1>/dev/null 2>/dev/null
     }
 
