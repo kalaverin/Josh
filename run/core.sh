@@ -51,6 +51,13 @@ else
             __log.spaces "${POST:-1}"
         }
 
+        function draw.cmd {
+            __log.spaces "$PRE"
+            local msg="$(echo "${@:1}" | sd '[\$"]' '\\$0')"
+            printf "$(eval "draw limegreen --bold ' =>'")$(eval "draw yellow \" $msg\"")"
+            __log.spaces "${POST:-1}"
+        }
+
         function __log.draw {
             __log.spaces "$PRE"
             local msg="$(echo "${@:6}" | sd '[\$"]' '\\$0')"
@@ -75,6 +82,19 @@ else
             fi
 
             printf " \033[0;34m-> \033[0;35m$msg\033[0m" >&2
+            __log.spaces "${POST:-1}"
+        }
+
+        function draw.cmd {
+            __log.spaces "$PRE"
+
+            if [ -x "$commands[sd]" ]; then
+                local msg="$(echo "${@:1}" | sd '[\$"]' '\\$0')"
+            else
+                local msg="${@:1}"
+            fi
+
+            printf " \033[0;32m=> \033[0;33m$msg\033[0m" >&2
             __log.spaces "${POST:-1}"
         }
 

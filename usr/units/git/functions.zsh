@@ -402,21 +402,24 @@ function git.tag.unset {
 # user helpers
 
 function git.branch.delete {
-    local result
+    local cmd result
     result="${1:-$(git.this.branch)}"
     if [ "$?" -gt 0 ] || [ -z "$result" ]; then
         return 1
     fi
 
+    cmd="git reset --hard && (git checkout develop 2>/dev/null 1>/dev/null 2> /dev/null || git checkout master 2>/dev/null 1>/dev/null) && git branch -D \"$result\" && git remote prune origin"
+
     if [ "$result" = "master" ] || [ "$result" = "develop" ]; then
+        draw.cmd "$cmd && git push origin --delete $result"
         fail $0 "'$result' is protected"
         return 2
     fi
 
     git.is_clean || return "$?"
 
-    run.show "git reset --hard && (git checkout develop 2>/dev/null 1>/dev/null 2> /dev/null || git checkout master 2>/dev/null 1>/dev/null) && git branch -D \"$result\" && git remote prune origin"
-    printf " => git push origin --delete $result\n" >&2
+    run.show "$cmd"
+    draw.cmd "git push origin --delete $result"
     return "$?"
 }
 
