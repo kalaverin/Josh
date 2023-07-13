@@ -171,7 +171,7 @@ function git.branch.delete.force {
         fail $0 "\$1 - branch required"
         return 1
     fi
-    printf " => git branch -D $1 && git push origin --delete $1\n"
+    draw.cmd "git branch -D $1 && git push origin --delete $1"
     return $?
 }
 
@@ -195,7 +195,7 @@ function git.branch.rename {
         fail $0 "old_name new_name or just new_name (rename current) "
         return 3
     fi
-    printf " => git branch -m $src $dst && git push origin :$src $dst\n"
+    draw.cmd "git branch -m $src $dst && git push origin :$src $dst"
 }
 
 function git.checkout.actual {
