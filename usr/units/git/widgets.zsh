@@ -555,28 +555,29 @@ zle -N __widget.git.switch_branch
 
 
 function __widget.git.fetch_branch {
-    local cmd
-    local root="`git.this.root`"
+    local already_checked_out_branches branch cmd count filter root value
 
-    [ ! "$root" ] && return 1
-    local branch="`git.this.branch`"
+    root="$(git.this.root)" || return "$?"
+    [ -z "$root" ] && return 1
+
+    branch="$(git.this.branch)" || return "$?"
 
     local select='git ls-remote --heads --quiet origin | \
                   sd "^([0-9a-f]+)\srefs/heads/(.+)" "\$1 \$2"'
 
-    local already_checked_out_branches="$($SHELL -c " \
+    filter="sort -Vk 2 | awk '{a[i++]=\$0} END {for (j=i-1; j>=0;) print a[j--] }'"
+    already_checked_out_branches="$(eval.run " \
         git show-ref --heads \
         | sd '^([0-9a-f]+)\srefs/heads/(.+)' '\$2' \
         | tabulate -i 1 | $LINES_TO_LINE | sd ' ' '|'
-    ")"
+    ")" || return "$?"
+    if [ -n "$already_checked_out_branches" ]; then
+        filter="grep -Pv '($already_checked_out_branches)$'| $filter"
+    fi
 
-    local filter="sort -Vk 2 | awk '{a[i++]=\$0} END {for (j=i-1; j>=0;) print a[j--] }'"
-    [ "$already_checked_out_branches" ] && \
-        local filter="grep -Pv '($already_checked_out_branches)$'| $filter"
+    local differ="echo {} | tabulate -i 1 | xargs -i$ echo 'git diff $ 1&>/dev/null 2&>/dev/null || git fetch origin --depth=1 $ && git diff --color=always --shortstat --patch --diff-algorithm=histogram -- $ $branch' | $SHELL | $DELTA"
 
-    local differ="echo {} | tabulate -i 1 | xargs -i$ echo 'git diff $ 1&>/dev/null 2&>/dev/null || git fetch origin --depth=1 $ && git diff --color=always --shortstat --patch --diff-algorithm=histogram $ $branch' | $SHELL | $DELTA"
-
-    local value="$(
+    value="$(
         $SHELL -c "$select | $filter \
         | $FZF \
         --prompt='fetch branch >  ' \
@@ -584,14 +585,11 @@ function __widget.git.fetch_branch {
         --preview=\"$differ\" \
         --preview-window=\"left:`misc.preview.width`:noborder\" \
         | cut -d ' ' -f 2 \
-    ")"
-
-
+    ")" || return "$?"
     [ -z "$value" ] && return 0
 
-
-    local count=$(echo "$value" | wc -l)
-    local value=$(echo "$value" | sed -e ':a' -e 'N' -e '$!ba' -e 's:\n: :g')
+    local count="$(echo "$value" | wc -l)" || return "$?"
+    local value="$(echo "$value" | sed -e ':a' -e 'N' -e '$!ba' -e 's:\n: :g')" || return "$?"
 
     if [ "$count" -gt 1 ]; then
         cmd="git.is_clean"
