@@ -555,7 +555,9 @@ zle -N __widget.git.switch_branch
 
 
 function __widget.git.fetch_branch {
+    local cmd
     local root="`git.this.root`"
+
     [ ! "$root" ] && return 1
     local branch="`git.this.branch`"
 
@@ -578,20 +580,30 @@ function __widget.git.fetch_branch {
         $SHELL -c "$select | $filter \
         | $FZF \
         --prompt='fetch branch >  ' \
+        --multi \
         --preview=\"$differ\" \
         --preview-window=\"left:`misc.preview.width`:noborder\" \
         | cut -d ' ' -f 2 \
     ")"
 
-    [ "$value" = "" ] && return 0
+
+    [ -z "$value" ] && return 0
+
 
     local count=$(echo "$value" | wc -l)
     local value=$(echo "$value" | sed -e ':a' -e 'N' -e '$!ba' -e 's:\n: :g')
 
     if [ "$count" -gt 1 ]; then
-        for brnch in `echo "$value" | sd '(\s+)' '\n'`; do
-            git.branch.select $brnch
+        cmd="git.is_clean"
+        for b in `echo "$value" | sd '(\s+)' '\n'`; do
+            cmd="$cmd && git fetch origin '$b':'$b'"
         done
+
+        for b in `echo "$value" | sd '(\s+)' '\n'`; do
+            cmd="$cmd && git checkout --force --quiet '$b' && git reset --hard '$b' && git pull origin '$b'"
+        done
+
+        run.show "$cmd && git.mtime.set"
     else
         git.branch.select $value
     fi
