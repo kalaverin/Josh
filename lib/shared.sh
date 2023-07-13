@@ -60,6 +60,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
 
         [ "$result" -lt 84 ] && local result=84
+        [ "$result" -gt 125 ] && local result=125
 
         echo "$result"
         export ASH_WIDTH="$result"
