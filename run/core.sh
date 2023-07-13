@@ -54,7 +54,7 @@ else
         function draw.cmd {
             __log.spaces "$PRE"
             local msg="$(echo "${@:1}" | sd '[\$"]' '\\$0')"
-            printf "$(eval "draw limegreen --bold ' =>'")$(eval "draw yellow \" $msg\"")"
+            printf "$(eval "draw yellow --bold ' =>'")$(eval "draw limegreen \" $msg\"")"
             __log.spaces "${POST:-1}"
         }
 
