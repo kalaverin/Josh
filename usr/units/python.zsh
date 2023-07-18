@@ -178,23 +178,29 @@ function __venv.process.packages.args {
 }
 
 function venv.make {
-    local libdir
+    local libdir python name full root version packages venv using
+
     local cwd="$PWD"
 
     if [ -z "$1" ]; then
         fail $0 "call without args, I need to do — what?"
         return 1
 
+    elif [ -f "$2" ]; then
+        name="$(fs.basename "$1")"
+        full="$1"
+
     elif [[ "$1" =~ ^[0-9a-z]+[0-9a-z\.-]*[0-9a-z]+$ ]]; then
-        local name="$1"
-        local full="$ASH_PY_ENVS_ROOT/$name"
+        name="$1"
+        full="$ASH_PY_ENVS_ROOT/$name"
 
     elif [[ "$1" =~ ^/.+/[0-9a-z]+[0-9a-z\.-]*[0-9a-z]+$ ]]; then
-        local name="$(fs.basename "$1")"
-        local full="$1"
+        name="$(fs.basename "$1")"
+        full="$1"
     fi
 
-    local root="$(fs.dirname "$full")"
+
+    root="$(fs.dirname "$full")"
     if [ ! -d "$root" ]; then
         mkdir -p "$root"
 
@@ -203,14 +209,18 @@ function venv.make {
         return 2
     fi
 
-    if [[ "$2" =~ ^/.+/[0-9a-z]+[0-9a-z\.-]*[0-9a-z]+$ ]]; then
+    if [ -n "$2" ] && [ ! -x "$2" ]; then
+        # 3 default
+        python="$(py.from.version 3)"
+
+    elif [[ "$2" =~ ^/.+/[0-9a-z]+[0-9a-z\.-]*[0-9a-z]+$ ]]; then
         if [ ! -x "$2" ]; then
             fail $0 "\$2 isn't correct (accessible, executable) python path: '$2'"
             return 3
         fi
-        local python="$(fs.realpath $2)"
+        python="$(fs.realpath $2)"
     else
-        local python="$(py.from.version $2)"
+        python="$(py.from.version $2)"
     fi
 
     if [ ! -x "$python" ]; then
@@ -218,17 +228,18 @@ function venv.make {
         return 4
     fi
 
-    local version="$(py.ver $python)"
+    # 3 default
+    version="$(py.ver $python)"
     if [[ "$2" =~ ^/.+/[0-9a-z]+[0-9a-z\.-]*[0-9a-z]+$ ]] || [[ "$2" =~ ^[0-9]\.[0-9]+$ ]] || [ "$2" = "2" ] || [ "$2" = "3" ]; then
-        local packages="${@:3}"
+        packages="${@:3}"
     else
-        local packages="${@:2}"
+        packages="${@:3}"
     fi
 
-    local packages="$(__venv.process.packages.args "$cwd" "$packages" | sed -z 's:\n: :g' | sed 's/ *$//' )"
+    packages="$(__venv.process.packages.args "$cwd" "$packages" | sed -z 's:\n: :g' | sed 's/ *$//' )"
 
-    local venv="$(venv.off)"
-    local using="$(py.ver)"
+    venv="$(venv.off)"
+    using="$(py.ver)"
 
     if [ -z "$using" ]; then
         fail $0 "'$python'"
