@@ -228,12 +228,11 @@ function venv.make {
         return 4
     fi
 
-    # 3 default
     version="$(py.ver $python)"
     if [[ "$2" =~ ^/.+/[0-9a-z]+[0-9a-z\.-]*[0-9a-z]+$ ]] || [[ "$2" =~ ^[0-9]\.[0-9]+$ ]] || [ "$2" = "2" ] || [ "$2" = "3" ]; then
         packages="${@:3}"
     else
-        packages="${@:3}"
+        packages="${@:2}"
     fi
 
     packages="$(__venv.process.packages.args "$cwd" "$packages" | sed -z 's:\n: :g' | sed 's/ *$//' )"
