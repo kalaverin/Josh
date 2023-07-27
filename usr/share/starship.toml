@@ -1,6 +1,6 @@
 right_format = '$cmd_duration$status'
 scan_timeout = 50
-command_timeout = 5000
+command_timeout = 1000
 add_newline = false
 
 [aws]
