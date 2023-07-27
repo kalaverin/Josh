@@ -226,14 +226,10 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
         if [ -n "$PYTHON" ]; then
             local real_path="$PYTHON/bin/python"
-
-            if [ "$(fs.realpath "$link")" = "$(fs.realpath "$real_path")" ]; then
-                if [ -x "$real_path" ] && [ -e "$real_path" ] && [ -x "$link" ]; then
-                    printf "$real_path"
-                    return 0
-                fi
+            if [ -x "$link" ] && [ -x "$real_path" ] && [ -e "$real_path" ] && [ "$(fs.realpath "$link")" = "$(fs.realpath "$real_path")" ]; then
+                printf "$real_path"
+                return 0
             fi
-            unset PYTHON
         fi
 
         if ! is.function "compat.executables"; then
@@ -366,7 +362,11 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
 
         printf "$target"
+
         if [ -z "$1" ]; then
+            if [ ! -x "$PYTHON_BINARIES/default" ]; then
+                ln -s "$target" "$PYTHON_BINARIES/default"
+            fi
             export PYTHON="$target"
         fi
         [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
