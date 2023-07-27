@@ -215,9 +215,12 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
         if [ -n "$PYTHON" ]; then
             local real_path="$PYTHON/bin/python"
-            if [ -x "$real_path" ] && [ -e "$real_path" ] && [ -x "$link" ]; then
-                printf "$real_path"
-                return 0
+
+            if [ "$(fs.realpath "$link")" = "$(fs.realpath "$real_path")" ]; then
+                if [ -x "$real_path" ] && [ -e "$real_path" ] && [ -x "$link" ]; then
+                    printf "$real_path"
+                    return 0
+                fi
             fi
             unset PYTHON
         fi
