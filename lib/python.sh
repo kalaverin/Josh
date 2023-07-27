@@ -93,7 +93,13 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             fail $0 "isn't valid executable '$source'"
             return 1
         fi
-        printf "$($source --version 2>&1 | grep -Po '(\d+\.\d+\.\d+)')"
+
+        local pattern='(\d+\.\d+\.\d+)'
+        if [ ! "$PYTHON_ALLOW_ALPHABET" -gt 0 ]; then
+            local pattern="$pattern$"
+        fi
+
+        printf "$($source --version 2>&1 | grep -Po "$pattern")"
     }
 
     function py.ver.uncached {
@@ -205,11 +211,12 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
     function py.exe {
         local version
+        local link="$PYTHON_BINARIES/default/bin/python"
 
         if [ -n "$PYTHON" ]; then
-            local link="$PYTHON/bin/python"
-            if [ -x "$link" ] && [ -e "$link" ]; then
-                printf "$link"
+            local real_path="$PYTHON/bin/python"
+            if [ -x "$real_path" ] && [ -e "$real_path" ] && [ -x "$link" ]; then
+                printf "$real_path"
                 return 0
             fi
             unset PYTHON
@@ -223,7 +230,6 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             source "$ASH/run/units/compat.sh"
         fi
 
-        local link="$PYTHON_BINARIES/default/bin/python"
         if [ -L "$link" ] && [ -x "$link" ] && [ -e "$link" ]; then
             version="$(py.ver.full "$link")"
             if [ "$?" -eq 0 ] && [ -n "$version" ]; then
