@@ -213,6 +213,17 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         local version
         local link="$PYTHON_BINARIES/default/bin/python"
 
+        if [ -n "$1" ]; then
+            local result
+            if [ -x "$1" ]; then
+                result="$(fs.realpath "$1")" || return "$?"
+                printf "$result"
+                return 0
+            fi
+            fail $0 "\$1='$1' isn't accessible or exists"
+            return 1
+        fi
+
         if [ -n "$PYTHON" ]; then
             local real_path="$PYTHON/bin/python"
 
@@ -417,7 +428,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         local base="$PYTHON"
         export PYTHON="$target"
 
-        python="$(py.exe)"
+        python="$(py.exe "$target/bin/python")"
         if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
             fail $0 "something wrong on setup python '$python' from source $source"
             [ -n "$base" ] && export PYTHON="$base"
