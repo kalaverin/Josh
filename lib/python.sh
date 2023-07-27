@@ -33,12 +33,17 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         mycli      # python-driver MySQL client
         nodeenv    # virtual environments for node packaging
         paramiko   # for ssh tunnels with mycli & pgcli
-        sshtunnel  # too
         pgcli      # python-driver PostgreSQL client
+        pre-commit # pre-commit framework tool
+        pycln      # python code cleaner
+        ruff       # blazing fast linter
+        sshtunnel  # too
         sshuttle   # swiss knife for ssh tunneling & management
         termtosvg  # write shell movie to animated SVG
         thefuck    # misspelling everyday helper
         tmuxp      # tmux session manager
+        vulture    # dead code search
+        yapf       # another one cleaner
     )
     PIP_DEFAULT_KEYS=(
         --compile
