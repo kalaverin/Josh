@@ -178,64 +178,98 @@ function __venv.process.packages.args {
 }
 
 function venv.make {
-    local libdir python name full root version packages venv using
-
+    local not_packages=()
+    local offset=0
     local cwd="$PWD"
+    local libdir python env_name env_path root version packages venv using upper
 
-    if [ -z "$1" ]; then
-        fail $0 "call without args, I need to do — what?"
-        return 1
+    for item in $*; do
+        let offset="$offset + 1"
 
-    elif [ -f "$2" ]; then
-        name="$(fs.basename "$1")"
-        full="$1"
-
-    elif [[ "$1" =~ ^[0-9a-z]+[0-9a-z\.-]*[0-9a-z]+$ ]]; then
-        name="$1"
-        full="$ASH_PY_ENVS_ROOT/$name"
-
-    elif [[ "$1" =~ ^/.+/[0-9a-z]+[0-9a-z\.-]*[0-9a-z]+$ ]]; then
-        name="$(fs.basename "$1")"
-        full="$1"
-    fi
-
-
-    root="$(fs.dirname "$full")"
-    if [ ! -d "$root" ]; then
-        mkdir -p "$root"
-
-    elif [ -d "$full" ]; then
-        fail $0 "full '$name' already exists in '$root'"
-        return 2
-    fi
-
-    if [ -n "$2" ] && [ ! -x "$2" ]; then
-        # 3 default
-        python="$(py.from.version 3)"
-
-    elif [[ "$2" =~ ^/.+/[0-9a-z]+[0-9a-z\.-]*[0-9a-z]+$ ]]; then
-        if [ ! -x "$2" ]; then
-            fail $0 "\$2 isn't correct (accessible, executable) python path: '$2'"
-            return 3
+        if [ -f "$item" ]; then
+            continue
         fi
-        python="$(fs.realpath $2)"
-    else
-        python="$(py.from.version $2)"
+
+        if [[ "$item" =~ '/' ]]; then
+            local chunk="$item"
+            while true; do
+                if [ -d "$chunk" ]; then
+                    env_path="$item"
+                    env_name="$(fs.basename "$env_path")" || return "$?"
+                    not_packages+=($offset)
+                    break
+                fi
+                upper="$(fs.dirname "$chunk")" || return "$?"
+                [ -z "$upper" ] || [ "$upper" = "$chunk" ] && break
+                chunk="$upper"
+
+            done
+
+        elif [[ "$item" =~ ^[0-9][0-9\.]*$ ]]; then
+            python="$(fs.realpath `which "python$MATCH"`)"
+            if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
+                fail $0 "python binary '$python' ($item) doesn't exists or something wrong"
+                return 3
+            fi
+            python="$(py.home "$python")/bin/python" || return "$?"
+            fs.realpath "$python" 1>/dev/null || return "$?"
+            not_packages+=($offset)
+
+        # elif [[ "$item" =~ ^/.+/[0-9a-z]+[0-9a-z\.-]*[0-9a-z]+$ ]]; then
+        fi
+    done
+
+    if [ -z "$env_name" ] && [ ! -f "$1" ] ; then
+        if [ "${not_packages[(Ie)1]}" -eq 0 ]; then
+            not_packages+=(1)
+            env_name="$1"
+        fi
+    fi
+
+    if [ -z "$env_path" ] && [ -n "$env_name" ]; then
+        env_path="$ASH_PY_ENVS_ROOT/$env_name"
     fi
 
     if [ ! -x "$python" ]; then
-        fail $0 "\$2 isn't correct (accessible, executable) python path: '$2'"
-        return 4
+        python="$(py.exe)"
     fi
 
-    version="$(py.ver $python)"
-    if [[ "$2" =~ ^/.+/[0-9a-z]+[0-9a-z\.-]*[0-9a-z]+$ ]] || [[ "$2" =~ ^[0-9]\.[0-9]+$ ]] || [ "$2" = "2" ] || [ "$2" = "3" ]; then
-        packages="${@:3}"
-    else
-        packages="${@:2}"
-    fi
+    local offset=0
+    local packages=()
 
+    for item in $*; do
+        let offset="$offset + 1"
+        if [ "${not_packages[(Ie)$offset]}" -eq 0 ]; then
+            packages+=($item)
+        fi
+    done
+
+    version="$(py.ver.full.raw "$python")"
     packages="$(__venv.process.packages.args "$cwd" "$packages" | sed -z 's:\n: :g' | sed 's/ *$//' )"
+
+    if [ -z "$env_name" ]; then
+        fail $0 "environment name empty"
+        return 1
+
+    elif [ ! -x "$python" ]; then
+
+        fail $0 "'$python' isn't correct (accessible, executable) python executable path"
+        return 1
+
+    elif [ -z "$version" ]; then
+        fail $0 "'$version' isn't correct python version"
+        return 1
+
+    fi
+
+    root="$(fs.dirname "$env_path")"
+    if [ ! -d "$root" ]; then
+        mkdir -p "$root"
+
+    elif [ -d "$env_path" ]; then
+        fail $0 "env_path '$env_name' already exists in '$root'"
+        return 2
+    fi
 
     venv="$(venv.off)"
     using="$(py.ver)"
@@ -264,7 +298,7 @@ function venv.make {
         fi
     fi
 
-    local message="create env '$name' with $python ($version): $full"
+    local message="create env '$env_name' with $python ($version): $env_path"
     if [ -n "$packages" ]; then
         local message="$message (preinstalled packages: $packages)"
     fi
@@ -277,16 +311,17 @@ function venv.make {
 
     info $0 "$message"
 
-    run.show "builtin cd "$root" && $(py.exe) -m virtualenv --python=$python $args_env "$full" && source "$full/bin/activate" && pip install --compile --no-input --prefer-binary --upgrade --upgrade-strategy=eager pipdeptree pysnooper $args_pip $packages && builtin cd $cwd"
+    run.show "builtin cd "$root" && $(py.exe "$python") -m virtualenv --python=$python $args_env "$env_path" && source "$env_path/bin/activate" && pip install --compile --no-input --prefer-binary --upgrade --upgrade-strategy=eager pipdeptree pysnooper $args_pip $packages && builtin cd $cwd"
 
-    libdir="$(find "$full/lib/" -maxdepth 1 -type d -name 'python*')"
+    libdir="$(find "$env_path/lib/" -maxdepth 1 -type d -name 'python*')"
     if [ "$?" -eq 0 ]; then
         libdir="$(fs.realpath "$libdir")"
         if [ "$?" -eq 0 ]; then
-            ln -s "$libdir/site-packages" "$full/site"
-            ln -s "$libdir/dist-packages" "$full/dist"
+            ln -s "$libdir/site-packages" "$env_path/site"
+            ln -s "$libdir/dist-packages" "$env_path/dist"
         fi
     fi
+    return 0
 
     local venv="$(venv.off)"
     py.set "$using"

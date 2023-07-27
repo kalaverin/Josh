@@ -76,7 +76,9 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
     }
 
-    function py.ver.full {
+    function py.ver.full.raw {
+        local version
+
         if [ -z "$1" ]; then
             if [ -n "$PYTHON" ] && [ -x "$PYTHON/bin/python" ]; then
                 local source="$PYTHON/bin/python"
@@ -94,15 +96,49 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             return 1
         fi
 
+        version="$($source --version 2>&1 | grep -Po "(\d+\.\d+\.\d+.*)")" || return "$?"
+        printf "$version"
+    }
+
+    function py.ver.full {
+        local version subversion
         local pattern='(\d+\.\d+\.\d+)'
+
+        if [ -z "$1" ]; then
+            if [ -n "$PYTHON" ] && [ -x "$PYTHON/bin/python" ]; then
+                local source="$PYTHON/bin/python"
+
+            else
+                fail $0 "call without args, I need to do — what?"
+                return 1
+            fi
+        else
+            local source="$1"
+        fi
+
+        if [ ! -x "$source" ]; then
+            fail $0 "isn't valid executable '$source'"
+            return 1
+        fi
+
+        version="$(py.ver.full.raw "$source")" || return "$?"
+        subversion="$($source --version 2>&1 | grep -Po "$pattern")" || return "$?"
+
         if [ ! "$PYTHON_ALLOW_ALPHABET" -gt 0 ]; then
             local pattern="$pattern$"
         fi
 
-        printf "$($source --version 2>&1 | grep -Po "$pattern")"
+        version="$(printf "$version" 2>&1 | grep -Po "$pattern")"
+        if [ -z "$version" ] && [ -n "$subversion" ]; then
+            warn $0 "$source version $subversion doesn't match $($source --version); if you sure, set PYTHON_ALLOW_ALPHABET=1"
+            return 1
+        fi
+
+        printf "$version"
     }
 
     function py.ver.uncached {
+        py.ver.full "$python" >&2
         local python="$(fs.realpath "$1" 2>/dev/null)"
         if [ ! -x "$python" ]; then
             fail $0 "isn't valid python '$python'"
@@ -113,7 +149,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         if [[ "$version" -regex-match '^[0-9]+\.[0-9]+' ]]; then
             printf "$MATCH"
         else
-            fail $0 "python $python==$version missing minor version"
+            fail $0 "python '$python'=='$version' empty minor version"
             return 1
         fi
     }
@@ -146,7 +182,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         eval.cached "$(fs.mtime $source)" py.ver.uncached "$source"
     }
 
-    function py.home.from_version {
+    function py.home.from_path {
         if [ -z "$1" ]; then
             fail $0 "call without args, I need to do — what?"
             return 1
@@ -293,7 +329,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             return 1
         fi
 
-        target="$(py.home.from_version "$python")"
+        target="$(py.home.from_path "$python")"
         if [ "$?" -eq 0 ] && [ ! -x "$target/bin/python" ]; then
             mkdir -p "$target/bin"
             info $0 "link $python ($(py.ver.full "$python")) -> $target/bin/"
