@@ -91,16 +91,17 @@ function git.cmd.pullmerge {
 # core functions
 
 function git.this.root {
-    local result
+    local cwd result submodule
+
     if [ -z "$1" ]; then
-        result="$(fs.realpath `eval "$GET_ROOT 2>/dev/null"`)"
-        local retval="$?"
+        result="$(git rev-parse --quiet --show-toplevel)" || return "$?"
+
     else
         if [ -d "$1" ]; then
-            local cwd="$PWD"
+            cwd="$PWD"
             builtin cd "$1"
-            result="$(git.this.root)"
-            local retval="$?"
+
+            result="$(git.this.root)" || return "$?"
             builtin cd "$cwd"
 
         else
@@ -109,11 +110,24 @@ function git.this.root {
         fi
     fi
 
-    if [ "$retval" -eq 0 ] && [ -d "$result" ]; then
-        echo "$result"
-    else
-        return "$retval"
+    if [ ! -d "$result" ]; then
+        return 127
+
+    elif [ -d "$result/.git" ]; then
+        result="$result/.git"
+
+    elif [ -f "$result/.git" ]; then
+        submodule="$(cat "$result/.git" | grep -P 'gitdir: ' | sd '^gitdir: ' '')" || return "$1"
+
+        if [ ! -d "$result/$submodule" ]; then
+            fail $0 "path '$result' exists, but '$result/$submodule' isn't"
+            return 2
+        fi
+        result="$result/$submodule"
     fi
+
+    result="$(fs.realpath "$result")" || returl "$?"
+    printf "$result"
 }
 
 function git.this.hash {
@@ -142,13 +156,13 @@ function git.this.state {
     root="$(git.this.root 2>/dev/null)" || return "$?"
     [ -z "$root" ] && return 1
 
-    if [ -d "$root/.git/rebase-merge" ] || [ -d "$root/.git/rebase-apply" ]; then
+    if [ -d "$root/rebase-merge" ] || [ -d "$root/rebase-apply" ]; then
         local state="rebase"
 
-    elif [ -f "$root/.git/CHERRY_PICK_HEAD" ]; then
+    elif [ -f "$root/CHERRY_PICK_HEAD" ]; then
         local state="cherry-pick"
 
-    elif [ -f "$root/.git/MERGE_HEAD" ]; then
+    elif [ -f "$root/MERGE_HEAD" ]; then
         local state="merge"
     fi
 
@@ -330,14 +344,30 @@ function git.push.force {
 }
 
 function git.mtime.set {
-    local result
+    local result worktree
     if [ -x "$(which git-restore-mtime)" ]; then
-        result="${1:-$(git.this.root 2>/dev/null)}"
-        if [ "$?" -gt 0 ] || [ -z "$result" ]; then
-            return 1
+
+        result="${1:-$(git.this.root 2>/dev/null)}" || return "$?"
+        [ -z "$result" ] && return 1
+
+        worktree="$(git config --file "$result/config" core.worktree)"
+        if [ "$?" -eq 0 ] && [ -n "$worktree" ]; then
+            if [ ! -d "$result/$worktree" ]; then
+                fail "$0" "something went wrong: '$worktree'; '$result'"
+                return 127
+            fi
+            worktree="$(fs.realpath "$result/$worktree")" || return "$?"
+
+        else
+            if [ -z "$worktree" ] && [ -d "$result" ]; then
+                worktree="$(fs.dirname "$result")"
+            else
+                fail "$0" "something went wrong: '$worktree'; '$result'"
+                return 255
+            fi
         fi
 
-        git-restore-mtime --skip-missing --work-tree "$result/" --git-dir "$result/.git/" "$result/" 1>&2
+        git-restore-mtime --skip-missing --work-tree "$worktree/" --git-dir "$result/" "$worktree/" 1>&2
         return "$?"
     fi
     return 2
