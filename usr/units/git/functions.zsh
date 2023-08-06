@@ -363,7 +363,7 @@ function git.mtime.set {
 }
 
 function git.is_clean {
-    local root
+    local root result
     if [ -z "$1" ]; then
         root="$(git.this.root)"
     else
@@ -374,9 +374,10 @@ function git.is_clean {
         return 0
     fi
 
-    local modified='echo $(git ls-files --modified `git rev-parse --show-toplevel`)$(git ls-files --deleted --others --exclude-standard `git rev-parse --show-toplevel`)'
-    if [ -n "$($SHELL -c "$modified")" ]; then
-        warn $0 "$root isn't clean"
+    result="$(git ls-files --deleted --modified --exclude-standard `git rev-parse --show-toplevel`)" || return "$?"
+
+    if [ -n "$result" ]; then
+        warn $0 "$root isn't clean: $result"
         return 1
     fi
 }
