@@ -709,6 +709,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
         local complete=''
         local failed=''
+        # TODO: split "$*" to lines instead $@ with $1="pkg1 pkg2 pkg3"
         for row in $@; do
             $SHELL -c "$command $row" >&2
             if [ "$?" -eq 0 ]; then
@@ -745,7 +746,6 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         if [ -n "$result" ]; then
             info $0 "$result"
         fi
-
 
         if [ -n "$failed" ]; then
             if [ -n "$complete" ]; then
