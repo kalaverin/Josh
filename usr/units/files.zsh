@@ -36,6 +36,8 @@ function __setup.cfg.backup_file_get {
 
 
 function bak {
+    local source timemark target backup
+
     if [ -f "$BAK_RESTORE" ]; then
         warn $0 "already found: $BAK_RESTORE"
 
@@ -47,17 +49,12 @@ function bak {
     local root="$(git.this.root)"
     [ -z "$root" ] && local root="$PWD"
 
-    local source="$(fs.basename "$root")"
-    [ "$?" -gt 0 ] && return 1
+    source="$(fs.basename "$root")" || return "$?"
+    timemark="$(date "+%Y.%m.%d-%H.%M.%S")" || return "$?"
+    target="$(temp.dir)/bak/$source" || return "$?"
+    backup="$target/$source-$timemark-$(get.name).tar" || return "$?"
 
-    local timemark="$(date "+%Y.%m.%d-%H.%M.%S")"
-    [ "$?" -gt 0 ] && return 2
-
-    local target="$(temp.dir)/bak/$source"
-    [ "$?" -gt 0 ] && return 3
-
-    local backup="$target/$source-$timemark-$(get.name).tar"
-    [ "$?" -gt 0 ] && return 4
+    git.mtime.set 2>&1 >/dev/null
 
     run.show "mkdir -p \"$target\" 2>/dev/null; $(__stream_pak --exclude-vcs) | $ASH_PAQ > $backup"
     info $0 "cat $backup | $ASH_QAP | $(__stream_unpak)"
@@ -66,6 +63,8 @@ function bak {
 
 
 function bakf {
+    local source timemark target backup
+
     if [ -f "$BAK_RESTORE" ]; then
         warn $0 "already found: $BAK_RESTORE"
 
@@ -77,17 +76,12 @@ function bakf {
     local root="$(git.this.root)"
     [ -z "$root" ] && local root="$PWD"
 
-    local source="$(fs.basename "$root")"
-    [ "$?" -gt 0 ] && return 1
+    source="$(fs.basename "$root")" || return "$?"
+    timemark="$(date "+%Y.%m.%d-%H.%M.%S")" || return "$?"
+    target="$(temp.dir)/bak/$source" || return "$?"
+    backup="$target/$source-$timemark-$(get.name).tar" || return "$?"
 
-    local timemark="$(date "+%Y.%m.%d-%H.%M.%S")"
-    [ "$?" -gt 0 ] && return 2
-
-    local target="$(temp.dir)/bak/$source"
-    [ "$?" -gt 0 ] && return 3
-
-    local backup="$target/$source-$timemark-$(get.name).tar"
-    [ "$?" -gt 0 ] && return 4
+    git.mtime.set 2>&1 >/dev/null
 
     run.show "mkdir -p \"$target\" 2>/dev/null; $(__stream_pak --exclude-vcs-ignores) | $ASH_PAQ > $backup"
     info $0 "cat $backup | $ASH_QAP | $(__stream_unpak)"
