@@ -170,7 +170,11 @@ function __venv.process.packages.args {
 
     for item in $(echo "${@:2}" | sd ' +' '\n'); do
         if [ -f "$1/$item" ]; then
-            echo "--requirement $1/$item"
+            echo "--requirement $(fs.realpath "$1/$item")"
+        elif [ "$1" = '.' ]; then
+            echo "$(fs.realpath "$1")"
+        elif [ -f "$item/pyproject.toml" ]; then
+            echo "$(fs.realpath "$item")"
         else
             echo "$item"
         fi
@@ -180,8 +184,20 @@ function __venv.process.packages.args {
 function venv.make {
     local not_packages=()
     local offset=0
+
     local cwd="$PWD"
+    local env="$VIRTUAL_ENV"
+
     local libdir python env_name env_path root version packages venv using upper
+
+    local function return.restore () {
+        builtin cd "$cwd"
+        if [ -z "$env" ]; then
+            venv.off >/dev/null
+        elif [ -n "$env" ]; then
+            venv.on "$env" >/dev/null
+        fi
+    }
 
     for item in $*; do
         let offset="$offset + 1"
@@ -193,7 +209,7 @@ function venv.make {
         if [[ "$item" =~ '/' ]]; then
             local chunk="$item"
             while true; do
-                if [ -d "$chunk" ]; then
+                if [ -d "$chunk" ] && [ ! "$chunk" = '.' ]; then
                     env_path="$item"
                     env_name="$(fs.basename "$env_path")" || return "$?"
                     not_packages+=($offset)
@@ -249,15 +265,18 @@ function venv.make {
 
     if [ -z "$env_name" ]; then
         fail $0 "environment name empty"
+        return.restore
         return 1
 
     elif [ ! -x "$python" ]; then
 
         fail $0 "'$python' isn't correct (accessible, executable) python executable path"
+        return.restore
         return 1
 
     elif [ -z "$version" ]; then
         fail $0 "'$version' isn't correct python version"
+        return.restore
         return 1
 
     fi
@@ -267,7 +286,8 @@ function venv.make {
         mkdir -p "$root"
 
     elif [ -d "$env_path" ]; then
-        fail $0 "env_path '$env_name' already exists in '$root'"
+        fail $0 "env_name '$env_name' already exists in '$root'"
+        return.restore
         return 2
     fi
 
@@ -276,13 +296,13 @@ function venv.make {
 
     if [ -z "$using" ]; then
         fail $0 "'$python'"
-        [ -n "$venv" ] && source "$venv/bin/activate"
+        return.restore
         return 5
     fi
 
     py.set "$python"
     if [ "$?" -gt 0 ]; then
-        [ -n "$venv" ] && source "$venv/bin/activate"
+        return.restore
         return 6
     fi
 
@@ -293,7 +313,7 @@ function venv.make {
         if ! py.lib.exists 'virtualenv' "$python"; then
             fail $0 "something went wrong"
             py.set "$using"
-            [ -n "$venv" ] && source "$venv/bin/activate"
+            return.restore
             return 7
         fi
     fi
@@ -321,7 +341,6 @@ function venv.make {
             ln -s "$libdir/dist-packages" "$env_path/dist"
         fi
     fi
-    return 0
 
     local venv="$(venv.off)"
     py.set "$using"
