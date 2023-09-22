@@ -57,7 +57,9 @@ function bak {
     git.mtime.set 2>&1 >/dev/null
 
     run.show "mkdir -p \"$target\" 2>/dev/null; $(__stream_pak --exclude-vcs) | $ASH_PAQ > $backup"
-    info $0 "cat $backup | $ASH_QAP | $(__stream_unpak)"
+    local msg="cat $backup | $ASH_QAP | $(__stream_unpak)"
+    info $0 "$msg"
+    printf "$msg"
     export BAK_RESTORE="$backup"
 }
 
@@ -84,7 +86,9 @@ function bakf {
     git.mtime.set 2>&1 >/dev/null
 
     run.show "mkdir -p \"$target\" 2>/dev/null; $(__stream_pak --exclude-vcs-ignores) | $ASH_PAQ > $backup"
-    info $0 "cat $backup | $ASH_QAP | $(__stream_unpak)"
+    local msg="cat $backup | $ASH_QAP | $(__stream_unpak)"
+    info $0 "$msg"
+    printf "$msg"
     export BAK_RESTORE="$backup"
 }
 
