@@ -155,8 +155,10 @@ fi
 # tabulate is rust tools for easy split stdout to columns
 #
 if [ ! -x "$commands[tabulate]" ]; then
-    export TABULATE="$commands[tabulate]"
     term $0 "tabulate tool is required"
+else
+    export TABULATE="$commands[tabulate]"
+    alias tabulate="$commands[tabulate] 2>/dev/null"
 fi
 
 
