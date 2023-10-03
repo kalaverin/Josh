@@ -986,21 +986,33 @@ else
 
     elif [[ "$osname" -regex-match 'darwin' ]]; then
         export ASH_OS="MAC"
-        fs.link 'ls'    '/usr/local/bin/gls'   >/dev/null
-        fs.link 'grep'  '/usr/local/bin/ggrep' >/dev/null
+        export ASH_ARCH="$(uname -m)"
+        local linked=0
+        if [[ "$ASH_ARCH" -regex-match 'arm64' ]] && [[ -d "$HOMEBREW_PREFIX/bin" ]]; then
+            fs.link 'ls'    "$HOMEBREW_PREFIX/bin/gls" >/dev/null && \
+            fs.link 'grep'  "$HOMEBREW_PREFIX/bin/ggrep" >/dev/null && \
+            linked=1
+        fi
+
+        if [ $linked -lt 0 ]; then
+            fs.link 'ls'    '/usr/local/bin/gls' >/dev/null
+            fs.link 'grep'  '/usr/local/bin/ggrep' >/dev/null
+        fi
 
         dirs=(
-            bin
-            sbin
-            usr/bin
-            usr/sbin
-            usr/local/bin
-            usr/local/sbin
+            /Library/Apple/bin
+            /Library/Apple/sbin
+            /Library/Apple/usr/bin
+            /Library/Apple/usr/sbin
+            /Library/Apple/usr/local/bin
+            /Library/Apple/usr/local/sbin
+            "$HOMEBREW_PREFIX/bin"
+            "$HOMEBREW_PREFIX/sbin"
         )
 
         for dir in $dirs; do
-            if [ -d "/Library/Apple/$dir" ]; then
-                export PATH="$PATH:/Library/Apple/$dir"
+            if [ -d "$dir" ]; then
+                export PATH="$PATH:$dir"
             fi
         done
 
@@ -1028,7 +1040,57 @@ else
         done
     fi
 
-    if [ "$ASH_OS" = 'BSD' ] || [ "$ASH_OS" = 'MAC' ]; then
+    if [ "$ASH_OS" = 'MAC' ] && [ "$ASH_ARCH" = 'arm64' ]; then
+        # Brew uses `$HOMEBREW_PREFIX` root for ARM-native binaries
+        # and `/usr/local/bin` for x86-64 binaries under Rosetta.
+        # For details, please visit:
+        # - https://docs.brew.sh/Installation
+        # - https://github.com/Homebrew/brew/issues/9177
+        local prefixes=(
+            $HOMEBREW_PREFIX/bin
+            /usr/local/bin
+        )
+        typeset -A utils=(
+            cut 0
+            find 0
+            head 0
+            readlink 0
+            realpath 0
+            sed 0
+            tail 0
+            tar 0
+            xargs 0
+        )
+        local errors=""
+        local linked=0
+        for prefix in $prefixes; do
+            if [[ ! -d "$prefix" ]]; then
+                continue;
+            fi
+            for util ("${(@k)utils}"); do
+                if [[ "$utils[$util]" == 1 ]]; then
+                    continue
+                fi;
+                result=$(fs.link "$util" "$prefix/g$util" 2>&1 >/dev/null)
+                exitcode=$?
+                if [ $exitcode -eq 0 ]; then
+                    utils[$util]=1
+                    linked=$((linked + 1))
+                else
+                    errors="$errors\n$result"
+                fi
+            done
+        done
+        if [ "$linked" -lt ${#utils[@]} ]; then
+            for util util_status ("${(@kv)utils}"); do
+                if [ $util_status -eq 0 ]; then
+                    fail $0 "Failed to link $util"
+                fi
+            done
+            fail $0 "Linking error log follows:$errors"
+        fi
+        export ASH_MD5_PIPE="$(which md5)"
+    elif [ "$ASH_OS" = 'MAC' ] || [ "$ASH_OS" = 'BSD' ]; then
         fs.link 'cut'       '/usr/local/bin/gcut'      >/dev/null
         fs.link 'find'      '/usr/local/bin/gfind'     >/dev/null
         fs.link 'head'      '/usr/local/bin/ghead'     >/dev/null
