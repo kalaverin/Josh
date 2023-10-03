@@ -34,6 +34,7 @@ fi
 
 perm_path=(
     $perm_path
+    $ASH/bin
     $HOME/.local/bin
     $HOME/go/bin
     $HOME/bin
