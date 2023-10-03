@@ -12,7 +12,6 @@ __snapshots__/
 js_package/
 lib/python?.*/
 node_modules/
-static/action_applier_rewards/
 
 *.[mp]o
 *.DS_Store
