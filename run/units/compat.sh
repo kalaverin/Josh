@@ -136,14 +136,14 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             REQ_SYS_BINS=(
                 bash
                 brew
-                /usr/local/bin/gcut
-                /usr/local/bin/gfind
-                /usr/local/bin/ggrep
-                /usr/local/bin/gls
-                /usr/local/bin/greadlink
-                /usr/local/bin/grealpath
-                /usr/local/bin/gsed
-                /usr/local/bin/gtar
+                gcut
+                gfind
+                ggrep
+                gls
+                greadlink
+                grealpath
+                gsed
+                gtar
             )
 
 
