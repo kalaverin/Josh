@@ -23,6 +23,7 @@ fi
 
 perm_path=(
     $perm_path
+    $ASH/bin
     $HOME/.local/bin
     $HOME/bin
     /usr/local/bin
