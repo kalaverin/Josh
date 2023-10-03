@@ -990,6 +990,11 @@ else
     elif [[ "$osname" -regex-match 'darwin' ]]; then
         export ASH_OS="MAC"
         export ASH_ARCH="$(uname -m)"
+
+        if [[ -z "$HOMEBREW_PREFIX" ]]; then
+            fail $0 "Empty Homebrew prefix. Have you followed the post-install instructions it provides?"
+        fi
+
         local linked=0
         if [[ "$ASH_ARCH" -regex-match 'arm64' ]] && [[ -d "$HOMEBREW_PREFIX/bin" ]]; then
             fs.link 'ls'    "$HOMEBREW_PREFIX/bin/gls" >/dev/null && \
