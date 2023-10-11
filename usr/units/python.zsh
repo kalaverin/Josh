@@ -10,9 +10,23 @@ local PIP_PKG_INFO="$INCLUDE_DIR/pip_pkg_info.sh"
 function venv.on {
     local venv="$(venv.path $*)"
     if [ -n "$venv" ] && [ -d "$venv" ]; then
-        venv.off >/dev/null; source "$venv/bin/activate"
+        venv.off >/dev/null
+        source "$venv/bin/activate"
+        local retval="$?"
+
+        if [ "$retval" -gt 0 ]; then
+            return "$retval"
+        fi
+
         path.rehash
+        printf "$VIRTUAL_ENV"
+        return 0
+
+    elif [ -z "$venv" ] && [ -n "$1" ]; then
+        # when we trying to activate real env, but isn't found — it's error
+        return 1
     fi
+    return 2
 }
 
 function venv.path.activate {
@@ -215,10 +229,9 @@ function venv.make {
                     not_packages+=($offset)
                     break
                 fi
-                upper="$(fs.dirname "$chunk")" || return "$?"
-                [ -z "$upper" ] || [ "$upper" = "$chunk" ] && break
-                chunk="$upper"
-
+                parent="$(fs.dirname "$chunk")" || return "$?"
+                [ -z "$parent" ] || [ "$parent" = "$chunk" ] && break
+                chunk="$parent"
             done
 
         elif [[ "$item" =~ ^[0-9][0-9\.]*$ ]]; then
