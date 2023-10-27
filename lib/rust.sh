@@ -92,6 +92,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         ry               # jq for yamls
         sbyte            # hexeditor
         so               # command line TUI full featured stack overflow questions
+        tere             # jumps over directories
         trippy           # network diagnosis tool
         tuc              # cut replacer
         viu              # print images into terminal

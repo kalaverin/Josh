@@ -15,6 +15,7 @@ ZSH_PACKAGES=(
     "https://github.com/mollifier/anyframe.git $PLUGINS_ROOT/anyframe"
     "https://github.com/seletskiy/zsh-fuzzy-search-and-edit.git $PLUGINS_ROOT/zsh-fuzzy-search-and-edit"
     "https://github.com/trapd00r/zsh-syntax-highlighting-filetypes.git $PLUGINS_ROOT/zsh-syntax-highlighting-filetypes"
+    "https://github.com/vifon/deer.git $PLUGINS_ROOT/deer"
     "https://github.com/wfxr/forgit.git $PLUGINS_ROOT/forgit"
     "https://github.com/zdharma-continuum/history-search-multi-word.git $PLUGINS_ROOT/history-search-multi-word"
     "https://github.com/zlsun/solarized-man.git $PLUGINS_ROOT/solarized-man"
