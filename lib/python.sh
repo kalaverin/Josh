@@ -758,6 +758,17 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         return 0
     }
 
+    function pip.uninstall {
+        local python target
+
+        python="$(py.exe)" || return "$?"
+        target="$(py.home "$python")" || return "$?"
+
+        PIP_REQUIRE_VIRTUALENV=false \
+        PYTHONUSERBASE="$target" \
+        $python -m pip uninstall $* || return "$?"
+    }
+
     function pip.update {
         local python="$(py.exe)"
         if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
