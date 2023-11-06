@@ -8,13 +8,15 @@ classic: false
 # == Blocks ==
 # This specifies the columns and their order when using the long and the tree
 # layout.
-# Possible values: permission, user, group, size, size_value, date, name, inode
+# Possible values: permission, user, group, context, size, date, name, inode, links, git
 blocks:
   - permission
   - user
   - group
+  - links
   - date
   - size
+  - git
   - name
 
 # == Color ==
@@ -24,12 +26,18 @@ color:
   # When "classic" is set, this is set to "never".
   # Possible values: never, auto, always
   when: auto
+  # How to colorize the output.
+  # When "classic" is set, this is set to "no-color".
+  # Possible values: default, custom
+  # When "custom" is set, lsd will look in the config directory for `colors.yaml`.
+  theme: custom
 
 # == Date ==
 # This specifies the date format for the date column. The freeform format
-# accepts an strftime like string.
+# accepts a strftime like string.
 # When "classic" is set, this is set to "date".
-# Possible values: date, relative, +
+# Possible values: date, relative, '+<date_format>'
+# `date_format` will be a `strftime` formatted value. e.g. `date: '+%d %b %y %X'` will give you a date like this: 17 Jun 21 20:14:55
 date: +%d %b %Y %H:%M:%S
 
 # == Dereference ==
@@ -53,8 +61,7 @@ icons:
   theme: fancy
   # Separator between icon and the name
   # Default to 1 space
-  separator: ' '
-
+  separator: " "
 
 # == Ignore Globs ==
 # A list of globs to ignore when listing.
@@ -64,13 +71,13 @@ icons:
 # == Indicators ==
 # Whether to add indicator characters to certain listed files.
 # Possible values: false, true
-indicators: true
+indicators: false
 
 # == Layout ==
 # Which layout to use. "oneline" might be a bit confusing here and should be
 # called "one-per-line". It might be changed in the future.
 # Possible values: grid, tree, oneline
-layout: oneline
+layout: grid
 
 # == Recursion ==
 recursion:
@@ -84,13 +91,18 @@ recursion:
 # == Size ==
 # Specifies the format of the size column.
 # Possible values: default, short, bytes
-size: short
+size: default
+
+# == Permission ==
+# Specify the format of the permission column
+# Possible value: rwx, octal
+permission: rwx
 
 # == Sorting ==
 sorting:
   # Specify what to sort by.
   # Possible values: extension, name, time, size, version
-  column: version
+  column: name
   # Whether to reverse the sorting.
   # Possible values: false, true
   reverse: false
@@ -109,6 +121,16 @@ no-symlink: false
 # Possible values: false, true
 total-size: false
 
+# == Hyperlink ==
+# Attach hyperlink to filenames
+# Possible values: always, auto, never
+hyperlink: never
+
 # == Symlink arrow ==
 # Specifies how the symlink arrow display, chars in both ascii and utf8
-symlink-arrow: →
+symlink-arrow: ->
+
+# == Header ==
+# Whether to display block headers.
+# Possible values: false, true
+header: false
