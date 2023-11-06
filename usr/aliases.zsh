@@ -123,12 +123,12 @@ fi
 #
 if [ -x "$commands[lsd]" ]; then
     if [ -z "$LSD_OPTIONS" ]; then
-        LSD_OPTIONS='--classify --long --versionsort'
+        LSD_OPTIONS='--classify --long'
         if [ -f "$HOME/.config/lsd/config.yaml" ]; then
             LSD_OPTIONS="--config-file \"$HOME/.config/lsd/config.yaml\" $LSD_OPTIONS"
         fi
     fi
-    alias l="lsd --ignore-glob '*.pyc' $LSD_OPTIONS"
+    alias l="lsd $LSD_OPTIONS"
     alias ll="lsd --almost-all $LSD_OPTIONS"
 else
     alias l="ls -l"
