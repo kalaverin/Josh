@@ -46,7 +46,7 @@ function bin.compile_fzf {
     elif [ -x "$LOCAL_BIN/fzf" ]; then
         [ -f "$LOCAL_BIN/fzf.bak" ] && rm -f "$LOCAL_BIN/fzf.bak"
 
-        if [ "$(find $LOCAL_BIN/fzf -mmin +129600 2>/dev/null | grep fzf)" ]; then
+        if [ "$(find $LOCAL_BIN/fzf -mmin +43200 2>/dev/null | grep fzf)" ]; then
             mv "$LOCAL_BIN/fzf" "$LOCAL_BIN/fzf.bak"
         fi
     fi
@@ -89,9 +89,9 @@ function bin.deploy_micro {
     elif [ -x "$LOCAL_BIN/micro" ]; then
         [ -f "$LOCAL_BIN/micro.bak" ] && rm -f "$LOCAL_BIN/micro.bak"
 
-        # if [ "$(find $LOCAL_BIN/micro -mmin +129600 2>/dev/null | grep micro)" ]; then
-        #     mv "$LOCAL_BIN/micro" "$LOCAL_BIN/micro.bak"
-        # fi
+        if [ "$(find $LOCAL_BIN/micro -mmin +43200 2>/dev/null | grep micro)" ]; then
+            mv "$LOCAL_BIN/micro" "$LOCAL_BIN/micro.bak"
+        fi
     fi
 
     if [ ! -x "$LOCAL_BIN/micro" ]; then
