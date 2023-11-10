@@ -319,12 +319,24 @@ function venv.make {
         return 6
     fi
 
+    if ! py.lib.exists 'pip' "$python"; then
+        info $0 "pip isn't installed for $(py.ver), proceed"
+        pip.deploy "$python"
+
+        if ! py.lib.exists 'pip' "$python"; then
+            fail $0 "something went wrong when pip deploy"
+            py.set "$using"
+            return.restore
+            return 7
+        fi
+    fi
+
     if ! py.lib.exists 'virtualenv' "$python"; then
         info $0 "virtualenv isn't installed for $(py.ver), proceed"
         pip.install virtualenv
 
         if ! py.lib.exists 'virtualenv' "$python"; then
-            fail $0 "something went wrong"
+            fail $0 "something went wrong when virtualenv install"
             py.set "$using"
             return.restore
             return 7

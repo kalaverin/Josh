@@ -493,14 +493,25 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     }
 
     function pip.lookup {
-        if [ -x "$PIP" ]; then
-            printf "$PIP"
-            return 0
+        if [ -z "$1" ]; then
+            if [ -x "$PIP" ]; then
+                printf "$PIP"
+                return 0
+            fi
+            local python="$(py.exe)"
+
+        else
+            local python="$(which "$1")"
+            if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
+                fail $0 "python binary '$python' doesn't exists or something wrong"
+                return 1
+            fi
         fi
-        local target="$(py.home)"
+
+        local target="$(py.home "$python")"
         if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
-            fail $0 "python target dir:'$target'"
-            return 1
+            fail $0 "python $py.home directory isn't exist"
+            return 2
         fi
 
         local pip="$target/bin/pip"
@@ -536,7 +547,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             fail $0 "HTTP_GET isn't set"
             return 1
 
-        elif [ ! -x "$(pip.lookup)" ]; then
+        elif [ ! -x "$(pip.lookup "$python")" ]; then
             local version="$(py.ver "$python")"
             if [ -z "$version" ]; then
                 fail $0 "python $py.ver fetch"
