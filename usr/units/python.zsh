@@ -321,7 +321,7 @@ function venv.make {
 
     if ! py.lib.exists 'pip' "$python"; then
         info $0 "pip isn't installed for $(py.ver), proceed"
-        pip.deploy "$python"
+        pip.deploy "$python" && path.rehash
 
         if ! py.lib.exists 'pip' "$python"; then
             fail $0 "something went wrong when pip deploy"
@@ -333,7 +333,7 @@ function venv.make {
 
     if ! py.lib.exists 'virtualenv' "$python"; then
         info $0 "virtualenv isn't installed for $(py.ver), proceed"
-        pip.install virtualenv
+        pip.install virtualenv && path.rehash
 
         if ! py.lib.exists 'virtualenv' "$python"; then
             fail $0 "something went wrong when virtualenv install"

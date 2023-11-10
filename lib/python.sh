@@ -62,7 +62,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
         if [ -x "$2" ]; then
             local bin="$(fs.realpath "$2")"
-            if [ ! -x "$bin" ]; then
+            if [ ! -x "$bin" ] || [ ! -f "$bin" ]; then
                 fail $0 "cannot get real path for '$2'"
                 return 3
             fi
@@ -77,21 +77,21 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     }
 
     function py.ver.full.raw {
-        local version
+        local source version
 
         if [ -z "$1" ]; then
-            if [ -n "$PYTHON" ] && [ -x "$PYTHON/bin/python" ]; then
-                local source="$PYTHON/bin/python"
+            if [ -n "$PYTHON" ] && [ -x "$PYTHON/bin/python" ] || [ ! -f "$PYTHON/bin/python" ]; then
+                source="$PYTHON/bin/python"
 
             else
                 fail $0 "call without args, I need to do — what?"
                 return 1
             fi
         else
-            local source="$1"
+            source="$1"
         fi
 
-        if [ ! -x "$source" ]; then
+        if [ ! -x "$source" ] || [ ! -f "$source" ]; then
             fail $0 "isn't valid executable '$source'"
             return 1
         fi
@@ -101,22 +101,22 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     }
 
     function py.ver.full {
-        local version subversion
+        local version subversion source
         local pattern='(\d+\.\d+\.\d+)'
 
         if [ -z "$1" ]; then
             if [ -n "$PYTHON" ] && [ -x "$PYTHON/bin/python" ]; then
-                local source="$PYTHON/bin/python"
+                source="$PYTHON/bin/python"
 
             else
                 fail $0 "call without args, I need to do — what?"
                 return 1
             fi
         else
-            local source="$1"
+            source="$1"
         fi
 
-        if [ ! -x "$source" ]; then
+        if [ ! -x "$source" ] || [ ! -f "$source" ]; then
             fail $0 "isn't valid executable '$source'"
             return 1
         fi
@@ -125,7 +125,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         subversion="$($source --version 2>&1 | grep -Po "$pattern")" || return "$?"
 
         if [ ! "$PYTHON_ALLOW_ALPHABET" -gt 0 ]; then
-            local pattern="$pattern$"
+            pattern="$pattern$"
         fi
 
         version="$(printf "$version" 2>&1 | grep -Po "$pattern")"
@@ -138,14 +138,15 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     }
 
     function py.ver.uncached {
-        py.ver.full "$python" >&2
-        local python="$(fs.realpath "$1" 2>/dev/null)"
-        if [ ! -x "$python" ]; then
+        local python version
+
+        python="$(fs.realpath "$1" 2>/dev/null)"
+        if [ "$?" -gt 0 ] || [ ! -x "$python" ] || [ ! -f "$source" ]; then
             fail $0 "isn't valid python '$python'"
             return 3
         fi
 
-        local version="$(py.ver.full "$python")"
+        version="$(py.ver.full "$python")"
         if [[ "$version" -regex-match '^[0-9]+\.[0-9]+' ]]; then
             printf "$MATCH"
         else
@@ -157,14 +158,14 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     function py.ver {
         if [ -z "$1" ]; then
             if [ -n "$PYTHON" ] && [ ! -x "$PYTHON/bin/python" ]; then
-                if [ -x "$PYTHON_BINARIES/default/bin/python" ]; then
+                if [ -x "$PYTHON_BINARIES/default/bin/python" ] && [ -f "$PYTHON_BINARIES/default/bin/python" ]; then
                     local source="$PYTHON_BINARIES/default/bin/python"
                 else
                     fail $0 "call without args, default python doesn't exists: '$PYTHON_BINARIES/default/bin/python'"
                     return 1
                 fi
 
-            elif [ -n "$PYTHON" ] && [ -x "$PYTHON/bin/python" ]; then
+            elif [ -n "$PYTHON" ] && [ -x "$PYTHON/bin/python" ] && [ -f "$PYTHON/bin/python" ]; then
                 local source="$PYTHON/bin/python"
 
             else
@@ -175,7 +176,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             local source="$1"
         fi
 
-        if [ ! -x "$source" ]; then
+        if [ ! -x "$source" ] || [ ! -f "$source" ]; then
             fail $0 "isn't valid executable '$source'"
             return 3
         fi
@@ -269,7 +270,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
 
         if ! is.function "compat.executables"; then
-            if [ ! -x "$ASH" ]; then
+            if [ ! -x "$ASH" ] || [ ! -d "$ASH" ]; then
                 fail $0 "\$ASH:'$ASH' isn't accessible"
                 return 1
             fi
@@ -324,13 +325,13 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         local target
         local python="$1"
 
-        if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
-            fail $0 "py.executable and home directory can't detected"
+        if [ "$?" -gt 0 ] || [ ! -x "$python" ] || [ ! -f "$python" ]; then
+            fail $0 "py.executable and home directory can't detected or '$python' isn't executable"
             return 1
         fi
 
         target="$(py.home.from_path "$python")"
-        if [ "$?" -eq 0 ] && [ ! -x "$target/bin/python" ]; then
+        if [ "$?" -eq 0 ] && [ ! -x "$target/bin/python" ] && [ ! -f "$target/bin/python" ]; then
             mkdir -p "$target/bin"
             info $0 "link $python ($(py.ver.full "$python")) -> $target/bin/"
         fi
@@ -369,7 +370,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     }
 
     function py.home {
-        local python target
+        local python target retval
         if [ -z "$1" ]; then
             python="$(py.exe)"
         else
@@ -381,13 +382,13 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
 
         target="$(eval.cached "$(fs.mtime $python)" py.home.uncached "$python")"
-        local retval="$?"
+        retval="$?"
 
         if [ "$retval" -gt 0 ] || [ ! -d "$target" ]; then
             fail $0 "python '$python' home directory isn't exist, try again"
 
             target="$(DO_NOT_READ=1 eval.cached "$(fs.mtime $python)" py.home.uncached "$python")"
-            local retval="$?"
+            retval="$?"
 
             if [ "$retval" -gt 0 ] || [ ! -d "$target" ]; then
                 term $0 "python '$python' home directory isn't exist"
@@ -493,24 +494,25 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     }
 
     function pip.lookup {
+        local python target
         if [ -z "$1" ]; then
             if [ -x "$PIP" ]; then
                 printf "$PIP"
                 return 0
             fi
-            local python="$(py.exe)"
+            python="$(py.exe)"
 
         else
-            local python="$(which "$1")"
+            python="$(which "$1")"
             if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
                 fail $0 "python binary '$python' doesn't exists or something wrong"
                 return 1
             fi
         fi
 
-        local target="$(py.home "$python")"
+        target="$(py.home "$python")"
         if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
-            fail $0 "python $py.home directory isn't exist"
+            fail $0 "python '$python' home directory isnt't exist"
             return 2
         fi
 
@@ -526,20 +528,22 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     }
 
     function pip.deploy {
+        local python target version url
+
         if [ -z "$1" ]; then
-            local python="$(py.exe)"
+            python="$(py.exe)"
 
         else
-            local python="$(which "$1")"
+            python="$(which "$1")"
             if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
                 fail $0 "python binary '$python' doesn't exists or something wrong"
                 return 1
             fi
         fi
 
-        local target="$(py.home "$python")"
+        target="$(py.home "$python")"
         if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
-            fail $0 "python $py.home directory isn't exist"
+            fail $0 "python '$python' home directory isnt't exist"
             return 2
         fi
 
@@ -548,18 +552,18 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             return 1
 
         elif [ ! -x "$(pip.lookup "$python")" ]; then
-            local version="$(py.ver "$python")"
+            version="$(py.ver "$python")"
             if [ -z "$version" ]; then
                 fail $0 "python $py.ver fetch"
                 return 3
             fi
 
             if [ "$version" = '2.7' ]; then
-                local url='https://bootstrap.pypa.io/pip/2.7/get-pip.py'
+                url='https://bootstrap.pypa.io/pip/2.7/get-pip.py'
             elif [ "$version" = '3.6' ]; then
-                local url='https://bootstrap.pypa.io/pip/3.6/get-pip.py'
+                url='https://bootstrap.pypa.io/pip/3.6/get-pip.py'
             else
-                local url='https://bootstrap.pypa.io/get-pip.py'
+                url='https://bootstrap.pypa.io/get-pip.py'
             fi
 
             local pip_file="/tmp/get-pip.py"
@@ -614,31 +618,58 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     function pip.exe.uncached {
         local python target
 
-        python="$(py.exe)" || return "$?"
+        if [ -z "$1" ]; then
+            python="$(py.exe)"
+
+        else
+            python="$(which "$1")"
+            if [ "$?" -gt 0 ] || [ ! -x "$python" ] || [ ! -f "$python" ]; then
+                fail $0 "python binary '$python' doesn't exists or something wrong"
+                return 1
+            fi
+        fi
 
         target="$(py.home "$python")"
-        local retval="$?"
-        if [ "$retval" -gt 0 ] || [ ! -d "$target" ]; then
-            fail $0 "python '$python' home directory doesn't exist"
+        if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
+            fail $0 "python '$python' home directory isnt't exist"
             return 2
         fi
 
-        pip.deploy >&2
-        local retval="$?"
+        pip.deploy "$python" >&2
+        if [ "$?" -gt 0 ]; then
+            fail $0 "pip.deploy for '$python' fail"
+            return 3
+        fi
 
-        if [ -x "$target/bin/pip" ]; then
+        if [ -x "$target/bin/pip" ] || [ -f "$target/bin/pip" ]; then
             printf "$target/bin/pip"
+
+        elif [ "$retval" -eq 0 ]; then
+            fail $0 "pip.deploy for '$python' not fail, but '$target/bin/pip' isn't exists"
+            return 4
         fi
         return "$retval"
     }
 
     function pip.exe {
-        local result retval
+        local python result retval
         local gsed="$commands[gsed]"
+
         if [ ! -x "$gsed" ]; then
             local gsed="$(which sed)"
             if [ ! -x "$gsed" ]; then
                 fail $0 "GNU sed for '$ASH_OS' don't found, return 1"
+                return 1
+            fi
+        fi
+
+        if [ -z "$1" ]; then
+            python="$(py.exe)"
+
+        else
+            python="$(which "$1")"
+            if [ "$?" -gt 0 ] || [ ! -x "$python" ] || [ ! -f "$python" ]; then
+                fail $0 "python binary '$python' doesn't exists or something wrong"
                 return 1
             fi
         fi
@@ -648,7 +679,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             local dirs="$PATH"
         fi
 
-        result="$(eval.cached "`fs.lm.many $dirs $PYTHON_BINARIES`" pip.exe.uncached $*)"
+        result="$(eval.cached "`fs.lm.many $dirs $PYTHON_BINARIES`" pip.exe.uncached "$python" $*)"
         retval="$?"
 
         if [ "$retval" -gt 0 ]; then
@@ -664,7 +695,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             return 0
         fi
 
-        fail $0 "evan.cached(pip.exe.uncached) empty or '$result' isn't exists, state=0, return 3"
+        fail $0 "eval.cached(pip.exe.uncached) empty or '$result' isn't exists, state=0, return 3"
         return 3
     }
 
@@ -694,15 +725,21 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
         venv="$(venv.off)" || return "$(rollback "venv.off" "$0" "$?")"
 
-        pip="$(pip.exe)"
-        if [ "$?" -gt 0 ] || [ ! -x "$pip" ]; then
-            return "$(rollback "pip.exe" "$0" 2)"
+        local python="$(which "$PYTHON/bin/python")"
+        if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
+            fail $0 "python binary '$python' doesn't exists or something wrong"
+            return 1
         fi
 
-        local target="$(py.home)"
+        local target="$(py.home "$python")"
         if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
-            fail $0 "python target dir '$target'"
-            return "$(rollback "py.home" "$0" 3)"
+            fail $0 "python $py.home directory isn't exist"
+            return 2
+        fi
+
+        pip="$(pip.exe "$python")"
+        if [ "$?" -gt 0 ] || [ ! -x "$pip" ]; then
+            return "$(rollback "pip.exe" "$0" 2)"
         fi
 
         local flags="--upgrade --upgrade-strategy=eager"
@@ -714,7 +751,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         if [ "$USER" = 'root' ] || [ "$ASH_OS" = 'BSD' ] || [ "$ASH_OS" = 'MAC' ]; then
             local flags="--root='/' --prefix='$target' $flags"
         fi
-        local command="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false $(py.exe) -m pip install $flags $PIP_DEFAULT_KEYS"
+        local command="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false $python -m pip install $flags $PIP_DEFAULT_KEYS"
 
         warn $0 "$command $*"
 
