@@ -131,6 +131,7 @@ function bin.deploy_direnv {
 
     elif [ "$ASH_OS" = 'BSD' ]; then
         if [ ! -x "$commands[direnv]" ]; then
+            # https://direnv.net/docs/development.html
             warn $0 "for FreeBSD install direnv from pkg: sudo pkg install direnv"
             return 1
         fi

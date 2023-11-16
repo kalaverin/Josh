@@ -9,6 +9,12 @@ local PIP_PKG_INFO="$INCLUDE_DIR/pip_pkg_info.sh"
 
 function venv.on {
     local venv="$(venv.path $*)"
+
+    if [ -d "$VIRTUAL_ENV" ] && [ "$VIRTUAL_ENV" = "$venv" ]; then
+        printf "$VIRTUAL_ENV"
+        return 0
+    fi
+
     if [ -n "$venv" ] && [ -d "$venv" ]; then
         venv.off >/dev/null
         source "$venv/bin/activate"
@@ -55,7 +61,7 @@ function venv.temp.dir {
         fi
         export ASH_PY_TEMP_ENVS_ROOT="$directory"
     fi
-    echo "$ASH_PY_TEMP_ENVS_ROOT"
+    printf "$ASH_PY_TEMP_ENVS_ROOT"
 }
 
 function venv.node {
@@ -129,22 +135,22 @@ function venv.node {
 function venv.path {
     if [ "$1" ]; then
         if [ -d "$1" ] && [ -f "$1/bin/activate" ]; then
-            echo "$1"
+            printf "$1"
 
         elif [ -f "$ASH_PY_ENVS_ROOT/$1/bin/activate" ]; then
-            echo "$ASH_PY_ENVS_ROOT/$1"
+            printf "$ASH_PY_ENVS_ROOT/$1"
 
         else
             local temp="$(venv.temp.dir)"
             if [ -f "$temp/$1/bin/activate" ]; then
-                echo "$temp/$1"
+                printf "$temp/$1"
             else
                 fail $0 "venv '$1' isn't found"
             fi
         fi
 
     elif [ -x "$VIRTUAL_ENV" ]; then
-        echo "$VIRTUAL_ENV"
+        printf "$VIRTUAL_ENV"
     fi
 }
 
@@ -169,7 +175,7 @@ function py.from.version {
     elif [ -z "$1" ]; then
         local python="$(which "python2.7")"
     fi
-    echo "$python"
+    printf "$python"
 }
 
 function __venv.process.packages.args {
@@ -439,7 +445,7 @@ function __widget.pip.freeze {
     pip.exe || return 1
 
     local venv="$(fs.basename ${VIRTUAL_ENV:-''})"
-    local preview="echo {2} | xargs -n 1 $SHELL $PIP_PKG_INFO"
+    local preview="printf {2} | xargs -n 1 $SHELL $PIP_PKG_INFO"
     local value="$($SHELL -c "
         $SHELL $PIP_LIST_TOP \
         | $FZF \
