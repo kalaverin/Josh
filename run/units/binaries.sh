@@ -162,6 +162,44 @@ function bin.deploy_direnv {
     cfg.copy "$ASH/usr/share/direnv.rc" "$CONFIG_DIR/direnv/direnvrc"
 }
 
+# ——— rye all-in-one python packaging tool
+
+function bin.deploy_rye {
+    local bin="$HOME/.rye/shims/rye"
+    local url='https://rye-up.com/get'
+
+    if [ -z "$HTTP_GET" ]; then
+        fail $0 "HTTP_GET isn't set"
+        return 1
+
+    elif [ -f "$bin" ] && [ -x "$bin" ]; then
+        if [ "$(find "$bin" -mmin +43200 2>/dev/null | grep rye)" ]; then
+            $bin self update
+
+            if [ -x "$bin" ]; then
+                fs.link "$bin"
+                mkdir "$ZSH_CUSTOM/plugins/rye"
+                $bin self completion -s zsh > "$ZSH_CUSTOM/plugins/rye/_rye"
+            fi
+        fi
+    fi
+
+    if [ ! -x "$bin" ]; then
+        local cwd="$PWD"
+        info $0 "deploy rye: $bin"
+
+        $SHELL -c "$HTTP_GET $url | RYE_INSTALL_OPTION="--yes" RYE_NO_AUTO_INSTALL=1 bash"
+        [ "$?" -gt 0 ] && fail $0 "something went wrong"
+        builtin cd "$cwd"
+
+        if [ -x "$bin" ]; then
+            fs.link "$bin"
+            mkdir "$ZSH_CUSTOM/plugins/rye"
+            $bin self completion -s zsh > "$ZSH_CUSTOM/plugins/rye/_rye"
+        fi
+    fi
+}
+
 # ——— tmux plugin manager
 
 function bin.deploy_tmux_plugins {
@@ -189,7 +227,6 @@ function bin.deploy_tmux_plugins {
         fi
     fi
 }
-
 
 function bin.link_fpp {
     local src="$PLUGINS_ROOT/fpp"
