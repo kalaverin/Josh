@@ -217,7 +217,7 @@ else
         echo "$result"
     }
 
-    function fs.joshpath {
+    function fs.ashpath {
         if [ -z "$1" ] || [ -z "$ASH" ]; then
             return 1
         fi
@@ -444,7 +444,6 @@ else
         fi
     }
 
-
     if [ -z "$ASH" ] || [ -z "$ZSH" ] || [ -z "$ASH_CACHE" ] || [ "$INSTALL" -gt 0 ]; then
         local redirect="$(fs.home)"
         if [ -x "$redirect" ] && [ ! "$redirect" = "$HOME" ]; then
@@ -607,6 +606,11 @@ else
 
         for dir in $(eval "${cmd}"); do
             local dir="${dir//\*/ }"
+
+            if [[ "$dir" -regex-match "^/mnt/" ]]; then
+                continue
+            fi
+
             if [ -f "$dir/activate_this.py" ]; then
                 if [ -z "$VIRTUAL_ENV" ] || [ ! -d "$VIRTUAL_ENV" ]; then
                     continue
@@ -973,7 +977,6 @@ else
         fi
         printf "$dst\n"
     }
-
 
     local osname="$(uname)"
 

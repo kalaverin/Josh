@@ -1,3 +1,14 @@
+cleaned_path=()
+for dir in $path; do
+    local dir="${dir//\*/ }"
+
+    if [[ "$dir" -regex-match "^/mnt/" ]] || [ ! -d "$dir" ]  || [ ! -x "$dir" ]; then
+        continue
+    fi
+
+    cleaned_path+="$dir"
+done
+
 perm_path=(
     $HOME/.cargo/bin
 )
@@ -35,6 +46,6 @@ perm_path=(
 
 path=(
     $perm_path
-    $path
+    $cleaned_path
     $HOME/.brew/bin
 )
