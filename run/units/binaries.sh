@@ -257,9 +257,10 @@ function bin.install {
     fi
 
     bin.compile_fzf
+    bin.compile_ondir
+    bin.deploy_direnv
     bin.deploy_micro
     bin.deploy_tmux_plugins
-    bin.compile_ondir
     bin.link_fpp
     bin.link_git_tools
 }
