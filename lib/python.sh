@@ -96,7 +96,10 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             return 1
         fi
 
-        version="$($source --version 2>&1 | grep -Po "(\d+\.\d+\.\d+.*)")" || return "$?"
+        version="$(
+            "$source" -c "import platform; print(platform.python_version())" 2>&1 | \
+            grep -Po "(\d+\.\d+\.\d+.*)"
+        )" || return "$?"
         printf "$version"
     }
 
