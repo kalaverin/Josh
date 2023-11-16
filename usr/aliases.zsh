@@ -252,6 +252,10 @@ if [ -x "$commands[wget]" ]; then
     }
 fi
 
+if [ -x "$commands[direnv]" ]; then
+    eval "$(direnv hook zsh)"
+fi
+
 function ssh.agent {
     if [ -x "$commands[ssh-add]" ] && [ -x "$commands[ssh-agent]" ]; then
         eval $(ssh-agent) >/dev/null

@@ -1,0 +1,31 @@
+#
+# https://direnv.net
+#
+# https://github.com/direnv/direnv/blob/master/docs/ruby.md
+# https://github.com/direnv/direnv/wiki
+# https://github.com/direnv/direnv/wiki/Nix
+#
+# Usage: use ruby <version>
+#
+# Loads the specified ruby version into the environment
+#
+# use_ruby() {
+#     local ruby_dir=$HOME/.rubies/$1
+#     load_prefix $ruby_dir
+#     layout ruby
+# }
+
+layout_virtualenv() {
+    local name="$VIRTUAL_ENV"
+    if [ -z "$name" ] || [ ! -f "$name/bin/activate" ]; then
+        unset VIRTUAL_ENV
+    else
+        source "$name/bin/activate" && deactivate
+    fi
+
+    local name="$ASH_PY_ENVS_ROOT/$1/bin/activate"
+
+    if [ -f "$name" ]; then
+        source "$name"
+    fi
+}
