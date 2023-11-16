@@ -7,7 +7,6 @@ local THIS_SOURCE="$(fs.gethash "$0")"
 if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; then
     SOURCES_CACHE+=("$THIS_SOURCE")
 
-
     REQ_BINS=(
         cc
         git
@@ -112,7 +111,8 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             REQ_SYS_BINS=(
                 bash
                 pkg
-                sudo 
+                sudo
+                /usr/local/bin/direnv
                 /usr/local/bin/gcut
                 /usr/local/bin/gfind
                 /usr/local/bin/gnuls
@@ -183,6 +183,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             export ASH_OS="UNKNOWN"
         fi
 
+        # TODO:
         # local binaries=( xargs realpath awk grep test2 )
         # if local missing="$(fs.lookup.missing "$binaries")" && [ -n "$missing" ]; then
         #     fail $0 "missing binaries: $missing"

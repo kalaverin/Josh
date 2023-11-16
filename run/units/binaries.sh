@@ -122,44 +122,59 @@ function bin.deploy_micro {
 # ——— direnv golang binary
 
 function bin.deploy_direnv {
+    local bin="$LOCAL_BIN/direnv"
     local url='https://direnv.net/install.sh'
 
     if [ -z "$HTTP_GET" ]; then
         fail $0 "HTTP_GET isn't set"
         return 1
 
-    elif [ -x "$LOCAL_BIN/direnv" ]; then
-        [ -f "$LOCAL_BIN/direnv.bak" ] && rm -f "$LOCAL_BIN/direnv.bak"
+    elif [ "$ASH_OS" = 'BSD' ]; then
+        if [ ! -x "$commands[direnv]" ]; then
+            warn $0 "for FreeBSD install direnv from pkg: sudo pkg install direnv"
+            return 1
+        fi
+        local bin="$commands[direnv]"
 
-        if [ "$(find $LOCAL_BIN/direnv -mmin +43200 2>/dev/null | grep direnv)" ]; then
-            mv "$LOCAL_BIN/direnv" "$LOCAL_BIN/direnv.bak"
+    else
+        if [ -x "$bin" ]; then
+            [ -f "$LOCAL_BIN/direnv.bak" ] && rm -f "$LOCAL_BIN/direnv.bak"
+
+            if [ "$(find "$bin" -mmin +43200 2>/dev/null | grep direnv)" ]; then
+                mv "$bin" "$LOCAL_BIN/direnv.bak"
+            fi
+        fi
+
+        if [ ! -x "$bin" ]; then
+            local cwd="$PWD"
+            info $0 "deploy direnv: $bin"
+
+            export bin_path="$LOCAL_BIN"
+            builtin cd "$LOCAL_BIN" && $SHELL -c "$HTTP_GET $url | $SHELL"
+            unset bin_path
+
+            [ "$?" -gt 0 ] && fail $0 "something went wrong"
+            builtin cd "$cwd"
+        fi
+
+        if [ -f "$LOCAL_BIN/direnv.bak" ]; then
+            if [ -x "$bin" ]; then
+                rm -f "$LOCAL_BIN/direnv.bak"
+            else
+                mv "$LOCAL_BIN/direnv.bak" "$bin"
+            fi
+        fi
+
+        if [ -f "$bin" ] && [ ! -x "$bin" ]; then
+            chmod a+x "$bin"
         fi
     fi
 
-    if [ ! -x "$LOCAL_BIN/direnv" ]; then
-        local cwd="$PWD"
-        info $0 "deploy direnv: $LOCAL_BIN/direnv"
-
-        export bin_path="$LOCAL_BIN"
-        builtin cd "$LOCAL_BIN" && $SHELL -c "$HTTP_GET $url | $SHELL"
-        unset bin_path
-
-        [ "$?" -gt 0 ] && fail $0 "something went wrong"
-        builtin cd "$cwd"
+    if [ -f "$bin" ]; then
+        fs.link "$bin" >/dev/null
+        source "$ASH/run/units/configs.sh"
+        cfg.copy "$ASH/usr/share/direnv.rc" "$CONFIG_DIR/direnv/direnvrc"
     fi
-
-    if [ -f "$LOCAL_BIN/direnv.bak" ]; then
-        if [ -x "$LOCAL_BIN/direnv" ]; then
-            rm -f "$LOCAL_BIN/direnv.bak"
-        else
-            mv "$LOCAL_BIN/direnv.bak" "$LOCAL_BIN/direnv"
-        fi
-    fi
-    chmod a+x "$LOCAL_BIN/direnv"
-    fs.link "$LOCAL_BIN/direnv" >/dev/null
-
-    source "$ASH/run/units/configs.sh"
-    cfg.copy "$ASH/usr/share/direnv.rc" "$CONFIG_DIR/direnv/direnvrc"
 }
 
 # ——— rye all-in-one python packaging tool
