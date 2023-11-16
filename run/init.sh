@@ -7,25 +7,62 @@ if [[ ! "$SHELL" =~ "/zsh$" ]]; then
         printf " ** fail ($0): current shell must be zsh, but SHELL '$SHELL' and zsh not detected\n" >&2
     fi
     return 1
-else
 
+else
     SELF="$0"
 
-    function ash.core {
-        local root
-        root="$(dirname "$SELF")" || return "$?"
-        if [ -z "$root" ] || [ ! -x "$root" ]; then
-            printf " ** fail ($0): something went wrong: root isn't detected\n" >&2
+    function dir.check {
+        if [ -z "$1" ]; then
+            printf " ** fail ($0): '$1' failed: empty\n" >&2
             return 1
+
+        elif [ ! -d "$1" ]; then
+            printf " ** fail ($0): '$1' failed: isn't directory\n" >&2
+            return 2
+
+        elif [ ! -x "$1" ]; then
+            printf " ** fail ($0): '$1' failed: isn't acessible directory\n" >&2
+            return 3
+        fi
+    }
+
+    function ash.core {
+        local fname retval root
+        root="$(dirname "$SELF")"
+        retval="$?"
+
+        if dir.check "$root" && [ "$retval" -eq 0 ]; then
+
+            fname="$root/core.sh"
+            if [ ! -d "$root" ]; then
+                printf " ** fail ($0): source '$fname' failed: isn't exists\n" >&2
+                return 1
+            fi
+
+            source "$fname"
+            retval="$?"
+            if [ "$retval" -gt 0 ]; then
+                printf " ** fail ($0): source '$fname' failed: catch $retval\n" >&2
+                return "$retval"
+            fi
+
+            root="$(fs.realpath "$root/../")"
+            retval="$?"
+
+            if dir.check "$root" && [ "$retval" -eq 0 ]; then
+                export ASH="$root"
+                return 0
+            fi
+
+            printf " ** fail ($0): source '$fname' failed: catch $retval\n" >&2
+            return "$retval"
+
+        elif [ "$retval" -gt 0 ]; then
+            printf " ** fail ($0): '$SELF' failed: '$root' detected, catch $retval\n" >&2
+
         fi
 
-        source "$root/core.sh"
-        local retval="$?"
-        if [ "$retval" -gt 0 ]; then
-            printf " ** fail ($0): something went wrong: boot state=$retval\n" >&2
-            return 1
-        fi
-        export ASH="$(fs.realpath "$root/../")"
+        return 1
     }
 
 
@@ -88,14 +125,14 @@ else
         source "$ASH/run/units/configs.sh"   && \
         source "$ASH/run/update.sh"          && \
         source "$ASH/lib/python.sh"          && \
-        source "$ASH/lib/rust.sh"        || return "$(rollback "kernel" "$0" "$?")"
-        pip.install $PIP_REQ_PACKAGES    || return "$(rollback "python" "$0" "$?")"
+        source "$ASH/lib/rust.sh"        || return "$(rollback "core" "$0" "$?")"
+        pip.install $PIP_REQ_PACKAGES    || return "$(rollback "pip" "$0" "$?")"
         cfg.install
-        omz.install && omz.plugins       || return "$(rollback "engine" "$0" "$?")"
-        bin.install                      || return "$(rollback "binary" "$0" "$?")"
-        cargo.deploy $CARGO_REQ_PACKAGES || return "$(rollback "rust" "$0" "$?")"
+        omz.install && omz.plugins       || return "$(rollback "oh-my-zsh" "$0" "$?")"
+        bin.install                      || return "$(rollback "custom" "$0" "$?")"
+        cargo.deploy $CARGO_REQ_PACKAGES || return "$(rollback "cargo" "$0" "$?")"
 
-        info "$0" "all ok, finally: replace ~/.zshrc with Ash loader"
+        info "$0" "success! finally: replace ~/.zshrc with ash loader"
 
         cfg.install
         ASH_FORCE_CONFIGS=1 cfg.copy "$ASH/.zshrc" "$HOME/.zshrc"
