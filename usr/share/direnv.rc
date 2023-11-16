@@ -16,16 +16,21 @@
 # }
 
 layout_virtualenv() {
-    local name="$VIRTUAL_ENV"
-    if [ -z "$name" ] || [ ! -f "$name/bin/activate" ]; then
-        unset VIRTUAL_ENV
+    if [ -z "$1" ]; then
+        local to_activate="$(basename `dirname "$PWD"`)"
     else
-        source "$name/bin/activate" && deactivate
+        local to_activate="$1"
     fi
 
-    local name="$ASH_PY_ENVS_ROOT/$1/bin/activate"
+    if [ -f "$ASH_PY_ENVS_ROOT/$to_activate/bin/activate" ]; then
 
-    if [ -f "$name" ]; then
-        source "$name"
+        if [ -z "$VIRTUAL_ENV" ] || [ ! -f "$VIRTUAL_ENV/bin/activate" ]; then
+            unset VIRTUAL_ENV
+        else
+            source "$VIRTUAL_ENV/bin/activate" && deactivate
+        fi
+
+        source "$ASH_PY_ENVS_ROOT/$to_activate/bin/activate"
+        return 0
     fi
 }
