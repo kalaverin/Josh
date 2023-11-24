@@ -216,7 +216,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
                 continue
             fi
 
-            for python in $(find "$dir" -maxdepth 1 -type f -name 'python?.*' 2>/dev/null | sort -Vr); do
+            for python in $(find "$dir" -follow -maxdepth 1 -type f -name 'python?.*' 2>/dev/null | sort -Vr); do
                 [ ! -x "$python" ] || \
                 [[ ! "$python" -regex-match '[0-9]$' ]] && continue
 
