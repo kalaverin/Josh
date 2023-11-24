@@ -445,8 +445,12 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
 
         if [ -w "$(fs.dirname "$source")" ]; then
-            fail $0 "python path '$(fs.dirname "$source")' is writable"
-            return 5
+            if [ "$(whoami)" = 'root' ] && [ "$ASH_OS" = 'BSD' ]; then
+                warn $0 "python path '$(fs.dirname "$source")' is writable"
+            else
+                fail $0 "python path '$(fs.dirname "$source")' is writable"
+                return 5
+            fi
         fi
 
         version="$(py.ver.full "$source")"
