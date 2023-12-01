@@ -17,12 +17,30 @@
 
 layout_virtualenv() {
     if [ -z "$1" ]; then
-        local to_activate="$(basename `dirname "$PWD"`)"
+        local venv="$(basename `dirname "$PWD"`)"
+        echo " -- info ($0): '$venv' try parent root dir as env name" >&2
+
     else
-        local to_activate="$1"
+        local venv="$1"
+
+        if [ -d "$venv" ] && [ -x "$venv" ]; then
+            echo " -- info ($0): '$venv' it's directory" >&2
+        else
+            echo " -- info ($0): '$venv' interpret as env name" >&2
+        fi
     fi
 
-    if [ -f "$ASH_PY_ENVS_ROOT/$to_activate/bin/activate" ]; then
+    if [ ! -f "$ASH_PY_ENVS_ROOT/$venv/bin/activate" ]; then
+
+        if [ -z "$1" ]; then
+            echo " == fail ($0): '$ASH_PY_ENVS_ROOT/$venv/bin/activate' isn't exists, make it or pass another one in '$PWD/.envrc' " >&2
+
+        else
+            echo " == fail ($0): '$ASH_PY_ENVS_ROOT/$venv/bin/activate' isn't exists, check selected env '$1'" >&2
+        fi
+        return 1
+
+    else
 
         if [ -z "$VIRTUAL_ENV" ] || [ ! -f "$VIRTUAL_ENV/bin/activate" ]; then
             unset VIRTUAL_ENV
@@ -30,7 +48,7 @@ layout_virtualenv() {
             source "$VIRTUAL_ENV/bin/activate" && deactivate
         fi
 
-        source "$ASH_PY_ENVS_ROOT/$to_activate/bin/activate"
+        source "$ASH_PY_ENVS_ROOT/$venv/bin/activate"
         return 0
     fi
 }
