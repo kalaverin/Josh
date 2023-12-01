@@ -27,23 +27,28 @@ layout_virtualenv() {
 
     if [ -z "$1" ]; then
         local scope="$(basename `dirname "$PWD"`)"
-        order=(
+        local preorder=(
             "$ASH_PY_ENVS_ROOT/$scope/$(basename "$PWD")"
             "$ASH_PY_ENVS_ROOT/$scope"
             "$PWD/venv"
         )
-        echo " -- info ($0): autodetect, scan order: ${order[@]}"
-
+        local reason="autodetect"
     else
-        order=(
+        local preorder=(
             "$PWD/$1"
             "$1"
             "$ASH_PY_ENVS_ROOT/$1"
         )
-        echo " -- info ($0): select by '$1', scan order: '${order[@]}'"
+        local reason="select by '$1'"
     fi
 
+    local order=()
+    for dir in ${preorder[@]}; do
+        order+=("$(realpath "$dir" 2>/dev/null)")
+    done
+
     local venv=''
+    echo " -- info ($0): $reason, scan order: '${order[@]}'"
     for dir in ${order[@]}; do
         local dir="$(realpath "$dir")"
         if [ -f "$dir/bin/activate" ]; then
