@@ -16,39 +16,52 @@
 # }
 
 layout_virtualenv() {
-    if [ -z "$1" ]; then
-        local venv="$(basename `dirname "$PWD"`)"
-        echo " -- info ($0): '$venv' try parent root dir as env name" >&2
-
-    else
-        local venv="$1"
-
-        if [ -d "$venv" ] && [ -x "$venv" ]; then
-            echo " -- info ($0): '$venv' it's directory" >&2
-        else
-            echo " -- info ($0): '$venv' interpret as env name" >&2
-        fi
-    fi
-
-    if [ ! -f "$ASH_PY_ENVS_ROOT/$venv/bin/activate" ]; then
-
-        if [ -z "$1" ]; then
-            echo " == fail ($0): '$ASH_PY_ENVS_ROOT/$venv/bin/activate' isn't exists, make it or pass another one in '$PWD/.envrc' " >&2
-
-        else
-            echo " == fail ($0): '$ASH_PY_ENVS_ROOT/$venv/bin/activate' isn't exists, check selected env '$1'" >&2
-        fi
+    if [ -z "$ASH_PY_ENVS_ROOT" ]; then
+        echo " == fail ($0): ASH_PY_ENVS_ROOT isn't set"
         return 1
 
-    else
-
-        if [ -z "$VIRTUAL_ENV" ] || [ ! -f "$VIRTUAL_ENV/bin/activate" ]; then
-            unset VIRTUAL_ENV
-        else
-            source "$VIRTUAL_ENV/bin/activate" && deactivate
-        fi
-
-        source "$ASH_PY_ENVS_ROOT/$venv/bin/activate"
-        return 0
+    elif [ ! -d "$ASH_PY_ENVS_ROOT" ] || [ ! -x "$ASH_PY_ENVS_ROOT" ]; then
+        echo " ++ warn ($0): ASH_PY_ENVS_ROOT: '$ASH_PY_ENVS_ROOT' isn't exists or accessible"
+        return 1
     fi
+
+    if [ -z "$1" ]; then
+        local scope="$(basename `dirname "$PWD"`)"
+        order=(
+            "$ASH_PY_ENVS_ROOT/$scope/$(basename "$PWD")"
+            "$ASH_PY_ENVS_ROOT/$scope"
+            "$PWD/venv"
+        )
+        echo " -- info ($0): autodetect, scan order: ${order[@]}"
+
+    else
+        order=(
+            "$PWD/$1"
+            "$1"
+            "$ASH_PY_ENVS_ROOT/$1"
+        )
+        echo " -- info ($0): select by '$1', scan order: '${order[@]}'"
+    fi
+
+    local venv=''
+    for dir in ${order[@]}; do
+        local dir="$(realpath "$dir")"
+        if [ -f "$dir/bin/activate" ]; then
+            local venv="$dir"
+            echo " -- info ($0): use virtual env from '$venv'"
+            break
+        fi
+    done
+
+    if [ -z "$venv" ]; then
+        echo " == fail ($0): virtual env isn't detected, check your '$PWD/.envrc'"
+        return 2
+    fi
+
+    if [ -n "$VIRTUAL_ENV" ] || [ ! -f "$VIRTUAL_ENV/bin/activate" ]; then
+        unset VIRTUAL_ENV
+    else
+        source "$VIRTUAL_ENV/bin/activate" && deactivate
+    fi
+    source "$venv/bin/activate"
 }
