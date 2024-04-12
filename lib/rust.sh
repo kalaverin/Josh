@@ -9,6 +9,9 @@ local THIS_SOURCE="$(fs.gethash "$0")"
 if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; then
     SOURCES_CACHE+=("$THIS_SOURCE")
 
+    # https://rawcdn.githack.com/nabijaczleweli/cargo-update/man/cargo-install-update.1.html
+    # exclude tabulate, add git based, move temp to ram
+
     CARGO_REQ_PACKAGES=(
         bat              # modern replace for cat with syntax highlight
         cargo-update     # packages for auto-update installed crates
