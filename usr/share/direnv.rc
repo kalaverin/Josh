@@ -30,7 +30,10 @@ layout_virtualenv() {
         local preorder=(
             "$ASH_PY_ENVS_ROOT/$scope/$(basename "$PWD")"
             "$ASH_PY_ENVS_ROOT/$scope"
+            "$PWD/env"
+            "$PWD/.env"
             "$PWD/venv"
+            "$PWD/.venv"
         )
         local reason="autodetect"
     else
