@@ -102,14 +102,20 @@ function tmx.autoload {
         fail $0 "missing binaries: $missing; just run 'ash.extras' and try again after"
     fi
 
-    if [ -z "$ASH_TMUX_AUTORETACH_DISABLE" ] && [ -n "$PS1" ] && [ -z "$TMUX" ] && [ -n "$SSH_CONNECTION" ]; then
-        tmx lost
+    if [ -n "$PS1" ]; then
 
-    elif [ -z "$ASH_TMUX_SPACES_FILL_DISABLE" ] && [ -n "$PS1" ] && [ -n "$TMUX" ] && [ ! "$DO_NOT_CLEAR" -eq 1 ]; then
-        local branch="$(ash.branch)"
-        if [ "$branch" = "master" ] || [ "$branch" = "stable" ]; then
-            cls
+        if [ -z "$ASH_TMUX_AUTORETACH_DISABLE" ] && [ -z "$TMUX" ] && [ -n "$SSH_CONNECTION" ]; then
+            printf '\033[5 q'
+            tmx lost
+
+        elif [ -z "$ASH_TMUX_SPACES_FILL_DISABLE" ] && [ -n "$TMUX" ] && [ ! "$DO_NOT_CLEAR" -eq 1 ]; then
+
+            local branch="$(ash.branch)"
+            if [ "$branch" = "master" ] || [ "$branch" = "stable" ]; then
+                cls
+            fi
         fi
+
     fi
 }
 
