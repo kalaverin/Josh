@@ -29,6 +29,6 @@ function completition.generate {
 
 eval $(BINARY_SAFE=1 eval.cached "$(fs.lm.many $path)" completition.generate)
 
-[ -x "$commands[starship]" ] && eval $(starship init zsh)
+[ -x "$commands[starship]" ] && eval "$(starship init zsh)"
 
 autoload -Uz compinit
