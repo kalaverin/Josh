@@ -362,7 +362,7 @@ function venv.make {
 
     info $0 "$message"
 
-    run.show "builtin cd "$root" && $(py.exe "$python") -m virtualenv --python=$python $args_env "$env_path" && source "$env_path/bin/activate" && pip install --compile --no-input --prefer-binary --upgrade --upgrade-strategy=eager pipdeptree pysnooper $args_pip $packages && builtin cd $cwd"
+    run.show "builtin cd "$root" && $(py.exe "$python") -m virtualenv --symlink-app-data --python=$python $args_env "$env_path" && source "$env_path/bin/activate" && pip install --compile --no-input --prefer-binary --upgrade --upgrade-strategy=eager pipdeptree pysnooper $args_pip $packages && builtin cd $cwd"
 
     libdir="$(find "$env_path/lib/" -maxdepth 1 -type d -name 'python*')"
     if [ "$?" -eq 0 ]; then
@@ -372,6 +372,8 @@ function venv.make {
             ln -s "$libdir/dist-packages" "$env_path/dist"
         fi
     fi
+    echo "layout virtualenv .">"$env_path/.envrc"
+    direnv allow "$env_path"
 
     local venv="$(venv.off)"
     py.set "$using"
