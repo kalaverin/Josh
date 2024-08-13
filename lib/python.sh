@@ -829,6 +829,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             fi
         fi
         [ -n "$venv" ] && source $venv/bin/activate
+        path.rehash
 
         if [ -f "$logfile" ]; then
             unlink "$logfile"
