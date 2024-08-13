@@ -35,6 +35,7 @@ fi
 perm_path=(
     $perm_path
     $HOME/.local/bin
+    $HOME/go/bin
     $HOME/bin
     /usr/local/bin
     /bin
