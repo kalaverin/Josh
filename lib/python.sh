@@ -718,7 +718,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     }
 
     function pip.install {
-        local pip venv
+        local pip venv python target version
 
         function rollback() {
             term "$2:$1" "something went wrong, state=$3"
@@ -732,16 +732,22 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
         venv="$(venv.off)" || return "$(rollback "venv.off" "$0" "$?")"
 
-        local python="$(which "$PYTHON/bin/python")"
+        python="$(which "$PYTHON/bin/python")"
         if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
             fail $0 "python binary '$python' doesn't exists or something wrong"
             return 1
         fi
 
-        local target="$(py.home "$python")"
+        target="$(py.home "$python")"
         if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
-            fail $0 "python $py.home directory isn't exist"
+            fail $0 "python \$py.home '$python' directory isn't exist"
             return 2
+        fi
+
+        version="$(py.ver "$python")"
+        if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
+            fail $0 "python \$py.ver '$python' directory isn't exist"
+            return 3
         fi
 
         pip="$(pip.exe "$python")"
@@ -749,17 +755,22 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             return "$(rollback "pip.exe" "$0" 2)"
         fi
 
-        local flags="--upgrade --upgrade-strategy=eager"
+        # --python-version '$version'
+        local flags="--prefer-binary --upgrade --upgrade-strategy=eager"
 
         if [ "$(ash.branch 2>/dev/null)" != "develop" ]; then
             local flags="$flags -v"
         fi
 
-        if [ "$USER" = 'root' ] || [ "$ASH_OS" = 'BSD' ] || [ "$ASH_OS" = 'MAC' ]; then
-            local flags="--root='/' --prefix='$target' $flags"
+        # --target='$target'
+        if [ "$ASH_OS" = 'BSD' ] || [ "$ASH_OS" = 'MAC' ]; then
+            local flags="--prefix='$target' $flags"
+            if [ "$USER" = 'root' ]; then
+                local flags="--root='/' $flags"
+            fi
         fi
-        local command="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false $python -m pip install $flags $PIP_DEFAULT_KEYS"
 
+        local command="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false $python -m pip --python='$python' install $flags $PIP_DEFAULT_KEYS"
         warn $0 "$command $*"
 
         local complete=''
