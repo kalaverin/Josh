@@ -21,7 +21,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     PIP_REQ_PACKAGES=(
         pip        # python package manager, first
         pipdeptree # simple, but powerful tool to manage python requirements
-        setuptools
+        # setuptools
         virtualenv # virtual environments for python packaging
         wheel
     )
@@ -29,7 +29,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         asciinema  # shell movies recorder and player
         clickhouse-cli
         crudini    # ini configs parser
-        httpie     # super http client, just try: http head anything.com
+        # httpie     # super http client, just try: http head anything.com
         mycli      # python-driver MySQL client
         nodeenv    # virtual environments for node packaging
         paramiko   # for ssh tunnels with mycli & pgcli
@@ -718,7 +718,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     }
 
     function pip.install {
-        local pip venv python target version
+        local pip venv python target version logdir
 
         function rollback() {
             term "$2:$1" "something went wrong, state=$3"
@@ -750,13 +750,20 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             return 3
         fi
 
+        logdir="$(temp.dir)"
+        if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
+            fail $0 "temp.dir directory isn't exist"
+            return 4
+        fi
+        local logfile="$logdir/ashpip-$USER.log"
+
         pip="$(pip.exe "$python")"
         if [ "$?" -gt 0 ] || [ ! -x "$pip" ]; then
             return "$(rollback "pip.exe" "$0" 2)"
         fi
 
         # --python-version '$version'
-        local flags="--prefer-binary --upgrade --upgrade-strategy=eager"
+        local flags="--prefer-binary --upgrade --upgrade-strategy=eager --root-user-action=warn"
 
         if [ "$(ash.branch 2>/dev/null)" != "develop" ]; then
             local flags="$flags -v"
@@ -770,7 +777,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             fi
         fi
 
-        local command="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false $python -m pip --python='$python' install $flags $PIP_DEFAULT_KEYS"
+        local command="PYTHONUSERBASE=\"$target\" PIP_REQUIRE_VIRTUALENV=false $python -m pip --log='$logfile' --python='$python' install $flags $PIP_DEFAULT_KEYS"
         warn $0 "$command $*"
 
         local complete=''
@@ -814,6 +821,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
 
         if [ -n "$failed" ]; then
+            warn $0 "$logfile"
             if [ -n "$complete" ]; then
                 return "$(rollback "partial" "$0" 4)"
             else
@@ -821,6 +829,11 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             fi
         fi
         [ -n "$venv" ] && source $venv/bin/activate
+
+        if [ -f "$logfile" ]; then
+            unlink "$logfile"
+        fi
+
         return 0
     }
 
