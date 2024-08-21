@@ -28,11 +28,17 @@ function __widget.git.add {
             local command="$BUFFER && git add"
         fi
 
+        if [[ "$branch" =~ "^[0-9A-Za-z-]+$" ]]; then
+            local prefix="$branch: "
+        else
+            local prefix=""
+        fi
+
         if [ "`git.this.state`" ]; then  # merging, rebase or cherry-pick
             LBUFFER="$command $value "
             RBUFFER=''
         else
-            LBUFFER="$command $value && git commit -m \"$branch: "
+            LBUFFER="$command $value && git commit -m \"$prefix"
             RBUFFER='"'
         fi
         zle redisplay
