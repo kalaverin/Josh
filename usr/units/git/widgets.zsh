@@ -224,7 +224,7 @@ function __widget.git.select_commit_then_files_checkout {
                 --color="$FZF_THEME" \
                 --preview-window="left:`misc.preview.width`:noborder" \
                 --prompt="$branch: select commit >  " \
-                --preview="echo {} | head -1 | grep -o '[a-f0-9]\{32,\}$' | xargs -I% git diff --color=always --shortstat --patch --diff-algorithm=histogram $branch % | $DELTA --paging='always'" | head -1 | grep -o '[a-f0-9]\{32,\}$'
+                --preview="echo {} | $CMD_EXTRACT_TOP_COMMIT | xargs -I% git diff --color=always --shortstat --patch --diff-algorithm=histogram $branch % | $DELTA --paging='always'" | $CMD_EXTRACT_TOP_COMMIT
         )"
         if [[ "$commit" == "" ]]; then
             zle redisplay
@@ -303,8 +303,8 @@ function __widget.git.show_commits {
                 --color="$FZF_THEME" \
                 --preview-window="left:`misc.preview.width`:noborder" \
                 --prompt="$branch >  " \
-                --bind="enter:execute(echo {} | head -1 | grep -o '[a-f0-9]\{32,\}$' | $CMD_XARGS_SHOW_TO_COMMIT)" \
-                --preview="echo {} | head -1 | grep -o '[a-f0-9]\{32,\}$' | $CMD_XARGS_SHOW_TO_COMMIT"
+                --bind="enter:execute(echo {} | $CMD_EXTRACT_TOP_COMMIT | $CMD_XARGS_SHOW_TO_COMMIT)" \
+                --preview="echo {} | $CMD_EXTRACT_TOP_COMMIT | $CMD_XARGS_SHOW_TO_COMMIT"
 
         local ret=$?
         if [[ "$ret" == "130" ]]; then
@@ -370,7 +370,7 @@ function __widget.git.show_branch_file_commits {
 
         local ext="$(echo "$file" | xargs -I% basename % | grep --color=never -Po '(?<=.\.)([^\.]+)$')"
 
-        local diff_view="echo {} | grep -o '[a-f0-9]\{32,\}' | head -1 | xargs -l $SHELL -c $diff_file $file' | $DELTA"
+        local diff_view="echo {} | $CMD_EXTRACT_TOP_COMMIT | xargs -l $SHELL -c $diff_file $file' | $DELTA"
 
         local file_view="echo {} | cut -d ' ' -f 1 | xargs -I^^ git show ^^:./$file | $LISTER_FILE --paging=always"
         if [ "$ext" = "" ]; then
@@ -734,7 +734,6 @@ zle -N __widget.git.delete_remote_branch
 function __widget.git.checkout_commit {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local branch="$(echo "$GET_BRANCH" | $SHELL)"
-
         local result="$(eval "git_list_commits $branch" | GLOB_PIPE_NUMERATE | \
             fzf \
                 --ansi --extended --info='inline' \
@@ -754,25 +753,29 @@ function __widget.git.checkout_commit {
                 --preview-window="left:`misc.preview.width`:noborder" \
                 --color="$FZF_THEME" \
                 --prompt="checkout >  " \
-                --preview="echo {} | head -1 | grep -o '[a-f0-9]\{32,\}$' | $CMD_XARGS_DIFF_TO_COMMIT"
+                --preview="echo {} | $CMD_EXTRACT_TOP_COMMIT | $CMD_XARGS_DIFF_TO_COMMIT"
         )"
 
-        if [[ "$result" == "" ]]; then
-            zle reset-prompt
-            return 0
-        else
+        if [[ "$result" != "" ]]; then
+            local commit="$(echo "$result" | $CMD_EXTRACT_TOP_COMMIT)"
+
+            if [[ "$commit" == "" ]]; then
+                zle reset-prompt
+                return 1
+            fi
+
             if [[ "$BUFFER" != "" ]]; then
-                LBUFFER="$BUFFER && git checkout $result && git.mtime.set"
+                LBUFFER="$BUFFER && git checkout $commit && git.mtime.set"
                 local ret=$?
                 zle redisplay
                 typeset -f zle-line-init >/dev/null && zle zle-line-init
                 return $ret
-            else
-                git checkout $result 2>/dev/null && git.mtime.set
-                zle reset-prompt
-                return 0
             fi
+
+            run.show "git checkout $commit 2>/dev/null && git.mtime.set"
         fi
+        zle reset-prompt
+        return 0
     fi
 }
 zle -N __widget.git.checkout_commit
@@ -888,9 +891,7 @@ zle -N  __widget.git.replace_all_commits_with_one
 function __widget.git.squash_to_commit {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local branch="$(echo "$GET_BRANCH" | $SHELL)"
-        local differ="echo {} | head -1 | grep -o '[a-f0-9]\{32,\}' | cut -d ' ' -f 1 | xargs -I% git diff --color=always --stat=\$FZF_PREVIEW_COLUMNS --patch --diff-algorithm=histogram $branch % | $DELTA"
-
-        local result="$(git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' --first-parent $branch | \
+        local result="$(eval "git_list_commits $branch" | GLOB_PIPE_NUMERATE | \
             fzf \
                 --ansi --extended --info='inline' \
                 --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
@@ -908,21 +909,31 @@ function __widget.git.squash_to_commit {
                 --bind='alt-space:jump' \
                 --preview-window="left:`misc.preview.width`:noborder" \
                 --color="$FZF_THEME" \
-                --prompt="checkout >  " \
-                --preview=$differ | cut -d ' ' -f 1
+                --prompt="rebased squash to >  " \
+                --preview="echo {} | $CMD_EXTRACT_TOP_COMMIT | $CMD_XARGS_DIFF_TO_COMMIT"
         )"
 
-        if [[ "$result" == "" ]]; then
-            zle reset-prompt
-        else
-            local command="git rebase --interactive --no-autosquash --no-autostash --strategy=recursive --strategy-option=ours --strategy-option=diff-algorithm=histogram \"$result\""
+        if [[ "$result" != "" ]]; then
+            local commit="$(echo "$result" | eval "$CMD_EXTRACT_TOP_COMMIT")"
+
+            echo ">$commit"
+            if [[ "$commit" == "" ]]; then
+                zle reset-prompt
+                return 1
+            fi
+
+            local command="git rebase --interactive --no-autosquash --no-autostash --strategy=recursive --strategy-option=ours --strategy-option=diff-algorithm=histogram \"$commit\""
             if [[ "$BUFFER" != "" ]]; then
                 command="$BUFFER && $command"
             fi
+
             LBUFFER="$command"
+            RBUFFER=''
+
             zle redisplay
             typeset -f zle-line-init >/dev/null && zle zle-line-init
         fi
+        zle reset-prompt
         return 0
     fi
 }

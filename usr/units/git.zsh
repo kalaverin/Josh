@@ -18,6 +18,9 @@ alias -g GLOB_PIPE_REMOVE_DOTS="sed -re 's/(\.{2,})+$//g'"
 alias -g GLOB_PIPE_REMOVE_SPACES="sed -re 's/(\\s+)/ /g' | sd '^\s+' ''"
 alias -g GLOB_PIPE_NUMERATE="awk '{print NR,\$0}'"
 
+CMD_EXTRACT_COMMIT="grep -o '[a-f0-9]\{32,\}$'"
+CMD_EXTRACT_TOP_COMMIT="head -1 | grep -o '[a-f0-9]\{32,\}$'"
+
 CMD_XARGS_SHOW_TO_COMMIT="xargs -I$ git show --first-parent --find-renames --find-copies --format='format:%H %ad%n%an <%ae>%n%s' --diff-algorithm=histogram $ | $DELTA --paging='always'"
 CMD_XARGS_DIFF_TO_COMMIT="xargs -I$ git diff --first-parent --find-renames --find-copies --format='format:%H %ad%n%an <%ae>%n%s' --diff-algorithm=histogram $ | $DELTA --paging='always'"
 
