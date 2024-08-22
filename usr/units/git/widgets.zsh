@@ -198,14 +198,14 @@ function __widget.git.conflict_solver {
 }
 zle -N __widget.git.conflict_solver
 
-
 function __widget.git.select_commit_then_files_checkout {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local branch=${1:-$(echo "$GET_BRANCH" | $SHELL)}
         local commit="$(git_list_commits "$branch" \
-            | pipe_remove_dots_and_spaces \
+            | GLOB_PIPE_REMOVE_DOTS \
+            | GLOB_PIPE_REMOVE_SPACES \
             | sed 1d \
-            | pipe_numerate \
+            | GLOB_PIPE_NUMERATE \
             | fzf \
                 --ansi --extended --info='inline' \
                 --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
@@ -224,7 +224,7 @@ function __widget.git.select_commit_then_files_checkout {
                 --color="$FZF_THEME" \
                 --preview-window="left:`misc.preview.width`:noborder" \
                 --prompt="$branch: select commit >  " \
-                --preview="echo {} | head -1 | grep -o '[a-f0-9]\{7,\}$' | xargs -I% git diff --color=always --shortstat --patch --diff-algorithm=histogram $branch % | $DELTA --paging='always'" | head -1 | grep -o '[a-f0-9]\{7,\}$'
+                --preview="echo {} | head -1 | grep -o '[a-f0-9]\{32,\}$' | xargs -I% git diff --color=always --shortstat --patch --diff-algorithm=histogram $branch % | $DELTA --paging='always'" | head -1 | grep -o '[a-f0-9]\{32,\}$'
         )"
         if [[ "$commit" == "" ]]; then
             zle redisplay
@@ -283,7 +283,8 @@ zle -N __widget.git.select_branch_then_commit_then_file_checkout
 function __widget.git.show_commits {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local branch=${1:-$(echo "$GET_BRANCH" | $SHELL)}
-        eval "git_list_commits $branch" | pipe_remove_dots_and_spaces | pipe_numerate | \
+
+        eval "git_list_commits $branch" | GLOB_PIPE_NUMERATE | \
             fzf \
                 --ansi --extended --info='inline' \
                 --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
@@ -302,8 +303,8 @@ function __widget.git.show_commits {
                 --color="$FZF_THEME" \
                 --preview-window="left:`misc.preview.width`:noborder" \
                 --prompt="$branch >  " \
-                --bind="enter:execute(echo {} | head -1 | grep -o '[a-f0-9]\{7,\}$' | $DELTA_FOR_COMMITS_LIST_OUT)" \
-                --preview="echo {} | head -1 | grep -o '[a-f0-9]\{7,\}$' | $DELTA_FOR_COMMITS_LIST_OUT"
+                --bind="enter:execute(echo {} | head -1 | grep -o '[a-f0-9]\{32,\}$' | $CMD_XARGS_SHOW_TO_COMMIT)" \
+                --preview="echo {} | head -1 | grep -o '[a-f0-9]\{32,\}$' | $CMD_XARGS_SHOW_TO_COMMIT"
 
         local ret=$?
         if [[ "$ret" == "130" ]]; then
@@ -369,7 +370,7 @@ function __widget.git.show_branch_file_commits {
 
         local ext="$(echo "$file" | xargs -I% basename % | grep --color=never -Po '(?<=.\.)([^\.]+)$')"
 
-        local diff_view="echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -l $SHELL -c $diff_file $file' | $DELTA"
+        local diff_view="echo {} | grep -o '[a-f0-9]\{32,\}' | head -1 | xargs -l $SHELL -c $diff_file $file' | $DELTA"
 
         local file_view="echo {} | cut -d ' ' -f 1 | xargs -I^^ git show ^^:./$file | $LISTER_FILE --paging=always"
         if [ "$ext" = "" ]; then
@@ -515,7 +516,7 @@ zle -N __widget.git.checkout_tag
 
 function __widget.git.switch_branch {
     # нужен нормальный просмотровщик диффа между хешами
-    # git rev-list --first-parent develop...master --pretty=oneline | sd "(.{8})(.{32}) (.+)" "\$1 \$3" | pipe_numerate | sort -hr
+    # git rev-list --first-parent develop...master --pretty=oneline | sd "(.{8})(.{32}) (.+)" "\$1 \$3" | GLOB_PIPE_NUMERATE | sort -hr
     local branch verb
     branch="$(git.this.branch)" || return "$?"
     [ -z "$branch" ] && return 1
@@ -733,9 +734,8 @@ zle -N __widget.git.delete_remote_branch
 function __widget.git.checkout_commit {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local branch="$(echo "$GET_BRANCH" | $SHELL)"
-        local differ="echo {} | head -1 | grep -o '[a-f0-9]\{7\}' | cut -d ' ' -f 1 | xargs -I% git diff --color=always --stat=\$FZF_PREVIEW_COLUMNS --patch --diff-algorithm=histogram $branch % | $DELTA"
 
-        local result="$(git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' --first-parent $branch | \
+        local result="$(eval "git_list_commits $branch" | GLOB_PIPE_NUMERATE | \
             fzf \
                 --ansi --extended --info='inline' \
                 --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
@@ -754,7 +754,7 @@ function __widget.git.checkout_commit {
                 --preview-window="left:`misc.preview.width`:noborder" \
                 --color="$FZF_THEME" \
                 --prompt="checkout >  " \
-                --preview=$differ | cut -d ' ' -f 1
+                --preview="echo {} | head -1 | grep -o '[a-f0-9]\{32,\}$' | $CMD_XARGS_DIFF_TO_COMMIT"
         )"
 
         if [[ "$result" == "" ]]; then
@@ -883,3 +883,47 @@ function __widget.git.replace_all_commits_with_one {
     return 0
 }
 zle -N  __widget.git.replace_all_commits_with_one
+
+
+function __widget.git.squash_to_commit {
+    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
+        local branch="$(echo "$GET_BRANCH" | $SHELL)"
+        local differ="echo {} | head -1 | grep -o '[a-f0-9]\{32,\}' | cut -d ' ' -f 1 | xargs -I% git diff --color=always --stat=\$FZF_PREVIEW_COLUMNS --patch --diff-algorithm=histogram $branch % | $DELTA"
+
+        local result="$(git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' --first-parent $branch | \
+            fzf \
+                --ansi --extended --info='inline' \
+                --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
+                --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
+                --bind='alt-w:toggle-preview-wrap' \
+                --bind='ctrl-c:abort' \
+                --bind='ctrl-q:abort' \
+                --bind='end:preview-down' \
+                --bind='esc:cancel' \
+                --bind='home:preview-up' \
+                --bind='pgdn:preview-page-down' \
+                --bind='pgup:preview-page-up' \
+                --bind='shift-down:half-page-down' \
+                --bind='shift-up:half-page-up' \
+                --bind='alt-space:jump' \
+                --preview-window="left:`misc.preview.width`:noborder" \
+                --color="$FZF_THEME" \
+                --prompt="checkout >  " \
+                --preview=$differ | cut -d ' ' -f 1
+        )"
+
+        if [[ "$result" == "" ]]; then
+            zle reset-prompt
+        else
+            local command="git rebase --interactive --no-autosquash --no-autostash --strategy=recursive --strategy-option=ours --strategy-option=diff-algorithm=histogram \"$result\""
+            if [[ "$BUFFER" != "" ]]; then
+                command="$BUFFER && $command"
+            fi
+            LBUFFER="$command"
+            zle redisplay
+            typeset -f zle-line-init >/dev/null && zle zle-line-init
+        fi
+        return 0
+    fi
+}
+zle -N  __widget.git.squash_to_commit

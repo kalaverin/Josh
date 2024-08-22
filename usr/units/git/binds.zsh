@@ -35,7 +35,7 @@ bindkey "^f"   __widget.git.delete_local_branch
 bindkey "\e^f" __widget.git.delete_branch  # PUSH TO origin, caution!
 
 #              alt-p, experimental conflict solver
-bindkey "\ep"  __widget.git.conflict_solver
+bindkey "\ep"  __widget.git.squash_to_commit
 #              shift-alt-p, squash all
 bindkey "^[P"  __widget.git.replace_all_commits_with_one
 #              ctrl-p, git abort

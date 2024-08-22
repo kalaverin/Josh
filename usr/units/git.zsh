@@ -12,11 +12,14 @@ local GIT_DIFF="git diff --color=always --patch --stat --diff-algorithm=histogra
 
 # ———
 
-alias git_list_commits="git log --color=always --format='%C(auto)%D %C(reset)%s %C(black)%C(bold)%ae %cr %<(12,trunc)%H' --first-parent"
-alias -g pipe_remove_dots_and_spaces="sed -re 's/(\.{2,})+$//g' | sed -re 's/(\\s+)/ /g' | sd '^\s+' ''"
-alias -g pipe_numerate="awk '{print NR,\$0}'"
+alias git_list_commits="git log --color=always --format='%C(reset)%C(blue)%C(dim)%h%C(auto)%d %C(reset)%s %C(brightblack)%C(dim)%an %C(black)%>(512)%>(32,trunc)%H%C(reset)%C(brightblack)%C(dim)' --first-parent"
 
-DELTA_FOR_COMMITS_LIST_OUT="xargs -I$ git show --find-renames --find-copies --format='format:%H %ad%n%an <%ae>%n%s' --diff-algorithm=histogram $ | $DELTA --paging='always'"
+alias -g GLOB_PIPE_REMOVE_DOTS="sed -re 's/(\.{2,})+$//g'"
+alias -g GLOB_PIPE_REMOVE_SPACES="sed -re 's/(\\s+)/ /g' | sd '^\s+' ''"
+alias -g GLOB_PIPE_NUMERATE="awk '{print NR,\$0}'"
+
+CMD_XARGS_SHOW_TO_COMMIT="xargs -I$ git show --first-parent --find-renames --find-copies --format='format:%H %ad%n%an <%ae>%n%s' --diff-algorithm=histogram $ | $DELTA --paging='always'"
+CMD_XARGS_DIFF_TO_COMMIT="xargs -I$ git diff --first-parent --find-renames --find-copies --format='format:%H %ad%n%an <%ae>%n%s' --diff-algorithm=histogram $ | $DELTA --paging='always'"
 
 # ——— required
 
