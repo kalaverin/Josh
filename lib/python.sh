@@ -80,8 +80,8 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         local source version
 
         if [ -z "$1" ]; then
-            if [ -n "$PYTHON" ] && [ -x "$PYTHON/bin/python" ] || [ ! -f "$PYTHON/bin/python" ]; then
-                source="$PYTHON/bin/python"
+            if [ -n "$PYROOT" ] && [ -x "$PYROOT/bin/python" ] || [ ! -f "$PYROOT/bin/python" ]; then
+                source="$PYROOT/bin/python"
 
             else
                 fail $0 "call without args, I need to do — what?"
@@ -108,8 +108,8 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         local pattern='(\d+\.\d+\.\d+)'
 
         if [ -z "$1" ]; then
-            if [ -n "$PYTHON" ] && [ -x "$PYTHON/bin/python" ]; then
-                source="$PYTHON/bin/python"
+            if [ -n "$PYROOT" ] && [ -x "$PYROOT/bin/python" ]; then
+                source="$PYROOT/bin/python"
 
             else
                 fail $0 "call without args, I need to do — what?"
@@ -160,7 +160,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
     function py.ver {
         if [ -z "$1" ]; then
-            if [ -n "$PYTHON" ] && [ ! -x "$PYTHON/bin/python" ]; then
+            if [ -n "$PYROOT" ] && [ ! -x "$PYROOT/bin/python" ]; then
                 if [ -x "$PYTHON_BINARIES/default/bin/python" ] && [ -f "$PYTHON_BINARIES/default/bin/python" ]; then
                     local source="$PYTHON_BINARIES/default/bin/python"
                 else
@@ -168,8 +168,8 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
                     return 1
                 fi
 
-            elif [ -n "$PYTHON" ] && [ -x "$PYTHON/bin/python" ] && [ -f "$PYTHON/bin/python" ]; then
-                local source="$PYTHON/bin/python"
+            elif [ -n "$PYROOT" ] && [ -x "$PYROOT/bin/python" ] && [ -f "$PYROOT/bin/python" ]; then
+                local source="$PYROOT/bin/python"
 
             else
                 fail $0 "call without args, I need to do — what?"
@@ -264,8 +264,8 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             return 1
         fi
 
-        if [ -n "$PYTHON" ]; then
-            local real_path="$PYTHON/bin/python"
+        if [ -n "$PYROOT" ]; then
+            local real_path="$PYROOT/bin/python"
             if [ -x "$link" ] && [ -x "$real_path" ] && [ -e "$real_path" ] && [ "$(fs.realpath "$link")" = "$(fs.realpath "$real_path")" ]; then
                 printf "$real_path"
                 return 0
@@ -407,9 +407,9 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             if [ ! -x "$PYTHON_BINARIES/default" ]; then
                 ln -s "$target" "$PYTHON_BINARIES/default"
             fi
-            export PYTHON="$target"
+            export PYROOT="$target"
         fi
-        [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
+        [ -x "$PYROOT" ] && export PYTHONUSERBASE="$PYROOT"
         return "$retval"
     }
 
@@ -458,8 +458,8 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             fail $0 "python $source version fetch"
             return 6
 
-        elif [ -n "$PYTHON" ] && [ "$version" = "$(py.ver.full 2>/dev/null)" ]; then
-            [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
+        elif [ -n "$PYROOT" ] && [ "$version" = "$(py.ver.full 2>/dev/null)" ]; then
+            [ -x "$PYROOT" ] && export PYTHONUSERBASE="$PYROOT"
             return 0
         fi
 
@@ -469,21 +469,21 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             return 7
         fi
 
-        local base="$PYTHON"
-        export PYTHON="$target"
+        local base="$PYROOT"
+        export PYROOT="$target"
 
         python="$(py.exe "$target/bin/python")"
         if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
             fail $0 "something wrong on setup python '$python' from source $source"
-            [ -n "$base" ] && export PYTHON="$base"
-            [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
+            [ -n "$base" ] && export PYROOT="$base"
+            [ -x "$PYROOT" ] && export PYTHONUSERBASE="$PYROOT"
             return 8
         fi
 
         if [ ! "$version" = "$(py.ver.full "$python")" ]; then
             fail $0 "source python $source ($version) != target $python ($(py.ver.full "$python"))"
-            [ -n "$base" ] && export PYTHON="$base"
-            [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
+            [ -n "$base" ] && export PYROOT="$base"
+            [ -x "$PYROOT" ] && export PYTHONUSERBASE="$PYROOT"
             return 9
         fi
 
@@ -493,7 +493,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             warn $0 "using python linked to $target (realpath $source v$version)"
         fi
 
-        [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
+        [ -x "$PYROOT" ] && export PYTHONUSERBASE="$PYROOT"
         unset PIP
         path.rehash
         pip.lookup >/dev/null
@@ -575,8 +575,8 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
             local pip_file="/tmp/get-pip.py"
 
-            export PYTHON="$target"
-            [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
+            export PYROOT="$target"
+            [ -x "$PYROOT" ] && export PYTHONUSERBASE="$PYROOT"
 
             info $0 "deploy pip with $python ($(py.ver.full $python)) to $target"
 
@@ -618,8 +618,8 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
         fi
 
-        [ -z "$PYTHON" ] && export PYTHON="$target"
-        [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
+        [ -z "$PYROOT" ] && export PYROOT="$target"
+        [ -x "$PYROOT" ] && export PYTHONUSERBASE="$PYROOT"
     }
 
     function pip.exe.uncached {
@@ -694,8 +694,8 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             return 2
         fi
 
-        [ -z "$PYTHON" ] && export PYTHON="$result"
-        [ -x "$PYTHON" ] && export PYTHONUSERBASE="$PYTHON"
+        [ -z "$PYROOT" ] && export PYROOT="$result"
+        [ -x "$PYROOT" ] && export PYTHONUSERBASE="$PYROOT"
 
         if [ -x "$result" ]; then
             printf "$result"
@@ -732,7 +732,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
         venv="$(venv.off)" || return "$(rollback "venv.off" "$0" "$?")"
 
-        python="$(which "$PYTHON/bin/python")"
+        python="$(which "$PYROOT/bin/python")"
         if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
             fail $0 "python binary '$python' doesn't exists or something wrong"
             return 1

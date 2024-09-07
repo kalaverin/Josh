@@ -20,10 +20,10 @@ if [ -n "$VIRTUAL_ENV" ] && [ -d "$VIRTUAL_ENV/bin" ]; then
     )
 fi
 
-if [ -n "$PYTHON" ] && [ -d "$PYTHON/bin" ]; then
+if [ -n "$PYROOT" ] && [ -d "$PYROOT/bin" ]; then
     perm_path=(
         $perm_path
-        $PYTHON/bin
+        $PYROOT/bin
     )
 else
     perm_path=(

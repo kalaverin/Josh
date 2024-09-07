@@ -618,7 +618,7 @@ else
             fi
 
             if [[ "$dir" -regex-match $pattern ]]; then
-                if [ -n "$PYTHON" ] && [ -x "$PYTHON/bin" ] && [ -z "$found" ] && [ "$dir" = "$(fs.realpath "$PYTHON/bin")" ]; then
+                if [ -n "$PYROOT" ] && [ -x "$PYROOT/bin" ] && [ -z "$found" ] && [ "$dir" = "$(fs.realpath "$PYROOT/bin")" ]; then
                     local found="$dir"
                 else
                     continue
@@ -674,7 +674,7 @@ else
         ash.path.source
 
         local send="$(printf -- ${(q)PATH})"
-        result="$(eval.cached "$(fs.lm.many $path)" path.clean.uncached "$PYTHON:$VIRTUAL_ENV" "$(printf -- ${(qq)send})")"
+        result="$(eval.cached "$(fs.lm.many $path)" path.clean.uncached "$PYROOT:$VIRTUAL_ENV" "$(printf -- ${(qq)send})")"
         if [ "$retval" -eq 0 ] || [ -n "$result" ]; then
             export PATH="$ASH/bin:$result"
             fs.path.fix
