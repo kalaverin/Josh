@@ -40,6 +40,9 @@ fi
 # sccache: very need runtime disk cache for cargo, from cold start have cachehit about 60%+
 #
 if [ -x "$commands[sccache]" ] && [ -z "$RUSTC_WRAPPER" ]; then
+    export CC_WRAPPER="sccache"
+    export FC_WRAPPER="sccache"
+    export CXX_WRAPPER="sccache"
     export RUSTC_WRAPPER="sccache"
 fi
 
