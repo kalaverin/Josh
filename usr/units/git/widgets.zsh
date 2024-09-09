@@ -832,7 +832,7 @@ function __widget.git.rebase_branch {
                     --sort=-committerdate refs/heads/ \
                     --color=always \
                     --format="%(HEAD) %(color:yellow bold)%(refname:short)%(color:reset) %(contents:subject) %(color:black bold)%(authoremail) %(committerdate:relative)" \
-                    | awk "{\$1=\$1};1" | grep -Pv "^(\*\s+)"'
+                    '
 
     local value="$(
         $SHELL -c "$select \
@@ -843,7 +843,9 @@ function __widget.git.rebase_branch {
         | cut -d ' ' -f 1
     ")"
     if [ ! "$value" ]; then
-        break
+        return 0
+    elif [[ "$value" == '*' ]]; then
+        local value="$branch"
     fi
 
     local command="`git.cmd.fetch "$value"` && git rebase --stat --interactive --no-autosquash --autostash \"origin/$value\""
