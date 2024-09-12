@@ -839,9 +839,10 @@ function __widget.git.rebase_branch {
         | $FZF \
         --preview=\"$differ $branch | $DELTA \" \
         --preview-window=\"left:`misc.preview.width`:noborder\" \
-        --prompt=\"rebase $branch $state>  \" \
-        | cut -d ' ' -f 1
+        --prompt=\"rebase $branch $state>  \" | head -n 1
     ")"
+    local value="$(echo "$value" | sed -z 's:^*::g' | sed -z 's:^ ::g' | tabulate -i 1)"
+
     if [ ! "$value" ]; then
         return 0
     elif [[ "$value" == '*' ]]; then
