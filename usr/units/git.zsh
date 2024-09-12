@@ -41,6 +41,15 @@ function git_abort {
 }
 zle -N git_abort
 
+function git_continue {
+    local state
+    state="$(git.this.state)"  # merge, rebase or cherry-pick
+    [ "$?" -gt 0 ] && return 0
+    [ "$state" ] && git "$state" --continue
+    zle reset-prompt
+}
+zle -N git_continue
+
 function open_editor_on_conflict {
     local line
     line="$(grep -P --line-number --max-count=1 '^=======' "$1" | tabulate -d ':' -i 1)"

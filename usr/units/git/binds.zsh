@@ -40,3 +40,5 @@ bindkey "\ep"  __widget.git.squash_to_commit
 bindkey "^[P"  __widget.git.replace_all_commits_with_one
 #              ctrl-p, git abort
 bindkey "^p"   git_abort
+
+bindkey "^o"   git_continue
