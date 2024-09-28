@@ -49,7 +49,6 @@ function __widget.git.add {
 }
 zle -N __widget.git.add
 
-
 function __widget.git.checkout_modified {
     local branch="`git.this.branch`"
     [ ! "$branch" ] && return 1
@@ -89,7 +88,6 @@ function __widget.git.checkout_modified {
 }
 zle -N __widget.git.checkout_modified
 
-
 function __widget.git.auto_skip_or_continue {
     local state="`git.this.state`"  # merging, rebase or cherry-pick
     if [ "$state" ]; then
@@ -114,7 +112,6 @@ function __widget.git.auto_skip_or_continue {
     fi
     return 0
 }
-
 
 function __widget.git.conflict_solver {
     local branch="`git.this.branch`"

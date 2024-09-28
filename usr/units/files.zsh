@@ -49,10 +49,12 @@ function bak {
     local root="$(git.this.root)"
     [ -z "$root" ] && local root="$PWD"
 
-    source="$(fs.basename "$root")" || return "$?"
+    root="$(fs.dirname "$root")" || return "$?"
+    source="$(fs.basename `fs.dirname "$root"`).$(fs.basename "$root")"
+
     timemark="$(date "+%Y.%m.%d-%H.%M.%S")" || return "$?"
     target="$(temp.dir)/bak/$source" || return "$?"
-    backup="$target/$source-$timemark-$(get.name).tar" || return "$?"
+    backup="$target/$timemark-$source-$(get.name).tar" || return "$?"
 
     git.mtime.set 2>&1 >/dev/null
 
@@ -78,10 +80,12 @@ function bakf {
     local root="$(git.this.root)"
     [ -z "$root" ] && local root="$PWD"
 
-    source="$(fs.basename "$root")" || return "$?"
+    root="$(fs.dirname "$root")" || return "$?"
+    source="$(fs.basename `fs.dirname "$root"`).$(fs.basename "$root")"
+
     timemark="$(date "+%Y.%m.%d-%H.%M.%S")" || return "$?"
     target="$(temp.dir)/bak/$source" || return "$?"
-    backup="$target/$source-$timemark-$(get.name).tar" || return "$?"
+    backup="$target/$timemark-$source-$(get.name).tar" || return "$?"
 
     git.mtime.set 2>&1 >/dev/null
 
@@ -122,6 +126,25 @@ function bakrm {
         local cmd="rm $backup"
     fi
 
+    run.show "$cmd"
+    unset BAK_RESTORE
+}
+
+function bakmv {
+    if [ -z "$BAK_RESTORE" ]; then
+        warn $0 "nothing backed up"
+        return 1
+
+    elif [ -z "$ASH_PAQ" ] || [ -z "$ASH_QAP" ]; then
+        fail $0 " - fatal: zstd, xz, lz4 and gzip doesn't exists" >&2
+        return 127
+    fi
+
+    if [ ! -x "$HOME/.backup" ]; then
+        mkdir -p "$HOME/.backup"
+    fi
+
+    local cmd="mv $BAK_RESTORE $HOME/.backup/"
     run.show "$cmd"
     unset BAK_RESTORE
 }
