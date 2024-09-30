@@ -16,6 +16,8 @@
 # }
 
 layout_virtualenv() {
+    dotenv
+
     if [ -z "$ASH_PY_ENVS_ROOT" ]; then
         echo " == fail ($0): ASH_PY_ENVS_ROOT isn't set"
         return 1

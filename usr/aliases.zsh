@@ -212,7 +212,12 @@ fi
 # xc: markdown executor, orginally for buildtools, now — for custom aliases
 #
 if [ -x "$commands[xc]" ]; then
-    alias it="xc -file '$ASH/playbook.md' -heading Playbook"
+    function it {
+        book="${PROJECT_EXECUTE:-$ASH/playbook.md}"
+        part="${PROJECT_SECTION:-Playbook}"
+
+        xc -file "$book" -heading "$part"
+    }
 fi
 
 
