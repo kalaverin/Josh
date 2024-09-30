@@ -751,7 +751,8 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             if [ -x "$target" ] && [ -x "$target/bin/python" ]; then
                 export PYROOT="$target"
                 export PYTHONUSERBASE="$target"
-                warn $0 "python from: '$target/bin/python'"
+                python="$target/bin/python"
+                warn $0 "python from: '$python'"
 
             else
                 return "$(rollback "wtf" "$0" "1")"
