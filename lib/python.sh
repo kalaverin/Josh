@@ -402,14 +402,20 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
 
         printf "$target"
+        info $0 "python home '$target' detected"
 
         if [ -z "$1" ]; then
             if [ ! -x "$PYTHON_BINARIES/default" ]; then
                 ln -s "$target" "$PYTHON_BINARIES/default"
             fi
             export PYROOT="$target"
+            info $0 "\$PYROOT -> '$PYROOT'"
         fi
-        [ -x "$PYROOT" ] && export PYTHONUSERBASE="$PYROOT"
+
+        if [ -x "$PYROOT" ]; then
+            export PYTHONUSERBASE="$PYROOT"
+            info $0 "\$PYTHONUSERBASE -> '$PYROOT'"
+        fi
         return "$retval"
     }
 

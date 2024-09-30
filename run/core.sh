@@ -945,7 +945,7 @@ else
                 echo "$src"
                 return 0
             fi
-            fail $0 "link name '$src' couldn't contains slashes"
+            fail $0 "link name '$src' couldn't starts with slash"
             return 3
 
         elif [ -z "$ASH" ]; then
