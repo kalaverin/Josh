@@ -9,6 +9,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
     REQ_BINS=(
         cc
+        cmake
         git
         make
         pkg-config
@@ -132,11 +133,10 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             fi
 
             local cmd="brew update && brew install"
-            local pkg="bash cmake coreutils findutils git gnu-tar grep gsed openssl pkg-config python@3 zsh"
+            local pkg="bash coreutils findutils git gnu-tar grep gsed openssl pkg-config python@3 zsh"
             REQ_SYS_BINS=(
                 bash
                 brew
-                cmake
                 gcut
                 gfind
                 ggrep
