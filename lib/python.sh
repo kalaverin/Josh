@@ -732,6 +732,12 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
         venv="$(venv.off)" || return "$(rollback "venv.off" "$0" "$?")"
 
+
+        if [ -z "$PYROOT" ]; then
+            target="$(py.home)" || return "$(rollback "py.home" "$0" "$?")"
+            warn $0 "python \$py.home '$target' detected for first time"
+        fi
+
         python="$(which "$PYROOT/bin/python")"
         if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
             fail $0 "python binary '$python' doesn't exists or something wrong"
