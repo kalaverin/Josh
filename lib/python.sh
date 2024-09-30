@@ -738,6 +738,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
         venv="$(venv.off)" || return "$(rollback "venv.off" "$0" "$?")"
 
+        #
 
         if [ -z "$PYROOT" ]; then
             target="$(py.home)" || return "$(rollback "py.home" "$0" "$?")"
@@ -746,13 +747,24 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
         if [ -z "$PYROOT" ]; then
             warn $0 "python \$PYROOT: '$PYROOT' empty, wtf?"
+
+            if [ -x "$target" ] && [ -x "$target/bin/python" ]; then
+                export PYROOT="$target"
+                export PYTHONUSERBASE="$target"
+                warn $0 "python from: '$target/bin/python'"
+
+            else
+                return "$(rollback "wtf" "$0" "1")"
+            fi
+        else
+            python="$(which "$PYROOT/bin/python")"
+            if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
+                fail $0 "python binary '$python' doesn't exists or something wrong"
+                return 1
+            fi
         fi
 
-        python="$(which "$PYROOT/bin/python")"
-        if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
-            fail $0 "python binary '$python' doesn't exists or something wrong"
-            return 1
-        fi
+        #
 
         target="$(py.home "$python")"
         if [ "$?" -gt 0 ] || [ ! -d "$target" ]; then
