@@ -209,6 +209,12 @@ if [ -x "$commands[csview]" ]; then
     alias ssv="csv --delimiter ';'"
 fi
 
+# xc: markdown executor, orginally for buildtools, now — for custom aliases
+#
+if [ -x "$commands[xc]" ]; then
+    alias it="xc -file '$ASH/playbook.md' -heading Playbook"
+fi
+
 
 if [ -x "$commands[docker]" ]; then
     export DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1}
