@@ -744,6 +744,10 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             warn $0 "python \$py.home '$target' detected for first time"
         fi
 
+        if [ -z "$PYROOT" ]; then
+            warn $0 "python \$PYROOT: '$PYROOT' empty, wtf?"
+        fi
+
         python="$(which "$PYROOT/bin/python")"
         if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
             fail $0 "python binary '$python' doesn't exists or something wrong"
