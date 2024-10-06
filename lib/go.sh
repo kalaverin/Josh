@@ -87,6 +87,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
                 return 6
             else
                 info $0 "$($GO_BIN version) in '$GO_BIN'"
+                unlink "$filename"
             fi
         fi
         export PATH="$GO_ROOT:$PATH"
