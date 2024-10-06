@@ -1,7 +1,8 @@
 alias cp='cp -iR'  # prompt on overwrite and use recurse for directories
 alias mv='mv -i'
-alias tt='tail --retry --sleep-interval=0.25 --follow --lines=100'
-alias sudo='sudo -H --preserve-env=PATH'  # this is Ubuntu behavior: never send user env to sudo context!
+alias tt='tail --retry --sleep-interval=0.1 --follow --lines=100'
+alias ttt='tail --retry --sleep-interval=0.1 --follow --lines=5000'
+alias sudo='sudo -H --preserve-env="PATH,HOME"'  # this is Ubuntu behavior: never send user env to sudo context!
 alias svc='sudo service'
 alias fd='fd --no-ignore-vcs --hidden --exclude .git/'
 
@@ -46,8 +47,8 @@ if [ -x "$commands[sccache]" ]; then
     [ -z "$RUSTC_WRAPPER" ] && export RUSTC_WRAPPER="sccache"
 
     [ -z "$CC" ] && [ -x "$commands[gcc]" ] && export CC="sccache gcc"
-    [ -z "$CXX" ] [ -x "$commands[g++]" ] && export CXX="sccache g++"
-    [ -z "$FC" ] [ -x "$commands[gfortran]" ] && export CXX="sccache gfortran"
+    [ -z "$CXX" ] && [ -x "$commands[g++]" ] && export CXX="sccache g++"
+    [ -z "$FC" ] && [ -x "$commands[gfortran]" ] && export CXX="sccache gfortran"
 fi
 
 
