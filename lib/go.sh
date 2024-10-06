@@ -65,7 +65,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
             if [ ! -f "$GO_ROOT/$filename" ]; then
                 info $0 "downloading latest $filename for $goos/$ASH_ARCH"
-                run.show "$HTTP_GET \"https://golang.org/dl/$filename\" > \"$GO_ROOT/$filename\""
+                run.show "$HTTP_GET 'https://golang.org/dl/$filename' > '$GO_ROOT/$filename'"
                 retval="$?"
 
                 if [ "$retval" -ne 0 ] || [ ! -f "$GO_ROOT/$filename" ]; then
@@ -86,7 +86,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
                 term $0 "go '$GO_BIN' isn't installed"
                 return 6
             else
-                info $0 "$($GO_BIN --version) in '$GO_BIN'"
+                info $0 "$($GO_BIN version) in '$GO_BIN'"
             fi
         fi
         export PATH="$GO_ROOT:$PATH"
