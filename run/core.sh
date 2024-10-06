@@ -683,27 +683,31 @@ else
     }
 
     function temp.dir {
-        local result="$(fs.dirname `mktemp -duq`)"
+        local result
+        result="$(fs.dirname `mktemp -duq`)" || return "$?"
         [ ! -x "$result" ] && mkdir -p "$result"
-        echo "$result"
+        printf "$result"
+        return 0
     }
 
     function temp.file {
-        local dir="$(temp.dir)"
+        local dir dst
+        dir="$(temp.dir)" || return "$?"
         if [ ! -x "$dir" ]; then
             return 1
         elif [ -z "$ASH_MD5_PIPE" ]; then
             return 2
         fi
 
-        local dst="$dir/$(echo "$USER $HOME $EPOCHSECONDS $$ $*" | sh -c "$ASH_MD5_PIPE").$USER.$$.tmp"
+        dst="$dir/$(echo "$USER $HOME $EPOCHSECONDS $$ $*" | sh -c "$ASH_MD5_PIPE").$USER.$$.tmp" || return "$?"
         touch "$dst" 2>/dev/null
         if [ "$?" -gt 0 ]; then
             return 3
         fi
 
         unlink "$dst" 2>/dev/null
-        echo "$dst"
+        printf "$dst"
+        return 0
     }
 
     function eval.run {
