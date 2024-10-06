@@ -3,6 +3,8 @@
 GO_ROOT="$HOME/go"
 GO_BINARIES="$GO_ROOT/bin"
 GO_BIN="$GO_BINARIES/go"
+export GOROOT="$GO_ROOT"
+export GOPATH="$HOME/.go"
 
 [ ! -d "$GO_BINARIES" ] && mkdir -p "$GO_BINARIES"
 
@@ -117,7 +119,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     }
 
     function go.extras {
-        go.deploy "$GO_REQ_PACKAGES $GO_REC_PACKAGES"
+        go.deploy $GO_REQ_PACKAGES $GO_REC_PACKAGES
         return "$?"
     }
 
