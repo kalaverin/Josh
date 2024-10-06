@@ -582,10 +582,6 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
             local flags="--disable-pip-version-check --no-input --no-python-version-warning --no-warn-conflicts --no-warn-script-location"
 
-            if [ "$(ash.branch 2>/dev/null)" = "develop" ]; then
-                local flags="$flags -v"
-            fi
-
             if [ "$USER" = 'root' ] || [ "$ASH_OS" = 'BSD' ] || [ "$ASH_OS" = 'MAC' ]; then
                 local flags="--root='/' --prefix='$target' $flags"
             fi
