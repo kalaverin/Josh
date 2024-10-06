@@ -38,6 +38,7 @@ perm_path=(
     $HOME/.local/bin
     $HOME/go/bin
     $HOME/bin
+    $HOME/.ruby/bin
     /usr/local/bin
     /bin
     /sbin

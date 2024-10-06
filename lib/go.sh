@@ -1,5 +1,9 @@
 #!/bin/zsh
 
+GO_ROOT="$HOME/go"
+GO_BINARIES="$GO_ROOT/bin"
+GO_BIN="$GO_BINARIES/go"
+
 [ ! -d "$GO_BINARIES" ] && mkdir -p "$GO_BINARIES"
 
 [ -z "$SOURCES_CACHE" ] && declare -aUg SOURCES_CACHE=() && SOURCES_CACHE+=($0)
@@ -14,17 +18,13 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         github.com/joerdav/xc/cmd/xc@latest
     )
     GO_REC_PACKAGES=(
-        github.com/asciimoo/wuzz@master # cli http inspector
-        github.com/sosedoff/pgweb@master  # postgres web admin
+        github.com/asciimoo/wuzz@latest # cli http inspector
+        github.com/sosedoff/pgweb@latest  # postgres web admin
         github.com/schachmat/wego@latest  # weather in terminal
         github.com/claudiodangelis/qrcp@latest  # share file to network with qr
         mvdan.cc/sh/v3/cmd/gosh@latest  # shell interpreter
         mvdan.cc/sh/v3/cmd/shfmt@latest  # shell formatter
     )
-
-    GO_ROOT="$HOME/go"
-    GO_BINARIES="$GO_ROOT/bin"
-    GO_BIN="$GO_BINARIES/go"
 
     function go.init {
         local filename retval result
@@ -108,12 +108,11 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         return "$retval"
     }
 
-    function go.extras {
-        run.show "$GO_BIN install $GO_REQ_PACKAGES"
-        return 0
+    function go.install {
+        go.deploy $@
     }
 
-    function go.install.all {
+    function go.extras {
         run.show "$GO_BIN install $GO_REQ_PACKAGES $GO_REC_PACKAGES"
         return 0
     }

@@ -29,7 +29,6 @@ if [ -x "$commands[nano]" ]; then
     export EDITOR="nano"
 fi
 
-
 # rip: safely and usable rm -rf replace
 #
 if [ -x "$commands[rip]" ]; then

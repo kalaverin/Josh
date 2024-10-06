@@ -1,5 +1,10 @@
 #!/bin/zsh
 
+export HOMEBREW_AUTO_UPDATE_SECS="86400"
+export HOMEBREW_NO_ENV_HINTS="1"
+# export HOMEBREW_NO_AUTO_UPDATE=""
+
+
 [ -z "$SOURCES_CACHE" ] && declare -aUg SOURCES_CACHE=() && SOURCES_CACHE+=($0)
 
 local THIS_SOURCE="$(fs.gethash "$0")"
@@ -25,17 +30,42 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     )
 
     function brew.root {
-        local msg="isn't supported '$ASH_OS': $(uname -srv)"
+        local curl_bin git_bin ruby_bin retval
+
+        local curl_bin="curl"
+        local git_bin="git"
+        local ruby_bin="ruby"
 
         if [ "$ASH_OS" = "BSD" ]; then
-            fail $0 "$msg"
-            return 1
+            if [ ! -x $commands[gem] ]; then
+                warn $0 "gem isn't installed"
+                return 1
+            fi
 
         elif [ "$ASH_OS" = "MAC" ]; then
-            fail $0 "$msg"
+            fail $0 "'$ASH_OS have native implementation': $(uname -srv)"
             return 1
         fi
 
+        curl_bin="$(which "$curl_bin")"; retval="$?"
+        if [ ! -x "$curl_bin" ] || [ "$retval" -ne 0 ]; then
+            fail $0 "curl binary isn't found"
+            return 2
+        fi
+        export HOMEBREW_CURL_PATH="$curl_bin"
+
+        git_bin="$(which "$git_bin")"; retval="$?"
+        if [ ! -x "$git_bin" ] || [ "$retval" -ne 0 ]; then
+            fail $0 "git binary isn't found"
+            return 3
+        fi
+        export HOMEBREW_GIT_PATH="$git_bin"
+
+        ruby_bin="$(which "$ruby_bin")"; retval="$?"
+        if [ ! -x "$ruby_bin" ] || [ "$retval" -ne 0 ]; then
+            fail $0 "ruby binary isn't found, may be can make symlink for? try: fs.link ruby /usr/local/bin/ruby33"
+            return 3
+        fi
         echo "$HOME/.brew"
         return 0
     }

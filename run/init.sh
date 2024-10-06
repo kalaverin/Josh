@@ -126,6 +126,7 @@ else
         source "$ASH/run/update.sh"          && \
         source "$ASH/lib/python.sh"          && \
         source "$ASH/lib/go.sh"              && \
+        source "$ASH/lib/ruby.sh"            && \
         source "$ASH/lib/rust.sh"        || return "$(rollback "core" "$0" "$?")"
         pip.install $PIP_REQ_PACKAGES    || return "$(rollback "pip" "$0" "$?")"
         cfg.install
