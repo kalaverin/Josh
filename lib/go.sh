@@ -53,10 +53,12 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             fi
             ASH_ARCH='amd64'
 
-            filename="$($HTTP_GET "$url" | jq --raw-output --sort-keys "sort_by(.version) | last | .files[] | select(.version | startswith(\"go\")) | select(.os | startswith(\"$goos\")) | select(.arch | startswith(\"$ASH_ARCH\")) | select(.kind | startswith(\"archive\")) | .filename")"; retval="$?"
+            run.show "$HTTP_GET '$url' > /tmp/go.json"
+            filename="$(cat ~/tmp/go.json | jq --raw-output --sort-keys "sort_by(.version) | last | .files[] | select(.version | startswith(\"go\")) | select(.os | startswith(\"$goos\")) | select(.arch | startswith(\"$ASH_ARCH\")) | select(.kind | startswith(\"archive\")) | .filename")"; retval="$?"
+            unlink /tmp/go.json
 
             if [ -z "$filename" ] || [ "$retval" -ne 0 ]; then
-                cat ~/go.json | jq --raw-output --sort-keys "sort_by(.version) | last | .files[]" >&2
+                $HTTP_GET "$url" |  --raw-output --sort-keys "sort_by(.version) | last | .files[]" >&2
                 term $0 "couldn't find go package for $goos/$ASH_ARCH"
                 return 3
             fi
