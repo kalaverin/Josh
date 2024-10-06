@@ -137,9 +137,10 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
     function deploy.extras {
         local cwd="$PWD"
-        (source "$ASH/lib/python.sh" && pip.extras || warn $0 "(python) something went wrong") && \
-        (source "$ASH/lib/rust.sh" && cargo.extras || warn $0 "(rust) something went wrong")
-        (source "$ASH/lib/brew.sh" && brew.env && (brew.extras || warn $0 "(brew) something went wrong"))
+        (source "$ASH/lib/python.sh" && pip.extras   || warn $0 "(python) something went wrong") && \
+        (source "$ASH/lib/go.sh"     && go.extras    || warn $0 "(go) something went wrong")
+        (source "$ASH/lib/rust.sh"   && cargo.extras || warn $0 "(rust) something went wrong")
+        (source "$ASH/lib/brew.sh"   && brew.env     && (brew.extras || warn $0 "(brew) something went wrong"))
         builtin cd "$cwd"
     }
 

@@ -205,13 +205,28 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
         if [ -z "$RUSTC_WRAPPER" ] || [ ! -x "$RUSTC_WRAPPER" ]; then
             if [ -x "$cache_exe" ]; then
+                export CCACHE="$cache_exe"
+                export CC_WRAPPER="$cache_exe"
+                export CXX_WRAPPER="$cache_exe"
+                export FC_WRAPPER="$cache_exe"
+                export RUSTC_WRAPPER="$cache_exe"
                 export RUSTC_WRAPPER="$cache_exe"
 
             elif [ -x "`which sccache`" ]; then
-                export RUSTC_WRAPPER="`which sccache`"
+                export CCACHE="$sccache_binary"
+                export CC_WRAPPER="$sccache_binary"
+                export CXX_WRAPPER="$sccache_binary"
+                export FC_WRAPPER="$sccache_binary"
+                export RUSTC_WRAPPER="$sccache_binary"
+                export RUSTC_WRAPPER="$sccache_binary"
+                local sccache_binary="$(which sccache_binary)"
 
             else
-                export RUSTC_WRAPPER=""
+                unset CCACHE
+                unset CC_WRAPPER
+                unset CXX_WRAPPER
+                unset FC_WRAPPER
+                unset RUSTC_WRAPPER
                 unset RUSTC_WRAPPER
                 warn $0 "sccache doesn't exists"
             fi

@@ -125,12 +125,14 @@ else
         source "$ASH/run/units/configs.sh"   && \
         source "$ASH/run/update.sh"          && \
         source "$ASH/lib/python.sh"          && \
+        source "$ASH/lib/go.sh"              && \
         source "$ASH/lib/rust.sh"        || return "$(rollback "core" "$0" "$?")"
         pip.install $PIP_REQ_PACKAGES    || return "$(rollback "pip" "$0" "$?")"
         cfg.install
         omz.install && omz.plugins       || return "$(rollback "oh-my-zsh" "$0" "$?")"
         bin.install                      || return "$(rollback "custom" "$0" "$?")"
         cargo.deploy $CARGO_REQ_PACKAGES || return "$(rollback "cargo" "$0" "$?")"
+        cargo.deploy $GO_REQ_PACKAGES    || return "$(rollback "go" "$0" "$?")"
 
         info "$0" "success! finally: replace ~/.zshrc with ash loader"
 

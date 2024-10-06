@@ -17,6 +17,7 @@ source "$ASH/lib/python.sh" && \
 py.home >/dev/null && \
 pip.exe >/dev/null
 
+source "$ASH/lib/go.sh" && go.init
 source "$ASH/lib/rust.sh" && cargo.init
 
 if [ ! -f "$HOME/.config/starship.toml" ]; then
