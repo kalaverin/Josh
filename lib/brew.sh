@@ -43,7 +43,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             fi
 
         elif [ "$ASH_OS" = "MAC" ]; then
-            fail $0 "'$ASH_OS have native implementation': $(uname -srv)"
+            info $0 "'$ASH_OS have native implementation': $(uname -srv)"
             return 1
         fi
 
