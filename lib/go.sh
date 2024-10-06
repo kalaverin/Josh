@@ -131,13 +131,20 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             return 1
         fi
 
+        local update_exe="$GO_BINARIES/go-global-update"
+        if [ ! -x "$update_exe" ]; then
+            warn $0 "go-update exe $update_exe isn't found!"
+            go.extras || return 1
+        fi
+        run.show "$update_exe"
+
         local update_exe="$GO_BINARIES/gup"
         if [ ! -x "$update_exe" ]; then
             warn $0 "go-update exe $update_exe isn't found!"
             go.extras || return 1
         fi
 
-        $update_exe update
+        run.show "$update_exe update"
         return "$?"
     }
 fi
