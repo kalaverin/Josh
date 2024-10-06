@@ -36,7 +36,7 @@ perm_path=(
     $perm_path
     $ASH/bin
     $HOME/.local/bin
-    $HOME/go/bin
+    $HOME/.go/bin
     $HOME/bin
     $HOME/.ruby/bin
     /usr/local/bin
@@ -45,6 +45,7 @@ perm_path=(
     /usr/bin
     /usr/sbin
     /usr/local/sbin
+    $HOME/go/bin
 )
 
 path=(

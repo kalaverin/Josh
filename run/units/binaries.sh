@@ -5,33 +5,6 @@ export LOCAL_BIN="$HOME/.local/bin"
 [ ! -d "$LOCAL_BIN" ] && mkdir -p "$LOCAL_BIN"
 [ -z "$PLUGINS_ROOT" ] && source "$(fs.dirname $0)/oh-my-zsh.sh"
 
-
-# ——— ondir events runner
-
-function bin.compile_ondir {
-    if [ -x "$LOCAL_BIN/ondir" ]; then
-        return 0
-    fi
-
-    if [ -z "$PLUGINS_ROOT" ]; then
-        info $0 "plugins dir isn't set"
-        return 1
-
-    elif [ ! -d "$PLUGINS_ROOT/ondir" ]; then
-        git clone --depth 1 "https://github.com/alecthomas/ondir.git" "$PLUGINS_ROOT/ondir"
-    fi
-
-    local cwd="$PWD"
-    info $0 "compile ondir in '$PLUGINS_ROOT' -> '$LOCAL_BIN'"
-    builtin cd "$PLUGINS_ROOT/ondir" && make clean && make && mv ondir "$LOCAL_BIN/ondir" && make clean
-
-    local retval="$?"
-    [ "$retval" -gt 0 ] && fail $0 "something went wrong"
-
-    builtin cd "$cwd"
-    return "$retval"
-}
-
 # ——— fzf search
 
 function bin.compile_fzf {
@@ -80,102 +53,31 @@ function bin.compile_fzf {
 # ——— micro editor
 
 function bin.deploy_micro {
-    local url='https://getmic.ro'
 
-    if [ -z "$HTTP_GET" ]; then
-        fail $0 "HTTP_GET isn't set"
-        return 1
-
-    elif [ -x "$LOCAL_BIN/micro" ]; then
-        [ -f "$LOCAL_BIN/micro.bak" ] && rm -f "$LOCAL_BIN/micro.bak"
-
-        if [ "$(find $LOCAL_BIN/micro -mmin +43200 2>/dev/null | grep micro)" ]; then
-            mv "$LOCAL_BIN/micro" "$LOCAL_BIN/micro.bak"
-        fi
+    if [ -x "$commands/micro" ]; then
+        micro -plugin install fzf wc detectindent bounce editorconfig quickfix
+        fs.link "$commands/micro" >/dev/null
+    else
+        warn $0 "micro isn't found"
     fi
-
-    if [ ! -x "$LOCAL_BIN/micro" ]; then
-        local cwd="$PWD"
-        info $0 "deploy micro: $LOCAL_BIN/micro"
-        builtin cd "$LOCAL_BIN" && $SHELL -c "$HTTP_GET $url | $SHELL"
-
-        [ "$?" -gt 0 ] && fail $0 "something went wrong"
-        $SHELL -c "$LOCAL_BIN/micro -plugin install fzf wc detectindent bounce editorconfig quickfix"
-        builtin cd "$cwd"
-    fi
-
-    if [ -f "$LOCAL_BIN/micro.bak" ]; then
-        if [ -x "$LOCAL_BIN/micro" ]; then
-            rm -f "$LOCAL_BIN/micro.bak"
-        else
-            mv "$LOCAL_BIN/micro.bak" "$LOCAL_BIN/micro"
-        fi
-    fi
-    chmod a+x "$LOCAL_BIN/micro"
-    fs.link "$LOCAL_BIN/micro" >/dev/null
 
     source "$ASH/run/units/configs.sh"
     cfg.copy "$ASH/usr/share/micro_config.json" "$CONFIG_DIR/micro/settings.json"
     cfg.copy "$ASH/usr/share/micro_binds.json" "$CONFIG_DIR/micro/bindings.json"
 }
 
-# ——— direnv golang binary
+# ——— direnv
 
 function bin.deploy_direnv {
-    local bin="$LOCAL_BIN/direnv"
-    local url='https://direnv.net/install.sh'
 
-    if [ -z "$HTTP_GET" ]; then
-        fail $0 "HTTP_GET isn't set"
-        return 1
-
-    elif [ "$ASH_OS" = 'BSD' ]; then
-        if [ ! -x "$commands[direnv]" ]; then
-            # https://direnv.net/docs/development.html
-            warn $0 "for FreeBSD install direnv from pkg: sudo pkg install direnv"
-            return 1
-        fi
-        local bin="$commands[direnv]"
-
+    if [ -x "$commands/direnv" ]; then
+        fs.link "$commands/direnv" >/dev/null
     else
-        if [ -x "$bin" ]; then
-            [ -f "$LOCAL_BIN/direnv.bak" ] && rm -f "$LOCAL_BIN/direnv.bak"
-
-            if [ "$(find "$bin" -mmin +43200 2>/dev/null | grep direnv)" ]; then
-                mv "$bin" "$LOCAL_BIN/direnv.bak"
-            fi
-        fi
-
-        if [ ! -x "$bin" ]; then
-            local cwd="$PWD"
-            info $0 "deploy direnv: $bin"
-
-            export bin_path="$LOCAL_BIN"
-            builtin cd "$LOCAL_BIN" && $SHELL -c "$HTTP_GET $url | $SHELL"
-            unset bin_path
-
-            [ "$?" -gt 0 ] && fail $0 "something went wrong"
-            builtin cd "$cwd"
-        fi
-
-        if [ -f "$LOCAL_BIN/direnv.bak" ]; then
-            if [ -x "$bin" ]; then
-                rm -f "$LOCAL_BIN/direnv.bak"
-            else
-                mv "$LOCAL_BIN/direnv.bak" "$bin"
-            fi
-        fi
-
-        if [ -f "$bin" ] && [ ! -x "$bin" ]; then
-            chmod a+x "$bin"
-        fi
+        warn $0 "direnv isn't found"
     fi
 
-    if [ -f "$bin" ]; then
-        fs.link "$bin" >/dev/null
-        source "$ASH/run/units/configs.sh"
-        cfg.copy "$ASH/usr/share/direnv.rc" "$CONFIG_DIR/direnv/direnvrc"
-    fi
+    source "$ASH/run/units/configs.sh"
+    cfg.copy "$ASH/usr/share/direnv.rc" "$CONFIG_DIR/direnv/direnvrc"
 }
 
 # ——— rye all-in-one python packaging tool
@@ -310,7 +212,6 @@ function bin.install {
     fi
 
     bin.compile_fzf
-    bin.compile_ondir
     bin.deploy_direnv
     bin.deploy_micro
     bin.deploy_tmux_plugins

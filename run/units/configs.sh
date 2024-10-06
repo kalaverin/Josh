@@ -149,7 +149,6 @@ function cfg.install {
     cfg.copy "$root/lsd_theme.yaml"          "$CONFIG_DIR/lsd/colors.yaml"
     cfg.copy "$root/mycli.conf"              "$HOME/.myclirc"
     cfg.copy "$root/nodeenv.conf"            "$HOME/.nodeenvrc"
-    cfg.copy "$root/ondir.rc"                "$HOME/.ondirrc"
     cfg.copy "$root/pgcli.conf"              "$CONFIG_DIR/pgcli/config"
     cfg.copy "$root/pip.conf"                "$CONFIG_DIR/pip/pip.conf"
     cfg.copy "$root/tmux.conf"               "$HOME/.tmux.conf"

@@ -11,7 +11,6 @@ source "$ASH/usr/common.zsh"
 [ -x "$commands[tmux]" ] && source "$ASH/usr/units/tmux.zsh"
 
 source "$ZSH/custom/plugins/forgit/forgit.plugin.zsh"
-source "$ZSH/custom/plugins/ondir/scripts.zsh"
 source "$ZSH/custom/plugins/zsh-async/async.zsh"
 source "$ZSH/custom/plugins/zsh-fuzzy-search-and-edit/plugin.zsh"
 source "$ZSH/custom/plugins/zsh-plugin-fzf-finder/fzf-finder.plugin.zsh"

@@ -15,6 +15,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     SOURCES_CACHE+=("$THIS_SOURCE")
 
     GO_REQ_PACKAGES=(
+        github.com/zyedidia/eget@latest
         github.com/direnv/direnv@latest
         github.com/Akimon658/gup@latest
         github.com/joerdav/xc/cmd/xc@latest
@@ -27,6 +28,9 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         github.com/claudiodangelis/qrcp@latest  # share file to network with qr
         mvdan.cc/sh/v3/cmd/gosh@latest  # shell interpreter
         mvdan.cc/sh/v3/cmd/shfmt@latest  # shell formatter
+    )
+    EGET_REQ_PACKAGES=(
+        zyedidia/micro
     )
 
     function go.init {
@@ -116,6 +120,26 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         return "$retval"
     }
 
+    function eget.deploy {
+        go.init || return $?
+        if [ ! -x "$GO_BIN" ]; then
+            fail $0 "go '$GO_BIN' isn't found"
+            return 1
+        elif [ ! -x "$commands[eget]" ]; then
+            fail $0 "eget isn't found, try reinstall: go.deploy eget"
+            return 1
+        fi
+
+        local retval=0
+        for pkg in $@; do
+            eget "$pkg" --to "$GOPATH/bin"
+            if [ "$?" -gt 0 ]; then
+                local retval=1
+            fi
+        done
+        return "$retval"
+    }
+
     function go.install {
         go.deploy $@
         return "$?"
@@ -123,6 +147,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
     function go.extras {
         go.deploy $GO_REQ_PACKAGES $GO_REC_PACKAGES
+        eget.deploy $EGET_REQ_PACKAGES
         return "$?"
     }
 

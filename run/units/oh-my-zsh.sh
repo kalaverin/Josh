@@ -5,7 +5,6 @@ export PLUGINS_ROOT="$ZSH/custom/plugins"
 ZSH_PACKAGES=(
     "https://github.com/MestreLion/git-tools.git $PLUGINS_ROOT/git-tools"
     "https://github.com/TamCore/autoupdate-oh-my-zsh-plugins $PLUGINS_ROOT/autoupdate"
-    "https://github.com/alecthomas/ondir.git $PLUGINS_ROOT/ondir"
     "https://github.com/chrissicool/zsh-256color $PLUGINS_ROOT/zsh-256color"
     "https://github.com/djui/alias-tips.git $PLUGINS_ROOT/alias-tips"
     "https://github.com/facebook/PathPicker.git $PLUGINS_ROOT/fpp"
