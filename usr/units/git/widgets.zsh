@@ -196,9 +196,12 @@ function __widget.git.conflict_solver {
 zle -N __widget.git.conflict_solver
 
 function __widget.git.select_commit_then_files_checkout {
+    local branch commit
+
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
-        local branch=${1:-$(echo "$GET_BRANCH" | $SHELL)}
-        local commit="$(git_list_commits "$branch" \
+
+        branch="$(git.this.branch)" || return "$?"
+        commit="$(git_list_commits "$branch" \
             | GLOB_PIPE_REMOVE_DOTS \
             | GLOB_PIPE_REMOVE_SPACES \
             | sed 1d \
@@ -278,8 +281,10 @@ zle -N __widget.git.select_branch_then_commit_then_file_checkout
 
 
 function __widget.git.show_commits {
-    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
-        local branch=${1:-$(echo "$GET_BRANCH" | $SHELL)}
+    local branch
+
+    if [ "$(git rev-parse --quiet --show-toplevel 2>/dev/null)" ]; then
+        branch="$(git.this.branch)" || return "$?"
 
         eval "git_list_commits $branch" | GLOB_PIPE_NUMERATE | \
             fzf \
@@ -315,8 +320,8 @@ zle -N __widget.git.show_commits
 
 
 function __widget.git.select_branch_with_callback {
-    local branch="`git.this.branch`"
-    [ ! "$branch" ] && return 1
+    local branch
+    branch="$(git.this.branch)" || return "$?"
 
     while true; do
         local branch="$($SHELL $LIST_BRANCHES | sed 1d | \
@@ -361,21 +366,21 @@ zle -N __widget.git.select_branch_with_callback
 
 
 function __widget.git.show_branch_file_commits {
-    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
-        local file="$2"
+    root="$(git.this.root 2>/dev/null)" || return "$?"
+    if [ -x "$root" ]; then
+
         local branch="$1"
+        local file="$2"
 
-        local ext="$(echo "$file" | xargs -I% basename % | grep --color=never -Po '(?<=.\.)([^\.]+)$')"
-
+        local ext="$(echo "$printf" | xargs -I% basename % | grep --color=never -Po '(?<=.\.)([^\.]+)$')"
         local diff_view="echo {} | $CMD_EXTRACT_TOP_COMMIT | xargs -l $SHELL -c $diff_file $file' | $DELTA"
 
         local file_view="echo {} | cut -d ' ' -f 1 | xargs -I^^ git show ^^:./$file | $LISTER_FILE --paging=always"
-        if [ "$ext" = "" ]; then
-        else
+        if [ -n "$ext" ]; then
             local file_view="$file_view --language $ext"
         fi
 
-        eval "git log --color=always --format='%C(auto)%h%d %s %C(black)%C(bold)%ae %cr' $branch -- $file"  | sed -r 's%^(\*\s+)%%g' | \
+        eval "git log --color=always --format='%C(reset)%C(blue)%C(dim)%h%C(auto)%d %C(reset)%s %C(brightblack)%C(dim)%an %C(black)%>(512)%>(32,trunc)%H%C(reset)%C(brightblack)%C(dim)' --first-parent $branch -- $file" | sed -r 's%^(\*\s+)%%g' | \
             fzf \
                 --ansi --extended --info='inline' \
                 --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
@@ -400,14 +405,15 @@ function __widget.git.show_branch_file_commits {
 }
 zle -N __widget.git.show_branch_file_commits
 
-
 function __widget.git.select_file_show_commits {
     # diff full creeen at alt-bs
-    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
-        local branch=${1:-$(echo "$GET_BRANCH" | $SHELL)}
+    local branch root
+    local differ="$LISTER_FILE --terminal-width=\$FZF_PREVIEW_COLUMNS {}"
+    local diff_file="'git show --diff-algorithm=histogram --format=\"%C(yellow)%h %ad %an <%ae>%n%s%C(black)%C(bold) %cr\" \$0 --"
 
-        local differ="$LISTER_FILE --terminal-width=\$FZF_PREVIEW_COLUMNS {}"
-        local diff_file="'git show --diff-algorithm=histogram --format=\"%C(yellow)%h %ad %an <%ae>%n%s%C(black)%C(bold) %cr\" \$0 --"
+    root="$(git.this.root 2>/dev/null)" || return "$?"
+    if [ -x "$root" ]; then
+        branch="$(git.this.branch)" || return "$?"
 
         while true; do
             local file="$(git ls-files | sort | \
@@ -440,7 +446,7 @@ function __widget.git.select_file_show_commits {
                 return 0
             fi
 
-            __widget.git.show_branch_file_commits $branch $file
+            __widget.git.show_branch_file_commits "$branch" "$file"
             local ret=$?
             if [[ "$ret" != "130" ]]; then
                 zle redisplay
