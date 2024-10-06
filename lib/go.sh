@@ -111,7 +111,8 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
 
         local retval=0
-        for pkg in $@; do
+        local packages="$*"
+        for pkg in "${(@u)${(z)packages}}"; do
             $GO_BIN install $pkg
             if [ "$?" -gt 0 ]; then
                 local retval=1
@@ -131,7 +132,8 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         fi
 
         local retval=0
-        for pkg in $@; do
+        local packages="$*"
+        for pkg in "${(@u)${(z)packages}}"; do
             eget "$pkg" --to "$GOPATH/bin"
             if [ "$?" -gt 0 ]; then
                 local retval=1

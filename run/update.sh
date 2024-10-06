@@ -122,7 +122,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         git.nested "$ASH/usr/local"
 
         source "$ASH/lib/go.sh" && \
-        go.install $GO_REQ_PACKAGES $EGET_PACKAGES && \
+        go.install "$GO_REQ_PACKAGES $EGET_PACKAGES" && \
         go.update
 
         source "$ASH/lib/python.sh" && \
