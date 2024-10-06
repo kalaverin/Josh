@@ -36,6 +36,16 @@ if [ -x "$commands[rip]" ]; then
     export GRAVEYARD=${GRAVEYARD:-"$HOME/.trash"}
 fi
 
+# gh: github copilot aliases
+#
+if [ -x "$commands[gh]" ]; then
+    function how {
+        run.show "gh copilot suggest --target shell $*"
+    }
+    function how.git {
+        run.show "gh copilot suggest --target git $*"
+    }
+fi
 
 # sccache: very need runtime disk cache for cargo, from cold start have cachehit about 60%+
 #
@@ -193,6 +203,7 @@ if [ -x "$commands[delta]" ]; then
     if [ -x "$commands[bat]" ]; then
         export DELTA="$DELTA --pager bat"
     fi
+    export DELTA="$DELTA 2>/dev/null"
 fi
 
 
