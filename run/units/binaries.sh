@@ -125,9 +125,6 @@ function bin.deploy_direnv {
     local bin="$LOCAL_BIN/direnv"
     local url='https://direnv.net/install.sh'
 
-    # TODO: from source, git clone git@github.com:direnv/direnv.git
-    # TODO: go install github.com/direnv/direnv@latest
-
     if [ -z "$HTTP_GET" ]; then
         fail $0 "HTTP_GET isn't set"
         return 1
