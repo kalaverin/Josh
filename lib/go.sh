@@ -55,9 +55,12 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             fi
             ASH_ARCH='amd64'
 
-            run.show "$HTTP_GET '$url' > /tmp/go.json"
-            filename="$(cat /tmp/go.json | jq --raw-output --sort-keys "sort_by(.version) | last | .files[] | select(.version | startswith(\"go\")) | select(.os | startswith(\"$goos\")) | select(.arch | startswith(\"$ASH_ARCH\")) | select(.kind | startswith(\"archive\")) | .filename")"; retval="$?"
-            unlink /tmp/go.json
+            temp_dir="$(temp.dir)" || return "$?"
+            temp_file="$temp_dir/go-$USER.json"
+
+            run.show "$HTTP_GET '$url' > '$temp_file'"
+            filename="$(cat "$temp_file" | jq --raw-output --sort-keys "sort_by(.version) | last | .files[] | select(.version | startswith(\"go\")) | select(.os | startswith(\"$goos\")) | select(.arch | startswith(\"$ASH_ARCH\")) | select(.kind | startswith(\"archive\")) | .filename")"; retval="$?"
+            unlink "$temp_file"
 
             if [ -z "$filename" ] || [ "$retval" -ne 0 ]; then
                 $HTTP_GET "$url" |  --raw-output --sort-keys "sort_by(.version) | last | .files[]" >&2
@@ -74,7 +77,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
                     term $0 "couldn't download go package"
                     return 4
                 fi
-                info $0 "downloaded $filename to $GO_ROOT"
+                info $0 "downloaded $filename to $GO_ROOT, extract"
             fi
 
             local cwd="$PWD"
@@ -88,8 +91,8 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
                 term $0 "go '$GO_BIN' isn't installed"
                 return 6
             else
-                info $0 "$($GO_BIN version) in '$GO_BIN'"
-                unlink "$filename"
+                info $0 "installed $($GO_BIN version) in '$GO_BIN'"
+                unlink "$GO_ROOT/$filename"
             fi
         fi
         export PATH="$GO_ROOT:$PATH"
