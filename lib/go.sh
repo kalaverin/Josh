@@ -53,8 +53,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             fi
             ASH_ARCH='amd64'
 
-            # run.show "$HTTP_GET '$url' | jq 'sort_by(.version) | last'"
-            filename="$(cat ~/go.json | jq --raw-output --sort-keys "sort_by(.version) | last | .files[] | select(.version | startswith(\"go\")) | select(.os | startswith(\"$goos\")) | select(.arch | startswith(\"$ASH_ARCH\")) | select(.kind | startswith(\"archive\")) | .filename")"; retval="$?"
+            filename="$($HTTP_GET "$url" | jq --raw-output --sort-keys "sort_by(.version) | last | .files[] | select(.version | startswith(\"go\")) | select(.os | startswith(\"$goos\")) | select(.arch | startswith(\"$ASH_ARCH\")) | select(.kind | startswith(\"archive\")) | .filename")"; retval="$?"
 
             if [ -z "$filename" ] || [ "$retval" -ne 0 ]; then
                 cat ~/go.json | jq --raw-output --sort-keys "sort_by(.version) | last | .files[]" >&2
