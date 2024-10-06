@@ -44,6 +44,10 @@ if [ -x "$commands[sccache]" ]; then
     [ -z "$FC_WRAPPER" ] && export FC_WRAPPER="sccache"
     [ -z "$CXX_WRAPPER" ] && export CXX_WRAPPER="sccache"
     [ -z "$RUSTC_WRAPPER" ] && export RUSTC_WRAPPER="sccache"
+
+    [ -z "$CC" ] && [ -x "$commands[gcc]" ] && export CC="sccache gcc"
+    [ -z "$CXX" ] [ -x "$commands[g++]" ] && export CXX="sccache g++"
+    [ -z "$FC" ] [ -x "$commands[gfortran]" ] && export CXX="sccache gfortran"
 fi
 
 
