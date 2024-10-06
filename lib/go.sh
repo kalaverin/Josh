@@ -16,6 +16,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         github.com/direnv/direnv@latest
         github.com/Akimon658/gup@latest
         github.com/joerdav/xc/cmd/xc@latest
+        github.com/Gelio/go-global-update@latest
     )
     GO_REC_PACKAGES=(
         github.com/asciimoo/wuzz@latest # cli http inspector
