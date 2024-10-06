@@ -127,6 +127,10 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     }
 
     function update.packages {
+        source "$ASH/lib/go.sh" && \
+        go.install "$GO_REQ_PACKAGES" && \
+        go.update
+
         source "$ASH/lib/rust.sh" && \
         cargo.install "$CARGO_REQ_PACKAGES"
         cargo.update
@@ -143,7 +147,6 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         (source "$ASH/lib/brew.sh"   && brew.env     && (brew.extras || warn $0 "(brew) something went wrong"))
         builtin cd "$cwd"
     }
-
 
     typeset -Agx DEPRECATIONS=()
     DEPRECATIONS[pull_update]=pull.update

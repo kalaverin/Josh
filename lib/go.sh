@@ -16,9 +16,9 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         github.com/direnv/direnv@latest
         github.com/Akimon658/gup@latest
         github.com/joerdav/xc/cmd/xc@latest
-        github.com/Gelio/go-global-update@latest
     )
     GO_REC_PACKAGES=(
+        github.com/Gelio/go-global-update@latest
         github.com/asciimoo/wuzz@latest # cli http inspector
         github.com/sosedoff/pgweb@latest  # postgres web admin
         github.com/schachmat/wego@latest  # weather in terminal
@@ -113,11 +113,12 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
     function go.install {
         go.deploy $@
+        return "$?"
     }
 
     function go.extras {
-        run.show "$GO_BIN install $GO_REQ_PACKAGES $GO_REC_PACKAGES"
-        return 0
+        go.deploy "$GO_REQ_PACKAGES $GO_REC_PACKAGES"
+        return "$?"
     }
 
     function go.update {
@@ -130,8 +131,8 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
         local update_exe="$GO_BINARIES/gup"
         if [ ! -x "$update_exe" ]; then
-            fail $0 "go-update exe $update_exe isn't found!"
-            return 1
+            warn $0 "go-update exe $update_exe isn't found!"
+            go.extras || return 1
         fi
 
         $update_exe update
