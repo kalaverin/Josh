@@ -31,6 +31,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     )
     EGET_REQ_PACKAGES=(
         zyedidia/micro
+        # https://github.com/sqshq/sampler
     )
 
     function go.init {
