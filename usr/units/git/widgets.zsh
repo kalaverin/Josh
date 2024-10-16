@@ -756,11 +756,12 @@ function __widget.git.checkout_commit {
                 --preview-window="left:`misc.preview.width`:noborder" \
                 --color="$FZF_THEME" \
                 --prompt="checkout >  " \
-                --preview="echo {} | $CMD_EXTRACT_TOP_COMMIT | $CMD_XARGS_DIFF_TO_COMMIT"
+                --preview="echo {} | $CMD_EXTRACT_COMMIT | $CMD_XARGS_DIFF_TO_COMMIT"
         )"
 
+
         if [[ "$result" != "" ]]; then
-            local commit="$(echo "$result" | $CMD_EXTRACT_TOP_COMMIT)"
+            local commit="$(run.out "echo '$result' | $CMD_EXTRACT_COMMIT")"
 
             if [[ "$commit" == "" ]]; then
                 zle reset-prompt
