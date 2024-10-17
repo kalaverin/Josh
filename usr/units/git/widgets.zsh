@@ -466,14 +466,13 @@ zle -N __widget.git.select_branch_then_file_show_commits
 
 
 function __widget.git.checkout_tag {
+    local commit result
+
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local current="$(echo "$GET_BRANCH" | $SHELL)"
-
         local cmd="echo {} | $SHELL $DIFF_FROM_TAG | $DELTA --paging='always'"
 
-        local differ="echo {} | cut -d ' ' -f 1 | xargs -I% git diff --color=always --stat=\$FZF_PREVIEW_COLUMNS --patch --diff-algorithm=histogram $current % | $DELTA"
-
-        local commit="$(git log --color=always --oneline --decorate --tags --no-walk | \
+        result="$(git_list_tags | \
             fzf \
                 --ansi --extended --info='inline' \
                 --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
@@ -492,14 +491,16 @@ function __widget.git.checkout_tag {
                 --preview-window="left:`misc.preview.width`:noborder" \
                 --color="$FZF_THEME" \
                 --prompt="tag >  " \
-                --preview=$cmd | $SHELL $TAG_FROM_STRING \
-                --preview="$differ" \
-        )"
+                --preview="echo {} | $CMD_EXTRACT_COMMIT | $CMD_XARGS_DIFF_TO_COMMIT"
+        )" || return "$?"
 
-        if [[ "$commit" == "" ]]; then
+
+        if [[ "$result" == "" ]]; then
             zle reset-prompt
             return 0
         else
+            commit="$(run.out "echo '$result' | $CMD_EXTRACT_COMMIT")" || return "$?"
+
             if [[ "$BUFFER" != "" ]]; then
                 LBUFFER="$BUFFER && git checkout $commit"
                 local ret=$?
@@ -507,7 +508,7 @@ function __widget.git.checkout_tag {
                 typeset -f zle-line-init >/dev/null && zle zle-line-init
                 return $ret
             else
-                git checkout $commit 2>/dev/null 1>/dev/null
+                run.show "git checkout $commit 2>/dev/null && git.mtime.set"
                 zle reset-prompt
                 return 0
             fi
@@ -735,9 +736,12 @@ zle -N __widget.git.delete_remote_branch
 
 
 function __widget.git.checkout_commit {
+    local commit result
+
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local branch="$(echo "$GET_BRANCH" | $SHELL)"
-        local result="$(eval "git_list_commits $branch" | GLOB_PIPE_NUMERATE | \
+
+        result="$(eval "git_list_commits $branch" | GLOB_PIPE_NUMERATE | \
             fzf \
                 --ansi --extended --info='inline' \
                 --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
@@ -757,11 +761,10 @@ function __widget.git.checkout_commit {
                 --color="$FZF_THEME" \
                 --prompt="checkout >  " \
                 --preview="echo {} | $CMD_EXTRACT_COMMIT | $CMD_XARGS_DIFF_TO_COMMIT"
-        )"
-
+        )" || return "$?"
 
         if [[ "$result" != "" ]]; then
-            local commit="$(run.out "echo '$result' | $CMD_EXTRACT_COMMIT")"
+            commit="$(run.out "echo '$result' | $CMD_EXTRACT_COMMIT")" || return "$?"
 
             if [[ "$commit" == "" ]]; then
                 zle reset-prompt

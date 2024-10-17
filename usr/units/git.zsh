@@ -11,8 +11,9 @@ local GIT_DIFF="git diff --color=always --patch --stat --diff-algorithm=histogra
 
 
 # ———
-
-alias git_list_commits="git log --color=always --format='%C(reset)%C(blue)%C(dim)%h%C(auto)%d %C(reset)%s %C(brightblack)%C(dim)%an %C(black)%>(512)%>(32,trunc)%H%C(reset)%C(brightblack)%C(dim)' --first-parent"
+GIT_LIST_FORMAT="%C(reset)%C(cyan)%C(dim)%h%C(auto)%d %C(reset)%s %C(brightblack)%C(dim)%an %C(black)%>(512)%>(32,trunc)%H%C(reset)%C(brightblack)%C(dim)"
+alias git_list_commits="git log --color=always --format='$GIT_LIST_FORMAT' --first-parent"
+alias git_list_tags="git log --color=always --format='$GIT_LIST_FORMAT' --tags --no-walk"
 
 alias -g GLOB_PIPE_REMOVE_DOTS="sed -re 's/(\.{2,})+$//g'"
 alias -g GLOB_PIPE_REMOVE_SPACES="sed -re 's/(\\s+)/ /g' | sd '^\s+' ''"
