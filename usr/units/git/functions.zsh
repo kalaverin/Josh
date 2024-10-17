@@ -130,6 +130,17 @@ function git.this.root {
     printf "$result"
 }
 
+function git.root {
+    local result
+    result="$(git.this.root)" || return "$?"
+    [ -z "$result" ] && return 1
+
+    result="$(fs.dirname "$result")" || return "$?"
+    [ -z "$result" ] && return 1
+
+    printf "$result"
+}
+
 function git.this.hash {
     local result
     result="$(eval "$GET_HASH")" || return "$?"

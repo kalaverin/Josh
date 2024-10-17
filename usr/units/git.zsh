@@ -5,25 +5,30 @@ local DIFF_FROM_TAG="$INCLUDE_DIR/git_diff_from_tag.sh"
 local LIST_BRANCHES="$INCLUDE_DIR/git_list_branches.sh"
 local SETUPCFG_LOOKUP="$INCLUDE_DIR/git_search_setupcfg.sh"
 local TAG_FROM_STRING="$INCLUDE_DIR/git_tag_from_str.sh"
+local DIFF_SHOW_PLEASE="$INCLUDE_DIR/git_show_diff.sh"
+
 local LIST_TO_ADD="git status --short --verbose --no-ahead-behind --ignore-submodules --untracked-file"
 local ESCAPE_STATUS='sd "^( )" "." | sd "^(.)( )" "$1." | sd "^(. )" "++ "'
 local GIT_DIFF="git diff --color=always --patch --stat --diff-algorithm=histogram"
 
-
 # ———
+
 GIT_LIST_FORMAT="%C(reset)%C(cyan)%C(dim)%h%C(auto)%d %C(reset)%s %C(brightblack)%C(dim)%an %C(black)%>(512)%>(32,trunc)%H%C(reset)%C(brightblack)%C(dim)"
+
+CMD_EXTRACT_COMMIT="grep -o '[a-f0-9]\{32,\}$'"
+CMD_EXTRACT_TOP_COMMIT="head -1 | grep -o '[a-f0-9]\{32,\}$'"
+
+CMD_DELTA="$DELTA --paging='always'"
+CMD_SHOW_ARGS="--first-parent --find-renames --find-copies --format='format:%H %ad%n%an <%ae>%n%s' --diff-algorithm=histogram $ | $DELTA"
+CMD_XARGS_SHOW_TO_COMMIT="xargs -I$ git show -m $CMD_SHOW_ARGS"
+CMD_XARGS_DIFF_TO_COMMIT="xargs -I$ git diff -m $CMD_SHOW_ARGS"
+
 alias git_list_commits="git log --color=always --format='$GIT_LIST_FORMAT' --first-parent"
 alias git_list_tags="git log --color=always --format='$GIT_LIST_FORMAT' --tags --no-walk"
 
 alias -g GLOB_PIPE_REMOVE_DOTS="sed -re 's/(\.{2,})+$//g'"
 alias -g GLOB_PIPE_REMOVE_SPACES="sed -re 's/(\\s+)/ /g' | sd '^\s+' ''"
 alias -g GLOB_PIPE_NUMERATE="awk '{print NR,\$0}'"
-
-CMD_EXTRACT_COMMIT="grep -o '[a-f0-9]\{32,\}$'"
-CMD_EXTRACT_TOP_COMMIT="head -1 | grep -o '[a-f0-9]\{32,\}$'"
-
-CMD_XARGS_SHOW_TO_COMMIT="xargs -I$ git show --first-parent --find-renames --find-copies --format='format:%H %ad%n%an <%ae>%n%s' --diff-algorithm=histogram $ | $DELTA --paging='always'"
-CMD_XARGS_DIFF_TO_COMMIT="xargs -I$ git diff --first-parent --find-renames --find-copies --format='format:%H %ad%n%an <%ae>%n%s' --diff-algorithm=histogram $ | $DELTA --paging='always'"
 
 # ——— required
 
@@ -35,8 +40,7 @@ source "$INCLUDE_DIR/binds.zsh"
 
 function git_abort {
     local state
-    state="$(git.this.state)"  # merge, rebase or cherry-pick
-    [ "$?" -gt 0 ] && return 0
+    state="$(git.this.state)" || return 0 # merge, rebase or cherry-pick
     [ "$state" ] && git "$state" --abort
     zle reset-prompt
 }
@@ -44,8 +48,7 @@ zle -N git_abort
 
 function git_continue {
     local state
-    state="$(git.this.state)"  # merge, rebase or cherry-pick
-    [ "$?" -gt 0 ] && return 0
+    state="$(git.this.state)" || return 0 # merge, rebase or cherry-pick
     [ "$state" ] && git "$state" --continue
     zle reset-prompt
 }

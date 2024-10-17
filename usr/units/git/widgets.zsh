@@ -197,13 +197,14 @@ function __widget.git.conflict_solver {
 zle -N __widget.git.conflict_solver
 
 
-function __widget.git.select_commit_then_files_checkout {
-    local branch commit
+function __widget.git.select_files_from_commit {
+    local branch commit result root
 
-    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
+    root="$(git.root 2>/dev/null)" || return 0
+    branch="$(git.this.branch)" || return "$?"
 
-        branch="$(git.this.branch)" || return "$?"
-        commit="$(git_list_commits "$branch" \
+    while true; do
+        result="$(git_list_commits "$branch" \
             | GLOB_PIPE_REMOVE_DOTS \
             | GLOB_PIPE_REMOVE_SPACES \
             | sed 1d \
@@ -223,21 +224,25 @@ function __widget.git.select_commit_then_files_checkout {
                 --bind='shift-down:half-page-down' \
                 --bind='shift-up:half-page-up' \
                 --bind='alt-space:jump' \
-                --color="$FZF_THEME" \
                 --preview-window="left:`misc.preview.width`:noborder" \
-                --prompt="$branch: select commit >  " \
-                --preview="echo {} | $CMD_EXTRACT_TOP_COMMIT | xargs -I% git diff --color=always --shortstat --patch --diff-algorithm=histogram $branch % | $DELTA --paging='always'" | $CMD_EXTRACT_TOP_COMMIT
+                --color="$FZF_THEME" \
+                --prompt="commit -> file >  " \
+                --preview="echo {} | $CMD_EXTRACT_COMMIT | $CMD_XARGS_SHOW_TO_COMMIT"
         )"
-        if [[ "$commit" == "" ]]; then
+        if [[ -z "$result" ]]; then
             zle redisplay
             typeset -f zle-line-init >/dev/null && zle zle-line-init
             return 0
         fi
+        commit="$(run.out "echo '$result' | $CMD_EXTRACT_COMMIT")" || return "$?"
 
-        local root=$(realpath `$SHELL -c "$GET_ROOT"`)
-        local differ="echo {} | xargs -I% git diff --color=always --shortstat --patch --diff-algorithm=histogram $branch $commit -- $root/% | $DELTA"
+        local files
+        local differ="echo {} | sed 's: +$::' | xargs -I$ $SHELL $DIFF_SHOW_PLEASE $commit $root $ | $CMD_DELTA"
+
         while true; do
-            local files="$(git diff --name-only $branch $commit | sort | \
+            files="$(
+                git show --stat --stat-width=2048 "$commit" | \
+                grep '|' | sed 's:|.\+::' | sed 's/[[:space:]]*$//g' | sort -V | \
                 fzf \
                     --ansi --extended --info='inline' \
                     --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
@@ -256,28 +261,27 @@ function __widget.git.select_commit_then_files_checkout {
                     --color="$FZF_THEME" \
                     --preview-window="left:`misc.preview.width`:noborder" \
                     --multi --tac \
-                    --prompt="$branch: select file >  " \
-                    --filepath-word --preview="$differ" \
-                | proximity-sort . | sed -z 's:\n: :g' | awk '{$1=$1};1' \
-                | sed -r "s:\s\b: $root/:g" | xargs -I% echo "$root/%"
+                    --prompt="$branch: file >  " \
+                    --preview="$differ" \
+                    --filepath-word \
             )"
 
-            if [[ "$files" != "" ]]; then
+            if [ "$?" -eq 130 ] || [ -z "$files" ]; then
+                break
+            fi
+
                 # TODO: filter files for exists
                 run.show "git checkout $commit -- $files && git reset $files > /dev/null && git diff HEAD --stat --diff-algorithm=histogram --color=always | xargs -I$ echo $"
                 zle reset-prompt
                 return 130
-            else
-                return 0
-            fi
         done
-    fi
+    done
 }
-zle -N __widget.git.select_commit_then_files_checkout
+zle -N __widget.git.select_files_from_commit
 
 
 function __widget.git.select_branch_then_commit_then_file_checkout {
-    __widget.git.select_branch_with_callback __widget.git.select_commit_then_files_checkout
+    __widget.git.select_branch_with_callback __widget.git.select_files_from_commit
 }
 zle -N __widget.git.select_branch_then_commit_then_file_checkout
 
@@ -813,7 +817,7 @@ zle -N  __widget.git.squash_to_commit
 function __widget.git.show_commits {
     local branch commit result
 
-    git.this.root 2>/dev/null || return true
+    git.this.root 1>/dev/null 2>/dev/null || return true
     branch="$(git.this.branch)" || return "$?"
     result="$(git_list_commits | \
         fzf \
@@ -833,7 +837,7 @@ function __widget.git.show_commits {
             --bind='alt-space:jump' \
             --preview-window="left:`misc.preview.width`:noborder" \
             --color="$FZF_THEME" \
-            --prompt="$branch checkout >  " \
+            --prompt="checkout >  " \
             --preview="echo {} | $CMD_EXTRACT_COMMIT | $CMD_XARGS_SHOW_TO_COMMIT"
     )" || return "$?"
 
@@ -863,9 +867,9 @@ zle -N __widget.git.show_commits
 function __widget.git.checkout_commit {
     local branch commit result
 
-    git.this.root 2>/dev/null || return true
+    git.this.root 1>/dev/null 2>/dev/null || return true
     branch="$(git.this.branch)" || return "$?"
-    result="$(eval "git_list_commits $branch" | GLOB_PIPE_NUMERATE | \
+    result="$(eval "git_list_commits $branch" | sed 1d |GLOB_PIPE_NUMERATE | \
         fzf \
             --ansi --extended --info='inline' \
             --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
@@ -883,7 +887,7 @@ function __widget.git.checkout_commit {
             --bind='alt-space:jump' \
             --preview-window="left:`misc.preview.width`:noborder" \
             --color="$FZF_THEME" \
-            --prompt="$branch checkout >  " \
+            --prompt="checkout >  " \
             --preview="echo {} | $CMD_EXTRACT_COMMIT | $CMD_XARGS_DIFF_TO_COMMIT"
     )" || return "$?"
 
@@ -913,7 +917,7 @@ zle -N __widget.git.checkout_commit
 function __widget.git.checkout_tag {
     local branch commit result
 
-    git.this.root 2>/dev/null || return true
+    git.this.root 1>/dev/null 2>/dev/null || return true
     branch="$(git.this.branch)" || return "$?"
     result="$(git_list_tags | \
         fzf \
@@ -933,7 +937,7 @@ function __widget.git.checkout_tag {
             --bind='alt-space:jump' \
             --preview-window="left:`misc.preview.width`:noborder" \
             --color="$FZF_THEME" \
-            --prompt="$branch checkout >  " \
+            --prompt="checkout >  " \
             --preview="echo {} | $CMD_EXTRACT_COMMIT | $CMD_XARGS_DIFF_TO_COMMIT"
     )" || return "$?"
 
