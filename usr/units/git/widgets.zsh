@@ -49,6 +49,7 @@ function __widget.git.add {
 }
 zle -N __widget.git.add
 
+
 function __widget.git.checkout_modified {
     local branch="`git.this.branch`"
     [ ! "$branch" ] && return 1
@@ -195,6 +196,7 @@ function __widget.git.conflict_solver {
 }
 zle -N __widget.git.conflict_solver
 
+
 function __widget.git.select_commit_then_files_checkout {
     local branch commit
 
@@ -278,45 +280,6 @@ function __widget.git.select_branch_then_commit_then_file_checkout {
     __widget.git.select_branch_with_callback __widget.git.select_commit_then_files_checkout
 }
 zle -N __widget.git.select_branch_then_commit_then_file_checkout
-
-
-function __widget.git.show_commits {
-    local branch
-
-    if [ "$(git rev-parse --quiet --show-toplevel 2>/dev/null)" ]; then
-        branch="$(git.this.branch)" || return "$?"
-
-        eval "git_list_commits $branch" | GLOB_PIPE_NUMERATE | \
-            fzf \
-                --ansi --extended --info='inline' \
-                --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
-                --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
-                --bind='alt-w:toggle-preview-wrap' \
-                --bind='ctrl-c:abort' \
-                --bind='ctrl-q:abort' \
-                --bind='end:preview-down' \
-                --bind='esc:cancel' \
-                --bind='home:preview-up' \
-                --bind='pgdn:preview-page-down' \
-                --bind='pgup:preview-page-up' \
-                --bind='shift-down:half-page-down' \
-                --bind='shift-up:half-page-up' \
-                --bind='alt-space:jump' \
-                --color="$FZF_THEME" \
-                --preview-window="left:`misc.preview.width`:noborder" \
-                --prompt="$branch >  " \
-                --bind="enter:execute(echo {} | $CMD_EXTRACT_TOP_COMMIT | $CMD_XARGS_SHOW_TO_COMMIT)" \
-                --preview="echo {} | $CMD_EXTRACT_TOP_COMMIT | $CMD_XARGS_SHOW_TO_COMMIT"
-
-        local ret=$?
-        if [[ "$ret" == "130" ]]; then
-            zle redisplay
-            typeset -f zle-line-init >/dev/null && zle zle-line-init
-            return $ret
-        fi
-    fi
-}
-zle -N __widget.git.show_commits
 
 
 function __widget.git.select_branch_with_callback {
@@ -463,59 +426,6 @@ function __widget.git.select_branch_then_file_show_commits {
     __widget.git.select_branch_with_callback __widget.git.select_file_show_commits
 }
 zle -N __widget.git.select_branch_then_file_show_commits
-
-
-function __widget.git.checkout_tag {
-    local commit result
-
-    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
-        local current="$(echo "$GET_BRANCH" | $SHELL)"
-        local cmd="echo {} | $SHELL $DIFF_FROM_TAG | $DELTA --paging='always'"
-
-        result="$(git_list_tags | \
-            fzf \
-                --ansi --extended --info='inline' \
-                --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
-                --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
-                --bind='alt-w:toggle-preview-wrap' \
-                --bind='ctrl-c:abort' \
-                --bind='ctrl-q:abort' \
-                --bind='end:preview-down' \
-                --bind='esc:cancel' \
-                --bind='home:preview-up' \
-                --bind='pgdn:preview-page-down' \
-                --bind='pgup:preview-page-up' \
-                --bind='shift-down:half-page-down' \
-                --bind='shift-up:half-page-up' \
-                --bind='alt-space:jump' \
-                --preview-window="left:`misc.preview.width`:noborder" \
-                --color="$FZF_THEME" \
-                --prompt="tag >  " \
-                --preview="echo {} | $CMD_EXTRACT_COMMIT | $CMD_XARGS_DIFF_TO_COMMIT"
-        )" || return "$?"
-
-
-        if [[ "$result" == "" ]]; then
-            zle reset-prompt
-            return 0
-        else
-            commit="$(run.out "echo '$result' | $CMD_EXTRACT_COMMIT")" || return "$?"
-
-            if [[ "$BUFFER" != "" ]]; then
-                LBUFFER="$BUFFER && git checkout $commit"
-                local ret=$?
-                zle redisplay
-                typeset -f zle-line-init >/dev/null && zle zle-line-init
-                return $ret
-            else
-                run.show "git checkout $commit 2>/dev/null && git.mtime.set"
-                zle reset-prompt
-                return 0
-            fi
-        fi
-    fi
-}
-zle -N __widget.git.checkout_tag
 
 
 function __widget.git.switch_branch {
@@ -735,59 +645,6 @@ function __widget.git.delete_remote_branch {
 zle -N __widget.git.delete_remote_branch
 
 
-function __widget.git.checkout_commit {
-    local commit result
-
-    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
-        local branch="$(echo "$GET_BRANCH" | $SHELL)"
-
-        result="$(eval "git_list_commits $branch" | GLOB_PIPE_NUMERATE | \
-            fzf \
-                --ansi --extended --info='inline' \
-                --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
-                --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
-                --bind='alt-w:toggle-preview-wrap' \
-                --bind='ctrl-c:abort' \
-                --bind='ctrl-q:abort' \
-                --bind='end:preview-down' \
-                --bind='esc:cancel' \
-                --bind='home:preview-up' \
-                --bind='pgdn:preview-page-down' \
-                --bind='pgup:preview-page-up' \
-                --bind='shift-down:half-page-down' \
-                --bind='shift-up:half-page-up' \
-                --bind='alt-space:jump' \
-                --preview-window="left:`misc.preview.width`:noborder" \
-                --color="$FZF_THEME" \
-                --prompt="checkout >  " \
-                --preview="echo {} | $CMD_EXTRACT_COMMIT | $CMD_XARGS_DIFF_TO_COMMIT"
-        )" || return "$?"
-
-        if [[ "$result" != "" ]]; then
-            commit="$(run.out "echo '$result' | $CMD_EXTRACT_COMMIT")" || return "$?"
-
-            if [[ "$commit" == "" ]]; then
-                zle reset-prompt
-                return 1
-            fi
-
-            if [[ "$BUFFER" != "" ]]; then
-                LBUFFER="$BUFFER && git checkout $commit && git.mtime.set"
-                local ret=$?
-                zle redisplay
-                typeset -f zle-line-init >/dev/null && zle zle-line-init
-                return $ret
-            fi
-
-            run.show "git checkout $commit 2>/dev/null && git.mtime.set"
-        fi
-        zle reset-prompt
-        return 0
-    fi
-}
-zle -N __widget.git.checkout_commit
-
-
 function __widget.git.merge_branch {
     local branch="`git.this.branch`"
     [ ! "$branch" ] && return 1
@@ -948,3 +805,156 @@ function __widget.git.squash_to_commit {
     fi
 }
 zle -N  __widget.git.squash_to_commit
+
+
+# renewed
+
+
+function __widget.git.show_commits {
+    local branch commit result
+
+    git.this.root 2>/dev/null || return true
+    branch="$(git.this.branch)" || return "$?"
+    result="$(git_list_commits | \
+        fzf \
+            --ansi --extended --info='inline' \
+            --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
+            --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
+            --bind='alt-w:toggle-preview-wrap' \
+            --bind='ctrl-c:abort' \
+            --bind='ctrl-q:abort' \
+            --bind='end:preview-down' \
+            --bind='esc:cancel' \
+            --bind='home:preview-up' \
+            --bind='pgdn:preview-page-down' \
+            --bind='pgup:preview-page-up' \
+            --bind='shift-down:half-page-down' \
+            --bind='shift-up:half-page-up' \
+            --bind='alt-space:jump' \
+            --preview-window="left:`misc.preview.width`:noborder" \
+            --color="$FZF_THEME" \
+            --prompt="$branch checkout >  " \
+            --preview="echo {} | $CMD_EXTRACT_COMMIT | $CMD_XARGS_SHOW_TO_COMMIT"
+    )" || return "$?"
+
+    if [ -n "$result" ]; then
+        commit="$(run.out "echo '$result' | $CMD_EXTRACT_COMMIT")" || return "$?"
+
+        if [ -z "$commit" ]; then
+            zle reset-prompt
+            return 1
+        fi
+
+        if [ -n "$BUFFER" ]; then
+            LBUFFER="$BUFFER && git checkout $commit && git.mtime.set"
+            local ret=$?
+            zle redisplay
+            typeset -f zle-line-init >/dev/null && zle zle-line-init
+            return $ret
+        fi
+        run.show "git checkout $commit 2>/dev/null && git.mtime.set"
+    fi
+    zle reset-prompt
+    return 0
+}
+zle -N __widget.git.show_commits
+
+
+function __widget.git.checkout_commit {
+    local branch commit result
+
+    git.this.root 2>/dev/null || return true
+    branch="$(git.this.branch)" || return "$?"
+    result="$(eval "git_list_commits $branch" | GLOB_PIPE_NUMERATE | \
+        fzf \
+            --ansi --extended --info='inline' \
+            --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
+            --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
+            --bind='alt-w:toggle-preview-wrap' \
+            --bind='ctrl-c:abort' \
+            --bind='ctrl-q:abort' \
+            --bind='end:preview-down' \
+            --bind='esc:cancel' \
+            --bind='home:preview-up' \
+            --bind='pgdn:preview-page-down' \
+            --bind='pgup:preview-page-up' \
+            --bind='shift-down:half-page-down' \
+            --bind='shift-up:half-page-up' \
+            --bind='alt-space:jump' \
+            --preview-window="left:`misc.preview.width`:noborder" \
+            --color="$FZF_THEME" \
+            --prompt="$branch checkout >  " \
+            --preview="echo {} | $CMD_EXTRACT_COMMIT | $CMD_XARGS_DIFF_TO_COMMIT"
+    )" || return "$?"
+
+    if [ -n "$result" ]; then
+        commit="$(run.out "echo '$result' | $CMD_EXTRACT_COMMIT")" || return "$?"
+
+        if [ -z "$commit" ]; then
+            zle reset-prompt
+            return 1
+        fi
+
+        if [ -n "$BUFFER" ]; then
+            LBUFFER="$BUFFER && git checkout $commit && git.mtime.set"
+            local ret=$?
+            zle redisplay
+            typeset -f zle-line-init >/dev/null && zle zle-line-init
+            return $ret
+        fi
+        run.show "git checkout $commit 2>/dev/null && git.mtime.set"
+    fi
+    zle reset-prompt
+    return 0
+}
+zle -N __widget.git.checkout_commit
+
+
+function __widget.git.checkout_tag {
+    local branch commit result
+
+    git.this.root 2>/dev/null || return true
+    branch="$(git.this.branch)" || return "$?"
+    result="$(git_list_tags | \
+        fzf \
+            --ansi --extended --info='inline' \
+            --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
+            --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
+            --bind='alt-w:toggle-preview-wrap' \
+            --bind='ctrl-c:abort' \
+            --bind='ctrl-q:abort' \
+            --bind='end:preview-down' \
+            --bind='esc:cancel' \
+            --bind='home:preview-up' \
+            --bind='pgdn:preview-page-down' \
+            --bind='pgup:preview-page-up' \
+            --bind='shift-down:half-page-down' \
+            --bind='shift-up:half-page-up' \
+            --bind='alt-space:jump' \
+            --preview-window="left:`misc.preview.width`:noborder" \
+            --color="$FZF_THEME" \
+            --prompt="$branch checkout >  " \
+            --preview="echo {} | $CMD_EXTRACT_COMMIT | $CMD_XARGS_DIFF_TO_COMMIT"
+    )" || return "$?"
+
+    if [ -n "$result" ]; then
+        commit="$(run.out "echo '$result' | $CMD_EXTRACT_COMMIT")" || return "$?"
+
+        if [ -z "$commit" ]; then
+            zle reset-prompt
+            return 1
+        fi
+
+        if [ -n "$BUFFER" ]; then
+            LBUFFER="$BUFFER && git checkout $commit && git.mtime.set"
+            local ret=$?
+            zle redisplay
+            typeset -f zle-line-init >/dev/null && zle zle-line-init
+            return $ret
+        fi
+        run.show "git checkout $commit 2>/dev/null && git.mtime.set"
+    fi
+    zle reset-prompt
+    return 0
+}
+zle -N __widget.git.checkout_tag
