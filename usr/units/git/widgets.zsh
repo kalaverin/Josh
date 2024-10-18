@@ -6,7 +6,7 @@ function __widget.git.add {
     while true; do
         local value="$(
             $SHELL -c "$LIST_TO_ADD | $ESCAPE_STATUS \
-            | $FZF \
+            | fzf \
             --filepath-word --tac \
             --multi --nth=2.. --with-nth=1.. \
             --preview=\"$GIT_DIFF -- {2} | $DELTA\" \
@@ -151,7 +151,7 @@ function __widget.git.conflict_solver {
         while true; do
             local value="$(
                 $SHELL -c "$select | $conflicted | $UNIQUE_SORT \
-                | $FZF \
+                | fzf \
                 --exit-0 \
                 --select-1 \
                 --filepath-word --tac \
@@ -222,7 +222,7 @@ function __widget.git.select_files_from_commit {
             | GLOB_PIPE_REMOVE_SPACES \
             | sed 1d \
             | GLOB_PIPE_NUMERATE \
-            | $FZF \
+            | fzf \
                 --ansi --extended --info='inline' \
                 --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
                 --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
@@ -256,7 +256,7 @@ function __widget.git.select_files_from_commit {
             files="$(
                 git show --stat --stat-width=2048 "$commit" | \
                 grep '|' | sed 's:|.\+::' | sed 's/[[:space:]]*$//g' | sort -V | \
-                $FZF \
+                fzf \
                     --ansi --extended --info='inline' \
                     --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
                     --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
@@ -305,7 +305,7 @@ function __widget.git.select_branch_with_callback {
 
     while true; do
         local branch="$($SHELL $LIST_BRANCHES | sed 1d | \
-            $FZF \
+            fzf \
                 --ansi --extended --info='inline' \
                 --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
                 --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
@@ -361,7 +361,7 @@ function __widget.git.show_branch_file_commits {
         fi
 
         eval "git log --color=always --format='%C(reset)%C(blue)%C(dim)%h%C(auto)%d %C(reset)%s %C(brightblack)%C(dim)%an %C(black)%>(512)%>(32,trunc)%H%C(reset)%C(brightblack)%C(dim)' --first-parent $branch -- $file" | sed -r 's%^(\*\s+)%%g' | \
-            $FZF \
+            fzf \
                 --ansi --extended --info='inline' \
                 --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
                 --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
@@ -397,7 +397,7 @@ function __widget.git.select_file_show_commits {
 
         while true; do
             local file="$(git ls-files | sort | \
-                $FZF \
+                fzf \
                     --ansi --extended --info='inline' \
                     --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
                     --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
@@ -464,7 +464,7 @@ function __widget.git.switch_branch {
     while true; do
         local value="$(
             $SHELL -c "$select \
-            | $FZF \
+            | fzf \
             --preview=\"$GIT_DIFF $branch {1} | $DELTA \" \
             --preview-window=\"left:`misc.preview.width`:noborder\" \
             --prompt=\"branch $state>  \" \
@@ -517,7 +517,7 @@ function __widget.git.fetch_branch {
 
     value="$(
         $SHELL -c "$select | $filter \
-        | $FZF \
+        | fzf \
         --prompt='fetch branch >  ' \
         --multi \
         --preview=\"$differ\" \
@@ -563,7 +563,7 @@ function __widget.git.delete_branch {
 
     local value="$(
         $SHELL -c "$select | $filter \
-        | $FZF \
+        | fzf \
         --multi \
         --prompt='DELETE REMOTE & LOCAL BRANCH >  ' \
         --preview=\"$differ\" \
@@ -600,7 +600,7 @@ function __widget.git.delete_local_branch {
     while true; do
         local value="$(
             $SHELL -c "$select \
-            | $FZF \
+            | fzf \
             --multi \
             --preview=\"$differ $branch | $DELTA \" \
             --preview-window=\"left:`misc.preview.width`:noborder\" \
@@ -638,7 +638,7 @@ function __widget.git.delete_remote_branch {
 
     local value="$(
         $SHELL -c "$select | $filter \
-        | $FZF \
+        | fzf \
         --multi \
         --prompt='DELETE REMOTE BRANCH >  ' \
         --preview=\"$differ\" \
@@ -677,7 +677,7 @@ function __widget.git.merge_branch {
     while true; do
         local value="$(
             $SHELL -c "$select \
-            | $FZF \
+            | fzf \
             --preview=\"$differ $branch | $DELTA \" \
             --preview-window=\"left:`misc.preview.width`:noborder\" \
             --prompt=\"merge to $branch $state>  \" \
@@ -717,7 +717,7 @@ function __widget.git.rebase_branch {
 
     local value="$(
         $SHELL -c "$select \
-        | $FZF \
+        | fzf \
         --preview=\"$differ $branch | $DELTA \" \
         --preview-window=\"left:`misc.preview.width`:noborder\" \
         --prompt=\"rebase $branch $state>  \" | head -n 1
@@ -780,7 +780,7 @@ function __widget.git.squash_to_commit {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local branch="$(echo "$GET_BRANCH" | $SHELL)"
         local result="$(eval "git_list_commits $branch" | GLOB_PIPE_NUMERATE | \
-            $FZF \
+            fzf \
                 --prompt="rebased squash to >  " \
                 --preview-window="left:`misc.preview.width`:noborder" \
                 --preview="echo {} | $CMD_EXTRACT_TOP_COMMIT | $CMD_XARGS_DIFF_TO_COMMIT"
@@ -822,7 +822,7 @@ function __widget.git.show_commits {
     git.this.root 1>/dev/null 2>/dev/null || return true
     branch="$(git.this.branch)" || return "$?"
     result="$(git_list_commits | \
-        $FZF \
+        fzf \
             --prompt="checkout >  " \
             --preview-window="left:`misc.preview.width`:noborder" \
             --preview="echo {} | $CMD_EXTRACT_COMMIT | $CMD_XARGS_SHOW_TO_COMMIT"
@@ -857,7 +857,7 @@ function __widget.git.checkout_commit {
     git.this.root 1>/dev/null 2>/dev/null || return true
     branch="$(git.this.branch)" || return "$?"
     result="$(eval "git_list_commits $branch" | sed 1d | GLOB_PIPE_NUMERATE | \
-        $FZF \
+        fzf \
             --prompt="checkout >  " \
             --preview-window="left:`misc.preview.width`:noborder" \
             --preview="echo {} | $CMD_EXTRACT_COMMIT | $CMD_XARGS_DIFF_TO_COMMIT"
@@ -892,7 +892,7 @@ function __widget.git.checkout_tag {
     git.this.root 1>/dev/null 2>/dev/null || return true
     branch="$(git.this.branch)" || return "$?"
     result="$(git_list_tags | \
-        $FZF \
+        fzf \
             --prompt="checkout >  " \
             --preview-window="left:`misc.preview.width`:noborder" \
             --preview="echo {} | $CMD_EXTRACT_COMMIT | $CMD_XARGS_DIFF_TO_COMMIT"
