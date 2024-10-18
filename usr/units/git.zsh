@@ -5,7 +5,10 @@ local DIFF_FROM_TAG="$INCLUDE_DIR/git_diff_from_tag.sh"
 local LIST_BRANCHES="$INCLUDE_DIR/git_list_branches.sh"
 local SETUPCFG_LOOKUP="$INCLUDE_DIR/git_search_setupcfg.sh"
 local TAG_FROM_STRING="$INCLUDE_DIR/git_tag_from_str.sh"
+
 local DIFF_SHOW_PLEASE="$INCLUDE_DIR/git_show_diff.sh"
+local DIFF_SHOW_OR_CONTENT="$INCLUDE_DIR/show_file_diff_or_content.sh"
+
 
 local LIST_TO_ADD="git status --short --verbose --no-ahead-behind --ignore-submodules --untracked-file"
 local ESCAPE_STATUS='sd "^( )" "." | sd "^(.)( )" "$1." | sd "^(. )" "++ "'

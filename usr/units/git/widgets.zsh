@@ -51,40 +51,53 @@ zle -N __widget.git.add
 
 
 function __widget.git.checkout_modified {
-    local branch="`git.this.branch`"
-    [ ! "$branch" ] && return 1
+    local branch commit result
 
-    local cwd="`pwd`"
-    # TODO: untracked must be removed
-    # TODO: deleted must be restored
-    local select='git status --short --verbose --no-ahead-behind --untracked-files=no'
+    git.this.root 1>/dev/null 2>/dev/null || return true
+    branch="$(git.this.branch)" || return "$?"
 
-    while true; do
-        local value="$(
-            $SHELL -c "$select | $ESCAPE_STATUS \
-            | $FZF \
-            --filepath-word --tac \
-            --multi --nth=2.. --with-nth=1.. \
-            --preview=\"$GIT_DIFF -R $branch -- {2} | $DELTA\" \
-            --preview-window=\"left:`misc.preview.width`:noborder\" \
-            --prompt=\"checkout to $branch >  \" \
-            | tabulate -i 2 | sort --human-numeric-sort | $UNIQUE_SORT \
-            | xargs -n 1 realpath --quiet --relative-to=$cwd 2>/dev/null \
-            | $LINES_TO_LINE")"
+    local differ="$SHELL $DIFF_SHOW_OR_CONTENT '$branch' {2} | $CMD_DELTA"
+    result="$(
+        git status --short --verbose --no-ahead-behind --untracked-files | \
+        eval $ESCAPE_STATUS | eval $FZF \
+            --filepath-word --tac --multi --with-nth=1.. --nth=2.. \
+            --preview="\"$differ\"" \
+            --preview-window="left:`misc.preview.width`:noborder" \
+            --prompt="'revert $branch > '")"
 
-        if [ ! "$value" ]; then
-            zle reset-prompt
-            local retval="0"
-            break
+    to_remove="$(
+        printf "$result" | \
+        grep -P '^\?\?' | tabulate -i 2 | \
+        sort --human-numeric-sort | \
+        eval $UNIQUE_SORT | eval $LINES_TO_LINE)"
+
+    to_checkout="$(
+        printf "$result" | \
+        grep -Pv '^\?\?' | tabulate -i 2 | \
+        sort --human-numeric-sort | \
+        eval $UNIQUE_SORT | eval $LINES_TO_LINE)"
+
+    if [ -n "$to_remove" ] || [ -n "$to_checkout" ]; then
+
+        local command=""
+        if [ -n "$to_remove" ]; then
+            command="unlink $to_remove"
         fi
 
-        [ "$BUFFER" != "" ] && local command="$BUFFER &&"
-        LBUFFER="$command git checkout $branch -- $value"
+        if [ -n "$to_checkout" ]; then
+            if [ -z "$command" ]; then
+                command="git checkout $branch -- $to_remove"
+            else
+                command="$command && git checkout $branch -- $to_remove"
+            fi
+        fi
 
-        zle redisplay
-        local retval=130
-        break
-    done
+        [ -n "$BUFFER" ] && local command="$BUFFER &&"
+        LBUFFER="$command"
+    fi
+
+    zle reset-prompt
+    zle redisplay
     return "$retval"
 }
 zle -N __widget.git.checkout_modified
@@ -209,7 +222,7 @@ function __widget.git.select_files_from_commit {
             | GLOB_PIPE_REMOVE_SPACES \
             | sed 1d \
             | GLOB_PIPE_NUMERATE \
-            | fzf \
+            | $FZF \
                 --ansi --extended --info='inline' \
                 --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
                 --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
@@ -243,7 +256,7 @@ function __widget.git.select_files_from_commit {
             files="$(
                 git show --stat --stat-width=2048 "$commit" | \
                 grep '|' | sed 's:|.\+::' | sed 's/[[:space:]]*$//g' | sort -V | \
-                fzf \
+                $FZF \
                     --ansi --extended --info='inline' \
                     --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
                     --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
@@ -292,7 +305,7 @@ function __widget.git.select_branch_with_callback {
 
     while true; do
         local branch="$($SHELL $LIST_BRANCHES | sed 1d | \
-            fzf \
+            $FZF \
                 --ansi --extended --info='inline' \
                 --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
                 --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
@@ -348,7 +361,7 @@ function __widget.git.show_branch_file_commits {
         fi
 
         eval "git log --color=always --format='%C(reset)%C(blue)%C(dim)%h%C(auto)%d %C(reset)%s %C(brightblack)%C(dim)%an %C(black)%>(512)%>(32,trunc)%H%C(reset)%C(brightblack)%C(dim)' --first-parent $branch -- $file" | sed -r 's%^(\*\s+)%%g' | \
-            fzf \
+            $FZF \
                 --ansi --extended --info='inline' \
                 --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
                 --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
@@ -384,7 +397,7 @@ function __widget.git.select_file_show_commits {
 
         while true; do
             local file="$(git ls-files | sort | \
-                fzf \
+                $FZF \
                     --ansi --extended --info='inline' \
                     --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
                     --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
@@ -717,7 +730,7 @@ function __widget.git.rebase_branch {
         local value="$branch"
     fi
 
-    local command="`git.cmd.fetch "$value"` && git rebase --stat --interactive --no-autosquash --autostash \"origin/$value\""
+    local command="$(git.cmd.fetch "$value") && git rebase --stat --interactive --no-autosquash --autostash \"origin/$value\""
 
     if [ ! "$BUFFER" ]; then
         LBUFFER=" $command"
@@ -735,7 +748,11 @@ function __widget.git.replace_all_commits_with_one {
     local branch="${1:-`git.this.branch`}"
     [ ! "$branch" ] && return 1
 
-    local parent="$(git show-branch | grep '*' | grep -v "`git rev-parse --abbrev-ref HEAD`" | head -n 1 | sd '^(.+)\[' '' | tabulate -d '] ' -i 1)"
+    local parent="$(
+        git show-branch | grep '*' | \
+        grep -v "$branch" | \
+        head -n 1 | sd '^(.+)\[' '' | tabulate -d '] ' -i 1)"
+
     [ ! "$parent" ] && return 2
 
     git.fetch "$parent"
@@ -746,7 +763,7 @@ function __widget.git.replace_all_commits_with_one {
     local command=" git reset --soft HEAD~$count && git add ."
     [ "$BUFFER" ] && local command="$BUFFER && $command"
 
-    if [ "`git.this.state`" ]; then  # merging, rebase or cherry-pick
+    if [ -n "$(git.this.state)" ]; then  # merging, rebase or cherry-pick
         LBUFFER="$command"
         RBUFFER=''
     else
@@ -763,24 +780,9 @@ function __widget.git.squash_to_commit {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local branch="$(echo "$GET_BRANCH" | $SHELL)"
         local result="$(eval "git_list_commits $branch" | GLOB_PIPE_NUMERATE | \
-            fzf \
-                --ansi --extended --info='inline' \
-                --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
-                --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
-                --bind='alt-w:toggle-preview-wrap' \
-                --bind='ctrl-c:abort' \
-                --bind='ctrl-q:abort' \
-                --bind='end:preview-down' \
-                --bind='esc:cancel' \
-                --bind='home:preview-up' \
-                --bind='pgdn:preview-page-down' \
-                --bind='pgup:preview-page-up' \
-                --bind='shift-down:half-page-down' \
-                --bind='shift-up:half-page-up' \
-                --bind='alt-space:jump' \
-                --preview-window="left:`misc.preview.width`:noborder" \
-                --color="$FZF_THEME" \
+            $FZF \
                 --prompt="rebased squash to >  " \
+                --preview-window="left:`misc.preview.width`:noborder" \
                 --preview="echo {} | $CMD_EXTRACT_TOP_COMMIT | $CMD_XARGS_DIFF_TO_COMMIT"
         )"
 
@@ -820,24 +822,9 @@ function __widget.git.show_commits {
     git.this.root 1>/dev/null 2>/dev/null || return true
     branch="$(git.this.branch)" || return "$?"
     result="$(git_list_commits | \
-        fzf \
-            --ansi --extended --info='inline' \
-            --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
-            --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
-            --bind='alt-w:toggle-preview-wrap' \
-            --bind='ctrl-c:abort' \
-            --bind='ctrl-q:abort' \
-            --bind='end:preview-down' \
-            --bind='esc:cancel' \
-            --bind='home:preview-up' \
-            --bind='pgdn:preview-page-down' \
-            --bind='pgup:preview-page-up' \
-            --bind='shift-down:half-page-down' \
-            --bind='shift-up:half-page-up' \
-            --bind='alt-space:jump' \
-            --preview-window="left:`misc.preview.width`:noborder" \
-            --color="$FZF_THEME" \
+        $FZF \
             --prompt="checkout >  " \
+            --preview-window="left:`misc.preview.width`:noborder" \
             --preview="echo {} | $CMD_EXTRACT_COMMIT | $CMD_XARGS_SHOW_TO_COMMIT"
     )" || return "$?"
 
@@ -869,25 +856,10 @@ function __widget.git.checkout_commit {
 
     git.this.root 1>/dev/null 2>/dev/null || return true
     branch="$(git.this.branch)" || return "$?"
-    result="$(eval "git_list_commits $branch" | sed 1d |GLOB_PIPE_NUMERATE | \
-        fzf \
-            --ansi --extended --info='inline' \
-            --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
-            --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
-            --bind='alt-w:toggle-preview-wrap' \
-            --bind='ctrl-c:abort' \
-            --bind='ctrl-q:abort' \
-            --bind='end:preview-down' \
-            --bind='esc:cancel' \
-            --bind='home:preview-up' \
-            --bind='pgdn:preview-page-down' \
-            --bind='pgup:preview-page-up' \
-            --bind='shift-down:half-page-down' \
-            --bind='shift-up:half-page-up' \
-            --bind='alt-space:jump' \
-            --preview-window="left:`misc.preview.width`:noborder" \
-            --color="$FZF_THEME" \
+    result="$(eval "git_list_commits $branch" | sed 1d | GLOB_PIPE_NUMERATE | \
+        $FZF \
             --prompt="checkout >  " \
+            --preview-window="left:`misc.preview.width`:noborder" \
             --preview="echo {} | $CMD_EXTRACT_COMMIT | $CMD_XARGS_DIFF_TO_COMMIT"
     )" || return "$?"
 
@@ -920,24 +892,9 @@ function __widget.git.checkout_tag {
     git.this.root 1>/dev/null 2>/dev/null || return true
     branch="$(git.this.branch)" || return "$?"
     result="$(git_list_tags | \
-        fzf \
-            --ansi --extended --info='inline' \
-            --no-mouse --marker='+' --pointer='>' --margin='0,0,0,0' \
-            --tiebreak=length,index --jump-labels="$FZF_JUMPS" \
-            --bind='alt-w:toggle-preview-wrap' \
-            --bind='ctrl-c:abort' \
-            --bind='ctrl-q:abort' \
-            --bind='end:preview-down' \
-            --bind='esc:cancel' \
-            --bind='home:preview-up' \
-            --bind='pgdn:preview-page-down' \
-            --bind='pgup:preview-page-up' \
-            --bind='shift-down:half-page-down' \
-            --bind='shift-up:half-page-up' \
-            --bind='alt-space:jump' \
-            --preview-window="left:`misc.preview.width`:noborder" \
-            --color="$FZF_THEME" \
+        $FZF \
             --prompt="checkout >  " \
+            --preview-window="left:`misc.preview.width`:noborder" \
             --preview="echo {} | $CMD_EXTRACT_COMMIT | $CMD_XARGS_DIFF_TO_COMMIT"
     )" || return "$?"
 
