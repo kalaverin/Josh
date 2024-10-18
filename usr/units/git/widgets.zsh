@@ -86,9 +86,9 @@ function __widget.git.checkout_modified {
 
         if [ -n "$to_checkout" ]; then
             if [ -z "$command" ]; then
-                command="git checkout $branch -- $to_remove"
+                command="git checkout $branch -- $to_checkout"
             else
-                command="$command && git checkout $branch -- $to_remove"
+                command="$command && git checkout $branch -- $to_checkout"
             fi
         fi
 
