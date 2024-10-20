@@ -1,99 +1,3 @@
-function __widget.git.add {
-    local branch commit result state
-
-    git.this.root 1>/dev/null 2>/dev/null || return true
-
-    branch="$(git.this.branch)" || return "$?"
-
-    local differ="$SHELL $DIFF_SHOW_OR_CONTENT '$branch' {2} | $CMD_DELTA"
-    result="$(
-        git status --short --verbose --no-ahead-behind --ignore-submodules --untracked-files | \
-        sort --human-numeric-sort | eval $ESCAPE_STATUS | \
-        eval $FZF \
-            --filepath-word --tac --multi --with-nth=1.. --nth=2.. \
-            --preview="\"$differ\"" \
-            --preview-window="left:`misc.preview.width`:noborder" \
-            --prompt="'add to $branch > '")"
-
-    to_add="$(
-        printf "$result" | tabulate -i 2 | \
-        sort --human-numeric-sort | \
-        eval $UNIQUE_SORT | eval $LINES_TO_LINE)"
-
-    if [ -n "$to_add" ]; then
-        state="$(git.this.state)"
-
-        if [[ "$branch" =~ "^[0-9A-Za-z-]+$" ]]; then
-            local prefix="$branch: "
-        else
-            local prefix=""
-        fi
-
-        local command="git add $to_add && git commit -m \"$prefix"
-        [ -n "$BUFFER" ] && local command="$BUFFER && $command"
-        LBUFFER="$command"
-        RBUFFER='"'
-    fi
-
-    zle reset-prompt
-    zle redisplay
-    return "$retval"
-}
-zle -N __widget.git.add
-
-
-function __widget.git.checkout_modified {
-    local branch commit result
-
-    git.this.root 1>/dev/null 2>/dev/null || return true
-    branch="$(git.this.branch)" || return "$?"
-
-    local differ="$SHELL $DIFF_SHOW_OR_CONTENT '$branch' {2} | $CMD_DELTA"
-    result="$(
-        git status --short --verbose --no-ahead-behind --ignore-submodules --untracked-files | \
-        eval $ESCAPE_STATUS | eval $FZF \
-            --filepath-word --tac --multi --with-nth=1.. --nth=2.. \
-            --preview="\"$differ\"" \
-            --preview-window="left:`misc.preview.width`:noborder" \
-            --prompt="'revert $branch > '")"
-
-    to_remove="$(
-        printf "$result" | \
-        grep -P '^\?\?' | tabulate -i 2 | \
-        sort --human-numeric-sort | \
-        eval $UNIQUE_SORT | eval $LINES_TO_LINE)"
-
-    to_checkout="$(
-        printf "$result" | \
-        grep -Pv '^\?\?' | tabulate -i 2 | \
-        sort --human-numeric-sort | \
-        eval $UNIQUE_SORT | eval $LINES_TO_LINE)"
-
-    if [ -n "$to_remove" ] || [ -n "$to_checkout" ]; then
-
-        local command=""
-        if [ -n "$to_remove" ]; then
-            command="unlink $to_remove"
-        fi
-
-        if [ -n "$to_checkout" ]; then
-            if [ -z "$command" ]; then
-                command="git checkout $branch -- $to_checkout"
-            else
-                command="$command && git checkout $branch -- $to_checkout"
-            fi
-        fi
-
-        [ -n "$BUFFER" ] && local command="$BUFFER &&"
-        LBUFFER="$command"
-    fi
-
-    zle reset-prompt
-    zle redisplay
-    return "$retval"
-}
-zle -N __widget.git.checkout_modified
-
 function __widget.git.auto_skip_or_continue {
     local state="`git.this.state`"  # merging, rebase or cherry-pick
     if [ "$state" ]; then
@@ -118,6 +22,7 @@ function __widget.git.auto_skip_or_continue {
     fi
     return 0
 }
+
 
 function __widget.git.conflict_solver {
     local branch="`git.this.branch`"
@@ -654,6 +559,173 @@ function __widget.git.delete_remote_branch {
 zle -N __widget.git.delete_remote_branch
 
 
+function __widget.git.replace_all_commits_with_one {
+    local branch="${1:-`git.this.branch`}"
+    [ ! "$branch" ] && return 1
+
+    local parent="$(
+        git show-branch | grep '*' | \
+        grep -v "$branch" | \
+        head -n 1 | sd '^(.+)\[' '' | tabulate -d '] ' -i 1)"
+
+    [ ! "$parent" ] && return 2
+
+    git.fetch "$parent"
+
+    local count="$(git rev-list --first-parent --count "^$parent" "$branch")"
+    [ "$count" -eq 0 ] && return 3
+
+    local command=" git reset --soft HEAD~$count && git add ."
+    [ "$BUFFER" ] && local command="$BUFFER && $command"
+
+    if [ -n "$(git.this.state)" ]; then  # merging, rebase or cherry-pick
+        LBUFFER="$command"
+        RBUFFER=''
+    else
+        LBUFFER="$command && git commit -m \"$branch: "
+        RBUFFER='"'
+    fi
+    zle reset-prompt
+    return 0
+}
+zle -N  __widget.git.replace_all_commits_with_one
+
+
+function __widget.git.squash_to_commit {
+    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
+        local branch="$(echo "$GET_BRANCH" | $SHELL)"
+        local result="$(eval "git_list_commits $branch" | GLOB_PIPE_NUMERATE | \
+            eval "$FZF --prompt=\"rebased squash to > \" --preview-window=\"left:`misc.preview.width`:noborder\" --preview=\"echo {} | $CMD_EXTRACT_TOP_COMMIT | $CMD_XARGS_DIFF_TO_COMMIT\""
+        )"
+
+        if [[ "$result" != "" ]]; then
+            local commit="$(echo "$result" | eval "$CMD_EXTRACT_TOP_COMMIT")"
+
+            echo ">$commit"
+            if [[ "$commit" == "" ]]; then
+                zle reset-prompt
+                return 1
+            fi
+
+            local command="git rebase --interactive --no-autosquash --no-autostash --strategy=recursive --strategy-option=ours --strategy-option=diff-algorithm=histogram \"$commit\""
+            if [[ "$BUFFER" != "" ]]; then
+                command="$BUFFER && $command"
+            fi
+
+            LBUFFER="$command"
+            RBUFFER=''
+
+            zle redisplay
+            typeset -f zle-line-init >/dev/null && zle zle-line-init
+        fi
+        zle reset-prompt
+        return 0
+    fi
+}
+zle -N  __widget.git.squash_to_commit
+
+
+# renewed
+
+
+function __widget.git.add {
+    local branch command commit result prefix state
+
+    git.this.root 1>/dev/null 2>/dev/null || return true
+    branch="$(git.this.branch)" || return "$?"
+
+    local differ="$SHELL $DIFF_SHOW_OR_CONTENT '$branch' {2} | $CMD_DELTA"
+    result="$(
+        git status --short --verbose --no-ahead-behind --ignore-submodules --untracked-files | \
+        sort --human-numeric-sort | eval $ESCAPE_STATUS | \
+        eval $FZF \
+            --filepath-word --tac --multi --with-nth=1.. --nth=2.. \
+            --preview="\"$differ\"" \
+            --preview-window="left:`misc.preview.width`:noborder" \
+            --prompt="'add to $branch > '")"
+
+    to_add="$(
+        printf "$result" | tabulate -i 2 | \
+        sort --human-numeric-sort | \
+        eval $UNIQUE_SORT | eval $LINES_TO_LINE)"
+
+    if [ -n "$to_add" ]; then
+        state="$(git.this.state)"
+
+        if [ -z "$state" ]; then
+            prefix=""
+            [[ "$branch" =~ "^[0-9A-Za-z-]+$" ]] && prefix="$branch: "
+            command="git add $to_add && git commit -m \"$prefix"
+
+            [ -n "$BUFFER" ] && command="$BUFFER && $command"
+            LBUFFER="$command"
+            RBUFFER='"'
+        else
+            LBUFFER=" git add $to_add"
+            RBUFFER=""
+        fi
+    fi
+
+    zle reset-prompt
+    zle redisplay
+    return "$retval"
+}
+zle -N __widget.git.add
+
+
+function __widget.git.checkout_modified {
+    local branch commit result
+
+    git.this.root 1>/dev/null 2>/dev/null || return true
+    branch="$(git.this.branch)" || return "$?"
+
+    local differ="$SHELL $DIFF_SHOW_OR_CONTENT '$branch' {2} | $CMD_DELTA"
+    result="$(
+        git status --short --verbose --no-ahead-behind --ignore-submodules --untracked-files | \
+        eval $ESCAPE_STATUS | eval $FZF \
+            --filepath-word --tac --multi --with-nth=1.. --nth=2.. \
+            --preview="\"$differ\"" \
+            --preview-window="left:`misc.preview.width`:noborder" \
+            --prompt="'revert $branch > '")"
+
+    to_remove="$(
+        printf "$result" | \
+        grep -P '^\?\?' | tabulate -i 2 | \
+        sort --human-numeric-sort | \
+        eval $UNIQUE_SORT | eval $LINES_TO_LINE)"
+
+    to_checkout="$(
+        printf "$result" | \
+        grep -Pv '^\?\?' | tabulate -i 2 | \
+        sort --human-numeric-sort | \
+        eval $UNIQUE_SORT | eval $LINES_TO_LINE)"
+
+    if [ -n "$to_remove" ] || [ -n "$to_checkout" ]; then
+
+        local command=""
+        if [ -n "$to_remove" ]; then
+            command="unlink $to_remove"
+        fi
+
+        if [ -n "$to_checkout" ]; then
+            if [ -z "$command" ]; then
+                command="git checkout $branch -- $to_checkout"
+            else
+                command="$command && git checkout $branch -- $to_checkout"
+            fi
+        fi
+
+        [ -n "$BUFFER" ] && local command="$BUFFER &&"
+        LBUFFER="$command"
+    fi
+
+    zle reset-prompt
+    zle redisplay
+    return "$retval"
+}
+zle -N __widget.git.checkout_modified
+
+
 function __widget.git.merge_branch {
     local branch commit result state
 
@@ -724,75 +796,6 @@ function __widget.git.rebase_branch {
     return 0
 }
 zle -N __widget.git.rebase_branch
-
-
-function __widget.git.replace_all_commits_with_one {
-    local branch="${1:-`git.this.branch`}"
-    [ ! "$branch" ] && return 1
-
-    local parent="$(
-        git show-branch | grep '*' | \
-        grep -v "$branch" | \
-        head -n 1 | sd '^(.+)\[' '' | tabulate -d '] ' -i 1)"
-
-    [ ! "$parent" ] && return 2
-
-    git.fetch "$parent"
-
-    local count="$(git rev-list --first-parent --count "^$parent" "$branch")"
-    [ "$count" -eq 0 ] && return 3
-
-    local command=" git reset --soft HEAD~$count && git add ."
-    [ "$BUFFER" ] && local command="$BUFFER && $command"
-
-    if [ -n "$(git.this.state)" ]; then  # merging, rebase or cherry-pick
-        LBUFFER="$command"
-        RBUFFER=''
-    else
-        LBUFFER="$command && git commit -m \"$branch: "
-        RBUFFER='"'
-    fi
-    zle reset-prompt
-    return 0
-}
-zle -N  __widget.git.replace_all_commits_with_one
-
-
-function __widget.git.squash_to_commit {
-    if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
-        local branch="$(echo "$GET_BRANCH" | $SHELL)"
-        local result="$(eval "git_list_commits $branch" | GLOB_PIPE_NUMERATE | \
-            eval "$FZF --prompt=\"rebased squash to > \" --preview-window=\"left:`misc.preview.width`:noborder\" --preview=\"echo {} | $CMD_EXTRACT_TOP_COMMIT | $CMD_XARGS_DIFF_TO_COMMIT\""
-        )"
-
-        if [[ "$result" != "" ]]; then
-            local commit="$(echo "$result" | eval "$CMD_EXTRACT_TOP_COMMIT")"
-
-            echo ">$commit"
-            if [[ "$commit" == "" ]]; then
-                zle reset-prompt
-                return 1
-            fi
-
-            local command="git rebase --interactive --no-autosquash --no-autostash --strategy=recursive --strategy-option=ours --strategy-option=diff-algorithm=histogram \"$commit\""
-            if [[ "$BUFFER" != "" ]]; then
-                command="$BUFFER && $command"
-            fi
-
-            LBUFFER="$command"
-            RBUFFER=''
-
-            zle redisplay
-            typeset -f zle-line-init >/dev/null && zle zle-line-init
-        fi
-        zle reset-prompt
-        return 0
-    fi
-}
-zle -N  __widget.git.squash_to_commit
-
-
-# renewed
 
 
 function __widget.git.show_commits {
