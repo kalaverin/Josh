@@ -226,21 +226,7 @@ function venv.make {
             continue
         fi
 
-        if [[ "$item" =~ '/' ]]; then
-            local chunk="$item"
-            while true; do
-                if [ -d "$chunk" ] && [ ! "$chunk" = '.' ]; then
-                    env_path="$item"
-                    env_name="$(fs.basename "$env_path")" || return "$?"
-                    not_packages+=($offset)
-                    break
-                fi
-                parent="$(fs.dirname "$chunk")" || return "$?"
-                [ -z "$parent" ] || [ "$parent" = "$chunk" ] && break
-                chunk="$parent"
-            done
-
-        elif [[ "$item" =~ ^[0-9][0-9\.]*$ ]]; then
+        if [[ "$item" =~ ^[0-9][0-9\.]*$ ]]; then
             python="$(fs.realpath `which "python$MATCH"`)"
             if [ "$?" -gt 0 ] || [ ! -x "$python" ]; then
                 fail $0 "python binary '$python' ($item) doesn't exists or something wrong"
@@ -249,6 +235,28 @@ function venv.make {
             python="$(py.home "$python")/bin/python" || return "$?"
             fs.realpath "$python" 1>/dev/null || return "$?"
             not_packages+=($offset)
+
+        elif [[ "$item" =~ '/' ]] || [[ "$item" =~ '.' ]]; then
+
+            if [[ "$item" =~ '/' ]]; then
+                local chunk="$item"
+                while true; do
+                    if [ -d "$chunk" ] && [ ! "$chunk" = '.' ]; then
+                        env_path="$item"
+                        env_name="$(fs.basename "$env_path")" || return "$?"
+                        not_packages+=($offset)
+                        break
+                    fi
+                    parent="$(fs.dirname "$chunk")" || return "$?"
+                    [ -z "$parent" ] || [ "$parent" = "$chunk" ] && break
+                    chunk="$parent"
+                done
+
+            else
+                env_name="$(fs.basename "$item")" || return "$?"
+                env_path="$(fs.realpath "$PWD")/$item" || return "$?"
+                not_packages+=($offset)
+            fi
 
         # elif [[ "$item" =~ ^/.+/[0-9a-z]+[0-9a-z\.-]*[0-9a-z]+$ ]]; then
         fi

@@ -37,7 +37,6 @@ plugins=(
     history-substring-search
     httpie              # suggestions
     redis-cli           # suggestions
-    supervisor          # suggestions
     wd                  # fast bookmarked directory switcher
     zsh-256color        # force 8-bit colors
     zsh-autopair        # for autopair brackets, quoters, etc

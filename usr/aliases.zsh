@@ -428,17 +428,17 @@ function rchgrp {
     find "$2" -not -group "$1" -exec chgrp "$1" {} \;
 }
 
-function super {
+function sup {
     if [ -x $commands[supervisord] ]; then
 
-        if [ -f "supervisord.pid" ] && [ -S "supervisord.sock" ]; then
-            pid=$(cat supervisord.pid)
-            if pgrep -F supervisord.pid >/dev/null && [ -S "supervisord.sock" ]; then
-                [ -x $commands[supervisord] ] && supervisorctl
+        if [ -f "run/supervisord.pid" ]; then
+            pid=$(cat run/supervisord.pid)
+            if pgrep -F run/supervisord.pid >/dev/null && [ -S "run/supervisord.sock" ]; then
+                [ -x $commands[supervisord] ] && supervisorctl $*
                 return 0
             fi
         fi
         supervisord --silent --configuration supervisord.conf
-        [ -x $commands[supervisord] ] && supervisorctl
+        [ -x $commands[supervisord] ] && supervisorctl $*
     fi
 }
