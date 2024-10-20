@@ -704,38 +704,33 @@ zle -N __widget.git.merge_branch
 
 
 function __widget.git.rebase_branch {
-    local branch="`git.this.branch`"
-    [ ! "$branch" ] && return 1
 
-    git.is_clean >/dev/null || local state='(dirty!) '
-    local differ="echo {} | tabulate -i 1 | xargs -n 1 $GIT_DIFF"
-    local select='git for-each-ref \
-                    --sort=-committerdate refs/heads/ \
-                    --color=always \
-                    --format="%(HEAD) %(color:yellow bold)%(refname:short)%(color:reset) %(contents:subject) %(color:black bold)%(authoremail) %(committerdate:relative)" \
-                    '
+    local branch commit result state
 
-    local value="$(
-        $SHELL -c "$select \
-        | fzf \
-        --preview=\"$differ $branch | $DELTA \" \
-        --preview-window=\"left:`misc.preview.width`:noborder\" \
-        --prompt=\"rebase $branch $state>  \" | head -n 1
-    ")"
-    local value="$(echo "$value" | sed -z 's:^*::g' | sed -z 's:^ ::g' | tabulate -i 1)"
+    git.this.root 1>/dev/null 2>/dev/null || return true
+    git.is_clean >/dev/null || state='(dirty!) '
+    branch="$(git.this.branch)" || return "$?"
 
-    if [ ! "$value" ]; then
-        return 0
-    elif [[ "$value" == '*' ]]; then
-        local value="$branch"
-    fi
+    local differ="echo {} | sed 's: +$::' | sed 's:^*::' | tabulate -i 1 | xargs -I$ $SHELL $DIFF_SHOW $commit $ | $CMD_DELTA"
+    local result="$(
+        git for-each-ref --sort=-committerdate refs/heads/ --color=always --format="%(HEAD) %(color:yellow bold)%(refname:short)%(color:reset) %(contents:subject) %(color:black bold)%(authoremail) %(committerdate:relative)" | \
+        eval "$FZF --preview=\"$differ\" --preview-window=\"left:`misc.preview.width`:noborder\" --prompt=\"rebase $branch $state> \""
+    )"
 
-    local command="$(git.cmd.fetch "$value") && git rebase --stat --interactive --no-autosquash --autostash \"origin/$value\""
+    result="$(
+        echo "$result" | \
+        sed -z 's:^*::g' | sed -z 's:^ ::g' | \
+        tabulate -i 1
+    )" || return "$?"
 
-    if [ ! "$BUFFER" ]; then
-        LBUFFER=" $command"
-    else
-        LBUFFER="$BUFFER && $command"
+    if [ -n "$result" ]; then
+        local command="$(git.cmd.fetch "$result") && git rebase --stat --interactive --no-autosquash --autostash \"origin/$result\""
+
+        if [ -z "$BUFFER" ]; then
+            LBUFFER=" $command"
+        else
+            LBUFFER="$BUFFER && $command"
+        fi
     fi
 
     zle reset-prompt
@@ -780,10 +775,7 @@ function __widget.git.squash_to_commit {
     if [ "`git rev-parse --quiet --show-toplevel 2>/dev/null`" ]; then
         local branch="$(echo "$GET_BRANCH" | $SHELL)"
         local result="$(eval "git_list_commits $branch" | GLOB_PIPE_NUMERATE | \
-            fzf \
-                --prompt="rebased squash to >  " \
-                --preview-window="left:`misc.preview.width`:noborder" \
-                --preview="echo {} | $CMD_EXTRACT_TOP_COMMIT | $CMD_XARGS_DIFF_TO_COMMIT"
+            eval "$FZF --prompt=\"rebased squash to > \" --preview-window=\"left:`misc.preview.width`:noborder\" --preview=\"echo {} | $CMD_EXTRACT_TOP_COMMIT | $CMD_XARGS_DIFF_TO_COMMIT\""
         )"
 
         if [[ "$result" != "" ]]; then
@@ -822,10 +814,7 @@ function __widget.git.show_commits {
     git.this.root 1>/dev/null 2>/dev/null || return true
     branch="$(git.this.branch)" || return "$?"
     result="$(git_list_commits | \
-        fzf \
-            --prompt="checkout >  " \
-            --preview-window="left:`misc.preview.width`:noborder" \
-            --preview="echo {} | $CMD_EXTRACT_COMMIT | $CMD_XARGS_SHOW_TO_COMMIT"
+        eval "$FZF --prompt=\"checkout > \" --preview-window=\"left:`misc.preview.width`:noborder\" --preview=\"echo {} | $CMD_EXTRACT_COMMIT | $CMD_XARGS_SHOW_TO_COMMIT\""
     )" || return "$?"
 
     if [ -n "$result" ]; then
@@ -857,10 +846,7 @@ function __widget.git.checkout_commit {
     git.this.root 1>/dev/null 2>/dev/null || return true
     branch="$(git.this.branch)" || return "$?"
     result="$(eval "git_list_commits $branch" | sed 1d | GLOB_PIPE_NUMERATE | \
-        fzf \
-            --prompt="checkout >  " \
-            --preview-window="left:`misc.preview.width`:noborder" \
-            --preview="echo {} | $CMD_EXTRACT_COMMIT | $CMD_XARGS_DIFF_TO_COMMIT"
+        eval "$FZF --prompt=\"checkout > \" --preview-window=\"left:`misc.preview.width`:noborder\" --preview=\"echo {} | $CMD_EXTRACT_COMMIT | $CMD_XARGS_DIFF_TO_COMMIT\""
     )" || return "$?"
 
     if [ -n "$result" ]; then
@@ -892,10 +878,7 @@ function __widget.git.checkout_tag {
     git.this.root 1>/dev/null 2>/dev/null || return true
     branch="$(git.this.branch)" || return "$?"
     result="$(git_list_tags | \
-        fzf \
-            --prompt="checkout >  " \
-            --preview-window="left:`misc.preview.width`:noborder" \
-            --preview="echo {} | $CMD_EXTRACT_COMMIT | $CMD_XARGS_DIFF_TO_COMMIT"
+        eval "$FZF --prompt=\"checkout > \" --preview-window=\"left:`misc.preview.width`:noborder\" --preview=\"echo {} | $CMD_EXTRACT_COMMIT | $CMD_XARGS_DIFF_TO_COMMIT\""
     )" || return "$?"
 
     if [ -n "$result" ]; then

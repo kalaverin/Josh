@@ -6,7 +6,8 @@ local LIST_BRANCHES="$INCLUDE_DIR/git_list_branches.sh"
 local SETUPCFG_LOOKUP="$INCLUDE_DIR/git_search_setupcfg.sh"
 local TAG_FROM_STRING="$INCLUDE_DIR/git_tag_from_str.sh"
 
-local DIFF_SHOW_PLEASE="$INCLUDE_DIR/git_show_diff.sh"
+local DIFF_SHOW="$INCLUDE_DIR/git_show_diff.sh"
+local DIFF_SHOW_PLEASE="$INCLUDE_DIR/git_show_file_diff.sh"
 local DIFF_SHOW_OR_CONTENT="$INCLUDE_DIR/show_file_diff_or_content.sh"
 
 
@@ -16,7 +17,7 @@ local GIT_DIFF="git diff --color=always --patch --stat --diff-algorithm=histogra
 
 # ———
 
-GIT_LIST_FORMAT="%C(reset)%C(cyan)%C(dim)%h%C(auto)%d %C(reset)%s %C(brightblack)%C(dim)%an %C(black)%>(512)%>(32,trunc)%H%C(reset)%C(brightblack)%C(dim)"
+GIT_LIST_FORMAT="%C(reset)%C(green)%C(dim)%h%C(auto)%d %C(reset)%s %C(brightblack)%C(dim)%an %C(black)%>(512)%>(32,trunc)%H%C(reset)%C(brightblack)%C(dim)"
 
 CMD_EXTRACT_COMMIT="grep -o '[a-f0-9]\{32,\}$'"
 CMD_EXTRACT_TOP_COMMIT="head -1 | grep -o '[a-f0-9]\{32,\}$'"
