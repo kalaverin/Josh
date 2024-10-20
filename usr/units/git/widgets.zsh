@@ -1,32 +1,27 @@
 function __widget.git.add {
-    local branch
-    local cwd="$PWD"
+    local branch commit result state
+
+    git.this.root 1>/dev/null 2>/dev/null || return true
+
     branch="$(git.this.branch)" || return "$?"
 
-    while true; do
-        local value="$(
-            $SHELL -c "$LIST_TO_ADD | $ESCAPE_STATUS \
-            | fzf \
-            --filepath-word --tac \
-            --multi --nth=2.. --with-nth=1.. \
-            --preview=\"$GIT_DIFF -- {2} | $DELTA\" \
-            --preview-window=\"left:`misc.preview.width`:noborder\" \
-            --prompt='git add >  ' \
-            | tabulate -i 2 | sort --human-numeric-sort | $UNIQUE_SORT \
-            | $LINES_TO_LINE")"
-            # | xargs -n 1 realpath --quiet --relative-to=$cwd 2>/dev/null \
+    local differ="$SHELL $DIFF_SHOW_OR_CONTENT '$branch' {2} | $CMD_DELTA"
+    result="$(
+        git status --short --verbose --no-ahead-behind --ignore-submodules --untracked-files | \
+        sort --human-numeric-sort | eval $ESCAPE_STATUS | \
+        eval $FZF \
+            --filepath-word --tac --multi --with-nth=1.. --nth=2.. \
+            --preview="\"$differ\"" \
+            --preview-window="left:`misc.preview.width`:noborder" \
+            --prompt="'add to $branch > '")"
 
-        if [ ! "$value" ]; then
-            zle reset-prompt
-            local retval="0"
-            break
-        fi
+    to_add="$(
+        printf "$result" | tabulate -i 2 | \
+        sort --human-numeric-sort | \
+        eval $UNIQUE_SORT | eval $LINES_TO_LINE)"
 
-        if [ ! "$BUFFER" ]; then
-            local command=" git add"
-        else
-            local command="$BUFFER && git add"
-        fi
+    if [ -n "$to_add" ]; then
+        state="$(git.this.state)"
 
         if [[ "$branch" =~ "^[0-9A-Za-z-]+$" ]]; then
             local prefix="$branch: "
@@ -34,17 +29,14 @@ function __widget.git.add {
             local prefix=""
         fi
 
-        if [ "`git.this.state`" ]; then  # merging, rebase or cherry-pick
-            LBUFFER="$command $value "
-            RBUFFER=''
-        else
-            LBUFFER="$command $value && git commit -m \"$prefix"
-            RBUFFER='"'
-        fi
-        zle redisplay
-        local retval="$?"
-        break
-    done
+        local command="git add $to_add && git commit -m \"$prefix"
+        [ -n "$BUFFER" ] && local command="$BUFFER && $command"
+        LBUFFER="$command"
+        RBUFFER='"'
+    fi
+
+    zle reset-prompt
+    zle redisplay
     return "$retval"
 }
 zle -N __widget.git.add
@@ -58,7 +50,7 @@ function __widget.git.checkout_modified {
 
     local differ="$SHELL $DIFF_SHOW_OR_CONTENT '$branch' {2} | $CMD_DELTA"
     result="$(
-        git status --short --verbose --no-ahead-behind --untracked-files | \
+        git status --short --verbose --no-ahead-behind --ignore-submodules --untracked-files | \
         eval $ESCAPE_STATUS | eval $FZF \
             --filepath-word --tac --multi --with-nth=1.. --nth=2.. \
             --preview="\"$differ\"" \
@@ -663,48 +655,6 @@ zle -N __widget.git.delete_remote_branch
 
 
 function __widget.git.merge_branch {
-    local branch="`git.this.branch`"
-    [ ! "$branch" ] && return 1
-
-    git.is_clean >/dev/null || local state='(dirty!) '
-    local differ="echo {} | tabulate -i 1 | xargs -n 1 $GIT_DIFF"
-    local select='git for-each-ref \
-                    --sort=-committerdate refs/heads/ \
-                    --color=always \
-                    --format="%(HEAD) %(color:yellow bold)%(refname:short)%(color:reset) %(contents:subject) %(color:black bold)%(authoremail) %(committerdate:relative)" \
-                    | awk "{\$1=\$1};1" | grep -Pv "^(\*\s+)"'
-
-    while true; do
-        local value="$(
-            $SHELL -c "$select \
-            | fzf \
-            --preview=\"$differ $branch | $DELTA \" \
-            --preview-window=\"left:`misc.preview.width`:noborder\" \
-            --prompt=\"merge to $branch $state>  \" \
-            | cut -d ' ' -f 1
-        ")"
-        if [ ! "$value" ]; then
-            break
-
-        elif [ ! "$BUFFER" ]; then
-            run.show "git.fetch \"$value\" && git merge --no-commit \"origin/$value\""
-            local retval=$?
-            __widget.git.conflict_solver
-
-        elif [ "$value" ]; then
-            LBUFFER="$BUFFER && git fetch origin \"$value\":\"$value\" && git merge --no-commit \"origin/$value\""
-        fi
-
-        break
-    done
-    zle reset-prompt
-    return 0
-}
-zle -N __widget.git.merge_branch
-
-
-function __widget.git.rebase_branch {
-
     local branch commit result state
 
     git.this.root 1>/dev/null 2>/dev/null || return true
@@ -712,6 +662,43 @@ function __widget.git.rebase_branch {
     branch="$(git.this.branch)" || return "$?"
 
     local differ="echo {} | sed 's: +$::' | sed 's:^*::' | tabulate -i 1 | xargs -I$ $SHELL $DIFF_SHOW $commit $ | $CMD_DELTA"
+
+    local result="$(
+        git for-each-ref --sort=-committerdate refs/heads/ --color=always --format="%(HEAD) %(color:yellow bold)%(refname:short)%(color:reset) %(contents:subject) %(color:black bold)%(authoremail) %(committerdate:relative)" | \
+        eval "$FZF --preview=\"$differ\" --preview-window=\"left:`misc.preview.width`:noborder\" --prompt=\"rebase $branch $state> \""
+    )"
+
+    result="$(
+        echo "$result" | \
+        sed -z 's:^*::g' | sed -z 's:^ ::g' | \
+        tabulate -i 1
+    )" || return "$?"
+
+    if [ -n "$result" ]; then
+        local command="$(git.cmd.fetch "$result") && git merge --no-commit \"origin/$result\""
+
+        if [ -z "$BUFFER" ]; then
+            LBUFFER=" $command"
+        else
+            LBUFFER="$BUFFER && $command"
+        fi
+    fi
+
+    zle reset-prompt
+    return 0
+}
+zle -N __widget.git.merge_branch
+
+
+function __widget.git.rebase_branch {
+    local branch commit result state
+
+    git.this.root 1>/dev/null 2>/dev/null || return true
+    git.is_clean >/dev/null || state='(dirty!) '
+    branch="$(git.this.branch)" || return "$?"
+
+    local differ="echo {} | sed 's: +$::' | sed 's:^*::' | tabulate -i 1 | xargs -I$ $SHELL $DIFF_SHOW $commit $ | $CMD_DELTA"
+
     local result="$(
         git for-each-ref --sort=-committerdate refs/heads/ --color=always --format="%(HEAD) %(color:yellow bold)%(refname:short)%(color:reset) %(contents:subject) %(color:black bold)%(authoremail) %(committerdate:relative)" | \
         eval "$FZF --preview=\"$differ\" --preview-window=\"left:`misc.preview.width`:noborder\" --prompt=\"rebase $branch $state> \""
