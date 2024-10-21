@@ -342,53 +342,6 @@ function __widget.git.select_branch_then_file_show_commits {
 zle -N __widget.git.select_branch_then_file_show_commits
 
 
-function __widget.git.switch_branch {
-    # нужен нормальный просмотровщик диффа между хешами
-    # git rev-list --first-parent develop...master --pretty=oneline | sd "(.{8})(.{32}) (.+)" "\$1 \$3" | GLOB_PIPE_NUMERATE | sort -hr
-    local branch verb
-    branch="$(git.this.branch)" || return "$?"
-    [ -z "$branch" ] && return 1
-
-    verb="$(git.cmd.checkout.verb)"
-
-    git.is_clean 2>/dev/null || local state='DIRTY '
-
-    local select='git for-each-ref \
-                    --sort=-committerdate refs/heads/ \
-                    --color=always \
-                    --format="%(HEAD) %(color:yellow bold)%(refname:short)%(color:reset) %(contents:subject) %(color:black bold)%(authoremail) %(committerdate:relative)" \
-                    | awk "{\$1=\$1};1" | grep -Pv "^(\*\s+)"'
-    while true; do
-        local value="$(
-            $SHELL -c "$select \
-            | fzf \
-            --preview=\"$GIT_DIFF $branch {1} | $DELTA \" \
-            --preview-window=\"left:`misc.preview.width`:noborder\" \
-            --prompt=\"branch $state>  \" \
-            | cut -d ' ' -f 1
-        ")"
-
-        if [ -z "$value" ]; then
-            break
-        else
-            local cmd="git $verb $value 2>/dev/null 1>/dev/null && git.mtime.set"
-
-            if [ -n "$BUFFER" ]; then
-                LBUFFER="$BUFFER && $cmd"
-                local retval=0
-            else
-                run.show "$cmd"
-                local retval="$?"
-            fi
-        fi
-        break
-    done
-    zle reset-prompt
-    return "$retval"
-}
-zle -N __widget.git.switch_branch
-
-
 function __widget.git.fetch_branch {
     local already_checked_out_branches branch cmd count filter root value
 
@@ -628,6 +581,42 @@ zle -N  __widget.git.squash_to_commit
 # renewed
 
 
+function __widget.git.switch_branch {
+    local branch command result state
+
+    git.this.root 1>/dev/null 2>/dev/null || return true
+    git.is_clean >/dev/null || state='(dirty) '
+
+    branch="$(git.this.branch)" || return "$?"
+
+    local result="$(
+        git for-each-ref --sort=-committerdate refs/heads/ --color=always --format="%(HEAD)%(color:reset)%(color:green dim)%(objectname:short) %(color:reset)%(color:brightyellow)%(refname:short) %(color:reset)%(contents:subject) %(color:brightblack dim)%(authorname) %(color:black)%>(512)%>(32,trunc)%(objectname)%(color:reset)%(color:brightblack dim)" | \
+        grep -Pv "^(\*)" | \
+        eval "$FZF --preview=\"$GIT_DIFF $branch {1} | $DELTA \" --preview-window=\"left:`misc.preview.width`:noborder\" --prompt=\"switch $branch $state> \"" | awk "{\$1=\$1};1"
+    )" || return "$?"
+
+    if [ -n "$result" ]; then
+
+        verb="$(git.cmd.checkout.verb)" || return "$?"
+        result="$(run.out "echo '$result' | tabulate -i 2")" || return "$?"
+
+        local command="git $verb $result 2>/dev/null 1>/dev/null && git.mtime.set"
+        if [ -n "$BUFFER" ]; then
+            LBUFFER="$BUFFER && $command"
+            local retval="0"
+        else
+            run.show "$command"
+            local retval="$?"
+        fi
+    fi
+
+    zle reset-prompt
+    zle redisplay
+    return "$retval"
+}
+zle -N __widget.git.switch_branch
+
+
 function __widget.git.add {
     local branch command commit result prefix state
 
@@ -730,11 +719,10 @@ function __widget.git.merge_branch {
     local branch commit result state
 
     git.this.root 1>/dev/null 2>/dev/null || return true
-    git.is_clean >/dev/null || state='(dirty!) '
+    git.is_clean >/dev/null || state='(dirty) '
     branch="$(git.this.branch)" || return "$?"
 
     local differ="echo {} | sed 's: +$::' | sed 's:^*::' | tabulate -i 1 | xargs -I$ $SHELL $DIFF_SHOW $commit $ | $CMD_DELTA"
-
     local result="$(
         git for-each-ref --sort=-committerdate refs/heads/ --color=always --format="%(HEAD) %(color:yellow bold)%(refname:short)%(color:reset) %(contents:subject) %(color:black bold)%(authoremail) %(committerdate:relative)" | \
         eval "$FZF --preview=\"$differ\" --preview-window=\"left:`misc.preview.width`:noborder\" --prompt=\"rebase $branch $state> \""
@@ -770,7 +758,6 @@ function __widget.git.rebase_branch {
     branch="$(git.this.branch)" || return "$?"
 
     local differ="echo {} | sed 's: +$::' | sed 's:^*::' | tabulate -i 1 | xargs -I$ $SHELL $DIFF_SHOW $commit $ | $CMD_DELTA"
-
     local result="$(
         git for-each-ref --sort=-committerdate refs/heads/ --color=always --format="%(HEAD) %(color:yellow bold)%(refname:short)%(color:reset) %(contents:subject) %(color:black bold)%(authoremail) %(committerdate:relative)" | \
         eval "$FZF --preview=\"$differ\" --preview-window=\"left:`misc.preview.width`:noborder\" --prompt=\"rebase $branch $state> \""
