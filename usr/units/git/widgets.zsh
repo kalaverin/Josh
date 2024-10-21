@@ -249,7 +249,7 @@ function __widget.git.show_branch_file_commits {
         local branch="$1"
         local file="$2"
 
-        local ext="$(echo "$printf" | xargs -I% basename % | grep --color=never -Po '(?<=.\.)([^\.]+)$')"
+        local ext="$(echo "$file" | xargs -I% basename % | grep --color=never -Po '(?<=.\.)([^\.]+)$')"
         local diff_view="echo {} | $CMD_EXTRACT_TOP_COMMIT | xargs -l $SHELL -c $diff_file $file' | $DELTA"
 
         local file_view="echo {} | cut -d ' ' -f 1 | xargs -I^^ git show ^^:./$file | $LISTER_FILE --paging=always"
