@@ -20,11 +20,9 @@ layout_virtualenv() {
 
     if [ -z "$ASH_PY_ENVS_ROOT" ]; then
         echo " == fail ($0): ASH_PY_ENVS_ROOT isn't set"
-        return 1
 
     elif [ ! -d "$ASH_PY_ENVS_ROOT" ] || [ ! -x "$ASH_PY_ENVS_ROOT" ]; then
         echo " ++ warn ($0): ASH_PY_ENVS_ROOT: '$ASH_PY_ENVS_ROOT' isn't exists or accessible"
-        return 1
     fi
 
     if [ -z "$1" ]; then

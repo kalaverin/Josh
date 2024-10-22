@@ -429,16 +429,25 @@ function rchgrp {
 }
 
 function sup {
-    if [ -x $commands[supervisord] ]; then
+    if [ "$?" -eq 0 ]; then
 
+        running=0
         if [ -f "run/supervisord.pid" ]; then
-            pid=$(cat run/supervisord.pid)
-            if pgrep -F run/supervisord.pid >/dev/null && [ -S "run/supervisord.sock" ]; then
-                [ -x $commands[supervisord] ] && supervisorctl $*
-                return 0
+            pid="$(pgrep -F "run/supervisord.pid")"
+            if [ -n "$pid" ] && [ "$pid" -gt 0 ] && [ -S "run/supervisord.sock" ]; then
+                running=1
             fi
         fi
-        supervisord --silent --configuration supervisord.conf
-        [ -x $commands[supervisord] ] && supervisorctl $*
+
+        if [ "$running" -eq 0 ]; then
+            eval "$(direnv export zsh)"
+            supervisord --silent --configuration supervisord.conf
+            echo " - supervisord started" >&2
+            running=1
+        fi
+    fi
+
+    if [ "$running" -eq 1 ]; then
+        supervisorctl $*
     fi
 }
