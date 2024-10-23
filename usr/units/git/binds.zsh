@@ -11,10 +11,10 @@ bindkey "\e^q" __widget.git.select_branch_then_file_show_commits
 bindkey "\ea"  __widget.git.add
 #              shift-alt-a, checkout to active branch last commit
 bindkey "^[A"  __widget.git.checkout_modified
-#              ctrl-a, on active branch, select commit, checkout files
-bindkey "^a"   __widget.git.select_files_from_commit
-#              ctrl-alt-a, select branch, select commit, checkout files
-bindkey "\e^a" __widget.git.select_branch_then_commit_then_file_checkout
+#              ctrl-a, select file, then select commit for checkout and checkout it
+bindkey "^a"   __widget.git.select_commit_from_file
+#              ctrl-alt-a, on active branch, select commit, checkout files
+bindkey "\e^a" __widget.git.select_files_from_commit
 
 #              alt-s, go to branch
 bindkey "\es"  __widget.git.switch_branch

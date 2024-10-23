@@ -8,7 +8,8 @@ local TAG_FROM_STRING="$INCLUDE_DIR/git_tag_from_str.sh"
 
 local DIFF_SHOW="$INCLUDE_DIR/git_show_diff.sh"
 local DIFF_SHOW_PLEASE="$INCLUDE_DIR/git_show_file_diff.sh"
-local DIFF_SHOW_OR_CONTENT="$INCLUDE_DIR/show_file_diff_or_content.sh"
+local DIFF_SHOW_OR_CONTENT="$INCLUDE_DIR/file_show_diff_content.sh"
+local SHOW_DIFF_OR_CONTENT="$INCLUDE_DIR/file_diff_show_content.sh"
 
 
 local LIST_TO_ADD="git status --short --verbose --no-ahead-behind --ignore-submodules --untracked-file"
