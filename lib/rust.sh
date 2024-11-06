@@ -30,6 +30,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         vivid            # ls colors themes selections system
     )
     CARGO_REC_PACKAGES=(
+        ast-grep         # grep for AST
         bingrep          # extract and grep strings from binaries
         broot            # console file manager
         bump-bin         # versions with semver specification
@@ -94,6 +95,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         ruplacer         # refactoring tool, like sed for directory
         ry               # jq for yamls
         sbyte            # hexeditor
+        serpl            # search and replace in files
         so               # command line TUI full featured stack overflow questions
         tere             # jumps over directories
         trippy           # network diagnosis tool
