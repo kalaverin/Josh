@@ -429,25 +429,55 @@ function rchgrp {
 }
 
 function sup {
-    if [ "$?" -eq 0 ]; then
+    local retval
+    local running=0
 
-        running=0
-        if [ -f "run/supervisord.pid" ]; then
+    if [ ! -f "supervisord.conf" ]; then
+        fail "$0" "missing $PWD/supervisord.conf"
+        return 1
+    fi
+
+    if [ -f "run/supervisord.pid" ]; then
+        pid="$(pgrep -F "run/supervisord.pid")"
+        if [ -n "$pid" ] && [ "$pid" -gt 0 ] && [ -S "run/supervisord.sock" ]; then
+            running=1
+        fi
+    fi
+
+    # 1. not started by native sctipt, try to start manually
+
+    if [ "$running" -eq 0 ]; then
+        eval "$(direnv export zsh)"
+        supervisord --silent --configuration supervisord.conf
+        retval="$?"
+
+        if [ "$retval" -eq 0 ] && [ -f "run/supervisord.pid" ]; then
             pid="$(pgrep -F "run/supervisord.pid")"
             if [ -n "$pid" ] && [ "$pid" -gt 0 ] && [ -S "run/supervisord.sock" ]; then
                 running=1
+                info "$0" "supervisord($pid) started (from $PWD/run/supervisord.pid) manually"
             fi
         fi
+    fi
 
-        if [ "$running" -eq 0 ]; then
-            eval "$(direnv export zsh)"
-            supervisord --silent --configuration supervisord.conf
-            echo " - supervisord started" >&2
-            running=1
+    # 2. try to use native script
+
+    if [ "$running" -eq 0 ] && [ -x "supervisord.sh" ]; then
+        $SHELL supervisord.sh
+        retval="$?"
+
+        if [ "$retval" -eq 0 ] && [ -f "run/supervisord.pid" ]; then
+            pid="$(pgrep -F "run/supervisord.pid")"
+            if [ -n "$pid" ] && [ "$pid" -gt 0 ] && [ -S "run/supervisord.sock" ]; then
+                running=1
+                info "$0" "supervisord($pid) started (from $PWD/run/supervisord.pid) $PWD/supervisord.sh (auto)"
+            fi
         fi
     fi
 
     if [ "$running" -eq 1 ]; then
         supervisorctl $*
+    else
+        fail "$0" "supervisord start failed, couldn't not run: $*"
     fi
 }
