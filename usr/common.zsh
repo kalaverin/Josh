@@ -733,3 +733,5 @@ zle -N znt-kill-widget
 
 autoload -U edit-command-line
 zle -N edit-command-line
+
+autoload -U +X bashcompinit && bashcompinit

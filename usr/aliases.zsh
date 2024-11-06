@@ -233,8 +233,8 @@ if [ -x "$commands[xc]" ]; then
 
         xc -file "$book" -heading "$part"
     }
+    complete -o nospace -C "$commands[xc]" xc
 fi
-
 
 if [ -x "$commands[docker]" ]; then
     export DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1}

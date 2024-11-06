@@ -153,4 +153,5 @@ function cfg.install {
     cfg.copy "$root/pip.conf"       "$CONFIG_DIR/pip/pip.conf"
     cfg.copy "$root/tmux.conf"      "$HOME/.tmux.conf"
     cfg.copy "$root/gdb.conf"       "$HOME/.gdbinit"
+    cfg.copy "$ASH/.zshrc"          "$HOME/.zshrc"
 }
