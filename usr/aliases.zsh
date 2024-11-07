@@ -462,8 +462,8 @@ function sup {
 
     # 2. try to use native script
 
-    if [ "$running" -eq 0 ] && [ -x "supervisord.sh" ]; then
-        $SHELL supervisord.sh
+    if [ "$running" -eq 0 ] && [ -x "bin/supervisord.sh" ]; then
+        $SHELL bin/supervisord.sh
         retval="$?"
 
         if [ "$retval" -eq 0 ] && [ -f "run/supervisord.pid" ]; then
