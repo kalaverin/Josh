@@ -15,6 +15,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     CARGO_REQ_PACKAGES=(
         bat              # modern replace for cat with syntax highlight
         cargo-update     # packages for auto-update installed crates
+        cargo-trim       # we need to clean-up registry
         fd-find          # fd, fast replace for find for humans
         git-delta        # fast replace for git delta with steroids
         git-interactive-rebase-tool
