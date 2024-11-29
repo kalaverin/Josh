@@ -44,6 +44,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         tmuxp      # tmux session manager
         vulture    # dead code search
         yapf       # another one cleaner
+        speedtest-cli
     )
     PIP_DEFAULT_KEYS=(
         --compile
