@@ -19,9 +19,9 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     MIN_PYTHON_VERSION=3.6  # minimal version for modern pip
 
     PIP_REQ_PACKAGES=(
+        dotbot     # dotfiles management system
         pip        # python package manager, first
         pipdeptree # simple, but powerful tool to manage python requirements
-        # setuptools
         virtualenv # virtual environments for python packaging
         wheel
     )
@@ -29,21 +29,15 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         asciinema  # shell movies recorder and player
         clickhouse-cli
         crudini    # ini configs parser
-        # httpie     # super http client, just try: http head anything.com
         mycli      # python-driver MySQL client
         nodeenv    # virtual environments for node packaging
         paramiko   # for ssh tunnels with mycli & pgcli
         pgcli      # python-driver PostgreSQL client
-        pre-commit # pre-commit framework tool
-        pycln      # python code cleaner
-        ruff       # blazing fast linter
-        sshtunnel  # too
+        sshtunnel
         sshuttle   # swiss knife for ssh tunneling & management
         termtosvg  # write shell movie to animated SVG
         thefuck    # misspelling everyday helper
         tmuxp      # tmux session manager
-        vulture    # dead code search
-        yapf       # another one cleaner
         speedtest-cli
     )
     PIP_DEFAULT_KEYS=(
