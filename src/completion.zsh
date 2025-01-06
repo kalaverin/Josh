@@ -18,6 +18,7 @@ function completition.generate {
     [ -x "$commands[fuck]" ]     && thefuck --alias
     [ -x "$commands[pip]" ]      && pip completion --zsh
     [ -x "$commands[scotty]" ]   && scotty init zsh
+    [ -x "$commands[uv]" ]       && uv generate-shell-completion zsh
 
     local file="$HOME/.zcompdump"
     if [ -f "$file" ]; then
