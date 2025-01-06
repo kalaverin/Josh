@@ -133,7 +133,7 @@ else
         omz.install && omz.plugins       || return "$(rollback "oh-my-zsh" "$0" "$?")"
         bin.install                      || return "$(rollback "custom" "$0" "$?")"
         cargo.deploy $CARGO_REQ_PACKAGES || return "$(rollback "cargo" "$0" "$?")"
-        cargo.deploy $GO_REQ_PACKAGES    || return "$(rollback "go" "$0" "$?")"
+        go.deploy $GO_REQ_PACKAGES       || return "$(rollback "go" "$0" "$?")"
 
         info "$0" "success! finally: replace ~/.zshrc with ash loader"
 

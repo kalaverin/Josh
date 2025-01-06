@@ -31,7 +31,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         vivid            # ls colors themes selections system
     )
     CARGO_REC_PACKAGES=(
-        ast-grep         # grep for AST
+        ast-grep
         bingrep          # extract and grep strings from binaries
         broot            # console file manager
         bump-bin         # versions with semver specification

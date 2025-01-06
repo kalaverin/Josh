@@ -10,7 +10,9 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
     REQ_BINS=(
         cc
         cmake
+        jq
         git
+        go
         make
         pkg-config
         python3
@@ -108,7 +110,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             export ASH_OS="BSD"
 
             local cmd="sudo pkg install -y"
-            local pkg="bash coreutils findutils git gnugrep gnuls gsed gtar libevent openssl pkgconf python310 rsync sudo tmux zsh"
+            local pkg="bash coreutils findutils jq git gnugrep gnuls golang gsed gtar libevent openssl pkgconf python310 rsync sudo tmux zsh"
             REQ_SYS_BINS=(
                 bash
                 pkg
@@ -133,7 +135,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             fi
 
             local cmd="brew update && brew install"
-            local pkg="bash coreutils findutils git gnu-tar grep gsed openssl pkg-config python@3 zsh"
+            local pkg="bash coreutils findutils jq git gnu-tar golang grep gsed openssl pkg-config python@3 zsh"
             REQ_SYS_BINS=(
                 bash
                 brew
@@ -160,7 +162,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
                 [ -x "$(builtin which -p apt 2>/dev/null)" ] && local bin="apt" || local bin="apt-get"
 
                 local cmd="(sudo $bin update --yes --quiet || true) && sudo $bin install --yes --quiet --no-remove"
-                local pkg="build-essential clang git libevent-dev libpq-dev libssl-dev make tmux pkg-config python3 python3-distutils zsh"
+                local pkg="build-essential clang jq git libevent-dev libpq-dev libssl-dev make tmux pkg-config python3 python3-distutils zsh"
 
 
             elif [ -f "/etc/arch-release" ] || [ -n "$(uname -v | grep -Pi '(arch|manjaro)')" ]; then
@@ -168,7 +170,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
                 info $0 "os arch: $osname"
 
                 local cmd="sudo pacman --sync --noconfirm"
-                local pkg="base-devel clang gcc git libevent openssl pkg-config postgresql-libs python3 tmux zsh"
+                local pkg="base-devel clang cmake gcc git golang libevent openssl pkg-config postgresql-libs python3 tmux zsh"
 
             elif [ -n "$(echo "$osname" | grep -i gentoo)" ]; then
                 info $0 "os gentoo: $osname"
