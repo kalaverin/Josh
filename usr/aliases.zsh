@@ -68,6 +68,13 @@ fi
 # fi
 
 
+# uv: ultimate python runner, for python scripts
+#
+if [ -x "$commands[uv]" ]; then
+    alias py='uv run --frozen --no-sync --env-file .env --color always --script'
+fi
+
+
 # vivid: ls color theme generator
 #
 if [ -x "$commands[vivid]" ]; then

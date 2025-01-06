@@ -16,7 +16,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
 
     SOURCES_CACHE+=("$THIS_SOURCE")
 
-    MIN_PYTHON_VERSION=3.6  # minimal version for modern pip
+    MIN_PYTHON_VERSION=3.10  # minimal version for modern pip
 
     PIP_REQ_PACKAGES=(
         dotbot     # dotfiles management system
@@ -24,6 +24,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         pipdeptree # simple, but powerful tool to manage python requirements
         virtualenv # virtual environments for python packaging
         wheel
+        uv
     )
     PIP_OPT_PACKAGES=(
         asciinema  # shell movies recorder and player
