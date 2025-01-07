@@ -110,14 +110,14 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             export ASH_OS="BSD"
 
             local cmd="sudo pkg install -y"
-            local pkg="bash coreutils findutils jq git gnugrep gnuls golang gsed gtar libevent openssl pkgconf python310 rsync sudo tmux zsh"
+            local pkg="bash coreutils findutils jq git gnugrep gnuls gmake golang gsed gtar libevent openssl pkgconf python310 rsync sudo tmux zsh"
             REQ_SYS_BINS=(
                 bash
                 pkg
                 sudo
-                /usr/local/bin/direnv
                 /usr/local/bin/gcut
                 /usr/local/bin/gfind
+                /usr/local/bin/gmake
                 /usr/local/bin/gnuls
                 /usr/local/bin/greadlink
                 /usr/local/bin/grealpath
@@ -135,7 +135,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             fi
 
             local cmd="brew update && brew install"
-            local pkg="bash coreutils findutils jq git gnu-tar golang grep gsed openssl pkg-config python@3 zsh"
+            local pkg="bash coreutils findutils jq git gnu-tar gmake golang grep gsed openssl pkg-config python@3 zsh"
             REQ_SYS_BINS=(
                 bash
                 brew
@@ -143,12 +143,12 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
                 gfind
                 ggrep
                 gls
+                gmake
                 greadlink
                 grealpath
                 gsed
                 gtar
             )
-
 
         elif [ -n "$(echo "$osname" | grep -i linux)" ]; then
             export ASH_OS="LINUX"
