@@ -444,40 +444,62 @@ function sup {
         return 1
     fi
 
-    if [ -f "run/supervisord.pid" ]; then
-        pid="$(pgrep -F "run/supervisord.pid")"
-        if [ -n "$pid" ] && [ "$pid" -gt 0 ] && [ -S "run/supervisord.sock" ]; then
+    # 1. native start with native script
+
+    local runfile="$PWD/bin/supervisord.sh"
+    if [ ! -x "$runfile" ]; then
+        warn "$0" "missing $runfile"
+
+    else
+
+        $SHELL $runfile
+        local retval="$?"
+
+        if [ "$retval" -eq 0 ]; then
             running=1
+        else
+            fail "$0" "$runfile failed ($retval)"
         fi
     fi
 
-    # 1. not started by native sctipt, try to start manually
+    # 2. not started with native script — run with uvx
 
     if [ "$running" -eq 0 ]; then
-        eval "$(direnv export zsh)"
-        supervisord --silent --configuration supervisord.conf
-        retval="$?"
+        if [ ! -x "$commands[uvx]" ]; then
+            warn "$0" "missing uvx"
+        else
 
-        if [ "$retval" -eq 0 ] && [ -f "run/supervisord.pid" ]; then
-            pid="$(pgrep -F "run/supervisord.pid")"
-            if [ -n "$pid" ] && [ "$pid" -gt 0 ] && [ -S "run/supervisord.sock" ]; then
+            uvx --from supervisor supervisord --silent --configuration supervisord.conf
+
+            retval="$?"
+            if [ "$retval" -eq 0 ]; then
                 running=1
-                info "$0" "supervisord($pid) started (from $PWD/run/supervisord.pid) manually"
+                info "$0" "supervisord via uvx start success"
+            else
+                fail "$0" "supervisord via uvx start failed ($retval)"
             fi
         fi
     fi
 
-    # 2. try to use native script
+    # 3. not started by uvx — try to start manually
 
-    if [ "$running" -eq 0 ] && [ -x "bin/supervisord.sh" ]; then
-        $SHELL bin/supervisord.sh
-        retval="$?"
+    if [ "$running" -eq 0 ]; then
 
-        if [ "$retval" -eq 0 ] && [ -f "run/supervisord.pid" ]; then
-            pid="$(pgrep -F "run/supervisord.pid")"
-            if [ -n "$pid" ] && [ "$pid" -gt 0 ] && [ -S "run/supervisord.sock" ]; then
+        if [ ! -x "$commands[supervisord]" ]; then
+            warn "$0" "missing supervisord"
+        else
+
+            if [ -x "$commands[direnv]" ]; then
+                eval "$(direnv export zsh)"
+            fi
+            supervisord --silent --configuration supervisord.conf
+
+            retval="$?"
+            if [ "$retval" -eq 0 ]; then
                 running=1
-                info "$0" "supervisord($pid) started (from $PWD/run/supervisord.pid) $PWD/supervisord.sh (auto)"
+                info "$0" "$commands[supervisord] start success"
+            else
+                fail "$0" "$commands[supervisord] start failed ($retval)"
             fi
         fi
     fi
