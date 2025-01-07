@@ -30,6 +30,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         mvdan.cc/sh/v3/cmd/shfmt@latest  # shell formatter
     )
     EGET_REQ_PACKAGES=(
+        # direnv/direnv
         # zyedidia/micro
         # https://github.com/sqshq/sampler
     )
@@ -162,16 +163,16 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
             return 1
         fi
 
-        local update_exe="$GO_BINARIES/go-global-update"
+        local update_exe="$GOPATH/bin/go-global-update"
         if [ ! -x "$update_exe" ]; then
-            warn $0 "go-update exe $update_exe isn't found!"
+            warn $0 "go update executable $update_exe isn't found!"
             go.extras || return 1
         fi
         run.show "$update_exe"
 
-        local update_exe="$GO_BINARIES/gup"
+        local update_exe="$GOPATH/bin/gup"
         if [ ! -x "$update_exe" ]; then
-            warn $0 "go-update exe $update_exe isn't found!"
+            warn $0 "go update executable $update_exe isn't found!"
             go.extras || return 1
         fi
 
