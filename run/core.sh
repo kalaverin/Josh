@@ -990,6 +990,7 @@ else
         export ASH_OS="BSD"
         fs.link 'ls'    '/usr/local/bin/gnuls' >/dev/null
         fs.link 'grep'  '/usr/local/bin/grep'  >/dev/null
+        fs.link 'make'  '/usr/local/bin/gmake' >/dev/null
 
     elif [[ "$osname" -regex-match 'darwin' ]]; then
         export ASH_OS="MAC"
