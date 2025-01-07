@@ -30,7 +30,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         mvdan.cc/sh/v3/cmd/shfmt@latest  # shell formatter
     )
     EGET_REQ_PACKAGES=(
-        zyedidia/micro
+        # zyedidia/micro
         # https://github.com/sqshq/sampler
     )
 
