@@ -58,7 +58,7 @@ function bak {
 
     git.mtime.set 2>&1 >/dev/null
 
-    run.show "mkdir -p \"$target\" 2>/dev/null; $(__stream_pak --exclude-vcs) | $ASH_PAQ > $backup"
+    run.show "mkdir -p \"$target\" 2>/dev/null; $(__stream_pak --exclude-vcs-ignores) | $ASH_PAQ > $backup"
     local msg="cat $backup | $ASH_QAP | $(__stream_unpak)"
     info $0 "$msg"
     printf "$msg"
@@ -89,7 +89,7 @@ function bakf {
 
     git.mtime.set 2>&1 >/dev/null
 
-    run.show "mkdir -p \"$target\" 2>/dev/null; $(__stream_pak --exclude-vcs-ignores) | $ASH_PAQ > $backup"
+    run.show "mkdir -p \"$target\" 2>/dev/null; $(__stream_pak --exclude-vcs) | $ASH_PAQ > $backup"
     local msg="cat $backup | $ASH_QAP | $(__stream_unpak)"
     info $0 "$msg"
     printf "$msg"
@@ -147,4 +147,21 @@ function bakmv {
     local cmd="mv $BAK_RESTORE $HOME/.backup/"
     run.show "$cmd"
     unset BAK_RESTORE
+}
+
+function upaq {
+    local archive
+
+    if [ -z "$1" ]; then
+        fail $0 "empty \$1, what's need to unpack?" >&2
+        return 1
+    fi
+
+    archive="$(fs.realpath "$1")" || return "$?"
+    if [ ! -f "$archive" ]; then
+        fail $0 "archive doesn't exists: $archive" >&2
+        return 2
+    fi
+
+    run.show "cat $archive | $ASH_QAP | $(__stream_unpak)" && return 0
 }
