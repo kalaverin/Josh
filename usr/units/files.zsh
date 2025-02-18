@@ -4,7 +4,7 @@ function __stream_pak {
         return 1
     fi
 
-    local result="tar -cO $1 --numeric-owner --sparse ."
+    local result="tar -cO $* --numeric-owner --sparse ."
     if [ "$ASH_OS" = 'BSD' ]; then
         local result="$result -f -"
     fi
@@ -58,7 +58,7 @@ function bak {
 
     git.mtime.set 2>&1 >/dev/null
 
-    run.show "mkdir -p \"$target\" 2>/dev/null; $(__stream_pak --exclude-vcs-ignores) | $ASH_PAQ > $backup"
+    run.show "mkdir -p \"$target\" 2>/dev/null; $(__stream_pak --exclude-vcs --exclude-vcs-ignores $*) | $ASH_PAQ > $backup"
     local msg="cat $backup | $ASH_QAP | $(__stream_unpak)"
     info $0 "$msg"
     printf "$msg"
