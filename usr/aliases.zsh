@@ -71,7 +71,22 @@ fi
 # uv: ultimate python runner, for python scripts
 #
 if [ -x "$commands[uv]" ]; then
-    alias py='uv run --frozen --no-sync --env-file .env --color always --script'
+    function py {
+        if [ -z "$1" ]; then
+            uv run python
+        else
+            if [ -x ".env" ]; then
+                uv run --frozen --no-sync --color always --env-file .env --script $*
+            else
+                uv run --frozen --no-sync --color always --script $*
+            fi
+        fi
+    }
+else
+    function py {
+        warn "$0" "uv tool is required"
+        return 1
+    }
 fi
 
 
