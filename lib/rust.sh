@@ -20,6 +20,7 @@ if [ -n "$THIS_SOURCE" ] && [[ "${SOURCES_CACHE[(Ie)$THIS_SOURCE]}" -eq 0 ]]; th
         git-delta        # fast replace for git delta with steroids
         git-interactive-rebase-tool
         lsd              # fast ls replacement
+        mise
         petname          # generate human readable strings
         proximity-sort   # path sorter
         ripgrep          # rg, fast replace for grep -ri for humans
