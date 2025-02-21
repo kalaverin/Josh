@@ -28,12 +28,10 @@ layout_virtualenv() {
     if [ -z "$1" ]; then
         local scope="$(basename `dirname "$PWD"`)"
         local preorder=(
+            "$PWD/.venv"
+            "$PWD/venv"
             "$ASH_PY_ENVS_ROOT/$scope/$(basename "$PWD")"
             "$ASH_PY_ENVS_ROOT/$scope"
-            "$PWD/env"
-            "$PWD/.env"
-            "$PWD/venv"
-            "$PWD/.venv"
         )
         local reason="autodetect"
     else
@@ -51,17 +49,16 @@ layout_virtualenv() {
     done
 
     local venv=''
-    echo " -- info ($0): $reason, scan order: '${order[@]}'"
     for dir in ${order[@]}; do
         local dir="$(realpath "$dir")"
         if [ -f "$dir/bin/activate" ]; then
             local venv="$dir"
-            echo " -- info ($0): use virtual env from '$venv'"
             break
         fi
     done
 
     if [ -z "$venv" ]; then
+        echo " -- info ($0): $reason, scan order: '${order[@]}'"
         echo " == fail ($0): virtual env isn't detected, check your '$PWD/.envrc'"
         return 2
     fi
