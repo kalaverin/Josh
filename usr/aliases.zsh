@@ -435,6 +435,14 @@ function brew {
 
 # ———
 
+function rld {
+    local cwd
+    cwd="$(fs.realpath "$PWD")" || return "$?"
+    if [ -x "$cwd" ]; then
+        builtin cd "$HOME"; builtin cd "$cwd";
+    fi
+}
+
 function fchmod {
     [ -z "$1" ] && [ -z "$2" ] && return 1
     find "$2" -type f -not -perm $1 -exec chmod "$1" {} \;
