@@ -7,6 +7,33 @@ local PIP_PKG_INFO="$INCLUDE_DIR/pip_pkg_info.sh"
 
 # ———
 
+function uv.temp {
+    local binaries=(
+        direnv
+        git
+        python
+        uv
+    )
+    if local missing="$(fs.lookup.missing "$binaries")" && [ -n "$missing" ]; then
+        fail $0 "missing binaries: $missing"
+        return 1
+    fi
+
+    mktp && \
+    uv init && \
+    uv python pin 3.11 && \
+    uv venv && \
+    git init && \
+    touch .env && \
+    echo ".git/" >> .gitignore && \
+    cp $ASH/usr/share/.envrc "$PWD" &&
+    mkdir src/ && \
+    touch src/main.py && \
+    git add . && \
+    git commit -m "Start from scratch" && \
+    direnv allow
+}
+
 function venv.on {
     local venv="$(venv.path $*)"
 
