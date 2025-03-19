@@ -28,7 +28,7 @@ function uv.temp {
     echo ".git/" >> .gitignore && \
     cp $ASH/usr/share/.envrc "$PWD" &&
     mkdir src/ && \
-    touch src/main.py && \
+    mv main.py src/ && \
     git add . && \
     git commit -m "Start from scratch" && \
     direnv allow
