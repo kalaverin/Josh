@@ -460,7 +460,7 @@ function venv.temp.remove {
     venv.cd $* || ([ "$?" -gt 0 ] && return 1)
 
     local vwd="$PWD"
-    local temp="$(venv.temp.dir)"
+    local temp="$(temp.dir)"
 
     if [[ ! $vwd =~ "^$temp" ]]; then
         fail $0 "DO NOT remove '$vwd' because isn't temporary"
