@@ -7,31 +7,33 @@ local PIP_PKG_INFO="$INCLUDE_DIR/pip_pkg_info.sh"
 
 # ———
 
-function uv.temp {
+function uv.make {
     local binaries=(
         direnv
         git
         python
         uv
     )
+    local project
+
     if local missing="$(fs.lookup.missing "$binaries")" && [ -n "$missing" ]; then
         fail $0 "missing binaries: $missing"
         return 1
     fi
 
-    mktp && \
-    uv init && \
-    uv python pin 3.11 && \
-    uv venv && \
-    git init && \
-    touch .env && \
-    echo ".git/" >> .gitignore && \
-    cp $ASH/usr/share/.envrc "$PWD" &&
-    mkdir src/ && \
-    mv main.py src/ && \
-    git add . && \
-    git commit -m "Start from scratch" && \
-    direnv allow
+    project="$(get.name 1)" && \
+    mkcd "$(temp.dir)/pet" && \
+        git clone git@bitbucket.org:kalaverin/skel.git "$project" && \
+        builtin cd "$project" && rm -rf .git/ && git init && \
+        find . -type f -exec grep -Ilq "." {} \; -exec sed -i "s/Blank/$project/g" {} \; && \
+        mv "src/blank" "src/$project" && \
+    uv python pin 3.10 && \
+        uv sync --all-extras && \
+        uv lock && uv venv --refresh && \
+    git add . && git commit -m "Start from scratch" && \
+    direnv allow && \
+    builtin cd "src/$project" && \
+    py main.py
 }
 
 function venv.on {
