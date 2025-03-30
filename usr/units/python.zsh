@@ -12,6 +12,7 @@ function uv.make {
         direnv
         git
         python
+        tree
         uv
     )
     local project
@@ -33,6 +34,7 @@ function uv.make {
     git add . && git commit -m "Start from scratch" && \
     direnv allow && \
     builtin cd "src/$project" && \
+    tree ../../ && \
     py main.py
 }
 
