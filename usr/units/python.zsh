@@ -459,21 +459,37 @@ function venv.site {
 
 function venv.temp.remove {
     local cwd="$PWD"
+
+    if [ -z "$VIRTUAL_ENV" ] || [ ! -x "$VIRTUAL_ENV" ]; then
+        fail $0 "couldn't find active environment"
+        return 1
+    fi
     venv.cd $* || ([ "$?" -gt 0 ] && return 1)
 
-    local vwd="$PWD"
-    local temp="$(temp.dir)"
+    #
 
-    if [[ ! $vwd =~ "^$temp" ]]; then
-        fail $0 "DO NOT remove '$vwd' because isn't temporary"
+    local temp="$(temp.dir)"
+    if [[ ! $PWD =~ "^$temp" ]]; then
+        fail $0 "DO NOT remove '$PWD' because isn't temporary"
         builtin cd $cwd
         return 1
     fi
 
-    if [ "$VIRTUAL_ENV" = "$vwd" ]; then
+    #
+
+    if [ "$VIRTUAL_ENV" = "$PWD" ]; then
         run.show "builtin cd $VIRTUAL_ENV/bin && source activate && deactivate && builtin cd .."
+    else
+        fail $0 "can't chdir to $VIRTUAL_ENV"
+        return 1
     fi
-    run.show "rm -rf $vwd 2>/dev/null; builtin cd $cwd || builtin cd ~"
+
+    #
+
+    if [ "$cwd" = "$PWD" ]; then
+        builtin cd ~
+    fi
+    run.show "rm -rf $VIRTUAL_ENV 2>/dev/null; builtin cd $cwd || builtin cd ~"
     path.rehash
 }
 
