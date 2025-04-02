@@ -56,10 +56,15 @@ if [ -x "$commands[sccache]" ]; then
     [ -z "$CXX_WRAPPER" ] && export CXX_WRAPPER="sccache"
     [ -z "$RUSTC_WRAPPER" ] && export RUSTC_WRAPPER="sccache"
 
+    [ -z "$CC" ] && [ -x "$commands[clang]" ] && export CC="sccache clang"
     [ -z "$CC" ] && [ -x "$commands[gcc]" ] && export CC="sccache gcc"
+
+    [ -z "$CXX" ] && [ -x "$commands[clang++]" ] && export CXX="sccache clang++"
     [ -z "$CXX" ] && [ -x "$commands[g++]" ] && export CXX="sccache g++"
+
     [ -z "$FC" ] && [ -x "$commands[gfortran]" ] && export FC="sccache gfortran"
 fi
+
 
 
 # viu: terminal images previewer in ANSI graphics, used in file previews, etc
