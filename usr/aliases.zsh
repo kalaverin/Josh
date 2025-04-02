@@ -58,7 +58,7 @@ if [ -x "$commands[sccache]" ]; then
 
     [ -z "$CC" ] && [ -x "$commands[gcc]" ] && export CC="sccache gcc"
     [ -z "$CXX" ] && [ -x "$commands[g++]" ] && export CXX="sccache g++"
-    [ -z "$FC" ] && [ -x "$commands[gfortran]" ] && export CXX="sccache gfortran"
+    [ -z "$FC" ] && [ -x "$commands[gfortran]" ] && export FC="sccache gfortran"
 fi
 
 
