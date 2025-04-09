@@ -24,7 +24,7 @@ function uv.make {
 
     project="$(get.name 1)" && \
     mkcd "$(temp.dir)/pet" && \
-        git clone git@bitbucket.org:kalaverin/skel.git "$project" && \
+        git clone https://bitbucket.org/kalaverin/skel.git "$project" && \
         builtin cd "$project" && rm -rf .git/ && git init && \
         find . -type f -exec grep -Ilq "." {} \; -exec sed -i "s/Blank/$project/g" {} \; && \
         mv "src/blank" "src/$project" && \
